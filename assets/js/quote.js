@@ -16,8 +16,8 @@
   if (ctx) {
     const kind = params.get('template') ? 'template' : params.get('product') ? 'product' : 'service';
     const label = decodeURIComponent(ctx).replace(/\+/g, ' ');
-    note.innerHTML = `<div class="card" style="padding:1rem 1.2rem;margin-bottom:1.6rem;border-color:var(--blue);background:rgba(61,126,255,0.06)">
-      <p style="margin:0;color:var(--white-soft)">Requesting a quote for the <strong>${CIEL.escapeHtml(label)}</strong> ${kind}. Add your details below and we'll tailor an estimate.</p></div>`;
+    note.innerHTML = `<div class="notice" style="margin-bottom:1.6rem;border-color:var(--blue)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 8v5M12 16h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      <p style="margin:0">Requesting a quote for the <strong>${CIEL.esc(label)}</strong> ${kind}. Add your details below and we'll tailor an estimate.</p></div>`;
     const desc = document.getElementById('desc');
     if (desc && !desc.value) desc.value = `I'm interested in the "${label}" ${kind}. `;
     // Best-effort project type match
