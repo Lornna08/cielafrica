@@ -28,14 +28,27 @@
     render(CIEL.showcase[0].id);
   }
 
-  // ---- Website collection (light rail + filters) ----
+  // ---- Website collection (auto-sliding rail + filters) ----
   const rail = $('#col-rail'), filters = $('#col-filters');
   if(rail && CIEL.templates){
     const cats = ['All', ...new Set(CIEL.templates.map(t=>t.category))].slice(0,10);
     let active = 'All';
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const draw = ()=>{
       const list = active==='All' ? CIEL.templates : CIEL.templates.filter(t=>t.category===active);
-      rail.innerHTML = list.slice(0,12).map((t,i)=>CIEL.collectionTile(t,i)).join('');
+      const tiles = list.slice(0,12).map((t,i)=>CIEL.collectionTile(t,i)).join('');
+      const canAuto = !reduce && list.length>=4 && active==='All';
+      if(canAuto){
+        // duplicate the set so the -50% loop is seamless
+        rail.className = 'crail crail--auto';
+        rail.innerHTML = `<div class="crail__track">${tiles}${tiles}</div>`;
+        // tune duration to content width
+        const track = rail.querySelector('.crail__track');
+        requestAnimationFrame(()=>{ const w=track.scrollWidth/2; track.style.animationDuration = Math.max(24, w/22)+'s'; });
+      } else {
+        rail.className = 'crail';
+        rail.innerHTML = tiles;
+      }
       CIEL.io(rail);
     };
     if(filters){
@@ -44,6 +57,11 @@
         filters.querySelectorAll('.cfilter').forEach(f=>f.classList.remove('active')); b.classList.add('active');
         active=b.dataset.c; draw(); rail.scrollLeft=0; });
     }
+    // manual drag-to-scroll (works when not auto, and lets users nudge)
+    let down=false,sx=0,sl=0;
+    rail.addEventListener('pointerdown',e=>{ down=true; rail.classList.add('crail--dragging'); sx=e.clientX; sl=rail.scrollLeft; });
+    addEventListener('pointerup',()=>{ down=false; rail.classList.remove('crail--dragging'); });
+    rail.addEventListener('pointermove',e=>{ if(!down)return; rail.scrollLeft = sl-(e.clientX-sx); });
     draw();
   }
 
