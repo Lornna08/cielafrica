@@ -12,6 +12,7 @@
 .brand__mark { width:28px; height:28px; flex:none; }
 .nav__links { display:flex; align-items:center; gap:0.1rem; }
 .nav__item { position:relative; }
+.nav__item:has(.mega)::after { content:""; position:absolute; left:0; right:-20px; top:100%; height:18px; }  /* hover bridge */
 .nav__link { display:inline-flex; align-items:center; gap:0.35rem; padding:0.5rem 0.85rem; font-size:0.92rem; font-weight:500; color:var(--grey); background:none; border:none; font-family:inherit; cursor:pointer; border-radius:6px; transition:color .25s; }
 .nav__link:hover { color:var(--off); }
 .nav__link .chev { transition:transform .3s var(--ease); opacity:0.6; }
@@ -387,3 +388,15 @@ body.menu-open .mobile-menu { transform:none; }
 .crail.crail--auto:hover .crail__track, .crail.crail--auto.dragging .crail__track { animation-play-state:paused; }
 .crail.crail--dragging { cursor:grabbing; }
 @media (prefers-reduced-motion: reduce){ .crail.crail--auto .crail__track { animation:none; } }
+
+
+/* hide hero meta kickers on mobile (saves vertical space) */
+@media (max-width:640px){ .hero__top--meta{ display:none; } .hero{ padding-top:calc(var(--nav-h) + 1.5rem); } }
+
+
+/* Home icon in nav */
+.nav__home { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; color:var(--grey); transition:color .25s, background .25s; }
+.nav__home:hover { color:var(--off); background:rgba(255,255,255,0.05); }
+.nav__home svg { width:18px; height:18px; }
+.mobile-menu .m-home { display:flex; align-items:center; gap:0.6rem; }
+.mobile-menu .m-home svg { width:22px; height:22px; }

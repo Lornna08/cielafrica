@@ -46,7 +46,7 @@ CIEL.collectionTile = function(t, i){
       </div>
     </div>
     <div class="ctile__meta"><div><span class="ctile__cat">${CIEL.esc(t.category)}</span><h4>${CIEL.esc(t.name)}</h4></div>
-    <span class="ctile__price">from $${t.price}</span></div>
+    <span class="ctile__price">from KES ${CIEL.esc(CIEL.fmt(t.price))}</span></div>
   </article>`;
 };
 
@@ -64,7 +64,7 @@ CIEL.galleryCard = function(t, i, kind){
       <h4>${CIEL.esc(t.name)}</h4>
       <p>${CIEL.esc(t.desc)}</p>
       <div class="gcard__foot">
-        <span class="gprice">$${t.price}<small>${priceLabel}</small></span>
+        <span class="gprice">KES ${CIEL.esc(CIEL.fmt(t.price))}<small>${priceLabel}</small></span>
         <a class="btn btn--dark" style="padding:0.55rem 1rem;font-size:0.82rem" href="${link}">${kind==='product'?'Get it':'Customize'}</a>
       </div>
     </div>
@@ -92,7 +92,7 @@ CIEL.productRow = function(p){
   return `<a class="prow" href="quote.html?product=${encodeURIComponent(p.name)}" data-io>
     <span class="prow__name">${CIEL.esc(p.name)}</span>
     <span class="prow__cat">${CIEL.esc(p.category)}</span>
-    <span class="prow__price">$${p.price}<small>one-time</small></span>
+    <span class="prow__price">KES ${CIEL.esc(CIEL.fmt(p.price))}<small>one-time</small></span>
     <span class="prow__get">Get it</span>
   </a>`;
 };

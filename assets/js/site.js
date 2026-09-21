@@ -38,5 +38,6 @@
   // Year
   document.querySelectorAll('[data-year]').forEach(el=>el.textContent=new Date().getFullYear());
 
+  CIEL.fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g,',');
   CIEL.esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 })();
