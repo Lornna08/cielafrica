@@ -14,7 +14,7 @@ window.CIEL.workCategories = ["All","Business System","SaaS","Web Platform","Mob
 window.CIEL.work = [
   {
     id:"meridian-erp",
-    name:"Meridian ERP",
+    name:"Sokoni ERP",
     category:"Business System",
     industry:"Manufacturing & Distribution",
     mockup:"erp", mockupAlt:"analytics",
@@ -30,7 +30,7 @@ window.CIEL.work = [
   },
   {
     id:"pulse-crm",
-    name:"Pulse CRM",
+    name:"Rafiki CRM",
     category:"SaaS",
     industry:"B2B Sales Teams",
     mockup:"crm", mockupAlt:"saas",
@@ -46,7 +46,7 @@ window.CIEL.work = [
   },
   {
     id:"lumina-hms",
-    name:"Lumina Hospital System",
+    name:"Afya Hospital System",
     category:"Business System",
     industry:"Healthcare",
     mockup:"hospital", mockupAlt:"analytics",
@@ -62,7 +62,7 @@ window.CIEL.work = [
   },
   {
     id:"atlas-logistics",
-    name:"Atlas Fleet",
+    name:"Safiri Fleet",
     category:"Mobile App",
     industry:"Logistics & Transport",
     mockup:"logistics", mockupAlt:"analytics",
@@ -78,7 +78,7 @@ window.CIEL.work = [
   },
   {
     id:"orbit-commerce",
-    name:"Orbit Commerce",
+    name:"Duka Commerce",
     category:"E-commerce",
     industry:"Retail",
     mockup:"ecommerce", mockupAlt:"inventory",
@@ -94,7 +94,7 @@ window.CIEL.work = [
   },
   {
     id:"cortex-ai",
-    name:"Cortex Automation",
+    name:"Akili Automation",
     category:"AI & Automation",
     industry:"Operations",
     mockup:"ai", mockupAlt:"analytics",

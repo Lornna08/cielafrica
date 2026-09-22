@@ -90,7 +90,7 @@ CIEL.workRow = function(w, i){
 /* ---- Product index row ---- */
 CIEL.productRow = function(p){
   return `<a class="prow" href="quote.html?product=${encodeURIComponent(p.name)}" data-io>
-    <span class="prow__name">${CIEL.esc(p.name)}</span>
+    <span class="prow__main"><span class="prow__name">${CIEL.esc(p.name)}</span><span class="prow__meta">${CIEL.esc(p.meta||p.desc||'')}</span></span>
     <span class="prow__cat">${CIEL.esc(p.category)}</span>
     <span class="prow__price">KES ${CIEL.esc(CIEL.fmt(p.price))}<small>one-time</small></span>
     <span class="prow__get">Get it</span>

@@ -38,6 +38,23 @@
   // Year
   document.querySelectorAll('[data-year]').forEach(el=>el.textContent=new Date().getFullYear());
 
+
+  // ---- Scroll restoration: return to the same spot on back / re-visit ----
+  try{
+    if('scrollRestoration' in history) history.scrollRestoration='manual';
+    const KEY='ciel:scroll:'+location.pathname;
+    const save=()=>{ try{ sessionStorage.setItem(KEY, String(scrollY)); }catch(e){} };
+    // save on leaving / clicking internal links
+    addEventListener('pagehide', save);
+    addEventListener('beforeunload', save);
+    let st; addEventListener('scroll', ()=>{ clearTimeout(st); st=setTimeout(save,150); }, {passive:true});
+    // restore after layout settles
+    const restore=()=>{ try{ const y=sessionStorage.getItem(KEY); if(y!==null){ const n=parseInt(y,10)||0; requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,n))); } }catch(e){} };
+    if(document.readyState==='complete') restore(); else addEventListener('load', restore);
+    // bfcache back button
+    addEventListener('pageshow', e=>{ if(e.persisted) restore(); });
+  }catch(e){}
+
   CIEL.fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g,',');
   CIEL.esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 })();

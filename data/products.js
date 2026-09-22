@@ -1,27 +1,28 @@
 /* ============================================================
-   CIEL AFRICA — Digital Products data
+   CIEL AFRICA — Digital Products (Africa-focused)
    HOW TO EDIT: add objects; replace `image` with your file in
    assets/img/products/. `category` must match categories list.
+   `meta` shows as the detail line under each product on the homepage.
    ============================================================ */
 window.CIEL = window.CIEL || {};
 
 window.CIEL.productCategories = [
-  "All","WordPress Plugins","WordPress Themes","Website Templates","Landing Pages",
-  "PHP Scripts","Laravel Packages","React Components","Next.js Templates",
-  "Admin Dashboards","UI Kits","Developer Tools","Automation Scripts","AI Tools","APIs"
+  "All","WordPress Plugins","Payments & M-Pesa","Business Systems","WordPress Themes",
+  "Website Templates","Laravel Packages","React Components","Admin Dashboards",
+  "SMS & USSD","Automation Scripts","AI Tools","APIs"
 ];
 
 window.CIEL.products = [
-  { id:"prd-01", name:"Nimbus Admin",      category:"Admin Dashboards",  desc:"Production-ready admin dashboard with charts, tables and auth.",        price:7500, rating:4.9, reviews:0, badge:"popular", image:"" },
-  { id:"prd-02", name:"Aero UI Kit",       category:"UI Kits",           desc:"120+ components and design tokens for modern product interfaces.",      price:5000, rating:4.8, reviews:0, badge:"new",     image:"" },
-  { id:"prd-03", name:"Quote Engine",      category:"PHP Scripts",       desc:"Drop-in quotation request system with admin and email flow.",          price:6500, rating:5.0, reviews:0, badge:"",        image:"" },
-  { id:"prd-04", name:"Relay Forms",       category:"WordPress Plugins", desc:"Advanced form builder plugin with conditional logic and exports.",      price:4000, rating:4.7, reviews:0, badge:"popular", image:"" },
-  { id:"prd-05", name:"Vertex Theme",      category:"WordPress Themes",  desc:"Fast, flexible business theme with a modular page builder.",            price:6000, rating:4.9, reviews:0, badge:"",        image:"" },
-  { id:"prd-06", name:"Pulse Components",  category:"React Components",  desc:"Headless, accessible React components with Tailwind styling.",          price:4500, rating:4.8, reviews:0, badge:"new",     image:"" },
-  { id:"prd-07", name:"Launch Next",       category:"Next.js Templates", desc:"Next.js starter with marketing, blog and dashboard routes.",            price:9000, rating:5.0, reviews:0, badge:"popular", image:"" },
-  { id:"prd-08", name:"Flowline",          category:"Automation Scripts",desc:"Scriptable automation toolkit for routine business tasks.",             price:7000, rating:4.6, reviews:0, badge:"",        image:"" },
-  { id:"prd-09", name:"Insight API",       category:"APIs",              desc:"Ready-to-deploy analytics API with keys and rate limiting.",            price:10500, rating:4.9, reviews:0, badge:"",        image:"" },
-  { id:"prd-10", name:"Assistant Kit",     category:"AI Tools",          desc:"Starter kit for building AI assistants into your product.",             price:11500, rating:5.0, reviews:0, badge:"new",     image:"" },
-  { id:"prd-11", name:"Ship Package",      category:"Laravel Packages",  desc:"Laravel package for billing, teams and subscriptions.",                 price:8500, rating:4.8, reviews:0, badge:"",        image:"" },
-  { id:"prd-12", name:"Convert Landing",   category:"Landing Pages",     desc:"High-converting landing template pack with A/B variants.",              price:3000, rating:4.7, reviews:0, badge:"popular", image:"" }
+  { id:"prd-01", name:"M-Pesa STK Push (Daraja)", category:"Payments & M-Pesa", desc:"WordPress & WooCommerce plugin for Safaricom Daraja STK Push — Lipa na M-Pesa checkout, C2B/B2C callbacks, auto-reconciliation and receipts.", meta:"Daraja API · STK Push · WooCommerce · Sandbox & Live", price:9500, rating:5.0, reviews:0, badge:"popular", image:"" },
+  { id:"prd-02", name:"M-Pesa WooCommerce Gateway", category:"Payments & M-Pesa", desc:"Full checkout gateway with Paybill/Till support, instant confirmation, order status sync and downloadable statements.", meta:"Paybill & Till · Instant confirm · Order sync", price:8500, rating:4.9, reviews:0, badge:"new", image:"" },
+  { id:"prd-03", name:"SACCO & Microfinance System", category:"Business Systems", desc:"Members, savings, loans, guarantors, dividends and M-Pesa disbursement — built for Kenyan SACCOs and chamas.", meta:"Loans · Savings · Dividends · M-Pesa payouts", price:145000, rating:5.0, reviews:0, badge:"popular", image:"" },
+  { id:"prd-04", name:"KRA eTIMS Invoicing", category:"APIs", desc:"Generate KRA-compliant eTIMS tax invoices with QR codes, VAT breakdown and PDF export — API + WooCommerce plugin.", meta:"eTIMS · VAT · QR invoice · KRA compliant", price:26000, rating:4.9, reviews:0, badge:"new", image:"" },
+  { id:"prd-05", name:"Bulk SMS Portal", category:"SMS & USSD", desc:"Send campaigns and transactional SMS via Africa's Talking or Twilio — contacts, templates, scheduling and delivery reports.", meta:"Africa's Talking · Scheduling · Delivery reports", price:32000, rating:4.8, reviews:0, badge:"", image:"" },
+  { id:"prd-06", name:"USSD Menu Builder", category:"SMS & USSD", desc:"Drag-and-drop USSD menus for payments, balance checks and self-service — works with Africa's Talking shortcodes.", meta:"*384# menus · Sessions · Self-service", price:38000, rating:4.7, reviews:0, badge:"", image:"" },
+  { id:"prd-07", name:"POS & Inventory (Duka)", category:"Business Systems", desc:"Point-of-sale for shops and dukas — stock, suppliers, M-Pesa till, daily Z-reports and low-stock alerts.", meta:"POS · Stock · M-Pesa till · Z-reports", price:78000, rating:4.9, reviews:0, badge:"popular", image:"" },
+  { id:"prd-08", name:"Airtime & Bills API", category:"APIs", desc:"Sell airtime and pay bills (KPLC, DSTV, water) programmatically with a single wallet and reconciliation dashboard.", meta:"Airtime · KPLC · DSTV · Single wallet", price:42000, rating:4.8, reviews:0, badge:"", image:"" },
+  { id:"prd-09", name:"Nimbus Admin Dashboard", category:"Admin Dashboards", desc:"Production-ready admin with charts, tables, roles and M-Pesa transaction views — drop into any business system.", meta:"Charts · Roles · M-Pesa views · Dark mode", price:12000, rating:4.9, reviews:0, badge:"", image:"" },
+  { id:"prd-10", name:"Rental & Property Manager", category:"Business Systems", desc:"Track units, tenants, rent via M-Pesa, invoices and maintenance requests — for landlords and agents.", meta:"Tenants · Rent (M-Pesa) · Invoices · Requests", price:96000, rating:5.0, reviews:0, badge:"new", image:"" },
+  { id:"prd-11", name:"Booking & Appointments", category:"Laravel Packages", desc:"Salon, clinic and consultant bookings with M-Pesa deposits, SMS reminders and a staff calendar.", meta:"Bookings · Deposits · SMS reminders", price:34000, rating:4.7, reviews:0, badge:"", image:"" },
+  { id:"prd-12", name:"WhatsApp Order Bot", category:"AI Tools", desc:"Take orders and answer FAQs on WhatsApp automatically, push orders to your dashboard and confirm via M-Pesa.", meta:"WhatsApp · Orders · FAQs · M-Pesa confirm", price:55000, rating:4.9, reviews:0, badge:"popular", image:"" }
 ];
