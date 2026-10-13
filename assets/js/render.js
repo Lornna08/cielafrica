@@ -58,7 +58,7 @@ CIEL.galleryCard = function(t, i, kind){
   const link = kind==='product' ? `quote.html?product=${encodeURIComponent(t.name)}` : `quote.html?template=${encodeURIComponent(t.name)}`;
   const priceLabel = kind==='product' ? 'license' : 'starting';
   return `<article class="gcard" data-io data-cat="${CIEL.esc(t.category)}" data-name="${CIEL.esc(t.name.toLowerCase())}" data-price="${t.price}" data-new="${t.new?1:0}" data-pop="${(t.popular||t.badge==='popular')?1:0}">
-    <div class="gcard__media">${CIEL.tileMedia(t,i,false)}<div class="gcard__badges">${badges.join('')}</div></div>
+    <div class="gcard__media">${kind==='product' && CIEL.productPreview ? (t.image?`<img src="${CIEL.esc(t.image)}" alt="${CIEL.esc(t.name)}" loading="lazy">`:CIEL.productPreview(t)) : CIEL.tileMedia(t,i,false)}<div class="gcard__badges">${badges.join('')}</div></div>
     <div class="gcard__body">
       <span class="gcard__cat">${CIEL.esc(t.category)}</span>
       <h4>${CIEL.esc(t.name)}</h4>
