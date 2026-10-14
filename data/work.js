@@ -14,7 +14,7 @@ window.CIEL.workCategories = ["All","Business System","SaaS","Web Platform","Mob
 window.CIEL.work = [
   {
     id:"meridian-erp",
-    name:"Sokoni ERP",
+    name:"Meridian",
     category:"Business System",
     industry:"Manufacturing & Distribution",
     mockup:"erp", mockupAlt:"analytics",
@@ -30,7 +30,7 @@ window.CIEL.work = [
   },
   {
     id:"pulse-crm",
-    name:"Rafiki CRM",
+    name:"Cadence",
     category:"SaaS",
     industry:"B2B Sales Teams",
     mockup:"crm", mockupAlt:"saas",
@@ -39,14 +39,14 @@ window.CIEL.work = [
     short:"A pipeline CRM sales teams actually keep up to date, because it takes seconds not minutes.",
     technologies:["React","TypeScript","Node.js","PostgreSQL","Tailwind"],
     services:["UX/UI Design","SaaS Engineering","API Development"],
-    overview:"Most CRMs fail because reps won't update them. Pulse is built around a fast kanban pipeline and keyboard-first data entry, so keeping deals current costs almost no effort — and managers finally get a forecast they can trust.",
+    overview:"Most CRMs fail because reps won't update them. Cadence is built around a fast kanban pipeline and keyboard-first data entry, so keeping deals current costs almost no effort — and managers finally get a forecast they can trust.",
     challenge:"The team's existing CRM was so slow to update that the pipeline was always out of date, making forecasting guesswork and coaching impossible.",
     solution:"We designed a drag-and-drop pipeline with inline editing, activity capture and a clean deal view. A metering and billing layer turns it into a multi-tenant SaaS other teams can subscribe to.",
     results:["Pipeline updated in seconds, not minutes","Forecast accuracy managers can rely on","Multi-tenant, subscription-ready architecture"]
   },
   {
     id:"lumina-hms",
-    name:"Afya Hospital System",
+    name:"Jacaranda",
     category:"Business System",
     industry:"Healthcare",
     mockup:"hospital", mockupAlt:"analytics",
@@ -62,7 +62,7 @@ window.CIEL.work = [
   },
   {
     id:"atlas-logistics",
-    name:"Safiri Fleet",
+    name:"Transit",
     category:"Mobile App",
     industry:"Logistics & Transport",
     mockup:"logistics", mockupAlt:"analytics",
@@ -71,14 +71,14 @@ window.CIEL.work = [
     short:"Live tracking, routing and dispatch — a control room on the web, a driver app in the field.",
     technologies:["React Native","Node.js","PostgreSQL","Mapbox","WebSockets"],
     services:["Mobile Development","API Development","Design System"],
-    overview:"Atlas pairs a dispatcher's control room with a driver mobile app. Dispatch assigns and reroutes jobs live; drivers get turn-by-turn tasks and capture proof of delivery; managers see the whole fleet on one map.",
+    overview:"Transit pairs a dispatcher's control room with a driver mobile app. Dispatch assigns and reroutes jobs live; drivers get turn-by-turn tasks and capture proof of delivery; managers see the whole fleet on one map.",
     challenge:"Dispatch ran on calls and messages, with no live view of where vehicles were or whether jobs were on time.",
     solution:"A real-time tracking backend feeds a live fleet map and a driver app. Routes optimise automatically, and every stop is timestamped so on-time performance is finally measurable.",
     results:["Whole fleet visible on one live map","Automated routing and reassignment","Proof-of-delivery captured per stop"]
   },
   {
     id:"orbit-commerce",
-    name:"Duka Commerce",
+    name:"Sokoni",
     category:"E-commerce",
     industry:"Retail",
     mockup:"ecommerce", mockupAlt:"inventory",
@@ -94,7 +94,7 @@ window.CIEL.work = [
   },
   {
     id:"cortex-ai",
-    name:"Akili Automation",
+    name:"Cortex",
     category:"AI & Automation",
     industry:"Operations",
     mockup:"ai", mockupAlt:"analytics",
