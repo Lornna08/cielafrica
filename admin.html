@@ -99,6 +99,8 @@ input,textarea,select{font-family:inherit}
 .cat-tags .tag{background:var(--black);border:1px solid var(--line);border-radius:6px;padding:4px 9px;font-size:0.78rem;display:flex;align-items:center;gap:6px}
 .cat-tags .tag button{background:none;border:0;color:var(--grey-2);font-size:0.9rem;line-height:1;padding:0}
 .cat-tags .tag button:hover{color:var(--red)}
+.tm-avatar{width:84px;height:84px;border-radius:12px;object-fit:cover;border:1px solid var(--line-strong);display:flex;align-items:center;justify-content:center}
+.tm-avatar--ph{background:linear-gradient(140deg,#17202e,#0b0f14);color:var(--cyan);font-weight:800;font-size:1.4rem;font-family:var(--mono)}
 @media (max-width:720px){
   .side{width:56px;padding:12px 6px}
   .side button span.lbl{display:none}
@@ -129,7 +131,7 @@ input,textarea,select{font-family:inherit}
     <span class="title">Content Manager</span>
     <span class="spacer"></span>
     <button class="btn btn--sm" id="reloadBtn" title="Discard changes and reload original data">↺ Reset</button>
-    <button class="btn btn--g" id="exportAllBtn">⤓ Export all changed files</button>
+    <button class="btn btn--g" id="exportAllBtn">⤓ Save all files</button>
     <button class="btn btn--sm" id="logoutBtn">Log out</button>
   </div>
 
@@ -139,17 +141,21 @@ input,textarea,select{font-family:inherit}
       <button data-tab="templates"><span class="lbl">Templates</span><span class="count" id="c-templates">0</span></button>
       <button data-tab="work"><span class="lbl">Work</span><span class="count" id="c-work">0</span></button>
       <button data-tab="insights"><span class="lbl">Insights</span><span class="count" id="c-insights">0</span></button>
+      <button data-tab="team"><span class="lbl">Team</span><span class="count" id="c-team">0</span></button>
       <button data-tab="categories"><span class="lbl">Categories</span></button>
-      <button data-tab="export"><span class="lbl">Export</span></button>
+      <button data-tab="export"><span class="lbl">Save / Publish</span></button>
     </nav>
 
     <main class="main">
+      <div id="loadWarn" style="display:none;background:rgba(255,93,93,0.1);border:1px solid rgba(255,93,93,0.4);color:#ffb3b3;border-radius:10px;padding:12px 16px;font-size:0.85rem;margin-bottom:18px;line-height:1.5"></div>
+
       <!-- PRODUCTS -->
       <section class="panel on" data-panel="products">
         <div class="panel__head">
           <h2>Digital Products</h2>
           <button class="btn btn--p btn--sm" data-add="products">+ Add product</button>
-          <p>Edit prices (KES), names, descriptions and categories. These appear on the Products page and homepage.</p>
+          <button class="btn btn--g btn--sm" data-save="products">⤓ Save products.js</button>
+          <p>Edit prices (KES), names, descriptions and categories. These appear on the Products page and homepage. Changes are kept in this browser automatically — click <strong>Save</strong> to download the file, then upload it to your repo to publish.</p>
         </div>
         <div class="rows" id="rows-products"></div>
       </section>
@@ -159,6 +165,7 @@ input,textarea,select{font-family:inherit}
         <div class="panel__head">
           <h2>Website Templates</h2>
           <button class="btn btn--p btn--sm" data-add="templates">+ Add template</button>
+          <button class="btn btn--g btn--sm" data-save="templates">⤓ Save templates.js</button>
           <p>Edit prices (KES), names, descriptions, who each is ideal for, and badges.</p>
         </div>
         <div class="rows" id="rows-templates"></div>
@@ -169,6 +176,7 @@ input,textarea,select{font-family:inherit}
         <div class="panel__head">
           <h2>Selected Work</h2>
           <button class="btn btn--p btn--sm" data-add="work">+ Add project</button>
+          <button class="btn btn--g btn--sm" data-save="work">⤓ Save work.js</button>
           <p>Edit project names, industry, summaries and results. Advanced fields (tech, overview) edit as text.</p>
         </div>
         <div class="rows" id="rows-work"></div>
@@ -179,9 +187,21 @@ input,textarea,select{font-family:inherit}
         <div class="panel__head">
           <h2>Insights / Blog</h2>
           <button class="btn btn--p btn--sm" data-add="insights">+ Add post</button>
-          <p>Manage the article list shown on the Insights page.</p>
+          <button class="btn btn--g btn--sm" data-save="work">⤓ Save (work.js)</button>
+          <p>Manage the article list shown on the Insights page. Insights are saved inside <code>work.js</code>.</p>
         </div>
         <div class="rows" id="rows-insights"></div>
+      </section>
+
+      <!-- TEAM -->
+      <section class="panel" data-panel="team">
+        <div class="panel__head">
+          <h2>Team (About page)</h2>
+          <button class="btn btn--p btn--sm" data-add="team">+ Add member</button>
+          <button class="btn btn--g btn--sm" data-save="team">⤓ Save team.js</button>
+          <p>Edit team members shown on the About page — name, role, bio, and a photo. Photos are embedded into the file (keep each under ~900KB).</p>
+        </div>
+        <div class="rows" id="rows-team"></div>
       </section>
 
       <!-- CATEGORIES -->
@@ -199,20 +219,22 @@ input,textarea,select{font-family:inherit}
         </div>
       </section>
 
-      <!-- EXPORT -->
+      <!-- SAVE / PUBLISH -->
       <section class="panel" data-panel="export">
-        <div class="panel__head"><h2>Export &amp; publish</h2></div>
+        <div class="panel__head"><h2>Save &amp; publish</h2></div>
         <div class="note">
-          <strong>How publishing works:</strong> edit anything in the tabs, then download the changed file(s) below.
-          Put each downloaded file into your project's <code>data/</code> folder (replacing the old one), commit &amp; push to your
-          repo, and Vercel will deploy the update automatically. Nothing here touches the live site until you do that.
+          <strong>How publishing works (3 steps):</strong><br>
+          1. Edit anything in the tabs — your changes are kept in this browser automatically, so a reload won't lose them.<br>
+          2. Click <strong>Save</strong> on a tab (or <strong>Save all</strong> below) to download the updated data file(s).<br>
+          3. Put each downloaded file into your project's <code>data/</code> folder (replacing the old one), commit &amp; push to your repo — Vercel deploys it automatically. Nothing here changes the live site until you do step 3.
         </div>
         <div class="export-list">
-          <div class="export-row"><code>data/products.js</code><span class="desc">Digital products &amp; prices</span><button class="btn btn--sm" data-export="products">⤓ Download</button></div>
-          <div class="export-row"><code>data/templates.js</code><span class="desc">Website templates &amp; prices</span><button class="btn btn--sm" data-export="templates">⤓ Download</button></div>
-          <div class="export-row"><code>data/work.js</code><span class="desc">Selected work + insights</span><button class="btn btn--sm" data-export="work">⤓ Download</button></div>
+          <div class="export-row"><code>data/products.js</code><span class="desc">Digital products &amp; prices</span><button class="btn btn--sm" data-save="products">⤓ Save</button></div>
+          <div class="export-row"><code>data/templates.js</code><span class="desc">Website templates &amp; prices</span><button class="btn btn--sm" data-save="templates">⤓ Save</button></div>
+          <div class="export-row"><code>data/work.js</code><span class="desc">Selected work + insights</span><button class="btn btn--sm" data-save="work">⤓ Save</button></div>
+          <div class="export-row"><code>data/team.js</code><span class="desc">About-page team &amp; photos</span><button class="btn btn--sm" data-save="team">⤓ Save</button></div>
         </div>
-        <div style="margin-top:18px"><button class="btn btn--g" id="exportAllBtn2">⤓ Download all three files</button></div>
+        <div style="margin-top:18px"><button class="btn btn--g" id="exportAllBtn2">⤓ Save all 4 files</button></div>
       </section>
     </main>
   </div>
@@ -221,9 +243,10 @@ input,textarea,select{font-family:inherit}
 <div class="toast" id="toast"></div>
 
 <!-- load the real site data so the admin edits the live content -->
-<script src="data/products.js"></script>
-<script src="data/templates.js"></script>
-<script src="data/work.js"></script>
-<script src="assets/js/admin.js?v=20261014c"></script>
+<script src="data/products.js?v=20261014d"></script>
+<script src="data/templates.js?v=20261014d"></script>
+<script src="data/work.js?v=20261014d"></script>
+<script src="data/team.js?v=20261014d"></script>
+<script src="assets/js/admin.js?v=20261014d"></script>
 </body>
 </html>

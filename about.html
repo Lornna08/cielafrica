@@ -24,8 +24,8 @@
 
 <meta name="theme-color" content="#08090B">
 <link rel="icon" href="assets/img/logo.png?v=20261014b" type="image/png">
-<link rel="stylesheet" href="assets/css/base.css?v=20261014c">
-<link rel="stylesheet" href="assets/css/components.css?v=20261014c">
+<link rel="stylesheet" href="assets/css/base.css?v=20261014d">
+<link rel="stylesheet" href="assets/css/components.css?v=20261014d">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"AboutPage","name":"About Ciel Africa","url":"https://cielafrica.com/about.html","mainEntity":{"@type":"Organization","name":"Ciel Africa","url":"https://cielafrica.com","email":"info@cielafrica.com","telephone":"+254117959105","founder":{"@type":"Person","name":"Lorna Matu","email":"lorna@cielafrica.com","jobTitle":"Founder, Lead Developer & Creative Director"},"employee":[{"@type":"Person","name":"Tariq Mbugua","jobTitle":"Software Development"},{"@type":"Person","name":"Naya O","jobTitle":"3D, Motion & Visual Design"},{"@type":"Person","name":"Zawadi J","jobTitle":"Data Engineering & Systems Integration"}]}}</script>
 </head>
 <body>
@@ -118,23 +118,7 @@
 <section class="section wrap" style="border-top:1px solid var(--line)">
   <div class="work-lead"><div><span class="kicker" data-io>The team</span><h2 data-io data-io-d="1" style="margin-top:1.2rem">A small team,<br>every discipline.</h2></div>
   <p class="copy" data-io data-io-d="2" style="align-self:end">Engineering, design, motion and strategy under one roof — so your product is built well and built to land.</p></div>
-  <div class="team-grid" style="margin-top:1rem"><div class="tmember" data-io>
-  <div class="tmember__ph tmember__ph--l"></div>
-  <div><div class="tmember__name">Lorna Matu</div><div class="tmember__role">Founder · Lead Developer · Creative Director</div></div>
-  <p class="tmember__bio">Lorna leads Ciel Africa's engineering and creative direction — turning ideas into working, well-designed software from first sketch to launch.</p>
-</div><div class="tmember" data-io>
-  <div class="tmember__ph tmember__ph--t"></div>
-  <div><div class="tmember__name">Tariq Mbugua</div><div class="tmember__role">Software Development</div></div>
-  <p class="tmember__bio">Tariq focuses on software development — building the systems, applications and integrations that power each project end to end.</p>
-</div><div class="tmember" data-io>
-  <div class="tmember__ph tmember__ph--n"></div>
-  <div><div class="tmember__name">Naya O</div><div class="tmember__role">3D, Motion & Visual Design</div></div>
-  <p class="tmember__bio">Naya brings sites and products to life with 3D, video and motion graphics, and shapes the visual design that makes work feel distinctive.</p>
-</div><div class="tmember" data-io>
-  <div class="tmember__ph tmember__ph--z"></div>
-  <div><div class="tmember__name">Zawadi J</div><div class="tmember__role">Data Engineering & Systems Integration</div></div>
-  <p class="tmember__bio">Zawadi builds the data layer — pipelines, APIs and third-party integrations (M-Pesa/Daraja, payments, SMS, KRA eTIMS) — so systems talk to each other reliably and teams can trust their numbers.</p>
-</div></div>
+  <div class="team-grid" id="team-grid" style="margin-top:1rem"></div>
 </section>
 
 <section class="section wrap" style="border-top:1px solid var(--line)">
@@ -192,13 +176,32 @@
     </div>
   </div>
 </footer>
-<script src="data/templates.js?v=20261014b"></script>
-<script src="data/products.js?v=20261014b"></script>
-<script src="data/work.js?v=20261014b"></script>
-<script src="data/mockups.js?v=20261014b"></script>
-<script src="assets/js/render.js?v=20261014c"></script>
-<script src="assets/js/bg.js?v=20261014c"></script>
-<script src="assets/js/site.js?v=20261014c"></script>
+<script src="data/templates.js?v=20261014d"></script>
+<script src="data/products.js?v=20261014d"></script>
+<script src="data/work.js?v=20261014d"></script>
+<script src="data/mockups.js?v=20261014d"></script>
+<script src="data/team.js?v=20261014d"></script>
+<script>
+/* Render the team from data/team.js so it can be edited in /admin */
+(function(){
+  var grid = document.getElementById('team-grid');
+  if(!grid || !window.CIEL || !CIEL.team) return;
+  var tones = ['--l','--t','--n','--z'];
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  grid.innerHTML = CIEL.team.map(function(m,i){
+    var tone = tones[i % tones.length];
+    var avatar = m.image
+      ? '<div class="tmember__ph" style="background-image:url(\''+esc(m.image)+'\');background-size:cover;background-position:center"></div>'
+      : '<div class="tmember__ph tmember__ph'+tone+'"></div>';
+    return '<div class="tmember" data-io>'+avatar+
+      '<div><div class="tmember__name">'+esc(m.name)+'</div><div class="tmember__role">'+esc(m.role)+'</div></div>'+
+      '<p class="tmember__bio">'+esc(m.bio)+'</p></div>';
+  }).join('');
+})();
+</script>
+<script src="assets/js/render.js?v=20261014d"></script>
+<script src="assets/js/bg.js?v=20261014d"></script>
+<script src="assets/js/site.js?v=20261014d"></script>
 
 </body>
 </html>
