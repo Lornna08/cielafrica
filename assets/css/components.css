@@ -433,7 +433,16 @@ body.menu-open .mobile-menu { transform:none; }
   position:fixed; inset:0; z-index:0; pointer-events:none;
   overflow:hidden;
 }
-body > *:not(.ciel-stage){ position:relative; z-index:1; }
+/* Lift real content above the background WITHOUT changing each element's
+   own positioning (nav & mobile-menu stay fixed). Only statically-positioned
+   flow elements get a relative context so their z-index applies. */
+body > .nav,
+body > .mobile-menu{ z-index:100; }
+body > main,
+body > header:not(.nav),
+body > footer,
+body > section,
+body > a.sr-only{ position:relative; z-index:1; }
 
 #ciel-bg{
   position:fixed; inset:0; width:100%; height:100%;

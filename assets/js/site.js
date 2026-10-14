@@ -26,12 +26,23 @@
   // Reveal (one shared, deliberate)
   window.CIEL = window.CIEL || {};
   CIEL.io = function(root){
-    const els = (root||document).querySelectorAll('[data-io]:not(.vis)');
+    const scope = root||document;
+    // Hero content must be visible immediately on load — never wait for scroll.
+    scope.querySelectorAll('.hero [data-io]:not(.vis)').forEach(e=>e.classList.add('vis'));
+
+    const els = scope.querySelectorAll('[data-io]:not(.vis)');
     if(reduce || !('IntersectionObserver' in window)){ els.forEach(e=>e.classList.add('vis')); return; }
     const obs = new IntersectionObserver((ents)=>{
       ents.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('vis'); obs.unobserve(e.target);} });
     }, {threshold:0.12, rootMargin:'0px 0px -6% 0px'});
     els.forEach(e=>obs.observe(e));
+
+    // Safety net: anything still hidden shortly after load gets revealed,
+    // so content can never be stuck invisible if the observer misfires.
+    setTimeout(()=>{ scope.querySelectorAll('[data-io]:not(.vis)').forEach(e=>{
+      const r=e.getBoundingClientRect();
+      if(r.top < innerHeight*1.2) e.classList.add('vis');
+    }); }, 700);
   };
   CIEL.io(document);
 
