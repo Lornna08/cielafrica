@@ -41,9 +41,9 @@
 
   function nodeCount() {
     var area = W * H;
-    // scale density with area, but cap hard for phones & big monitors
-    var n = Math.round(area / 15000);
-    return Math.max(34, Math.min(reduce ? 60 : 120, n));
+    // sparser field — calmer, less busy over text
+    var n = Math.round(area / 26000);
+    return Math.max(22, Math.min(reduce ? 40 : 70, n));
   }
 
   function makeNodes() {
@@ -133,9 +133,9 @@
           var near = 1 - dist / LD;
           // denser/brighter in the hero band
           var bandY = Math.min(n1.y, n2.y);
-          var heroBoost = bandY < heroBottom ? 1 : 0.42;
-          var alpha = near * 0.5 * heroBoost;
-          if (alpha > 0.015) {
+          var heroBoost = bandY < heroBottom ? 0.7 : 0.3;
+          var alpha = near * 0.38 * heroBoost;
+          if (alpha > 0.02) {
             var lc = mix(n1.col, n2.col, 0.5);
             ctx.strokeStyle = rgba(lc, alpha);
             ctx.beginPath();
@@ -150,18 +150,18 @@
     // --- nodes ---
     for (var k = 0; k < nodes.length; k++) {
       var q = nodes[k];
-      var twinkle = 0.55 + Math.sin(q.tw) * 0.35;
-      var hb = q.y < heroBottom ? 1 : 0.6;
-      var glowR = q.r * 6;
+      var twinkle = 0.5 + Math.sin(q.tw) * 0.3;
+      var hb = q.y < heroBottom ? 0.8 : 0.5;
+      var glowR = q.r * 5;
       var g = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, glowR);
-      g.addColorStop(0, rgba(q.col, 0.55 * twinkle * hb));
+      g.addColorStop(0, rgba(q.col, 0.4 * twinkle * hb));
       g.addColorStop(1, rgba(q.col, 0));
       ctx.fillStyle = g;
       ctx.beginPath();
       ctx.arc(q.x, q.y, glowR, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = rgba(q.col, 0.9 * twinkle * hb);
+      ctx.fillStyle = rgba(q.col, 0.75 * twinkle * hb);
       ctx.beginPath();
       ctx.arc(q.x, q.y, q.r, 0, Math.PI * 2);
       ctx.fill();
