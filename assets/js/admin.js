@@ -18,12 +18,16 @@
   var app  = document.getElementById('app');
   var CIEL = window.CIEL || {};
 
+  var ENTERED_PASS = '';   // kept in memory only, used to authenticate to /api/save
+
   function unlock() { gate.style.display = 'none'; app.classList.add('on'); boot(); }
 
   document.getElementById('gateBtn').addEventListener('click', tryPass);
   document.getElementById('gatePass').addEventListener('keydown', function (e) { if (e.key === 'Enter') tryPass(); });
   function tryPass() {
-    if (document.getElementById('gatePass').value === PASS) {
+    var v = document.getElementById('gatePass').value;
+    if (v === PASS) {
+      ENTERED_PASS = v;
       try { localStorage.setItem(KEY_OK, '1'); } catch (e) {}
       unlock();
     } else { document.getElementById('gateErr').textContent = 'Wrong password.'; }
@@ -376,19 +380,66 @@
     document.body.appendChild(a); a.click();
     setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 400);
   }
+  function buildFor(kind) {
+    if (kind === 'products')  return { file: 'products.js',  text: buildProducts() };
+    if (kind === 'templates') return { file: 'templates.js', text: buildTemplates() };
+    if (kind === 'work')      return { file: 'work.js',      text: buildWork() };
+    if (kind === 'team')      return { file: 'team.js',      text: buildTeam() };
+    return null;
+  }
+
+  // Try the one-click publish API; fall back to a file download if it's
+  // not set up or fails. Returns a promise resolving to 'published'|'downloaded'.
+  function publishOrDownload(kind) {
+    var built = buildFor(kind);
+    if (!built) return Promise.resolve('skip');
+
+    if (!ENTERED_PASS) {
+      var pw = prompt('Enter your admin password to publish live (leave blank to just download the file):');
+      if (pw) ENTERED_PASS = pw;
+    }
+    if (!ENTERED_PASS) { download(built.file, built.text); return Promise.resolve('downloaded'); }
+
+    return fetch('/api/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: ENTERED_PASS, file: built.file, content: built.text })
+    }).then(function (r) {
+      return r.json().then(function (data) { return { status: r.status, data: data }; });
+    }).then(function (res) {
+      if (res.status === 200 && res.data && res.data.ok) return 'published';
+      if (res.status === 401) { ENTERED_PASS = ''; toast('Publish rejected — wrong password. Downloaded instead.', true); download(built.file, built.text); return 'downloaded'; }
+      // 500 = not configured yet, or other failure → graceful download
+      download(built.file, built.text);
+      return 'downloaded';
+    }).catch(function () {
+      // no function deployed / offline → download
+      download(built.file, built.text);
+      return 'downloaded';
+    });
+  }
+
   function exportFile(kind) {
-    if (kind === 'products')  download('products.js', buildProducts());
-    if (kind === 'templates') download('templates.js', buildTemplates());
-    if (kind === 'work')      download('work.js', buildWork());
-    if (kind === 'team')      download('team.js', buildTeam());
-    toast('Saved ' + kind + '.js — now upload it to your repo');
+    publishOrDownload(kind).then(function (mode) {
+      if (mode === 'published') toast('Published ' + kind + '.js — live in ~30s');
+      else if (mode === 'downloaded') toast('Saved ' + kind + '.js — upload it to your repo to publish');
+    });
   }
   function exportAll() {
-    exportFile('products');
-    setTimeout(function () { exportFile('templates'); }, 200);
-    setTimeout(function () { exportFile('work'); }, 400);
-    setTimeout(function () { exportFile('team'); }, 600);
-    setTimeout(function () { toast('Saved all 4 files — upload them to your repo'); }, 750);
+    var kinds = ['products', 'templates', 'work', 'team'];
+    var published = 0, downloaded = 0;
+    (function next(i) {
+      if (i >= kinds.length) {
+        if (downloaded === 0) toast('Published all files — live in ~30s');
+        else toast('Saved ' + downloaded + ' file(s) to download — upload them to publish');
+        return;
+      }
+      publishOrDownload(kinds[i]).then(function (mode) {
+        if (mode === 'published') published++;
+        if (mode === 'downloaded') downloaded++;
+        setTimeout(function () { next(i + 1); }, mode === 'published' ? 120 : 300);
+      });
+    })(0);
   }
 
   /* ---- auto-unlock for returning users (runs last, when D & all

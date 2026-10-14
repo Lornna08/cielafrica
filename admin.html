@@ -223,10 +223,10 @@ input,textarea,select{font-family:inherit}
       <section class="panel" data-panel="export">
         <div class="panel__head"><h2>Save &amp; publish</h2></div>
         <div class="note">
-          <strong>How publishing works (3 steps):</strong><br>
-          1. Edit anything in the tabs — your changes are kept in this browser automatically, so a reload won't lose them.<br>
-          2. Click <strong>Save</strong> on a tab (or <strong>Save all</strong> below) to download the updated data file(s).<br>
-          3. Put each downloaded file into your project's <code>data/</code> folder (replacing the old one), commit &amp; push to your repo — Vercel deploys it automatically. Nothing here changes the live site until you do step 3.
+          <strong>Publishing:</strong> once the one-click setup is done (GitHub token + password added in Vercel — see the README),
+          clicking <strong>Save</strong> commits straight to your repo and the change goes live in ~30 seconds. No downloads.<br><br>
+          If the setup isn't in place yet, Save still works — it just <em>downloads</em> the file instead, and you upload it to your
+          repo manually. Either way your edits are kept in this browser until you publish.
         </div>
         <div class="export-list">
           <div class="export-row"><code>data/products.js</code><span class="desc">Digital products &amp; prices</span><button class="btn btn--sm" data-save="products">⤓ Save</button></div>
@@ -247,6 +247,6 @@ input,textarea,select{font-family:inherit}
 <script src="data/templates.js?v=20261014d"></script>
 <script src="data/work.js?v=20261014d"></script>
 <script src="data/team.js?v=20261014d"></script>
-<script src="assets/js/admin.js?v=20261014d"></script>
+<script src="assets/js/admin.js?v=20261014e"></script>
 </body>
 </html>
