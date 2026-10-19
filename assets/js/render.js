@@ -32,9 +32,14 @@ CIEL.sitePreview = function(seed, light){
   </svg>`;
 };
 
-CIEL.tileMedia = (item, seed, light) =>
-  item.image ? `<img src="${CIEL.esc(item.image)}" alt="${CIEL.esc(item.name)} website concept" loading="lazy">`
-  : (CIEL.templatePreview ? CIEL.templatePreview(item) : CIEL.sitePreview(seed, light));
+CIEL.tileMedia = (item, seed, light) => {
+  if (item.image) return `<img src="${CIEL.esc(item.image)}" alt="${CIEL.esc(item.name)} website concept" loading="lazy">`;
+  // Prefer the clean, category-specific landing-page preview
+  if (CIEL.previewByCategory && item.category && CIEL.previewByCategory[item.category])
+    return CIEL.previewByCategory[item.category];
+  if (CIEL.templatePreview) return CIEL.templatePreview(item);
+  return CIEL.sitePreview(seed, light);
+};
 
 /* ---- Collection tile (light section, horizontal rail) ---- */
 CIEL.collectionTile = function(t, i){
