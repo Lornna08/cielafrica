@@ -32,7 +32,8 @@ body.menu-open .mobile-menu{transform:none}
 /* ---------- HERO ---------- */
 .hero{padding-top:clamp(2.5rem,5vw,4.5rem);padding-bottom:clamp(2.5rem,5vw,4.5rem)}
 /* hero breaks out wider than the standard wrap to use the screen */
-.hero.wrap{max-width:1440px}
+.hero.wrap{max-width:1600px}
+@media(min-width:1700px){.hero.wrap{max-width:1680px}}
 .hero__grid{display:grid;grid-template-columns:1fr 1.15fr;gap:clamp(2rem,4vw,4rem);align-items:center}
 .eyebrow{display:inline-flex;align-items:center;gap:.6rem;font-family:var(--disp);font-size:.82rem;font-weight:500;color:var(--ink-soft);margin-bottom:1.8rem}
 .eyebrow .brk{font-size:1rem}

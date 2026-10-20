@@ -20,7 +20,7 @@
   --disp:'Space Grotesk',system-ui,-apple-system,sans-serif;
   --text:'Inter',system-ui,-apple-system,sans-serif;
 
-  --maxw:1200px;
+  --maxw:1400px;
   --gut:clamp(1.25rem,5vw,4rem);
   --nav-h:78px;
   --ease:cubic-bezier(0.22,1,0.36,1);
