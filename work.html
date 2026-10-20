@@ -73,9 +73,9 @@
 <script src="assets/js/render.js?v=20261019b"></script>
 <script src="assets/js/site.js?v=20261019b"></script>
 <script>(function(){
-      var P=(window.CIEL&&CIEL.previewByCategory)||{};var cats=["Corporate","Finance","Healthcare","Startup","E-commerce","SaaS"];
+      var M=(window.CIEL&&CIEL.mockups)||{};
       var work=(window.CIEL&&CIEL.work)||[];var el=document.getElementById('wrows');
-      if(el){el.innerHTML=work.map(function(w,i){var media=P[cats[i%cats.length]]||P['SaaS']||'';
-        return '<a class="wrow" data-r href="quote.html?project='+encodeURIComponent(w.name)+'"><div class="wrow__thumb">'+media+'</div><div><div class="wrow__cat"><span class="brk">‹</span> '+(w.industry||w.category)+'</div><div class="wrow__t">'+w.name+'</div><div class="wrow__d">'+(w.short||'')+'</div></div><span class="wrow__arrow">‹</span></a>';}).join('');}
+      if(el){el.innerHTML=work.map(function(w,i){var media=M[w.mockup]||M['analytics']||'';
+        return '<a class="wrow" data-r href="quote.html?project='+encodeURIComponent(w.name)+'"><div class="wrow__thumb wrow__thumb--ui">'+media+'</div><div><div class="wrow__cat"><span class="brk">‹</span> '+(w.industry||w.category)+'</div><div class="wrow__t">'+w.name+'</div><div class="wrow__d">'+(w.short||'')+'</div></div><span class="wrow__arrow">‹</span></a>';}).join('');}
       if(window.CIEL&&CIEL.io)CIEL.io(document);})();</script></body>
 </html>
