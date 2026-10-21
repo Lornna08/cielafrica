@@ -87,13 +87,22 @@ module.exports = async function handler(req, res){
       return res.status(200).json({ ok:true, status:'paid', desc: data.ResultDesc });
     }
 
-    // Known "still pending" signals
+    // Decide between FAILED and PENDING.
+    // Only these ResultCodes are terminal failures:
+    //   1032 = cancelled by user, 1037 = timeout (no response),
+    //   2001 = wrong PIN, 1 = insufficient balance, 1019 = expired.
+    // Anything else (incl. "transaction is being processed",
+    // errorCode 500.001.1001, HTTP 500, empty, or a code we don't
+    // recognise) means NOT DONE YET → keep polling.
+    const rc = data.ResultCode != null ? String(data.ResultCode) : null;
+    const terminalFail = ['1032','1037','2001','1','1019','1025','9999','1001'];
     const desc = (data.ResultDesc || data.errorMessage || '').toString();
-    const pending = /processed|pending|being processed|wait/i.test(desc) || data.errorCode === '500.001.1001';
-    if (pending) return res.status(200).json({ ok:true, status:'pending' });
 
-    // Anything else = failed / cancelled
-    return res.status(200).json({ ok:true, status:'failed', desc });
+    if (rc && terminalFail.indexOf(rc) !== -1) {
+      return res.status(200).json({ ok:true, status:'failed', desc });
+    }
+    // everything else = still waiting
+    return res.status(200).json({ ok:true, status:'pending', desc });
   } catch (e) {
     console.error('stkquery error', e);
     return res.status(200).json({ ok:true, status:'pending' }); // let the browser keep polling
