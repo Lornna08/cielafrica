@@ -59,17 +59,24 @@ module.exports = async function handler(req, res){
     if (!token) return res.status(502).json({ ok:false, error:'Could not authenticate with Daraja' });
 
     // 2) STK push
+    // Paybill vs Till (Buy Goods):
+    //  - Paybill:  BusinessShortCode = Paybill,  PartyB = Paybill,  type = CustomerPayBillOnline
+    //  - Till:     BusinessShortCode = Store/HeadOffice no (MPESA_SHORTCODE),
+    //              PartyB = Till (Buy Goods) no (MPESA_TILL),      type = CustomerBuyGoodsOnline
+    // The password is ALWAYS built with MPESA_SHORTCODE (the store/paybill number) + passkey.
     const ts = timestamp();
-    const shortcode = process.env.MPESA_SHORTCODE;
-    const password = Buffer.from(`${shortcode}${process.env.MPESA_PASSKEY}${ts}`).toString('base64');
+    const shortcode = String(process.env.MPESA_SHORTCODE || '').trim();     // store/head-office (till) OR paybill
+    const till      = String(process.env.MPESA_TILL || '').trim();          // only for Buy Goods / Till
+    const isTill    = !!till;
+    const password  = Buffer.from(`${shortcode}${process.env.MPESA_PASSKEY}${ts}`).toString('base64');
     const payload = {
       BusinessShortCode: shortcode,
       Password: password,
       Timestamp: ts,
-      TransactionType: 'CustomerPayBillOnline',
+      TransactionType: isTill ? 'CustomerBuyGoodsOnline' : 'CustomerPayBillOnline',
       Amount: amount,
       PartyA: phone,
-      PartyB: shortcode,
+      PartyB: isTill ? till : shortcode,
       PhoneNumber: phone,
       CallBackURL: process.env.MPESA_CALLBACK_URL || 'https://cielafrica.com/api/mpesa-callback',
       AccountReference: ref,
