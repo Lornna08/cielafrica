@@ -13,6 +13,9 @@ window.CIEL.productCategories = [
 ];
 
 window.CIEL.products = [
+  /* TEST PRODUCT — auto-hides after the `expires` time (epoch ms). Safe to leave; it disappears on its own. */
+  { id:"prd-test", art:"mpesa-stk", name:"Test Product (M-Pesa test)", category:"Payments & M-Pesa", desc:"A KES 10 test item for checking M-Pesa checkout end to end. This product removes itself automatically after 24 hours.", meta:"Test only · KES 10 · Auto-expires", price:10, rating:5.0, reviews:0, badge:"new", image:"", expires:1792655280000 },
+
   { id:"prd-01", art:"mpesa-stk", name:"M-Pesa STK Push (Daraja)", category:"Payments & M-Pesa", desc:"WordPress & WooCommerce plugin for Safaricom Daraja STK Push — Lipa na M-Pesa checkout, C2B/B2C callbacks, auto-reconciliation and receipts.", meta:"Daraja API · STK Push · WooCommerce · Sandbox & Live", price:4500, rating:5.0, reviews:0, badge:"popular", image:"" },
   { id:"prd-02", art:"woo-mpesa", name:"M-Pesa WooCommerce Gateway", category:"Payments & M-Pesa", desc:"Full checkout gateway with Paybill/Till support, instant confirmation, order status sync and downloadable statements.", meta:"Paybill & Till · Instant confirm · Order sync", price:6500, rating:4.9, reviews:0, badge:"new", image:"" },
   { id:"prd-03", art:"sacco", name:"SACCO & Microfinance System", category:"Business Systems", desc:"Members, savings, loans, guarantors, dividends and M-Pesa disbursement — built for Kenyan SACCOs and chamas.", meta:"Loans · Savings · Dividends · M-Pesa payouts", price:55000, rating:5.0, reviews:0, badge:"popular", image:"" },
