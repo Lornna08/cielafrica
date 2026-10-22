@@ -470,6 +470,11 @@ a.lrow:hover{background:#FBFAF6}
 .guide-i b{display:block}
 .guide-i span{color:var(--ink-3);font-size:12.5px}
 
+/* products grid view */
+.pgrid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));padding:16px}
+.pgrid__b{padding:12px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.pgrid__f{margin-top:auto;padding-top:6px;flex-wrap:wrap;gap:6px}
+
 /* ---------- responsive ---------- */
 @media (max-width:1380px){.g-kpi{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:1180px){
@@ -500,6 +505,11 @@ a.lrow:hover{background:#FBFAF6}
   .stat-row>div:nth-child(n+3){border-top:1px solid var(--line)}
 }
 @media (max-width:640px){
+  .pgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:12px}
+  .pgrid__b{padding:10px 11px;gap:4px}
+  .pgrid .pcell__t{font-size:13px;line-height:1.3}
+  .pgrid .pcell__s{font-size:11.5px}
+  .pgrid__f{flex-direction:column;align-items:flex-start;gap:5px}
   :root{--banner:44px}
   .demo-bar{justify-content:space-between;font-size:11.5px;gap:8px}
   .demo-bar .dot{display:none}
