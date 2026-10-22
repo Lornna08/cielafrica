@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harvest — Kitchen &amp; Bar · Restaurant template by Ciel Africa</title>
+<meta name="description" content="Harvest is a restaurant website template by Ciel Africa: menu, reservations, gallery and opening hours. Live demo with sample content.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#120F0C">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/img/favicon-32.png">
+<link rel="preload" href="../fonts/fraunces-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="img/hero.webp" as="image">
+<link rel="stylesheet" href="../fonts/fonts.css">
+<style>
+:root{
+  --bg:#120F0C;--bg2:#1A1612;--bg3:#221D18;--cream:#F2EBDF;--cream2:#D9CFBF;--muted:#A89C8B;
+  --line:rgba(242,235,223,.13);--ember:#E07A3F;--ember2:#C8622A;--gold:#C9A45C;
+  --serif:'Fraunces',Georgia,serif;--sans:'Inter',system-ui,-apple-system,sans-serif;
+  --gut:clamp(1.25rem,4.5vw,4.5rem);--max:1320px;--ease:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--cream);font:400 16px/1.6 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+::selection{background:var(--ember);color:#fff}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 var(--gut)}
+.eyebrow{font:500 12px/1 var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--gold);display:inline-flex;align-items:center;gap:12px}
+.eyebrow::before{content:"";width:28px;height:1px;background:currentColor;opacity:.7}
+h1,h2,h3{font-family:var(--serif);font-weight:400;letter-spacing:-.02em;line-height:1.02}
+h2{font-size:clamp(2.3rem,4.6vw,4rem)}
+h2 em,h1 em{font-style:italic;color:var(--ember)}
+p{color:var(--cream2)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:52px;padding:0 26px;border-radius:999px;font:500 15px/1 var(--sans);letter-spacing:.01em;border:1px solid transparent;cursor:pointer;transition:background .3s var(--ease),border-color .3s,color .3s,transform .3s var(--ease)}
+.btn--ember{background:var(--ember);color:#1A0E06}
+.btn--ember:hover{background:#EC8A50;transform:translateY(-1px)}
+.btn--line{border-color:rgba(242,235,223,.35);color:var(--cream)}
+.btn--line:hover{border-color:var(--cream);background:rgba(242,235,223,.06)}
+.btn svg{width:16px;height:16px}
+
+/* nav */
+.nav{position:fixed;inset:0 0 auto 0;z-index:50;transition:background .4s,border-color .4s,backdrop-filter .4s;border-bottom:1px solid transparent}
+.nav.is-solid{background:rgba(18,15,12,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:var(--line)}
+.nav__in{height:84px;display:flex;align-items:center;gap:40px}
+.logo{display:flex;flex-direction:column;line-height:1}
+.logo b{font:400 28px/1 var(--serif);font-style:italic;letter-spacing:-.01em}
+.logo span{font:500 9.5px/1 var(--sans);letter-spacing:.42em;color:var(--muted);margin-top:6px;padding-left:2px}
+.nav__links{display:flex;gap:34px;margin-left:auto}
+.nav__links a{font-size:14px;color:var(--cream2);position:relative;transition:color .3s}
+.nav__links a::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:1px;background:var(--ember);transform:scaleX(0);transform-origin:left;transition:transform .4s var(--ease)}
+.nav__links a:hover{color:var(--cream)}.nav__links a:hover::after{transform:none}
+.nav .btn{height:44px;padding:0 20px;font-size:14px}
+.burger{display:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:none;align-items:center;justify-content:center;flex-direction:column;gap:5px;cursor:pointer;margin-left:auto}
+.burger i{display:block;width:16px;height:1.5px;background:var(--cream);transition:transform .3s}
+.mnav{position:fixed;inset:0;z-index:49;background:var(--bg);padding:120px var(--gut) 40px;display:flex;flex-direction:column;gap:8px;opacity:0;pointer-events:none;transition:opacity .35s}
+.mnav a{font:400 40px/1.25 var(--serif)}
+.mnav .btn{margin-top:28px;align-self:flex-start}
+body.menu-open .mnav{opacity:1;pointer-events:auto}
+body.menu-open .burger i:first-child{transform:translateY(3.25px) rotate(45deg)}
+body.menu-open .burger i:last-child{transform:translateY(-3.25px) rotate(-45deg)}
+
+/* hero */
+.hero{position:relative;min-height:100vh;min-height:100svh;display:flex;align-items:flex-end;overflow:hidden}
+.hero__bg{position:absolute;inset:0}
+.hero__bg img{width:100%;height:100%;object-fit:cover;transform:scale(1.08);animation:kb 22s var(--ease) forwards}
+@keyframes kb{to{transform:scale(1)}}
+.hero__bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(18,15,12,.55) 0%,rgba(18,15,12,.15) 35%,rgba(18,15,12,.55) 70%,var(--bg) 100%),linear-gradient(90deg,rgba(18,15,12,.7),rgba(18,15,12,0) 65%)}
+.hero__in{position:relative;width:100%;padding-bottom:56px;padding-top:140px}
+.hero h1{font-size:clamp(3.2rem,8.4vw,7.6rem);max-width:11ch;margin:22px 0 26px}
+.hero p.lead{font-size:clamp(1.05rem,1.4vw,1.25rem);max-width:46ch;color:var(--cream2)}
+.hero__cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:36px}
+.hero__info{margin-top:72px;padding-top:24px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,auto);justify-content:space-between;gap:24px}
+.hero__info div{font-size:13px;color:var(--muted)}
+.hero__info b{display:block;font:400 17px/1.3 var(--serif);color:var(--cream);margin-top:6px}
+.open-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#6FCF7F;margin-right:8px;box-shadow:0 0 0 0 rgba(111,207,127,.6);animation:pulse 2.2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 8px rgba(111,207,127,0)}100%{box-shadow:0 0 0 0 rgba(111,207,127,0)}}
+[data-anim]{opacity:0;transform:translateY(22px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+[data-anim].in{opacity:1;transform:none}
+
+/* ticker */
+.ticker{border-block:1px solid var(--line);overflow:hidden;padding:22px 0;background:var(--bg)}
+.ticker__t{display:flex;gap:56px;width:max-content;animation:tick 40s linear infinite}
+.ticker span{font:400 24px/1 var(--serif);font-style:italic;color:var(--cream2);white-space:nowrap;display:inline-flex;align-items:center;gap:56px}
+.ticker span::after{content:"✦";font-style:normal;font-size:13px;color:var(--ember)}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+section{position:relative}
+.sec{padding:clamp(88px,11vw,150px) 0}
+
+/* story */
+.story{display:grid;grid-template-columns:1.05fr 1fr;gap:clamp(40px,7vw,110px);align-items:center}
+.story__media{position:relative;padding-bottom:70px}
+.story__media .a{aspect-ratio:4/5;object-fit:cover;width:82%;border-radius:4px}
+.story__media .b{position:absolute;right:0;bottom:0;width:48%;aspect-ratio:1/1;object-fit:cover;border-radius:4px;border:8px solid var(--bg);box-shadow:0 30px 60px -20px rgba(0,0,0,.6)}
+.story__media .tag{position:absolute;left:24px;top:24px;background:rgba(18,15,12,.75);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-size:12.5px;display:flex;align-items:center;gap:8px}
+.story h2{margin:22px 0 26px}
+.story p+p{margin-top:16px}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);margin-top:44px;border-top:1px solid var(--line)}
+.facts div{padding:22px 18px 0 0}
+.facts div+div{padding-left:18px;border-left:1px solid var(--line)}
+.facts b{display:block;font:400 34px/1 var(--serif);color:var(--cream)}
+.facts span{display:block;font-size:13px;color:var(--muted);margin-top:8px}
+
+/* signature */
+.sig__head{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;margin-bottom:48px}
+.sig__head p{max-width:40ch}
+.sig{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+.dish{position:relative}
+.dish__img{aspect-ratio:4/5;overflow:hidden;border-radius:4px;background:var(--bg3)}
+.dish__img img{width:100%;height:100%;object-fit:cover;transition:transform 1.2s var(--ease)}
+.dish:hover .dish__img img{transform:scale(1.06)}
+.dish__meta{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:18px}
+.dish h3{font-size:22px}
+.dish .price{font:500 14px/1 var(--sans);color:var(--gold);white-space:nowrap}
+.dish p{font-size:14px;color:var(--muted);margin-top:8px}
+
+/* menu */
+.menu{background:var(--bg2)}
+.menu__grid{display:grid;grid-template-columns:.8fr 1.6fr;gap:clamp(40px,6vw,96px)}
+.menu__side h2{margin:22px 0 24px}
+.menu__note{margin-top:28px;font-size:13px;color:var(--muted);display:flex;gap:18px;flex-wrap:wrap}
+.menu__note i{font-style:normal;display:inline-flex;align-items:center;gap:6px}
+.menu__note i b{font:600 10px/1 var(--sans);border:1px solid var(--line);border-radius:4px;padding:3px 5px;color:var(--cream2)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:34px}
+.tab{height:42px;padding:0 18px;border-radius:999px;border:1px solid var(--line);background:none;cursor:pointer;font-size:14px;color:var(--cream2);transition:all .3s var(--ease)}
+.tab:hover{border-color:rgba(242,235,223,.4);color:var(--cream)}
+.tab.on{background:var(--cream);color:var(--bg);border-color:var(--cream)}
+.items{display:grid;grid-template-columns:1fr 1fr;gap:6px 48px;min-height:420px}
+.item{padding:20px 0;border-bottom:1px solid var(--line);opacity:0;transform:translateY(10px);animation:itemIn .6s var(--ease) forwards}
+@keyframes itemIn{to{opacity:1;transform:none}}
+.item__top{display:flex;align-items:baseline;gap:12px}
+.item__top h4{font:400 20px/1.25 var(--serif)}
+.item__top .dots{flex:1;border-bottom:1px dotted rgba(242,235,223,.25);transform:translateY(-5px)}
+.item__top .p{font:500 14px/1 var(--sans);color:var(--gold);white-space:nowrap}
+.item p{font-size:14px;color:var(--muted);margin-top:6px;max-width:40ch}
+.item .tags{display:inline-flex;gap:5px;margin-left:6px;vertical-align:2px}
+.item .tags b{font:600 9.5px/1 var(--sans);border:1px solid var(--line);border-radius:4px;padding:3px 5px;color:var(--cream2)}
+
+/* evenings band */
+.band{position:relative;min-height:620px;display:flex;align-items:center;overflow:hidden}
+.band__bg{position:absolute;inset:0}
+.band__bg img{width:100%;height:118%;object-fit:cover;will-change:transform}
+.band__bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(18,15,12,.92) 0%,rgba(18,15,12,.6) 45%,rgba(18,15,12,.15) 100%)}
+.band__in{position:relative}
+.band h2{max-width:13ch;margin:22px 0 22px}
+.band p{max-width:44ch}
+.week{display:flex;flex-direction:column;margin-top:34px;max-width:440px;border-top:1px solid var(--line)}
+.week div{display:flex;justify-content:space-between;gap:20px;padding:15px 0;border-bottom:1px solid var(--line);font-size:15px}
+.week span{color:var(--muted)}
+
+/* gallery */
+.gal{overflow:hidden;padding:clamp(80px,9vw,120px) 0 0}
+.gal__head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:40px;gap:20px}
+.gal__track{display:flex;gap:18px;width:max-content;animation:tick 60s linear infinite}
+.gal:hover .gal__track{animation-play-state:paused}
+.gal__track img{height:360px;width:auto;aspect-ratio:var(--r,4/5);object-fit:cover;border-radius:4px}
+
+/* booking */
+.book__grid{display:grid;grid-template-columns:1.3fr 1fr;gap:clamp(32px,5vw,72px);align-items:start}
+.book h2{margin:22px 0 18px}
+.form{margin-top:40px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.field{display:flex;flex-direction:column;gap:8px}
+.field.full{grid-column:1/-1}.field.half{grid-column:span 1}
+.field label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.field input,.field select,.field textarea{height:54px;border-radius:6px;border:1px solid var(--line);background:var(--bg2);padding:0 16px;outline:none;transition:border-color .25s;width:100%;color-scheme:dark}
+.field textarea{height:96px;padding:14px 16px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--ember)}
+.guests{display:flex;align-items:center;justify-content:space-between;height:54px;border-radius:6px;border:1px solid var(--line);background:var(--bg2);padding:0 8px}
+.guests button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:none;cursor:pointer;font-size:18px;line-height:1}
+.guests button:hover{border-color:var(--cream)}
+.guests b{font:400 20px/1 var(--serif)}
+.times{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+.times button{height:42px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:none;cursor:pointer;font-size:14px;transition:all .25s}
+.times button:hover{border-color:rgba(242,235,223,.45)}
+.times button.on{background:var(--ember);border-color:var(--ember);color:#1A0E06}
+.times button[disabled]{opacity:.35;text-decoration:line-through;cursor:not-allowed}
+.form .btn{grid-column:1/-1;justify-self:start;margin-top:10px}
+.form small{grid-column:1/-1;color:var(--muted);font-size:12.5px}
+.done{display:none;margin-top:40px;padding:34px;border:1px solid var(--line);border-radius:8px;background:var(--bg2)}
+.done.show{display:block;animation:itemIn .6s var(--ease)}
+.done h3{font-size:30px;margin:10px 0 10px}
+.done .ok{width:44px;height:44px;border-radius:50%;background:rgba(111,207,127,.12);color:#6FCF7F;display:grid;place-items:center}
+.card{border:1px solid var(--line);border-radius:8px;padding:34px;background:var(--bg2)}
+.card h3{font-size:26px;margin-bottom:18px}
+.hours div{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.hours div.today{color:var(--ember)}
+.hours span{color:var(--muted)}.hours div.today span{color:var(--ember)}
+.card .addr{margin-top:26px;font-size:14.5px;color:var(--cream2);line-height:1.7}
+.mapbox{margin-top:22px;height:170px;border-radius:6px;overflow:hidden;position:relative;background:#1E1915}
+.mapbox svg{position:absolute;inset:0;width:100%;height:100%}
+.pin{position:absolute;left:58%;top:46%;transform:translate(-50%,-100%)}
+.pin i{display:block;width:16px;height:16px;border-radius:50%;background:var(--ember);border:3px solid #fff;box-shadow:0 0 0 8px rgba(224,122,63,.25)}
+.private{margin-top:18px;padding:22px 24px;border-radius:8px;border:1px solid var(--line);display:flex;gap:16px;align-items:center}
+.private b{font:400 19px/1.2 var(--serif)}
+.private p{font-size:13.5px;color:var(--muted)}
+
+/* footer */
+.foot{border-top:1px solid var(--line);padding:70px 0 34px;margin-top:clamp(70px,9vw,120px)}
+.foot__top{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px}
+.foot h5{font:500 11px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:18px}
+.foot a,.foot p{display:block;font-size:14.5px;color:var(--cream2);margin-bottom:9px}
+.foot a:hover{color:var(--cream)}
+.foot__big{font:400 clamp(3rem,11vw,10rem)/.9 var(--serif);font-style:italic;letter-spacing:-.03em;color:var(--bg3);margin-top:60px;user-select:none;text-align:center;-webkit-text-stroke:1px rgba(242,235,223,.12)}
+.foot__bot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:30px;font-size:12.5px;color:var(--muted)}
+.foot__bot a{display:inline;font-size:12.5px;color:var(--muted)}
+
+/* template pill */
+.tpl-pill{position:fixed;left:18px;bottom:18px;z-index:60;display:flex;align-items:center;gap:12px;background:#F2EBDF;color:#120F0C;border-radius:999px;padding:7px 7px 7px 16px;font-size:13px;box-shadow:0 18px 40px -12px rgba(0,0,0,.6)}
+.tpl-pill b{font-weight:600}
+.tpl-pill a{background:#120F0C;color:#F2EBDF;border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:500}
+body.clean .tpl-pill{display:none}
+
+@media (max-width:1080px){
+  .sig{grid-template-columns:repeat(2,1fr)}
+  .menu__grid,.book__grid,.story{grid-template-columns:1fr}
+  .foot__top{grid-template-columns:1fr 1fr}
+}
+@media (max-width:860px){
+  .nav__links,.nav__in>.btn{display:none}
+  .burger{display:flex}
+  .hero__info{grid-template-columns:1fr 1fr}
+  .items{grid-template-columns:1fr}
+  .sig__head,.gal__head{flex-direction:column;align-items:flex-start}
+  .gal__track img{height:260px}
+}
+@media (max-width:560px){
+  .form{grid-template-columns:1fr 1fr}
+  .field.third{grid-column:1/-1}
+  .facts b{font-size:26px}
+  .sig{gap:14px}
+  .dish h3{font-size:18px}
+  .tpl-pill{left:12px;right:12px;justify-content:space-between}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}[data-anim]{opacity:1;transform:none}.item{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<header class="nav" id="nav">
+  <div class="wrap nav__in">
+    <a href="#top" class="logo" aria-label="Harvest home"><b>Harvest</b><span>KITCHEN · BAR</span></a>
+    <nav class="nav__links" aria-label="Primary"><a href="#story">Our kitchen</a><a href="#menu">Menu</a><a href="#evenings">Evenings</a><a href="#gallery">Gallery</a><a href="#visit">Visit</a></nav>
+    <a href="#book" class="btn btn--ember">Book a table</a>
+    <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false"><i></i><i></i></button>
+  </div>
+</header>
+<div class="mnav" id="mnav"><a href="#story">Our kitchen</a><a href="#menu">Menu</a><a href="#evenings">Evenings</a><a href="#gallery">Gallery</a><a href="#visit">Visit</a><a href="#book" class="btn btn--ember">Book a table</a></div>
+
+<main id="top">
+<section class="hero">
+  <div class="hero__bg"><img src="img/hero.webp" alt="The dining room at Harvest in the evening" fetchpriority="high"></div>
+  <div class="wrap hero__in">
+    <span class="eyebrow" data-anim>Wood-fired kitchen · Westlands, Nairobi</span>
+    <h1 data-anim>Cooked over fire. <em>Served with care.</em></h1>
+    <p class="lead" data-anim>Seasonal plates from Kenyan farms, cooked over an open hearth. Long lunches, loud dinners and a bar that stays open late.</p>
+    <div class="hero__cta" data-anim>
+      <a href="#book" class="btn btn--ember">Reserve a table <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <a href="#menu" class="btn btn--line">Explore the menu</a>
+    </div>
+    <div class="hero__info" data-anim>
+      <div><span class="open-dot"></span>Open today<b id="todayHours">12:00 – 23:00</b></div>
+      <div>Find us<b>Woodvale Grove, Westlands</b></div>
+      <div>Reservations<b>+254 700 000 000</b></div>
+      <div>Private dining<b>Up to 24 guests</b></div>
+    </div>
+  </div>
+</section>
+
+<div class="ticker" aria-hidden="true"><div class="ticker__t" id="ticker"></div></div>
+
+<section class="sec" id="story">
+  <div class="wrap story">
+    <div class="story__media" data-anim>
+      <img class="a" src="img/chef.webp" alt="Chef finishing a steak with sauce" loading="lazy">
+      <img class="b" src="img/fire.webp" alt="Skewers cooking over hot coals" loading="lazy">
+      <span class="tag"><span class="open-dot"></span>The hearth is lit from 11:00</span>
+    </div>
+    <div data-anim>
+      <span class="eyebrow">Our kitchen</span>
+      <h2>Everything starts <em>with the fire.</em></h2>
+      <p>We cook almost everything over wood and charcoal: whole fish from the coast, goat from the Rift Valley, greens from a farm in Limuru that we visit every Monday.</p>
+      <p>The menu is short and it changes with what's good this week. Ask your server what came in this morning.</p>
+      <div class="facts">
+        <div><b>14</b><span>Farms we buy from directly</span></div>
+        <div><b>4×</b><span>New menu every year</span></div>
+        <div><b>0</b><span>Gas burners in the kitchen</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" style="padding-top:0">
+  <div class="wrap">
+    <div class="sig__head" data-anim>
+      <div><span class="eyebrow">Signature plates</span><h2 style="margin-top:22px">Plates people <em>come back for.</em></h2></div>
+      <p>Four dishes that have stayed on the menu since the day we opened, because we'd hear about it if they left.</p>
+    </div>
+    <div class="sig" id="sig"></div>
+  </div>
+</section>
+
+<section class="sec menu" id="menu">
+  <div class="wrap menu__grid">
+    <div class="menu__side" data-anim>
+      <span class="eyebrow">The menu</span>
+      <h2>Short, seasonal, <em>made to share.</em></h2>
+      <p>Order a few plates for the table and something from the fire. Most people go for three or four plates between two.</p>
+      <div class="menu__note"><i><b>V</b> Vegetarian</i><i><b>VG</b> Vegan</i><i><b>GF</b> Gluten free</i></div>
+      <a href="#book" class="btn btn--line" style="margin-top:34px">Book a table</a>
+    </div>
+    <div data-anim>
+      <div class="tabs" id="tabs" role="tablist"></div>
+      <div class="items" id="items"></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="evenings">
+  <div class="band__bg"><img id="bandImg" src="img/bar.webp" alt="A cocktail on the bar" loading="lazy"></div>
+  <div class="wrap band__in" data-anim>
+    <span class="eyebrow">Evenings at Harvest</span>
+    <h2>Stay for one more <em>round.</em></h2>
+    <p>The bar pours natural wines, local gins and a short list of cocktails built around Kenyan fruit and spice.</p>
+    <div class="week">
+      <div>Thursday<span>Live jazz from 19:30</span></div>
+      <div>Friday<span>Late kitchen until 00:30</span></div>
+      <div>Sunday<span>Long lunch, set menu</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="gal" id="gallery">
+  <div class="wrap gal__head" data-anim>
+    <div><span class="eyebrow">Gallery</span><h2 style="margin-top:22px">A table <em>at Harvest.</em></h2></div>
+    <a href="#book" class="btn btn--line">Reserve yours</a>
+  </div>
+  <div class="gal__track" id="gal"></div>
+</section>
+
+<section class="sec book" id="book">
+  <div class="wrap book__grid">
+    <div data-anim>
+      <span class="eyebrow">Reservations</span>
+      <h2>Book <em>a table.</em></h2>
+      <p>Tables are held for 15 minutes. For groups of more than eight, choose private dining and we'll call you back.</p>
+      <form class="form" id="form" novalidate>
+        <div class="field third"><label for="date">Date</label><input type="date" id="date" required></div>
+        <div class="field third"><label>Guests</label><div class="guests"><button type="button" data-g="-1" aria-label="Fewer guests">−</button><b id="g">2</b><button type="button" data-g="1" aria-label="More guests">+</button></div></div>
+        <div class="field third"><label for="seat">Seating</label><select id="seat"><option>Dining room</option><option>By the fire</option><option>Terrace</option><option>Private dining</option></select></div>
+        <div class="times" id="times" role="radiogroup" aria-label="Time"></div>
+        <div class="field half" style="grid-column:span 2"><label for="name">Name</label><input id="name" placeholder="Your name" autocomplete="off" required></div>
+        <div class="field half"><label for="phone">Phone</label><input id="phone" placeholder="07XX XXX XXX" inputmode="tel" autocomplete="off" required></div>
+        <div class="field full"><label for="notes">Anything we should know?</label><textarea id="notes" placeholder="Birthdays, allergies, a quiet corner…"></textarea></div>
+        <button class="btn btn--ember" type="submit">Request booking</button>
+        <small>This is a template demo, so nothing you type here is sent anywhere.</small>
+      </form>
+      <div class="done" id="done" role="status">
+        <div class="ok"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>
+        <h3 id="doneT">See you soon.</h3>
+        <p id="doneP"></p>
+        <button class="btn btn--line" id="again" style="margin-top:22px">Make another booking</button>
+      </div>
+    </div>
+    <aside id="visit" data-anim>
+      <div class="card">
+        <h3>Opening hours</h3>
+        <div class="hours" id="hours"></div>
+        <p class="addr">Woodvale Grove, Westlands, Nairobi<br>Parking at the back, entrance on the left.</p>
+        <div class="mapbox" aria-hidden="true">
+          <svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice"><g stroke="#2E2721" stroke-width="10" fill="none"><path d="M-10 120 C 80 110 150 70 240 80 S 380 60 420 40"/><path d="M60 -10 L 120 190"/><path d="M300 -10 C 280 60 300 120 260 190"/></g><g stroke="#3A3129" stroke-width="3" fill="none"><path d="M-10 40 L 420 140"/><path d="M180 -10 L 200 190"/><path d="M-10 160 L 160 -10"/></g></svg>
+          <div class="pin"><i></i></div>
+        </div>
+      </div>
+      <div class="private"><div><b>Private dining</b><p>A room for 10–24 guests with its own menu and sound system.</p></div></div>
+    </aside>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot__top">
+      <div><a href="#top" class="logo" style="margin-bottom:20px"><b>Harvest</b><span>KITCHEN · BAR</span></a><p style="max-width:32ch;color:var(--muted)">A wood-fired kitchen and bar in Westlands, Nairobi.</p></div>
+      <div><h5>Visit</h5><p>Woodvale Grove</p><p>Westlands, Nairobi</p></div>
+      <div><h5>Contact</h5><a href="#book">Reservations</a><a href="#visit">Private dining</a><a href="#top">Gift cards</a></div>
+      <div><h5>Follow</h5><a href="#top">Instagram</a><a href="#top">TikTok</a><a href="#top">Google Maps</a></div>
+    </div>
+    <div class="foot__big" aria-hidden="true">Harvest</div>
+    <div class="foot__bot"><span>© 2026 Harvest Kitchen &amp; Bar. Sample content.</span><span>Restaurant template by <a href="../../templates.html">Ciel Africa</a> · Photos from <a href="../../templates.html#credits" id="credLink">Unsplash</a></span></div>
+  </div>
+</footer>
+
+<div class="tpl-pill"><span><b>Harvest</b> · restaurant template</span><a href="../../templates.html">Get this template</a></div>
+
+<script>
+(function(){
+  var q = new URLSearchParams(location.search);
+  if (q.has('clean')) document.body.classList.add('clean');
+  var reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  // nav
+  var nav = document.getElementById('nav');
+  function onScroll(){ nav.classList.toggle('is-solid', scrollY > 40); parallax(); }
+  addEventListener('scroll', onScroll, {passive:true});
+  var burger = document.getElementById('burger');
+  burger.onclick = function(){ var o = document.body.classList.toggle('menu-open'); burger.setAttribute('aria-expanded', o); };
+  document.querySelectorAll('#mnav a').forEach(function(a){ a.onclick = function(){ document.body.classList.remove('menu-open'); }; });
+
+  // ticker
+  var words = ['Wood-fired','Seasonal','Kenyan farms','Natural wines','Long lunches','Private dining','Late kitchen'];
+  var t = document.getElementById('ticker');
+  t.innerHTML = words.concat(words, words, words).map(function(w){ return '<span>' + w + '</span>'; }).join('');
+
+  // signature dishes
+  var sig = [
+    ['plate.webp','Charred lamb','With smoked aubergine, pomegranate and herbs.','KES 2,400'],
+    ['tartare.webp','Tuna crudo','Coast tuna, avocado, lime and green chilli.','KES 1,650'],
+    ['pasta.webp','Hand-cut pappardelle','Slow-cooked goat ragù and aged cheese.','KES 1,850'],
+    ['greens.webp','Fire-roasted squash','Mushrooms, sweetcorn and brown butter.','KES 1,300']
+  ];
+  document.getElementById('sig').innerHTML = sig.map(function(d, i){
+    return '<article class="dish" data-anim style="transition-delay:' + (i * 90) + 'ms"><div class="dish__img"><img src="img/' + d[0] + '" alt="' + d[1] + '" loading="lazy"></div><div class="dish__meta"><h3>' + d[1] + '</h3><span class="price">' + d[3] + '</span></div><p>' + d[2] + '</p></article>';
+  }).join('');
+
+  // menu
+  var MENU = {
+    'Small plates': [
+      ['Smoked bone marrow','Toasted sourdough, pickled shallot, parsley','950',''],
+      ['Tuna crudo','Avocado, lime, green chilli, sesame','1,650','GF'],
+      ['Charred sukuma','Garlic, chilli oil, toasted peanuts','650','VG'],
+      ['Mahamri & honey butter','Coconut doughnuts from the wood oven','550','V'],
+      ['Grilled octopus','Coconut, tamarind, crispy shallots','1,750','GF'],
+      ['Burrata','Roasted tomatoes, basil, flatbread','1,450','V']
+    ],
+    'From the fire': [
+      ['Whole Malindi snapper','Charred lemon, salsa verde','3,200','GF'],
+      ['Goat shoulder, 8 hours','Ugali crust, kachumbari, jus','2,900',''],
+      ['Charred lamb','Smoked aubergine, pomegranate','2,400','GF'],
+      ['Ribeye on the bone, 400g','Bone-marrow butter, watercress','4,600','GF'],
+      ['Half chicken','Pili pili, lime, garlic toum','1,900','GF'],
+      ['Fire-roasted squash','Mushrooms, sweetcorn, brown butter','1,300','V']
+    ],
+    'Sides': [
+      ['Crispy potatoes','Rosemary salt, aioli','450','V'],
+      ['Green beans','Toasted almonds, lemon','450','VG'],
+      ['Coconut rice','Toasted coconut, lime leaf','400','VG'],
+      ['Grilled corn','Chilli butter, aged cheese','400','V']
+    ],
+    'Sweet': [
+      ['Burnt honey cheesecake','Passion fruit, black pepper','750','V'],
+      ['Chocolate & coffee','Kenyan AA espresso, sea salt','800','V'],
+      ['Grilled pineapple','Rum caramel, coconut sorbet','650','VG']
+    ],
+    'Drinks': [
+      ['Harvest sour','Kenyan gin, passion fruit, egg white','900',''],
+      ['Smoked tamarind old fashioned','Bourbon, tamarind, bitters','1,100',''],
+      ['Dawa spritz','Vodka, lime, honey, ginger, soda','850',''],
+      ['Natural wine by the glass','Ask for this week’s list','from 950',''],
+      ['House-made ginger beer','Fresh ginger, lime, cane sugar','400','VG']
+    ]
+  };
+  var tabs = document.getElementById('tabs'), items = document.getElementById('items'), cur = 'Small plates';
+  function drawTabs(){ tabs.innerHTML = Object.keys(MENU).map(function(k){ return '<button class="tab' + (k === cur ? ' on' : '') + '" role="tab" aria-selected="' + (k === cur) + '" data-k="' + k + '">' + k + '</button>'; }).join(''); }
+  function drawItems(){
+    items.innerHTML = MENU[cur].map(function(it, i){
+      var tags = it[3] ? '<span class="tags">' + it[3].split(' ').map(function(x){ return '<b>' + x + '</b>'; }).join('') + '</span>' : '';
+      return '<div class="item" style="animation-delay:' + (i * 55) + 'ms"><div class="item__top"><h4>' + it[0] + tags + '</h4><span class="dots"></span><span class="p">' + (it[2].indexOf('from') === 0 ? it[2] : 'KES ' + it[2]) + '</span></div><p>' + it[1] + '</p></div>';
+    }).join('');
+  }
+  tabs.onclick = function(e){ var b = e.target.closest('[data-k]'); if (!b) return; cur = b.getAttribute('data-k'); drawTabs(); drawItems(); };
+  drawTabs(); drawItems();
+
+  // gallery
+  var gal = [['room.webp','3/2'],['plating.webp','4/5'],['fire.webp','1/1'],['cocktail.webp','4/5'],['hero.webp','3/2'],['tartare.webp','4/5'],['chef.webp','1/1'],['greens.webp','4/5']];
+  var gh = gal.map(function(g){ return '<img src="img/' + g[0] + '" style="--r:' + g[1] + '" alt="" loading="lazy">'; }).join('');
+  document.getElementById('gal').innerHTML = gh + gh;
+
+  // hours
+  var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var H = {0:'11:00 – 22:00',1:'12:00 – 22:00',2:'12:00 – 23:00',3:'12:00 – 23:00',4:'12:00 – 23:30',5:'12:00 – 00:30',6:'11:00 – 00:30'};
+  var today = new Date().getDay();
+  document.getElementById('todayHours').textContent = H[today];
+  document.getElementById('hours').innerHTML = [1,2,3,4,5,6,0].map(function(d){ return '<div' + (d === today ? ' class="today"' : '') + '>' + days[d] + (d === today ? ' · today' : '') + '<span>' + H[d] + '</span></div>'; }).join('');
+
+  // booking
+  var date = document.getElementById('date');
+  var d0 = new Date(); d0.setDate(d0.getDate() + 1);
+  function iso(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  date.value = iso(d0); date.min = iso(new Date());
+  var guests = 2, time = '19:30';
+  var slots = ['12:30','13:00','13:30','18:30','19:00','19:30','20:00','20:30','21:00','21:30'];
+  var times = document.getElementById('times');
+  function drawTimes(){
+    var seed = date.value.split('-').reduce(function(a, b){ return a + +b; }, 0) + guests;
+    times.innerHTML = slots.map(function(s, i){ var full = (seed + i * 7) % 5 === 0 && s !== time; return '<button type="button" role="radio" aria-checked="' + (s === time) + '" class="' + (s === time ? 'on' : '') + '"' + (full ? ' disabled title="Fully booked"' : '') + ' data-t="' + s + '">' + s + '</button>'; }).join('');
+  }
+  times.onclick = function(e){ var b = e.target.closest('[data-t]'); if (!b || b.disabled) return; time = b.getAttribute('data-t'); drawTimes(); };
+  date.onchange = drawTimes;
+  document.querySelectorAll('[data-g]').forEach(function(b){ b.onclick = function(){ guests = Math.max(1, Math.min(24, guests + +b.getAttribute('data-g'))); document.getElementById('g').textContent = guests; if (guests > 8) document.getElementById('seat').value = 'Private dining'; drawTimes(); }; });
+  drawTimes();
+  var form = document.getElementById('form'), done = document.getElementById('done');
+  form.onsubmit = function(e){
+    e.preventDefault();
+    var name = document.getElementById('name'), phone = document.getElementById('phone'), bad = false;
+    [name, phone].forEach(function(f){ var ok = f.value.trim().length > 1; f.style.borderColor = ok ? '' : '#E5484D'; if (!ok) bad = true; });
+    if (bad) return;
+    var d = new Date(date.value + 'T12:00:00');
+    var when = d.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long'});
+    document.getElementById('doneT').textContent = 'See you soon, ' + name.value.trim().split(' ')[0] + '.';
+    document.getElementById('doneP').textContent = 'A table for ' + guests + ' (' + document.getElementById('seat').value.toLowerCase() + ') on ' + when + ' at ' + time + ' is requested. In a live site we would confirm by SMS within 15 minutes.';
+    form.style.display = 'none'; done.classList.add('show');
+  };
+  document.getElementById('again').onclick = function(){ done.classList.remove('show'); form.style.display = ''; };
+
+  // reveal + parallax
+  var io = new IntersectionObserver(function(es){ es.forEach(function(en){ if (en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } }); }, {rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('[data-anim]').forEach(function(el){ io.observe(el); });
+  var band = document.getElementById('bandImg');
+  function parallax(){ if (reduce) return; var r = band.parentNode.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return; band.style.transform = 'translateY(' + (-(r.top / innerHeight) * 60 - 60) + 'px)'; }
+  onScroll();
+})();
+</script>
+</body>
+</html>

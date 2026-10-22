@@ -26,6 +26,8 @@ assets/js/home.js            Homepage: showcase tabs, collection rail
 assets/js/gallery.js         Templates/products/work filtering
 assets/js/quote.js           Quote form: prefill, validate, confirm
 assets/img/logo.svg          Logo mark
+assets/css/home.css          Homepage case studies + featured templates
+assets/img/home/             Case-study photos (Unsplash, see CREDITS.md) and product UI layers
 
 data/templates.js   Edit website templates here
 data/products.js    Edit digital products here
@@ -39,6 +41,11 @@ data/mockups.js     UI mockups + showcase list for the homepage
 - `ciel-shop/demo.html` is the interactive demo, at /ciel-shop/demo. It runs in the browser on sample data, with no sign-up.
 - The Ciel Shop card on Templates is the `tpl-cielshop` entry in `data/templates.js`. Its `price` is the starting price shown on the card and on the product page, and you can edit it in /admin.
 - How the demo works, its business rules and what a production deployment adds are covered in `ciel-shop/README.md`.
+
+## Homepage
+
+- **Case studies** (Meridian, Cadence, Transit) are written in `index.html`. Each is a photo (`*-bg.webp`) with the product interface layered on top (`*-ui.webp`), with a gentle scroll parallax.
+- **Featured templates**: the card marked `featured: true` in `data/templates.js` (Ciel Shop) is shown large with its preview reel, plus the two templates marked `home: true`. Change those flags to change what the homepage shows.
 
 ## Editing content
 

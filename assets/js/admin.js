@@ -353,7 +353,7 @@
   function buildTemplates() {
     return hdr('Website Templates') +
       'window.CIEL = window.CIEL || {};\n\nwindow.CIEL.templateCategories = ' + j(D.templateCategories) + ';\n\nwindow.CIEL.templates = [\n' +
-      D.templates.map(function (t) { return '  ' + objLine(t, ['id','name','category','desc','idealFor','price','image','new','popular','link','demo','video','featured']); }).join(',\n') + '\n];\n';
+      D.templates.map(function (t) { return '  ' + objLine(t, ['id','name','category','desc','idealFor','price','image','new','popular','link','demo','video','featured','home']); }).join(',\n') + '\n];\n';
   }
   function buildWork() {
     var wkeys = ['id','name','category','industry','mockup','mockupAlt','year','image','short','technologies','services','overview','challenge','solution','results'];
