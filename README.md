@@ -33,6 +33,13 @@ data/work.js        Edit portfolio + insights here
 data/mockups.js     UI mockups + showcase list for the homepage
 ```
 
+## Ciel Shop (software product + live demo)
+
+- `ciel-shop.html` is the public product page, at /ciel-shop.
+- `ciel-shop/demo.html` is the interactive demo, at /ciel-shop/demo. It runs in the browser on sample data, with no sign-up.
+- The Ciel Shop card on Templates is the `tpl-cielshop` entry in `data/templates.js`. Its `price` is the starting price shown on the card and on the product page, and you can edit it in /admin.
+- How the demo works, its business rules and what a production deployment adds are covered in `ciel-shop/README.md`.
+
 ## Editing content
 
 All catalogue content lives in `data/*.js` as plain arrays — **no code changes needed**.
