@@ -5,14 +5,14 @@
    orders and reports can never drift apart.
 
    Demo persistence: the browser's localStorage under a dedicated
-   key (cielshop:demo:v3). It never touches real customer data and
+   key (cielshop:demo:v4). It never touches real customer data and
    is separate from anything a production deployment would use.
    ============================================================ */
 window.CS = window.CS || {};
 
 (function () {
   'use strict';
-  var KEY = 'cielshop:demo:v3';
+  var KEY = 'cielshop:demo:v4';
   var DAY = 864e5;
   var OPEN = ['new', 'processing', 'packing', 'ready'];
   var FLOW = ['new', 'processing', 'packing', 'ready', 'shipped', 'delivered'];
@@ -34,7 +34,7 @@ window.CS = window.CS || {};
       try {
         var parsed = JSON.parse(raw);
         var age = Date.now() - new Date(parsed.seededAt).getTime();
-        if (parsed.version === 3 && (parsed.touched || age < 12 * 3600e3)) { S = parsed; return; }
+        if (parsed.version === 4 && (parsed.touched || age < 12 * 3600e3)) { S = parsed; return; }
       } catch (e) { /* fall through to a fresh dataset */ }
     }
     S = CS.generate(new Date());

@@ -17,7 +17,7 @@ window.CIEL.templateCategories = [
 ];
 
 window.CIEL.templates = [
-  { id:"tpl-cielshop", name:"Ciel Shop", category:"E-commerce", desc:"Complete inventory, orders, batches, warehouses and analytics system — with a live demo you can try now.", idealFor:"Retailers, wholesalers & distributors", price:20000, image:"assets/img/ciel-shop/card.webp?v=20261022b", new:true, popular:true, link:"ciel-shop.html", demo:"ciel-shop/demo.html", video:"assets/img/ciel-shop/reel.mp4?v=20261022b", featured:true },
+  { id:"tpl-cielshop", name:"Ciel Shop", category:"E-commerce", desc:"Complete inventory, orders, batches, warehouses and analytics system — with a live demo you can try now.", idealFor:"Retailers, wholesalers & distributors", price:20000, image:"assets/img/ciel-shop/card.webp?v=20261022c", new:true, popular:true, link:"ciel-shop.html", demo:"ciel-shop/demo.html", video:"assets/img/ciel-shop/reel.mp4?v=20261022c", featured:true },
   { id:"tpl-01", name:"Meridian",   category:"SaaS",         desc:"Clean product marketing site for software companies with pricing and docs.", idealFor:"SaaS & software products", price:18000, image:"", new:true,  popular:true },
   { id:"tpl-02", name:"Atrium",     category:"Corporate",    desc:"Confident corporate presence with services, team and investor sections.",    idealFor:"Corporations & institutions", price:22000, image:"", new:false, popular:true },
   { id:"tpl-03", name:"Storefront", category:"E-commerce",   desc:"Conversion-focused online store layout with cart, filters and checkout.",     idealFor:"Retail & online shops", price:26000, image:"", new:false, popular:true },

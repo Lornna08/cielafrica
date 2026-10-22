@@ -125,7 +125,7 @@ window.CS = window.CS || {};
     var nowTs = now.getTime();
 
     var S = {
-      version: 3,
+      version: 4,
       seededAt: iso(now),
       business: { name: 'Mawe Home & Pantry', legalName: 'Mawe Retail Ltd', currency: 'KES', vatRate: 0.16, pricesIncludeVat: true, email: 'hello@mawe.example', phone: '+254 700 000 000', address: 'Westlands, Nairobi' },
       settings: { fefo: true, expiryWarnDays: 45, defaultReorderPoint: 20, lowStockEmail: true, orderPrefix: 'MW-', allowNegativeStock: false },
@@ -154,14 +154,14 @@ window.CS = window.CS || {};
         id: id, code: p[0], name: p[1], sku: sku, barcode: '61640' + pad(31000 + i * 137, 8), category: p[2], tags: p[11], desc: p[12],
         price: p[3], cost: p[4], taxable: true, status: 'active', reorderPoint: p[7], reorderQty: p[8],
         tracksExpiry: p[9] > 0, shelfLifeDays: p[9], supplierId: p[5], variants: variants,
-        art: { bg: art[0], fg: art[1], glyph: p[2] }, createdAt: iso(new Date(start.getTime() - ri(60, 500) * DAY)), updatedAt: null
+        art: { bg: art[0], fg: art[1], glyph: p[2] }, image: 'img/products/' + p[0].toLowerCase() + '.webp', createdAt: iso(new Date(start.getTime() - ri(60, 500) * DAY)), updatedAt: null
       });
       popularity[id] = p[6];
     });
     S.counters.product = S.products.length;
     // one draft and one archived product so filters have something to show
-    S.products.push({ id: 'p-ln', code: 'LN', name: 'Leather Notebook Cover', sku: 'MW-LN-210', barcode: '6164000099120', category: 'Stationery', tags: ['draft'], desc: 'Vegetable-tanned leather cover for A5 notebooks. Awaiting photography.', price: 2100, cost: 900, taxable: true, status: 'draft', reorderPoint: 8, reorderQty: 24, tracksExpiry: false, shelfLifeDays: 0, supplierId: 'sp-9', variants: [], art: { bg: ART.Stationery[0], fg: ART.Stationery[1], glyph: 'Stationery' }, createdAt: iso(new Date(today.getTime() - 6 * DAY)), updatedAt: null });
-    S.products.push({ id: 'p-xm', code: 'XM', name: 'Festive Ornament Set', sku: 'MW-XM-090', barcode: '6164000099137', category: 'Home Décor', tags: ['seasonal'], desc: 'Beaded tree ornaments. Discontinued after last season.', price: 1500, cost: 610, taxable: true, status: 'archived', reorderPoint: 0, reorderQty: 0, tracksExpiry: false, shelfLifeDays: 0, supplierId: 'sp-3', variants: [], art: { bg: ART['Home Décor'][0], fg: ART['Home Décor'][1], glyph: 'Home Décor' }, createdAt: iso(new Date(start.getTime() - 300 * DAY)), updatedAt: iso(new Date(start.getTime() - 20 * DAY)) });
+    S.products.push({ id: 'p-ln', code: 'LN', name: 'Leather Notebook Cover', sku: 'MW-LN-210', barcode: '6164000099120', category: 'Stationery', tags: ['draft'], desc: 'Vegetable-tanned leather cover for A5 notebooks. Awaiting photography.', price: 2100, cost: 900, taxable: true, status: 'draft', reorderPoint: 8, reorderQty: 24, tracksExpiry: false, shelfLifeDays: 0, supplierId: 'sp-9', variants: [], art: { bg: ART.Stationery[0], fg: ART.Stationery[1], glyph: 'Stationery' }, image: 'img/products/ln.webp', createdAt: iso(new Date(today.getTime() - 6 * DAY)), updatedAt: null });
+    S.products.push({ id: 'p-xm', code: 'XM', name: 'Festive Ornament Set', sku: 'MW-XM-090', barcode: '6164000099137', category: 'Home Décor', tags: ['seasonal'], desc: 'Beaded tree ornaments. Discontinued after last season.', price: 1500, cost: 610, taxable: true, status: 'archived', reorderPoint: 0, reorderQty: 0, tracksExpiry: false, shelfLifeDays: 0, supplierId: 'sp-3', variants: [], art: { bg: ART['Home Décor'][0], fg: ART['Home Décor'][1], glyph: 'Home Décor' }, image: 'img/products/xm.webp', createdAt: iso(new Date(start.getTime() - 300 * DAY)), updatedAt: iso(new Date(start.getTime() - 20 * DAY)) });
     S.counters.product = S.products.length;
     var prodById = {}; S.products.forEach(function (p) { prodById[p.id] = p; });
     var active = S.products.filter(function (p) { return p.status === 'active'; });
@@ -481,6 +481,9 @@ window.CS = window.CS || {};
     S.activity = recent.slice(0, 30);
     return S;
   };
+
+  // Product photos: Unsplash (unsplash.com/license). [code, photographer, username, photo id]
+  CS.photoCredits = [["CF", "Mockup Graphics", "mockupgraphics", "m7ijvnNGaV0"], ["TE", "petr sidorov", "m_malkovich", "gT_rAfFvCyw"], ["HN", "Mahdi Kordi", "mahdikordi_ir", "0VCgQjwqcCc"], ["MB", "Tetiana Bykovets", "tetiana_bykovets", "Ht7ZhGt2UXg"], ["BP", "Praswin Prakashan", "praswinprakashan", "b90c-RvYEPg"], ["MO", "Charles Chen", "color0911", "41DSSUrB-Fo"], ["CS", "Daria Nepriakhina", "epicantus", "iklSF5-kvIw"], ["DM", "Fedor", "fmdevice", "BRiT_s3tN6Y"], ["SB", "Megumi Nachev", "meguminachev", "xhOUnxVVb6s"], ["FO", "Muhammad Sulyman", "msulyman", "gtxxkGEoaBM"], ["BS", "Sincerely Media", "sincerelymedia", "f8hdkJz-m5w"], ["HW", "Sincerely Media", "sincerelymedia", "LtGwgq7r_mc"], ["ST", "MOein NIroumand", "moein_nrm", "2I0mIgVYd7k"], ["KT", "Debby Hudson", "hudsoncrafted", "CUsNsBadqvg"], ["KC", "The New York Public Library", "nypl", "vz_izMWakvw"], ["TR", "Tanya Santos", "tanyaxsantos", "qO705EFAjEo"], ["BM", "Puranjan Hazarika", "puru32", "Zin47JdznXw"], ["OB", "aurélie sgnl", "entre2vue", "-3ch3oq8hUk"], ["SW", "Gaby Yerden", "gbyz13", "-OIinu1YDTk"], ["CJ", "Stephanie Sarlos", "studiostephaniesarlos", "iMfB0a4ZRzA"], ["EM", "Cute Mock Ups And Things", "cutemockupsandthings", "YkVodmPWi0o"], ["PL", "Maryam Furqan Qureshi", "maryamfurqanqureshi", "tpWeyhKcYdw"], ["SS", "Louis Hansel", "louishansel", "sth3hzzt7Pk"], ["SK", "Eugenia Pan'kiv", "eugenivy_now", "d9lRUbylFsU"], ["GV", "Brooklyn MacNally", "brooklynptgs", "FfCk6-Z3JSk"], ["CH", "Babak Eshaghian", "babak22ir", "kVpLr9U6F4s"], ["WH", "rocknwool", "rocknwool", "yas-CnrBwTw"], ["KB", "rocknwool", "rocknwool", "QGB1eCt_iqQ"], ["JR", "pure julia", "purejulia", "JjTKjh-g_Y0"], ["GC", "12x12 Cardstock Shop", "12x12cardstockshop", "aTJ8L8w30LI"], ["DP", "My Profit Tutor", "myprofittutor", "9MtxPyV9ss0"], ["NB", "Beechmore Books", "beechmorebooks", "ajSG_cVll_k"], ["LN", "Rich Smith", "richwilliamsmith", "i-ut6Z7qOnc"], ["XM", "Vasiliki Mastropetrou", "vasaki_must", "3dBOgg0lJCo"]];
 
   /* money helpers shared with the store */
   CS.orderSubtotal = function (o) { return o.lines.reduce(function (t, l) { return t + l.price * l.qty; }, 0); };
