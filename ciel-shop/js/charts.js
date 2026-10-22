@@ -9,12 +9,16 @@ window.CS = window.CS || {};
   var ui = CS.ui, C = CS.charts = {};
   var observers = new WeakMap();
 
-  function niceMax(v) {
-    if (v <= 0) return 1;
-    var e = Math.pow(10, Math.floor(Math.log10(v))), f = v / e;
-    var n = f <= 1 ? 1 : f <= 1.5 ? 1.5 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 3 ? 3 : f <= 4 ? 4 : f <= 5 ? 5 : f <= 6 ? 6 : f <= 8 ? 8 : 10;
-    return n * e;
+  // clean axis steps: 1, 2 or 5 × 10^k, with the top rounded up to a whole step
+  function niceScale(maxVal, n) {
+    if (!(maxVal > 0)) return { top: n || 4, step: 1, count: n || 4 };
+    var raw = maxVal / (n || 4), e = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / e;
+    var step = (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * e;
+    if (step < 1) step = 1;
+    var count = Math.max(1, Math.ceil(maxVal / step));
+    return { top: step * count, step: step, count: count };
   }
+  C.niceScale = niceScale;
   function watch(el, draw) {
     draw();
     if (!window.ResizeObserver) return;
@@ -38,7 +42,7 @@ window.CS = window.CS || {};
       var W = Math.max(260, el.clientWidth), H = o.height || 240, pl = 48, pr = 12, pt = 12, pb = 26;
       var n = o.labels.length, all = [];
       o.series.forEach(function (s) { all = all.concat(s.values); });
-      var max = niceMax(Math.max.apply(null, all.concat([0])) * 1.08), ticks = 4;
+      var sc = niceScale(Math.max.apply(null, all.concat([0])) * 1.02, 4), max = sc.top, ticks = sc.count;
       var x = function (i) { return pl + (n <= 1 ? (W - pl - pr) / 2 : i * (W - pl - pr) / (n - 1)); };
       var y = function (v) { return pt + (H - pt - pb) * (1 - v / max); };
       var yf = o.yFmt || ui.short, f = o.fmt || ui.num;
@@ -93,13 +97,12 @@ window.CS = window.CS || {};
         o.series.forEach(function (s) { var v = s.values[i]; if (o.stacked || o.diverging) { if (v >= 0) pos += v; else neg += v; } else { pos = Math.max(pos, v); } });
         maxP = Math.max(maxP, pos); maxN = Math.min(maxN, neg);
       }
-      var top = niceMax(maxP * 1.05), bot = maxN < 0 ? -niceMax(-maxN * 1.05) : 0;
+      var sc = niceScale(Math.max(maxP, -maxN) * 1.02, maxN < 0 ? 3 : 4), top = sc.step * Math.max(1, Math.ceil(maxP / sc.step)), bot = maxN < 0 ? -sc.step * Math.ceil(-maxN / sc.step) : 0;
       var y = function (v) { return pt + (H - pt - pb) * (top - v) / (top - bot); };
       var band = (W - pl - pr) / n, bw = Math.max(3, Math.min(28, band * (o.stacked || o.diverging ? .58 : .7 / o.series.length)));
       var f = o.fmt || ui.num;
       var s = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + ui.esc(o.aria || 'Bar chart') + '">';
-      var ticks = [bot, 0, top / 2, top].filter(function (v, k, a) { return a.indexOf(v) === k; });
-      if (bot === 0) ticks = [0, top / 4, top / 2, top * 3 / 4, top];
+      var ticks = []; for (var tv = bot; tv <= top + 1e-9; tv += sc.step) ticks.push(Math.round(tv * 1e6) / 1e6);
       ticks.forEach(function (v) { s += '<line class="gl" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y(v) + '" y2="' + y(v) + '"/><text class="ax" x="' + (pl - 8) + '" y="' + (y(v) + 3.5) + '" text-anchor="end">' + (v < 0 ? '−' : '') + ui.short(Math.abs(v)) + '</text>'; });
       var every = Math.max(1, Math.ceil(n / Math.floor((W - pl - pr) / 56)));
       for (var j = 0; j < n; j++) {

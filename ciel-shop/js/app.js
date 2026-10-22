@@ -111,6 +111,7 @@ window.CS = window.CS || {};
     var ctx = document.getElementById('ctx');
     ctx.innerHTML = page.period ? periodSel() : '';
     if (page.period) ctx.querySelector('.seg').addEventListener('click', function (e) { var b = e.target.closest('[data-p]'); if (!b) return; app.period = b.getAttribute('data-p'); app.savePref('period', app.period); render(true); });
+    view.classList.toggle('view--wide', !!page.wide);
     view.innerHTML = page.html || '';
     if (!same || !keepScroll) { view.classList.remove('view-enter'); void view.offsetWidth; view.classList.add('view-enter'); }
     if (page.mount) { try { page.mount(view); } catch (e) { console.error(e); ui.toast('This view hit an error: ' + e.message, 'err'); } }

@@ -100,7 +100,7 @@
     if (o.fulfilment === 'cancelled') html += '<div class="note note--plain" style="margin-bottom:16px">' + ui.icon('x', 15) + '<span>This order was cancelled. Reserved stock was released.' + (refunded ? ' ' + ui.money(refunded) + ' was refunded.' : '') + '</span></div>';
     if (o.payment.status === 'pending' && ['shipped', 'delivered'].indexOf(o.fulfilment) >= 0) html += '<div class="note" style="margin-bottom:16px">' + ui.icon('wallet', 15) + '<span>Goods have left the warehouse but payment hasn’t been recorded yet' + (o.payment.method === 'Bank transfer' ? ' (invoice terms).' : ' (pay on delivery).') + '</span></div>';
     html += '<div class="grid g-side"><div class="stack">';
-    html += '<div class="card card--flush"><div class="card__h"><h3>Items</h3><span class="sub">' + itemsCount(o) + ' units from ' + (w ? w.name : '—') + '</span></div><div class="card__b" style="padding-top:10px"><div class="tscroll"><table class="t lines-t"><thead><tr><th>Product</th><th class="r">Price</th><th class="r">Qty</th><th class="r">Total</th></tr></thead><tbody>' +
+    html += '<div class="card card--flush"><div class="card__h"><h3>Items</h3><span class="sub">' + itemsCount(o) + (itemsCount(o) === 1 ? ' unit' : ' units') + ' from ' + (w ? w.name : '—') + '</span></div><div class="card__b" style="padding-top:10px"><div class="tscroll"><table class="t lines-t"><thead><tr><th>Product</th><th class="r">Price</th><th class="r">Qty</th><th class="r">Total</th></tr></thead><tbody>' +
       o.lines.map(function (l) { var p = store.product(l.productId); return '<tr><td><div class="pcell">' + ui.thumb(p, 38) + '<div><a class="pcell__t" href="#/products/' + p.id + '" style="display:block">' + ui.esc(l.name) + '</a><div class="pcell__s mono">' + l.sku + (l.batches && l.batches.length ? ' · batch ' + l.batches.map(function (b) { return b.number + (l.batches.length > 1 ? ' ×' + b.qty : ''); }).join(', ') : '') + '</div></div></div></td><td class="r num">' + ui.money(l.price) + '</td><td class="r num">' + l.qty + '</td><td class="r num"><b>' + ui.money(l.price * l.qty) + '</b></td></tr>'; }).join('') + '</tbody></table></div>' +
       '<div class="totals"><div><span class="muted">Subtotal</span><span class="num">' + ui.money(sub) + '</span></div>' + (o.discount ? '<div><span class="muted">Discount</span><span class="num">−' + ui.money(o.discount) + '</span></div>' : '') + '<div><span class="muted">Shipping · ' + o.deliveryMethod + '</span><span class="num">' + (o.shipping ? ui.money(o.shipping) : 'Free') + '</span></div><div><span class="muted">Includes VAT (' + Math.round(vat * 100) + '%)</span><span class="num muted">' + ui.money((sub - o.discount) - (sub - o.discount) / (1 + vat)) + '</span></div><div class="grand"><span>Total</span><span class="num">' + ui.money(total) + '</span></div>' + (refunded ? '<div style="color:var(--red)"><span>Refunded</span><span class="num">−' + ui.money(refunded) + '</span></div><div><b>Net</b><b class="num">' + ui.money(total - refunded) + '</b></div>' : '') + '</div></div></div>';
     var rets = S().returns.filter(function (r) { return r.orderId === o.id; });
@@ -273,7 +273,7 @@
     html += '<div class="card" style="margin-bottom:14px"><div class="tbar" style="border:0"><div class="search-inp">' + ui.icon('search', 15) + '<input class="inp inp--sm" id="bq" placeholder="Order or customer…" value="' + ui.esc(f.q) + '" aria-label="Search board"></div>' + ui.select('bch', [{ value: '', label: 'All channels' }].concat(S().channels), f.channel, { cls: 'sel--sm', attr: ' style="width:auto" aria-label="Channel"' }) + ui.select('bwh', app.whOptions(true), f.wh, { cls: 'sel--sm', attr: ' style="width:auto" aria-label="Warehouse"' }) + ui.select('brange', [{ value: '3', label: 'Placed in last 3 days' }, { value: '7', label: 'Last 7 days' }, { value: '14', label: 'Last 14 days' }, { value: '30', label: 'Last 30 days' }], f.range, { cls: 'sel--sm', attr: ' style="width:auto" aria-label="Order date"' }) + '<span class="tbar__sp"></span><span class="muted" style="font-size:12px">Open orders always show; completed ones follow the date filter.</span></div></div>';
     html += '<div class="board" id="board"></div>';
     return {
-      title: 'Order board', html: html,
+      title: 'Order board', html: html, wide: true,
       mount: function (el) {
         var board = el.querySelector('#board');
         function list() {
@@ -301,6 +301,8 @@
           }).join('');
         }
         draw();
+        function edge() { board.classList.toggle('has-more', board.scrollWidth - board.clientWidth - board.scrollLeft > 4); }
+        board.addEventListener('scroll', edge, { passive: true }); window.addEventListener('resize', edge); edge();
         el.querySelector('#bq').addEventListener('input', ui.debounce(function (e) { f.q = e.target.value; draw(); }, 120));
         el.querySelector('[name=bch]').onchange = function (e) { f.channel = e.target.value; draw(); };
         el.querySelector('[name=bwh]').onchange = function (e) { f.wh = e.target.value; draw(); };

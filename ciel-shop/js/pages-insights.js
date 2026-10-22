@@ -9,7 +9,7 @@
   function S() { return store.state; }
   function greeting() { var h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; }
   function kpi(label, icon, value, deltaHtml, foot, spark, href) {
-    return '<' + (href ? 'a href="' + href + '"' : 'div') + ' class="card kpi">' + (spark || '') + '<div class="kpi__l">' + ui.icon(icon, 14) + label + '</div><div class="kpi__v num">' + value + '</div><div class="kpi__f">' + (deltaHtml || '') + '<span>' + foot + '</span></div></' + (href ? 'a' : 'div') + '>';
+    return '<' + (href ? 'a href="' + href + '"' : 'div') + ' class="card kpi"><div class="kpi__l">' + ui.icon(icon, 14) + label + (spark || '') + '</div><div class="kpi__v num">' + value + '</div><div class="kpi__f">' + (deltaHtml || '') + '<span>' + foot + '</span></div></' + (href ? 'a' : 'div') + '>';
   }
   function money(v) { return '<small>KES</small>' + ui.num(v); }
   function movLabel(t) { return { receipt: 'Received', sale: 'Shipped', transfer_in: 'Transfer in', transfer_out: 'Transfer out', adjustment: 'Adjustment', damage: 'Damaged', return: 'Returned', return_damaged: 'Return (damaged)', expired: 'Expired', disposed: 'Disposed' }[t] || t; }
