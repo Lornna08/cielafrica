@@ -46,7 +46,7 @@ assets/img/ciel-shop/      screenshots, share image, preview reel (mp4 + webm)
 
 Sample product photos are from Unsplash and live in `ciel-shop/img/products/` (256px WebP, 241KB in total). They're used under the Unsplash License, each download was registered through the Unsplash API, and credits are in `img/products/CREDITS.md` and under Settings → Photo credits in the demo. Products added in the demo can have their own photo uploaded.
 
-Changes are stored in the visitor's browser under `localStorage["cielshop:demo:v3"]`. UI preferences are stored under `cielshop:demo:ui`. Nothing is sent to a server. **Reset demo** in the top bar regenerates the dataset. If a visitor hasn't changed anything, the data refreshes after 12 hours so dates stay current.
+Changes are stored in the visitor's browser under `localStorage["cielshop:demo:v4"]`. UI preferences are stored under `cielshop:demo:ui`. Nothing is sent to a server. **Reset demo** in the top bar regenerates the dataset. If a visitor hasn't changed anything, the data refreshes after 12 hours so dates stay current.
 
 The demo never takes payments, sends messages or books couriers. "Mark as paid" and "Record refund" only record the event.
 

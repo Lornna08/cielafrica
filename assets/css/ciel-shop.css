@@ -110,3 +110,6 @@
 .gcard--feat .gcard__foot,.gcard__foot:has(.gcard__acts){flex-wrap:wrap;gap:.8rem}
 @media(max-width:700px){.gcard--feat{grid-column:auto}}
 a.gcard__media{display:block}
+/* featured card: keep the top of the preview clear, badges sit along the bottom edge */
+.gcard--feat .gbadge--new,.gcard--feat .gbadge--pop{top:auto;bottom:.7rem}
+.gcard--feat .gbadge--new{right:calc(.7rem + 4.4rem);left:auto}

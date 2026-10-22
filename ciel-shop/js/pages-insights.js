@@ -25,8 +25,8 @@
     var outCount = restock.filter(function (x) { return x.s.available <= 0; }).length;
     var html = '<div class="welcome"><div><h1>' + greeting() + ', ' + ui.esc(me.name.split(' ')[0]) + '</h1><p>Here’s how ' + ui.esc(biz.name) + ' is doing over ' + app.periodLabel() + '.</p></div><div class="ph__acts"><a class="btn" href="#/inventory?do=receive">' + ui.icon('receive', 15) + 'Receive stock</a><a class="btn btn--p" href="#/orders/new">' + ui.icon('plus', 15) + 'Create order</a></div></div>';
     html += '<div class="grid g-kpi">' +
-      kpi('Net sales', 'coins', money(m.net), ui.delta(m.net, pm.net), app.prevLabel(), '<span class="kpi__spark">' + charts.spark(ser.map(function (b) { return b.sales; }), HEX[0]) + '</span>', '#/analytics') +
-      kpi('Orders', 'cart', ui.num(m.orders), ui.delta(m.orders, pm.orders), ui.num(m.units) + ' units sold', '<span class="kpi__spark">' + charts.spark(ser.map(function (b) { return b.orders; }), HEX[1]) + '</span>', '#/orders') +
+      kpi('Net sales', 'coins', money(m.net), ui.delta(m.net, pm.net), app.prevLabel(), '', '#/analytics') +
+      kpi('Orders', 'cart', ui.num(m.orders), ui.delta(m.orders, pm.orders), ui.num(m.units) + ' units sold', '', '#/orders') +
       kpi('Avg. order value', 'receipt', money(m.aov), ui.delta(m.aov, pm.aov), 'after discounts', '', '#/analytics') +
       kpi('Gross profit', 'percent', money(m.profit), ui.delta(m.profit, pm.profit), ui.pct(m.margin) + ' margin, ex-VAT', '', '#/analytics') +
       kpi('Need restocking', 'alert', String(restock.length), ui.delta(restock.length, restockPrev, true), outCount + ' out of stock', '', '#/inventory?status=low') +
