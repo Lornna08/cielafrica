@@ -12,3 +12,5 @@ The product interfaces layered on top (Meridian, Cadence, Transit) are designed 
 | | [2](https://unsplash.com/photos/JoZ0Ni2xn2U), [3](https://unsplash.com/photos/K8kDDGljn90) | Oluwatobi (@oluwatobisimii) |
 | | [4](https://unsplash.com/photos/tY9uFNCyZvA) | Lisa Marie Theck (@lisa_marie_theck) |
 | | [5](https://unsplash.com/photos/QazU5SRLudU) | Richard Momodu (@richardjune007) |
+
+`hero-reel.*`, `hero-poster.webp` and `hero-phone.webp` are recordings of the Ciel Shop demo; its product photos are credited in `ciel-shop/img/products/CREDITS.md`. `meridian-phone.webp` is an original Ciel Africa design.
