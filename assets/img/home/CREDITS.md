@@ -13,4 +13,4 @@ The product interfaces layered on top (Meridian, Reside Ke, Transit) are designe
 | | [4](https://unsplash.com/photos/tY9uFNCyZvA) | Lisa Marie Theck (@lisa_marie_theck) |
 | | [5](https://unsplash.com/photos/QazU5SRLudU) | Richard Momodu (@richardjune007) |
 
-`hero-reel.*`, `hero-poster.webp` and `hero-phone.webp` are recordings of the Ciel Shop demo; its product photos are credited in `ciel-shop/img/products/CREDITS.md`. `meridian-phone.webp` is an original Ciel Africa design. `reside-live.*` is a recording of the Reside Ke demo; its photography is credited in `reside-ke/img/CREDITS.md`.
+`hero-reel.*`, `hero-poster.webp` and `hero-phone.webp` are recordings of the Ciel Shop demo; its product photos are credited in `ciel-shop/img/products/CREDITS.md`. `meridian-phone.webp` is an original Ciel Africa design. `reside-live.*` is a recording of the Reside Ke demo; its photography is credited in `reside-ke/img/CREDITS.md`. `cledger-live.*` is a recording of the C-Ledger demo and contains no photography.

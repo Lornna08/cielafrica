@@ -91,8 +91,9 @@
 .htc__media svg,.htc__media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top left;display:block;transform-origin:30% 20%;transition:transform 1.2s var(--ease)}
 .htc:hover .htc__media svg,.htc:hover .htc__media img{transform:scale(1.06)}
 .htc__body{padding:1.4rem 1.4rem 1.3rem;display:flex;flex-direction:column}
-.htc__cat{font-family:var(--disp);font-size:.8rem;font-weight:500;color:var(--ink-faint);display:flex;gap:.45rem;align-items:center}
+.htc__cat{font-family:var(--disp);font-size:.8rem;font-weight:500;color:var(--ink-faint);display:flex;flex-wrap:wrap;gap:.45rem;align-items:center}
 .htc__t{font-family:var(--disp);font-weight:700;font-size:1.5rem;letter-spacing:-.02em;margin:.55rem 0 .5rem}
+.htc__t a{color:inherit;text-decoration:none}.htc__t a:hover{text-decoration:underline;text-underline-offset:4px}
 .htc__d{font-size:.92rem;color:var(--ink-soft);line-height:1.5}
 .htc__foot{margin-top:auto;padding-top:1.2rem;display:flex;align-items:flex-end;justify-content:space-between;gap:.8rem;flex-wrap:wrap}
 .htc__price{font-family:var(--disp);font-weight:700;font-size:1.15rem}
