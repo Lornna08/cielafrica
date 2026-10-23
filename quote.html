@@ -91,6 +91,7 @@
 <script>(function(){var q=new URLSearchParams(location.search);var ref=q.get('template')||q.get('product')||q.get('project');
       if(ref){var r=document.getElementById('qref');if(r)r.value=ref;var t=document.getElementById('qtype');
         if(t){if(q.get('template'))t.value='A template customised';else if(q.get('product'))t.value='A product from the shelf';}}
+      var brief=q.get('brief');if(brief){var d=document.querySelector('textarea[name="Details"]');if(d&&!d.value)d.value=brief.slice(0,2000);}
     })();</script><script>(function(){
   document.querySelectorAll('form.ciel-form').forEach(function(f){
     f.addEventListener('submit',function(e){
