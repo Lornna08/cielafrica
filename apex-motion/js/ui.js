@@ -9,7 +9,8 @@
   /* ---------- shell ---------- */
   var navItems = [['shop', 'Shop'], ['shop/wheels', 'Wheels'], ['shop/tyres', 'Tyres'], ['performance', 'Performance Parts'], ['brands', 'Brands'], ['|'], ['journal', 'Journal'], ['gallery', 'Gallery']];
   ui.shell = function () {
-    document.body.insertAdjacentHTML('afterbegin',
+    var strip = document.querySelector('.cstrip');
+    (strip || document.body).insertAdjacentHTML(strip ? 'afterend' : 'afterbegin',
       '<a class="skip" href="#main">Skip to content</a>' +
       '<header class="hdr" id="hdr"><div class="wrap hdr__in">' +
         '<button class="icon-btn burger" id="burger" aria-label="Open menu">' + i('menu', 22) + '</button>' +

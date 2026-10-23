@@ -340,3 +340,37 @@
       '<circle cx="' + knob[0].toFixed(1) + '" cy="' + knob[1].toFixed(1) + '" r="11" class="g-knob"/><circle cx="' + knob[0].toFixed(1) + '" cy="' + knob[1].toFixed(1) + '" r="4.5" class="g-knob-i"/></svg>';
   };
 })();
+
+/* ---------- Table fitting ----------
+   Tables never spill past their card: when a table is wider than its wrapper,
+   the least important columns are hidden one at a time until it fits.
+   On phones (≤640px) columns are kept and the table scrolls sideways instead. */
+(function () {
+  var DROP = { 'Rate': 9, 'Seller': 8, 'Added': 8, 'Last contact': 7, 'Prob.': 7, 'Listed': 7, 'Views': 7, 'Deposit': 7, 'Size': 7,
+    'Email': 6, 'Source': 6, 'Listings': 6, 'Deals': 6, 'Landlord': 6, 'Recorded': 6, 'Received': 6, 'Vendor': 6, 'Added by': 6, 'Actual comm.': 6,
+    'Type': 5, 'Location': 5, 'Leads': 5, 'Start': 5, 'Logged': 5, 'Move-in': 5, 'vs asking': 5, 'Expected close': 5, 'Closed': 5,
+    'Agent': 4, 'Due': 4, 'Date': 4, 'Budget': 4, 'Expected comm.': 4, 'Deal': 4, 'Latest offer': 4, 'Monthly income': 4, 'Phone': 3, 'Buyer': 3 };
+  function fit(t) {
+    var wrap = t.parentElement; if (!wrap || !t.tHead || !t.tHead.rows[0]) return;
+    var ths = [].slice.call(t.tHead.rows[0].cells);
+    t.querySelectorAll('[data-fit-hid]').forEach(function (c) { c.style.display = ''; c.removeAttribute('data-fit-hid'); });
+    if (innerWidth <= 640 || !wrap.clientWidth) return;
+    var guard = 0;
+    while (t.scrollWidth > wrap.clientWidth + 1 && guard++ < 12) {
+      var best = -1, bp = 0;
+      ths.forEach(function (th, i) { if (th.hasAttribute('data-fit-hid')) return; var p = DROP[th.textContent.trim()] || 0; if (p > bp) { bp = p; best = i; } });
+      if (best < 0) break;
+      [].forEach.call(t.rows, function (r) { var c = r.cells[best]; if (c) { c.style.display = 'none'; c.setAttribute('data-fit-hid', ''); } });
+    }
+  }
+  var raf = 0;
+  var ro = 'ResizeObserver' in window ? new ResizeObserver(function () { all(); }) : null, seen = new WeakSet();
+  function all() { cancelAnimationFrame(raf); raf = requestAnimationFrame(function () { document.querySelectorAll('.t-wrap > table.t').forEach(function (t) { if (ro && !seen.has(t.parentElement)) { seen.add(t.parentElement); ro.observe(t.parentElement); } fit(t); }); }); }
+  ES.fitTables = all;
+  addEventListener('resize', all);
+  document.addEventListener('DOMContentLoaded', function () {
+    new MutationObserver(function (ms) { for (var i = 0; i < ms.length; i++) { var a = ms[i].addedNodes; for (var j = 0; j < a.length; j++) { var n = a[j]; if (n.nodeType === 1 && (n.matches('.t-wrap,table') || n.querySelector('.t-wrap'))) { all(); return; } } } })
+      .observe(document.body, { childList: true, subtree: true });
+    all();
+  });
+})();

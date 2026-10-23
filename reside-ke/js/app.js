@@ -32,7 +32,7 @@
   /* ---------------- shell ---------------- */
   function shell() {
     document.body.innerHTML =
-      '<div class="demo-bar" role="region" aria-label="Demo notice"><span class="dot" aria-hidden="true"></span><span class="demo-bar__t">You’re exploring the <b>Reside Ke demo</b>. Changes affect sample data only.</span><span class="demo-bar__a"><button class="db-btn" data-act="reset">Reset demo</button><a class="db-btn db-hide" href="./#features">View features</a><a class="db-btn db-btn--p" href="../quote.html?template=Reside%20Ke">Get Reside Ke</a></span></div>' +
+      '<div class="demo-bar" role="region" aria-label="Demo notice"><a class="db-back" href="../index.html" aria-label="Back to Ciel Africa"><b>‹</b> Ciel Africa</a><span class="dot" aria-hidden="true"></span><span class="demo-bar__t"><span class="db-long">You’re exploring the <b>Reside Ke demo</b>. Changes affect sample data only.</span><span class="db-short"><b>Reside Ke demo</b> · changes affect sample data only</span></span><span class="demo-bar__a"><button class="db-btn" data-act="reset">Reset demo</button><a class="db-btn db-hide" href="./#features">View features</a><a class="db-btn db-btn--p" href="../quote.html?template=Reside%20Ke">Get Reside Ke</a></span></div>' +
       '<div class="app" id="app">' +
       '<div class="main">' +
       '<header class="top"><button class="ib top__menu" data-act="drawer" aria-label="Open navigation">' + I('menu', 20) + '</button>' +
@@ -121,7 +121,8 @@
     var items = PRIMARY.concat(MORE.filter(function (m) { return !m.sub; }));
     var p = ES.open('drawer', '<div class="dnav"><div class="dnav__h"><span class="brand"><span class="brand__m">' + I('logo', 18) + '</span><span class="brand__w">RESIDE<em>KE</em></span></span><button class="ib" data-close aria-label="Close">' + I('x', 18) + '</button></div>' +
       items.map(function (t) { var on = (TAB_OF[current.name] || current.name) === t.id, b = t.badge ? t.badge() : 0; return '<a href="#/' + t.id + '" class="dnav__a' + (on ? ' is-on' : '') + '">' + I(t.icon, 18) + '<span>' + t.label + '</span>' + (b ? '<i>' + b + '</i>' : '') + '</a>'; }).join('') +
-      '<a href="#/chat" class="dnav__a">' + I('chat', 18) + '<span>Team chat</span>' + (st.unreadCount() ? '<i>' + st.unreadCount() + '</i>' : '') + '</a></div>', { label: 'Navigation', cls: 'ovl--left' });
+      '<a href="#/chat" class="dnav__a">' + I('chat', 18) + '<span>Team chat</span>' + (st.unreadCount() ? '<i>' + st.unreadCount() + '</i>' : '') + '</a>' +
+      '<div class="dnav__sep"></div><a href="./" class="dnav__a">' + I('logo', 18) + '<span>Reside Ke product page</span></a><a href="../index.html" class="dnav__a dnav__home"><b>‹</b><span>Back to Ciel Africa</span></a></div>', { label: 'Navigation', cls: 'ovl--left' });
     p.addEventListener('click', function (e) { if (e.target.closest('a')) ES.close(); });
   }
 
@@ -276,5 +277,22 @@
     if (!location.hash) history.replaceState(null, '', '#/overview');
     go(); renderChat();
   };
-  document.addEventListener('DOMContentLoaded', function () { ES.boot(); });
+  document.addEventListener('DOMContentLoaded', function () { ES.boot(); edgeFades(); });
+
+  /* Horizontal scrollers (tab strips, boards, wide tables) fade at the edge that has more
+     content, so a word cut by the screen edge reads as "swipe for more", not as broken. */
+  var SCROLLERS = '.tabs,.stabs,.bd,.stagebar,.thumbs,.chat__people,.t-wrap';
+  function fadeOne(el) {
+    var max = el.scrollWidth - el.clientWidth, x = el.scrollLeft, f = '';
+    if (max > 2) { if (x > 2) f += 'l '; if (x < max - 2) f += 'r'; }
+    f = f.trim(); if ((el.getAttribute('data-fade') || '') !== f) { if (f) el.setAttribute('data-fade', f); else el.removeAttribute('data-fade'); }
+  }
+  function scan() { document.querySelectorAll(SCROLLERS).forEach(fadeOne); }
+  function edgeFades() {
+    var raf = 0, queue = function () { if (!raf) raf = requestAnimationFrame(function () { raf = 0; scan(); }); };
+    document.addEventListener('scroll', function (e) { var t = e.target; if (t && t.matches && t.matches(SCROLLERS)) fadeOne(t); }, true);
+    addEventListener('resize', queue);
+    new MutationObserver(queue).observe(document.body, { childList: true, subtree: true });
+    scan();
+  }
 })();

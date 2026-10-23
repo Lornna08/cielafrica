@@ -21,12 +21,20 @@ document.write('<base href="' + (location.protocol === 'file:' ? './' : '/apex-m
 <link rel="stylesheet" href="css/apex.css?v=20261023g">
 </head>
 <body>
+<!-- Ciel Africa template strip -->
+<style>.cstrip{position:relative;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:12px;height:40px;padding:0 max(16px,calc((100% - 1200px)/2));background:#121212;color:#C9C9C9;font:500 13px/1 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:0}
+.cstrip a{display:inline-flex;align-items:center;gap:7px;color:#fff;text-decoration:none;white-space:nowrap;padding:6px 0}
+.cstrip a:hover{color:#FF7A45}.cstrip a:focus-visible{outline:2px solid #FF7A45;outline-offset:2px;border-radius:4px}
+.cstrip b{color:#FF5A1F;font-weight:700;font-size:15px;line-height:1}
+.cstrip span{flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:640px){.cstrip span{display:none}}</style>
+<div class="cstrip" role="navigation" aria-label="Ciel Africa"><a href="../index.html"><b>‹</b>Back to Ciel Africa</a><span>A live template by Ciel Africa</span><a href="../templates.html">All templates<b>›</b></a></div>
 <noscript><div style="padding:40px;font-family:sans-serif">The APEX MOTION demo needs JavaScript turned on.</div></noscript>
 <script src="config/store.config.js?v=20261023g"></script>
 <script src="data/catalog.js?v=20261023g"></script>
 <script src="data/journal.js?v=20261023g"></script>
 <script src="js/core.js?v=20261023g"></script>
-<script src="js/ui.js?v=20261023g"></script>
+<script src="js/ui.js?v=20261023h"></script>
 <script src="js/pages-home.js?v=20261023g"></script>
 <script src="js/pages-shop.js?v=20261023g"></script>
 <script src="js/pages-more.js?v=20261023g"></script>
