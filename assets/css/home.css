@@ -183,14 +183,12 @@
 @media(max-width:1200px){.hx__toast{left:-2%}}
 /* phones and small tablets: laptop + phone together, like desktop */
 @media(max-width:860px){
-  .hero__art.hx{display:block;position:relative;width:100%;max-width:560px;margin-inline:auto;padding:1.6rem 0 0}
+  .hero__art.hx{display:block;position:relative;width:100%;max-width:560px;margin-inline:auto;padding:3rem 0 0;order:-1}
   .hxl{width:86%;margin-left:0}
   .hxl__lid{border-radius:12px 12px 3px 3px}
   .hxl__base{width:108%;margin-left:-4%;height:10px}
   .hxp{position:absolute;right:0;bottom:3.4rem;width:28%;max-width:170px}
   .hx__toast{display:none}
-  .hx__cap{position:static;display:flex;flex-wrap:wrap;justify-content:center;gap:.35rem .5rem;margin-top:1.4rem;text-align:center;font-size:.8rem}
-  .hx__cap a{margin-left:0}
-  .hx__long{display:none}
+  .hx__cap{display:none}
 }
 @media(prefers-reduced-motion:reduce){.hxp,.hx__dot{animation:none}}
