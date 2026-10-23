@@ -14,7 +14,10 @@
 .case__ui{position:absolute;z-index:2;display:block;height:auto;filter:drop-shadow(0 30px 40px rgba(0,0,0,.38)) drop-shadow(0 4px 10px rgba(0,0,0,.18));transform:translate3d(0,var(--py-ui,0px),0);transition:transform .9s var(--ease);will-change:transform}
 .case__vid{object-fit:cover;background:transparent}
 .case__vid--mer{border-radius:1.78%/2.96%;background:#090E1B}
-.case__vid--cad{border-radius:2.05%/3.4%;background:#FAFAFD}
+.case__vid--tr{border-radius:2.05%/3.4%;background:#EEF0EA}
+.cph{background:#0C0D10;border-radius:16.8%/8.1%;padding:3.4%;box-shadow:inset 0 0 0 1.5px #2A2C31}
+.cph .case__vid{display:block;width:100%;height:auto;border-radius:14.8%/6.9%;background:#fff}
+.case__vid--cad{border-radius:1.25%/2%;background:#FBFBFC}
 .case:hover .case__ui{transform:translate3d(0,calc(var(--py-ui,0px) - 8px),0)}
 .case:hover .case__bg{transform:translate3d(0,var(--py-bg,0px),0) scale(1.07)}
 .case__tag{position:absolute;z-index:3;left:clamp(1rem,2.4vw,1.6rem);top:clamp(1rem,2.4vw,1.6rem);display:inline-flex;align-items:center;gap:.5rem;font-family:var(--disp);font-size:.78rem;font-weight:600;letter-spacing:.02em;color:#fff;background:rgba(15,16,20,.55);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:.42rem .8rem;border-radius:999px}
@@ -27,7 +30,7 @@
 .case__over h3{font-family:var(--disp);font-weight:700;font-size:clamp(2rem,4vw,3.4rem);letter-spacing:-.03em;line-height:1;margin:.55rem 0 .8rem}
 .case__over p{font-size:1rem;line-height:1.5;color:rgba(255,255,255,.82)}
 /* pair UIs */
-.case--cadence .case__ui{width:90%;left:5%;bottom:-11%}
+.case--cadence .case__ui{width:132%;left:5%;bottom:-14%}
 .case--transit .case__ui{width:76%;left:4%;bottom:-8%}
 .case--transit .case__phone{width:27%;left:auto;right:5%;bottom:-14%;--py-ui-mul:1.6}
 /* body under the media */
@@ -108,22 +111,22 @@
   .cases__pair,.htpl__row{grid-template-columns:1fr}
   .case__body{grid-template-columns:1fr;gap:1rem}
   .case__go{justify-self:start}
-  .case--lead .case__media{aspect-ratio:4/3.3}
+  .case--lead .case__media{aspect-ratio:4/3.8}
   .case--lead .case__shade{background:linear-gradient(180deg,rgba(10,12,18,.78) 0%,rgba(10,12,18,.45) 40%,rgba(10,12,18,.1) 70%)}
   .case__over{left:1.3rem;right:1.3rem;top:4.2rem;bottom:auto;max-width:none}
   .case__over h3{font-size:2.1rem;margin:.4rem 0 .5rem}
   .case__over p{font-size:.92rem;max-width:34ch}
-  .case--lead .case__ui{display:none}
-  .case--lead .case__mphone{display:block;width:30%;max-width:230px;right:7%;bottom:1.4rem;top:auto}
+  .case--lead .case__ui{display:block;width:112%;left:5%;right:auto;bottom:-4%}
+  .case--lead .case__mphone{display:none}
   .htc{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   .htc__media{aspect-ratio:10/9;border-right:1px solid var(--line);border-bottom:0}
 }
 @media(max-width:560px){
   .htc{grid-template-columns:1fr}
   .htc__media{aspect-ratio:10/8;border-right:0;border-bottom:1px solid var(--line)}
-  .case--lead .case__media{aspect-ratio:4/5.3}
+  .case--lead .case__media{aspect-ratio:4/5}
   .case__over p{display:none}
-  .case--lead .case__mphone{width:38%;right:5%;bottom:1.1rem}
+  .case--lead .case__ui{width:150%;left:6%;bottom:-5%}
   .htpl__acts{margin-left:0;width:100%;flex-direction:column}
   .htpl__acts .btn{justify-content:center;white-space:nowrap}
 }
@@ -167,8 +170,8 @@
 .hx__tx b{font-size:.86rem;font-weight:600;color:var(--ink)}
 .hx__tx span{font-size:.76rem;color:var(--ink-faint);margin-top:.15rem;white-space:nowrap}
 .hx__cap{position:absolute;z-index:3;left:1%;bottom:0;display:inline-flex;align-items:center;gap:.5rem;font-size:.82rem;font-weight:500;color:var(--ink-soft)}
-.hx__cap b{color:var(--ink);font-weight:600;border-bottom:2px solid var(--orange);margin-left:.3rem}
-.hx__cap:hover b{color:var(--orange)}
+.hx__cap a{color:var(--ink);font-weight:600;border-bottom:2px solid var(--orange);margin-left:.3rem;white-space:nowrap;transition:color .2s}
+.hx__cap a:hover{color:var(--orange)}
 .hx__dot{width:7px;height:7px;border-radius:50%;background:#1F9D55;box-shadow:0 0 0 3px rgba(31,157,85,.2);animation:hlive 1.8s ease-in-out infinite}
 @media(max-width:1200px){.hx__toast{left:-2%}}
 /* phones and small tablets: the phone on its own, like before */
