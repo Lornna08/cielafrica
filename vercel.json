@@ -60,5 +60,11 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/apex-motion/:path((?!.*\\.).*)",
+      "destination": "/apex-motion/index.html"
+    }
   ]
 }

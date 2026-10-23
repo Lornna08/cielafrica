@@ -6,7 +6,9 @@
    - `category` must match one of the CATEGORIES list for filtering.
    - flags: "new" and "popular" control the badges & sort tabs.
    - optional: link (detail page), demo (live demo URL), video (looping
-     preview), featured (wide card at the top of the grid).
+     preview), featured (wide card at the top of the grid; the first two
+     featured items are shown large on the homepage), flag (homepage label),
+     points (up to 3 homepage bullet points).
    ============================================================ */
 window.CIEL = window.CIEL || {};
 
@@ -17,7 +19,8 @@ window.CIEL.templateCategories = [
 ];
 
 window.CIEL.templates = [
-  { id:"tpl-cielshop", name:"Ciel Shop", category:"E-commerce", desc:"Complete inventory, orders, batches, warehouses and analytics system — with a live demo you can try now.", idealFor:"Retailers, wholesalers & distributors", price:20000, image:"assets/img/ciel-shop/card.webp?v=20261022d", new:true, popular:true, link:"ciel-shop.html", demo:"ciel-shop/demo.html", video:"assets/img/ciel-shop/reel.mp4?v=20261022d", featured:true },
+  { id:"tpl-cielshop", name:"Ciel Shop", category:"E-commerce", desc:"Complete inventory, orders, batches, warehouses and analytics system — with a live demo you can try now.", idealFor:"Retailers, wholesalers & distributors", price:20000, image:"assets/img/ciel-shop/card.webp?v=20261022d", new:true, popular:true, link:"ciel-shop.html", demo:"ciel-shop/demo.html", video:"assets/img/ciel-shop/reel.mp4?v=20261022d", featured:true, flag:"Business system", points:["Inventory, batches and expiry across warehouses","Order board, returns and customer history","Live dashboard, analytics and reports"] },
+  { id:"tpl-apex", name:"APEX MOTION", category:"E-commerce", desc:"Premium automotive store for wheels, tyres and performance parts: vehicle fitment finder, filtered catalogue, product pages, bag and checkout. Live demo you can shop now.", idealFor:"Wheel, tyre & parts retailers", price:28000, image:"assets/img/apex-motion/card.webp?v=20261023a", new:true, popular:true, link:"apex-motion/", demo:"apex-motion/", video:"assets/img/apex-motion/reel.mp4?v=20261023a", featured:true, flag:"New store template", points:["Vehicle fitment finder on every wheel and tyre","Filters, sort, product pages, bag and checkout","One config file for brand, colours and catalogue"] },
   { id:"tpl-01", name:"Meridian",   category:"SaaS",         desc:"Clean product marketing site for software companies with pricing and docs.", idealFor:"SaaS & software products", price:18000, image:"", new:true,  popular:true },
   { id:"tpl-02", name:"Atrium",     category:"Corporate",    desc:"Confident corporate presence with services, team and investor sections.",    idealFor:"Corporations & institutions", price:22000, image:"", new:false, popular:true },
   { id:"tpl-03", name:"Storefront", category:"E-commerce",   desc:"Conversion-focused online store layout with cart, filters and checkout.",     idealFor:"Retail & online shops", price:26000, image:"", new:false, popular:true },
