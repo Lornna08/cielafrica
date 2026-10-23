@@ -227,11 +227,11 @@
   var esc=CIEL.esc||function(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
   var fmt=CIEL.fmt||function(n){return Number(n).toLocaleString('en-US');};
   var price=function(t){return t.price>0?'KES '+fmt(t.price):'On request';};
-  /* homepage order comes from `home` (1-4) in data/templates.js: 1-2 large, 3-4 small */
+  /* homepage order comes from `home` (1, 2, 3 …) in data/templates.js */
   var H=T.filter(function(t){return t.home>0;}).sort(function(a,b){return a.home-b.home;});
-  var feats=H.slice(0,2); if(feats.length<2) feats=feats.concat(T.filter(function(t){return t.featured&&feats.indexOf(t)<0;})).slice(0,2); if(!feats.length) feats=[T[0]];
-  var picks=H.slice(2,4).filter(function(t){return feats.indexOf(t)<0;});
-  if(picks.length<2) picks=picks.concat(T.filter(function(t){return feats.indexOf(t)<0&&picks.indexOf(t)<0&&t.popular;})).slice(0,2);
+  /* every homepage template gets the same large card; only the first two list their bullet points */
+  var feats=H.length?H:T.filter(function(t){return t.featured;}).slice(0,4); if(!feats.length) feats=[T[0]];
+  var picks=[];
   var html=feats.map(function(feat,k){
     var webm=feat.video&&/\.mp4(\?|$)/.test(feat.video)?'<source src="'+esc(feat.video.replace(/\.mp4(\?|$)/,'.webm$1'))+'" type="video/webm">':'';
     var media=feat.video?'<video muted loop playsinline preload="none" poster="'+esc(feat.image||'')+'" aria-label="'+esc(feat.name)+' preview"><source src="'+esc(feat.video)+'" type="video/mp4">'+webm+'</video>':(feat.image?'<img src="'+esc(feat.image)+'" alt="'+esc(feat.name)+' preview" loading="lazy">':(P[feat.category]||''));
@@ -241,7 +241,7 @@
     var link=feat.link||('quote.html?template='+encodeURIComponent(feat.name));
     var quote='quote.html?template='+encodeURIComponent(feat.name);
     var same=feat.demo&&feat.link===feat.demo;
-    var pts=(feat.points||[]).slice(0,3);
+    var pts=k<2?(feat.points||[]).slice(0,3):[];
     return '<article class="htpl__feat'+(k%2?' htpl__feat--alt':'')+'" data-r>'+
       '<a class="htpl__media" href="'+esc(feat.demo||link)+'" aria-label="'+esc(feat.name)+'">'+media+'</a>'+
       '<div class="htpl__info"><div class="htpl__tags"><span class="htpl__flag">'+esc(feat.flag||(k?'Featured':'Latest build'))+'</span>'+(feat.demo?'<span class="htpl__live htpl__live--in">Live template</span>':'')+'</div>'+
@@ -251,7 +251,7 @@
         '<span class="htpl__acts">'+(feat.demo?'<a class="btn btn--p btn--sm" href="'+esc(feat.demo)+'">Try the live template ↗</a>':'')+(same?'<a class="btn btn--ghost btn--sm" href="'+esc(quote)+'">Customize</a>':'<a class="btn btn--ghost btn--sm" href="'+esc(link)+'">View details</a>')+'</span></div>'+
       '</div></article>';
   }).join('');
-  html+='<div class="htpl__row">'+picks.map(function(t){
+  if(picks.length) html+='<div class="htpl__row">'+picks.map(function(t){
     var m=t.image?'<img src="'+esc(t.image)+'" alt="'+esc(t.name)+' preview" loading="lazy">':(P[t.category]||P['Business']||'');
     var q='quote.html?template='+encodeURIComponent(t.name),go=t.link||q;
     var act=t.demo?'<a class="btn btn--dark btn--sm" href="'+esc(t.demo)+'">Live template ↗</a>':'<a class="btn btn--dark btn--sm" href="'+q+'">Customize</a>';

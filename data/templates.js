@@ -6,8 +6,8 @@
    - `category` must match one of the CATEGORIES list for filtering.
    - flags: "new" and "popular" control the badges & sort tabs.
    - optional: link (detail page), demo (live template URL), video (looping
-     preview), featured (wide card at the top of the grid), home (1-4: homepage
-     order — 1 and 2 are shown large, 3 and 4 as smaller cards), flag (homepage label),
+     preview), featured (wide card at the top of the grid), home (1, 2, 3 …: homepage
+     order — every one is shown as a large card), flag (homepage label),
      points (up to 3 homepage bullet points), phone (screenshot shown in an
      iPhone 17 Pro Max mockup beside the dashboard on the homepage).
    ============================================================ */
