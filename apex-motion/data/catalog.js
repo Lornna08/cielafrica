@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APEX MOTION — demo catalogue
+   APEX MOTION — template catalogue
    Fictional brands and products for demonstration only. Prices in the store
    currency (config.currency). Ratings and reviews are SAMPLE data.
    Replace this file (or load it from an API) for a production store.

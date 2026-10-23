@@ -57,6 +57,7 @@ svg{display:block;flex-shrink:0}
 .demo-bar__acts .pri{background:var(--acc);border-color:var(--acc)}
 .demo-bar__acts .pri:hover{background:var(--acc-2)}
 .demo-bar .txt-long{display:inline}
+.demo-bar__msg{white-space:nowrap;overflow:hidden;text-overflow:clip;min-width:0}
 
 /* ---------- shell ---------- */
 .shell{display:grid;grid-template-columns:var(--side) 1fr;min-height:100vh;padding-top:var(--banner);transition:grid-template-columns .3s var(--ease)}
@@ -523,6 +524,7 @@ a.lrow:hover{background:#FBFAF6}
   .demo-bar__back{position:static;transform:none}
   .demo-bar .dot{display:none}
   .demo-bar__acts .hide-sm{display:none}
+  .demo-bar__msg{display:none}
   .g-kpi{grid-template-columns:repeat(2,minmax(0,1fr))}
   .g-4{grid-template-columns:1fr 1fr}
   .kpi__v{font-size:19px}

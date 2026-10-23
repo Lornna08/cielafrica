@@ -4,7 +4,7 @@
    writes through these actions so listings, deals, commissions and
    reports stay consistent.
 
-   Demo persistence: browser localStorage under "reside-ke:demo:v1".
+   Template persistence: browser localStorage under "reside-ke:demo:v1".
    It is isolated sample data — never real customer records — and a
    production deployment would replace this module with an API.
    ============================================================ */
@@ -161,7 +161,7 @@
     moveDeal: function (id, stage, opts) {
       var d = store.deal(id); if (!d) fail('Deal not found.');
       if (d.stage === stage) return d;
-      if (d.stage === 'won') fail('This deal is closed. Reopen isn’t available in the demo.');
+      if (d.stage === 'won') fail('This deal is closed. Reopen isn’t available in the template.');
       var p = store.prop(d.propertyId), from = store.stage(d.stage).short;
       d.stage = stage;
       if (stage === 'won') {

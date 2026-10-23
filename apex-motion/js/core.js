@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APEX MOTION — core: utilities, icons, demo data layer, router
+   APEX MOTION — core: utilities, icons, template data layer, router
    The data layer (APEX.db) is the only place that reads or writes state.
    Swap its methods for API calls to connect a real backend.
    ========================================================================== */
@@ -84,7 +84,7 @@
   A.vehicleById = {}; A.vehicles.forEach(function (v) { A.vehicleById[v.id] = v; });
   A.collections.forEach(function (c) { c.count = A.products.filter(function (p) { return (p.tags || []).indexOf(c.tag) >= 0; }).length; });
 
-  /* ---------- demo data layer ---------- */
+  /* ---------- template data layer ---------- */
   var KEY = 'apexmotion:demo:v1';
   var blank = function () { return { v: 1, cart: [], wish: [], orders: [], account: null, addresses: [], vehicle: null, code: null, stock: {}, news: false }; };
   var S;
@@ -122,7 +122,7 @@
     applyCode: function (code) {
       code = String(code || '').trim().toUpperCase();
       var d = C.discounts.filter(function (x) { return x.code === code; })[0];
-      if (!d) return { ok: false, msg: 'That code isn\'t valid. Try APEX10 in this demo.' };
+      if (!d) return { ok: false, msg: 'That code isn\'t valid. Try APEX10 in this template.' };
       S.code = d.code; save(); return { ok: true, d: d };
     },
     clearCode: function () { S.code = null; save(); },
@@ -143,7 +143,7 @@
     /* vehicle */
     setVehicle: function (id) { S.vehicle = id || null; save(); },
     vehicle: function () { return S.vehicle ? A.vehicleById[S.vehicle] : null; },
-    /* account (browser-only demo) */
+    /* account (browser-only template) */
     signIn: function (name, email) { S.account = { name: name, email: email, since: new Date().toISOString().slice(0, 10) }; save(); },
     signOut: function () { S.account = null; save(); },
     addAddress: function (a) { a.id = U.uid('A'); S.addresses.push(a); save(); return a; },
@@ -155,7 +155,7 @@
         var x = lines[i]; if (db.inCart(x.p.id) > db.stockOf(x.p.id)) return { ok: false, msg: 'Only ' + db.stockOf(x.p.id) + ' of ' + x.p.name + ' left. Update your bag and try again.' };
       }
       var tt = db.totals(info.ship);
-      var o = { id: 'AM-' + String(Date.now()).slice(-6), date: new Date().toISOString(), status: 'Confirmed (demo)',
+      var o = { id: 'AM-' + String(Date.now()).slice(-6), date: new Date().toISOString(), status: 'Confirmed (template)',
         lines: lines.map(function (x) { return { id: x.p.id, name: x.p.name, size: x.l.size, finish: x.l.finish, qty: x.l.qty, price: x.p.price }; }),
         sub: tt.sub, disc: tt.disc, code: tt.code ? tt.code.code : null, ship: tt.ship, method: tt.method.name, total: tt.total,
         contact: { name: info.name, email: info.email, phone: info.phone }, address: info.address, pay: info.pay };

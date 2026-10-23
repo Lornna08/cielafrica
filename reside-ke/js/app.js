@@ -32,7 +32,7 @@
   /* ---------------- shell ---------------- */
   function shell() {
     document.body.innerHTML =
-      '<div class="demo-bar" role="region" aria-label="Demo notice"><a class="db-back" href="../index.html" aria-label="Back to Ciel Africa"><b>‹</b> Ciel Africa</a><span class="dot" aria-hidden="true"></span><span class="demo-bar__t"><span class="db-long">You’re exploring the <b>Reside Ke demo</b>. Changes affect sample data only.</span><span class="db-short"><b>Reside Ke demo</b> · changes affect sample data only</span></span><span class="demo-bar__a"><button class="db-btn" data-act="reset">Reset demo</button><a class="db-btn db-hide" href="./#features">View features</a><a class="db-btn db-btn--p" href="../quote.html?template=Reside%20Ke">Get Reside Ke</a></span></div>' +
+      '<div class="demo-bar" role="region" aria-label="Template notice"><a class="db-back" href="../index.html" aria-label="Back to Ciel Africa"><b>‹</b> Ciel Africa</a><span class="dot" aria-hidden="true"></span><span class="demo-bar__t"><span class="db-long">You’re exploring the <b>Reside Ke template</b>. Changes affect sample data only.</span><span class="db-short"><b>Reside Ke template</b> · changes affect sample data only</span></span><span class="demo-bar__a"><button class="db-btn" data-act="reset">Reset template</button><a class="db-btn db-hide" href="./#features">View features</a><a class="db-btn db-btn--p" href="../quote.html?template=Reside%20Ke">Get Reside Ke</a></span></div>' +
       '<div class="app" id="app">' +
       '<div class="main">' +
       '<header class="top"><button class="ib top__menu" data-act="drawer" aria-label="Open navigation">' + I('menu', 20) + '</button>' +
@@ -85,7 +85,7 @@
   var lastKey = '';
   function render(keepScroll) {
     var v = document.getElementById('view'), p = route(), y = window.scrollY;
-    if (!p.render) { v.innerHTML = ES.empty('alert', 'Page not found', 'That page doesn’t exist in the demo.', '<a class="btn" href="#/overview">Back to overview</a>'); return; }
+    if (!p.render) { v.innerHTML = ES.empty('alert', 'Page not found', 'That page doesn’t exist in the template.', '<a class="btn" href="#/overview">Back to overview</a>'); return; }
     v.className = 'view view--' + current.name;
     p.render(v, current.params);
     tabs();
@@ -98,7 +98,7 @@
     document.documentElement.classList.remove('is-drawer');
     render(same);
     if (!same) { window.scrollTo(0, 0); var v = document.getElementById('view'); try { v.focus({ preventScroll: true }); } catch (e) { } }
-    var t = (TAB_OF[current.name] || current.name); document.title = (t.charAt(0).toUpperCase() + t.slice(1)) + ' · Reside Ke demo';
+    var t = (TAB_OF[current.name] || current.name); document.title = (t.charAt(0).toUpperCase() + t.slice(1)) + ' · Reside Ke template';
     document.documentElement.classList.toggle('is-chatroute', current.name === 'chat');
   }
   ES.app = { go: function (h) { if (location.hash === h) go(); else location.hash = h; }, refresh: function () { render(true); }, current: function () { return current; } };
@@ -107,11 +107,11 @@
   function onClick(e) {
     var a = e.target.closest('[data-act]'); if (!a) return;
     var act = a.dataset.act;
-    if (act === 'reset') ES.confirm({ title: 'Reset the demo?', text: 'This restores the original sample listings, deals, leads and messages. Anything you created in this browser will be removed.', ok: 'Reset demo', tone: 'red', icon: 'refresh', onOk: function () { st.reset(); ES.toast('Demo data restored'); ES.app.go('#/overview'); } });
+    if (act === 'reset') ES.confirm({ title: 'Reset the template?', text: 'This restores the original sample listings, deals, leads and messages. Anything you created in this browser will be removed.', ok: 'Reset template', tone: 'red', icon: 'refresh', onOk: function () { st.reset(); ES.toast('Template data restored'); ES.app.go('#/overview'); } });
     else if (act === 'search') openSearch();
     else if (act === 'notes') openNotes(a);
     else if (act === 'help') openHelp();
-    else if (act === 'me') ES.menu(a, [{ label: st.me().name + ' — ' + st.me().role, icon: 'user', disabled: true }, '-', { label: 'Settings', icon: 'gear', go: '#/settings' }, { label: 'Team', icon: 'users', go: '#/team' }, { label: 'Reset demo data', icon: 'refresh', act: 'reset' }, '-', { label: 'Back to the Reside Ke site', icon: 'out', href: './' }], function (it) { if (it.go) ES.app.go(it.go); else if (it.href) location.href = it.href; else if (it.act) document.querySelector('[data-act=reset]').click(); });
+    else if (act === 'me') ES.menu(a, [{ label: st.me().name + ' — ' + st.me().role, icon: 'user', disabled: true }, '-', { label: 'Settings', icon: 'gear', go: '#/settings' }, { label: 'Team', icon: 'users', go: '#/team' }, { label: 'Reset template data', icon: 'refresh', act: 'reset' }, '-', { label: 'Back to the Reside Ke site', icon: 'out', href: './' }], function (it) { if (it.go) ES.app.go(it.go); else if (it.href) location.href = it.href; else if (it.act) document.querySelector('[data-act=reset]').click(); });
     else if (act === 'more') ES.menu(a, MORE.map(function (m) { var b = m.badge ? m.badge() : 0; return { label: m.label + (b ? ' (' + b + ')' : ''), icon: m.icon, go: '#/' + m.id + (m.sub ? '/' + m.sub : '') }; }), function (it) { ES.app.go(it.go); });
     else if (act === 'drawer') openDrawerNav();
     else if (act === 'chatm') { if (innerWidth > 1180) { ES.ui.chat.open = !ES.ui.chat.open; document.documentElement.classList.toggle('is-chat-off', !ES.ui.chat.open); } else ES.app.go('#/chat'); }
@@ -175,9 +175,9 @@
     });
   }
   function openHelp() {
-    ES.open('modal', ES.head('Getting around Reside Ke') + '<div class="ovl__body help"><p>This is a working demo filled with sample data for a fictional Nairobi agency. Try these:</p><ul>' +
-      ['Open <a href="#/property/p1041">Karura Ridge House</a> and drag the price sliders — the gauge and market insight update live.', 'Drag a card on the <a href="#/deals">Deals board</a> to a new stage. Closing a deal records its commission.', 'Add a lead on <a href="#/leads">Leads</a>, schedule a follow-up, then convert it to a contact and deal.', 'Send a message in the team chat. Replies are simulated in this demo.', 'Press <kbd>Ctrl</kbd> + <kbd>K</kbd> (or <kbd>/</kbd>) to search everything.'].map(function (t) { return '<li>' + t + '</li>'; }).join('') +
-      '</ul><p class="muted">Everything you change is stored only in this browser. Use <b>Reset demo</b> in the top bar to start over.</p></div>', { label: 'Help' }).addEventListener('click', function (e) { if (e.target.closest('a')) ES.close(); });
+    ES.open('modal', ES.head('Getting around Reside Ke') + '<div class="ovl__body help"><p>This is a working template filled with sample data for a fictional Nairobi agency. Try these:</p><ul>' +
+      ['Open <a href="#/property/p1041">Karura Ridge House</a> and drag the price sliders — the gauge and market insight update live.', 'Drag a card on the <a href="#/deals">Deals board</a> to a new stage. Closing a deal records its commission.', 'Add a lead on <a href="#/leads">Leads</a>, schedule a follow-up, then convert it to a contact and deal.', 'Send a message in the team chat. Replies are simulated in this template.', 'Press <kbd>Ctrl</kbd> + <kbd>K</kbd> (or <kbd>/</kbd>) to search everything.'].map(function (t) { return '<li>' + t + '</li>'; }).join('') +
+      '</ul><p class="muted">Everything you change is stored only in this browser. Use <b>Reset template</b> in the top bar to start over.</p></div>', { label: 'Help' }).addEventListener('click', function (e) { if (e.target.closest('a')) ES.close(); });
   }
 
   /* ---------------- chat panel ---------------- */
@@ -209,7 +209,7 @@
     });
     if (c.typing === conv.id) html += '<div class="msg"><div class="msg__meta">' + ES.av(other, 22) + '<b>' + esc(other.name) + '</b></div><div class="bub bub--typing"><i></i><i></i><i></i></div></div>';
     html += '</div><form class="chat__f" data-chat="form"><input name="m" placeholder="Enter your message" aria-label="Message ' + esc(other.name) + '" autocomplete="off" value="' + esc(c.drafts[conv.id] || '') + '"><button type="button" class="ib" data-chat="attach" aria-label="Attach listing photos">' + I('clip', 17) + '</button><button class="btn btn--p btn--sm" aria-label="Send">' + I('send', 14) + 'Send</button></form>' +
-      '<p class="chat__note">' + I('info', 12) + 'Demo chat — messages stay in this browser; replies are simulated.</p>';
+      '<p class="chat__note">' + I('info', 12) + 'Template chat — messages stay in this browser; replies are simulated.</p>';
     return html;
   }
   function renderChat() {

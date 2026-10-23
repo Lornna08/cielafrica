@@ -51,12 +51,12 @@ window.CS = window.CS || {};
   function boot() {
     store.init();
     document.body.insertAdjacentHTML('afterbegin',
-      '<div class="demo-bar" role="region" aria-label="Demo notice"><a class="demo-bar__back" href="../index.html" aria-label="Back to Ciel Africa"><b>‹</b><span> Ciel Africa</span></a><span class="dot"></span><span class="demo-bar__msg"><b><span class="txt-long">You’re exploring the </span>Ciel Shop demo<span class="txt-long">.</span></b> <span class="txt-long">Changes here affect sample data only.</span></span>' +
-      '<span class="demo-bar__acts"><button type="button" data-reset>Reset demo</button><a class="hide-sm" href="../ciel-shop.html#features">View features</a><a class="pri" href="../ciel-shop.html#pricing">Get Ciel Shop</a></span></div>' +
+      '<div class="demo-bar" role="region" aria-label="Template notice"><a class="demo-bar__back" href="../index.html" aria-label="Back to Ciel Africa"><b>‹</b><span> Ciel Africa</span></a><span class="dot"></span><span class="demo-bar__msg"><b><span class="txt-long">You’re exploring the </span>Ciel Shop template<span class="txt-long">.</span></b> <span class="txt-long">Changes here affect sample data only.</span></span>' +
+      '<span class="demo-bar__acts"><button type="button" data-reset>Reset template</button><a class="hide-sm" href="../ciel-shop.html#features">View features</a><a class="pri" href="../ciel-shop.html#pricing">Get Ciel Shop</a></span></div>' +
       '<div class="shell' + (app.ui.collapsed ? ' is-collapsed' : '') + '" id="shell"><aside class="side" aria-label="Main navigation"><div class="side__brand"><span class="logo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg></span><span class="side__name">Ciel <span>Shop</span></span></div><nav class="side__nav" id="nav"></nav><div class="side__foot"><button class="collapse-btn" id="collapse" aria-label="Collapse sidebar">' + ui.icon('collapse', 18) + '<span>Collapse</span></button></div></aside><div class="scrim" id="scrim"></div>' +
       '<div class="main"><header class="top"><button class="burger" id="burger" aria-label="Open navigation">' + ui.icon('menu', 18) + '</button><div class="crumbs" id="crumbs"></div><div class="top__sp"></div><div class="top__ctx" id="ctx"></div>' +
       '<button class="gsearch" id="gsearch" aria-label="Search">' + ui.icon('search', 15) + '<span><span class="gs-long">Search products, orders, batches…</span><span class="gs-short">Search…</span></span><span class="kbd">⌘K</span></button>' +
-      '<button class="ibtn" id="help" aria-label="Demo guide">' + ui.icon('help', 18) + '</button><button class="ibtn" id="bell" aria-label="Notifications">' + ui.icon('bell', 18) + '</button>' +
+      '<button class="ibtn" id="help" aria-label="Template guide">' + ui.icon('help', 18) + '</button><button class="ibtn" id="bell" aria-label="Notifications">' + ui.icon('bell', 18) + '</button>' +
       '<button class="userbtn" id="userbtn" aria-label="Account"></button></header><main class="view" id="view" tabindex="-1"></main></div></div>');
     shell = document.getElementById('shell'); view = document.getElementById('view');
     document.getElementById('collapse').onclick = function () { shell.classList.toggle('is-collapsed'); app.savePref('collapsed', shell.classList.contains('is-collapsed')); };
@@ -75,7 +75,7 @@ window.CS = window.CS || {};
     });
     window.addEventListener('hashchange', render);
     store.subscribe(function () { chrome(); if (current && !current.static) render(true); });
-    if (!store.persistOk()) setTimeout(function () { ui.toast('Your browser is blocking storage, so demo changes will reset when you leave the page.', 'info'); }, 800);
+    if (!store.persistOk()) setTimeout(function () { ui.toast('Your browser is blocking storage, so template changes will reset when you leave the page.', 'info'); }, 800);
     if (!location.hash || location.hash === '#' || location.hash === '#/') location.replace('#/dashboard');
     render();
     if (!app.ui.welcomed) { app.savePref('welcomed', 1); setTimeout(guide, 700); }
@@ -103,9 +103,9 @@ window.CS = window.CS || {};
     chrome();
     var page;
     try { page = match ? match.fn(params, q) : null; } catch (e) { console.error(e); page = null; }
-    if (!page) page = { crumbs: [], title: 'Not found', html: ui.empty('search', 'We couldn’t find that page', 'It may have been removed — or the record was deleted when the demo was reset.', '<a class="btn btn--sm" href="#/dashboard" style="margin-top:8px">Back to dashboard</a>') };
+    if (!page) page = { crumbs: [], title: 'Not found', html: ui.empty('search', 'We couldn’t find that page', 'It may have been removed — or the record was deleted when the template was reset.', '<a class="btn btn--sm" href="#/dashboard" style="margin-top:8px">Back to dashboard</a>') };
     current = page;
-    document.title = (page.title ? page.title + ' · ' : '') + 'Ciel Shop demo';
+    document.title = (page.title ? page.title + ' · ' : '') + 'Ciel Shop template';
     var cr = (page.crumbs || []).map(function (c) { return '<a href="' + c[1] + '">' + ui.esc(c[0]) + '</a>' + ui.icon('chevR', 13); }).join('') + '<b>' + ui.esc(page.title || '') + '</b>';
     document.getElementById('crumbs').innerHTML = cr;
     var ctx = document.getElementById('ctx');
@@ -128,11 +128,11 @@ window.CS = window.CS || {};
 
   /* ---------- reset ---------- */
   function resetDemo() {
-    ui.confirm({ title: 'Reset the demo?', body: 'This restores the original sample dataset and removes every product, order and stock change you’ve made in this browser.', ok: 'Reset demo', danger: true }).then(function (ok) {
+    ui.confirm({ title: 'Reset the template?', body: 'This restores the original sample dataset and removes every product, order and stock change you’ve made in this browser.', ok: 'Reset template', danger: true }).then(function (ok) {
       if (!ok) return;
       store.reset();
       app.go('#/dashboard');
-      ui.toast('Demo reset to the original sample data');
+      ui.toast('Template reset to the original sample data');
     });
   }
   app.reset = resetDemo;
@@ -195,13 +195,13 @@ window.CS = window.CS || {};
 
   /* ---------- user menu ---------- */
   function userMenu(anchor) {
-    var S = store.state, items = [{ label: 'Act as (demo)', header: true }];
+    var S = store.state, items = [{ label: 'Act as (template)', header: true }];
     S.team.filter(function (u) { return !u.invited; }).forEach(function (u) { items.push({ label: u.name + ' · ' + u.role, icon: 'user', on: u.id === S.currentUserId, fn: function () { store.setUser(u.id); ui.toast('Now acting as ' + u.name + '. New activity is recorded under their name.'); } }); });
-    items.push('-', { label: 'Business settings', icon: 'settings', fn: function () { app.go('#/settings'); } }, { label: 'Demo guide', icon: 'help', fn: guide }, '-', { label: 'Reset demo data', icon: 'refresh', danger: true, fn: resetDemo }, { label: 'Back to Ciel Shop', icon: 'logout', fn: function () { location.href = '../ciel-shop.html'; } });
+    items.push('-', { label: 'Business settings', icon: 'settings', fn: function () { app.go('#/settings'); } }, { label: 'Template guide', icon: 'help', fn: guide }, '-', { label: 'Reset template data', icon: 'refresh', danger: true, fn: resetDemo }, { label: 'Back to Ciel Shop', icon: 'logout', fn: function () { location.href = '../ciel-shop.html'; } });
     ui.menu(anchor, items);
   }
 
-  /* ---------- demo guide ---------- */
+  /* ---------- template guide ---------- */
   function guide() {
     var steps = [
       ['Move an order across the board', 'Drag a card from Packing to Ready to ship — or use the status menu on the card.', '#/board'],
@@ -214,9 +214,9 @@ window.CS = window.CS || {};
       ['Explore analytics', 'Every figure is calculated from the same orders and stock records.', '#/analytics']
     ];
     ui.modal({
-      title: 'Welcome to the Ciel Shop demo', size: 'wide',
+      title: 'Welcome to the Ciel Shop template', size: 'wide',
       sub: 'This is the working application, filled with six months of sample trading for a fictional retailer, Mawe Home &amp; Pantry. Nothing here touches real customers, payments or couriers.',
-      body: '<div class="g-2 grid" style="gap:4px">' + steps.map(function (s, i) { return '<a class="guide-i" href="' + s[2] + '" data-close><span class="n">' + (i + 1) + '</span><span><b>' + s[0] + '</b><span>' + s[1] + '</span></span></a>'; }).join('') + '</div><div class="note note--plain" style="margin-top:14px">' + ui.icon('info', 15) + '<span>Your changes are saved in this browser only. Use <b>Reset demo</b> in the top bar to start over at any time. Press <span class="kbd">⌘K</span> or <span class="kbd">/</span> to search.</span></div>',
+      body: '<div class="g-2 grid" style="gap:4px">' + steps.map(function (s, i) { return '<a class="guide-i" href="' + s[2] + '" data-close><span class="n">' + (i + 1) + '</span><span><b>' + s[0] + '</b><span>' + s[1] + '</span></span></a>'; }).join('') + '</div><div class="note note--plain" style="margin-top:14px">' + ui.icon('info', 15) + '<span>Your changes are saved in this browser only. Use <b>Reset template</b> in the top bar to start over at any time. Press <span class="kbd">⌘K</span> or <span class="kbd">/</span> to search.</span></div>',
       foot: '<span class="sp"></span><button class="btn btn--p" data-x>Start exploring</button>',
       onOpen: function (el, api) { el.querySelectorAll('[data-close]').forEach(function (a) { a.addEventListener('click', function () { api.close(); }); }); }
     });

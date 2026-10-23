@@ -89,12 +89,12 @@
   // shared stage change with confirmations for consequential moves
   function move(id, stage, pos) {
     var d = st.deal(id); if (!d || d.stage === stage) return;
-    if (d.stage === 'won') { ES.toast('Closed deals can’t be moved in the demo.', 'err'); return; }
+    if (d.stage === 'won') { ES.toast('Closed deals can’t be moved in the template.', 'err'); return; }
     var p = st.prop(d.propertyId);
     if (stage === 'won') {
       ES.confirm({
         title: 'Close ' + d.ref + ' as won?', icon: 'trophy', tone: 'green', ok: 'Close deal',
-        html: esc(p.title) + ' will be marked <b>' + (d.kind === 'rent' ? 'let' : 'sold') + '</b> and the commission recorded as <b>earned</b>.' + (d.kind === 'rent' ? ' A 12-month lease record is created.' : '') + '<br><span class="muted" style="font-size:12px">Demo only — no money is transferred.</span>',
+        html: esc(p.title) + ' will be marked <b>' + (d.kind === 'rent' ? 'let' : 'sold') + '</b> and the commission recorded as <b>earned</b>.' + (d.kind === 'rent' ? ' A 12-month lease record is created.' : '') + '<br><span class="muted" style="font-size:12px">Template only — no money is transferred.</span>',
         field: ES.field('Final ' + (d.kind === 'rent' ? 'monthly rent' : 'sale price') + ' (KES)', '<input data-num id="cfVal" inputmode="numeric" value="' + d.value + '">'),
         onOk: function (panel) {
           var val = Number(panel.querySelector('#cfVal').value.replace(/[^0-9]/g, ''));
@@ -215,7 +215,7 @@
         if (k === 'om') { ES.menu(x, [{ label: 'Mark as countered', icon: 'refresh', k: 'ctr' }, { label: 'Decline offer', icon: 'x', k: 'dec', tone: 'red' }], function (it) { var i2 = +x.dataset.i; if (it.k === 'ctr') ES.try(function () { st.respondOffer(d.id, i2, 'countered'); }, 'Marked as countered — record the buyer’s next offer when it comes in'); else ES.try(function () { st.respondOffer(d.id, i2, 'declined'); }, 'Offer declined'); }); }
         if (k === 'dec') ES.try(function () { st.respondOffer(d.id, +x.dataset.i, 'declined'); }, 'Offer declined');
         if (k === 'ctr') { ES.try(function () { st.respondOffer(d.id, +x.dataset.i, 'countered'); }, 'Marked as countered — record the buyer’s next offer when it comes in'); }
-        if (k === 'cs') ES.confirm({ title: x.dataset.s === 'paid' ? 'Record commission as paid?' : 'Approve commission?', icon: 'wallet', tone: 'green', ok: x.dataset.s === 'paid' ? 'Record as paid' : 'Approve', text: x.dataset.s === 'paid' ? 'This records that ' + f.money(comm) + ' was settled. In the demo, no payment is made or verified.' : 'Approved commissions are ready for payout to ' + u.name + '.', onOk: function () { ES.try(function () { st.setCommissionStatus(d.id, x.dataset.s); }, 'Commission ' + x.dataset.s); } });
+        if (k === 'cs') ES.confirm({ title: x.dataset.s === 'paid' ? 'Record commission as paid?' : 'Approve commission?', icon: 'wallet', tone: 'green', ok: x.dataset.s === 'paid' ? 'Record as paid' : 'Approve', text: x.dataset.s === 'paid' ? 'This records that ' + f.money(comm) + ' was settled. In the template, no payment is made or verified.' : 'Approved commissions are ready for payout to ' + u.name + '.', onOk: function () { ES.try(function () { st.setCommissionStatus(d.id, x.dataset.s); }, 'Commission ' + x.dataset.s); } });
         if (k === 'agent') ES.menu(x, st.s.team.map(function (t) { return { label: t.name, on: t.id === d.agentId, id: t.id }; }), function (it) { d.agentId = it.id; ES.try(function () { st.addDealNote(d.id, 'Reassigned to ' + it.label); }, 'Deal reassigned to ' + it.label); });
         if (k === 'ev') ES.pages.calendar.edit(null, { type: 'viewing', propertyId: d.propertyId, contactId: d.buyerId, agentId: d.agentId });
         if (k === 'doc') ES.pages.documents.upload({ propertyId: d.propertyId, dealId: d.id });
@@ -295,7 +295,7 @@
         if (k === 'p') { CU.period = +b.dataset.p; ES.app.refresh(); }
         if (k === 'st') { CU.status = b.dataset.v; ES.app.refresh(); }
         if (k === 'ap') ES.try(function () { st.setCommissionStatus(b.dataset.id, 'approved'); }, 'Commission approved');
-        if (k === 'pay') ES.confirm({ title: 'Record commission as paid?', icon: 'wallet', tone: 'green', ok: 'Record as paid', text: 'This marks the commission as settled in Reside Ke. In the demo no payment is made or verified.', onOk: function () { ES.try(function () { st.setCommissionStatus(b.dataset.id, 'paid'); }, 'Commission recorded as paid'); } });
+        if (k === 'pay') ES.confirm({ title: 'Record commission as paid?', icon: 'wallet', tone: 'green', ok: 'Record as paid', text: 'This marks the commission as settled in Reside Ke. In the template no payment is made or verified.', onOk: function () { ES.try(function () { st.setCommissionStatus(b.dataset.id, 'paid'); }, 'Commission recorded as paid'); } });
         if (k === 'csv') ES.csv('reside-ke-commissions.csv', [['Deal', 'Property', 'Type', 'Agent', 'Deal value (KES)', 'Rate', 'Commission (KES)', 'Status', 'Closed']].concat(rows.map(function (d) { return [d.ref, st.prop(d.propertyId).title, d.kind, st.user(d.agentId).name, d.value, d.kind === 'rent' ? st.s.settings.rentMonths + ' month(s)' : (d.rate != null ? d.rate : st.s.settings.saleRate) + '%', st.commission(d), d.commissionStatus, f.dateLong(d.closedAt)]; })));
       };
     }

@@ -107,7 +107,7 @@
   ES.pages.property = {
     render: function (v, params) {
       var p = st.prop(params[0]);
-      if (!p) { v.innerHTML = ES.empty('building', 'Listing not found', 'It may have been removed when the demo was reset.', '<a class="btn" href="#/listings">Back to listings</a>'); return; }
+      if (!p) { v.innerHTML = ES.empty('building', 'Listing not found', 'It may have been removed when the template was reset.', '<a class="btn" href="#/listings">Back to listings</a>'); return; }
       var tab = params[1] || 'overview', deals = st.dealsFor(p.id), ev = st.eventsFor(p.id), leads = st.leadsFor(p.id), docs = st.docsFor(p.id);
       var viewings = ev.filter(function (e) { return e.type === 'viewing'; });
       var openD = deals.filter(function (d) { return d.stage !== 'won' && d.stage !== 'lost'; });
@@ -208,7 +208,7 @@
     },
     owner: function (el, p) {
       var c = st.contact(p.ownerId);
-      el.innerHTML = c ? '<article class="card" style="max-width:640px"><div class="mini__i" style="border:0">' + ES.cav(c, 48) + '<span class="grow"><b style="font-size:16px">' + esc(c.name) + '</b><em>' + c.types.join(' · ') + '</em></span><a class="btn" href="#/contact/' + c.id + '">Open contact ' + I('right', 14) + '</a></div><dl class="kv" style="margin-top:12px"><dt>Phone</dt><dd><a href="tel:' + c.phone.replace(/\s/g, '') + '">' + esc(c.phone) + '</a></dd><dt>Email</dt><dd><a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></dd>' + (c.company ? '<dt>Company</dt><dd>' + esc(c.company) + '</dd>' : '') + '<dt>Other listings</dt><dd>' + (st.listings().filter(function (x) { return x.ownerId === c.id && x.id !== p.id; }).map(function (x) { return '<a class="lnk" href="#/property/' + x.id + '">' + esc(x.title) + '</a>'; }).join(', ') || '—') + '</dd></dl><p class="badge-sample" style="margin-top:14px">' + I('info', 12) + 'Synthetic contact for the demo</p></article>' : ES.empty('user', 'No owner linked', 'Edit the listing to link an owner or landlord.');
+      el.innerHTML = c ? '<article class="card" style="max-width:640px"><div class="mini__i" style="border:0">' + ES.cav(c, 48) + '<span class="grow"><b style="font-size:16px">' + esc(c.name) + '</b><em>' + c.types.join(' · ') + '</em></span><a class="btn" href="#/contact/' + c.id + '">Open contact ' + I('right', 14) + '</a></div><dl class="kv" style="margin-top:12px"><dt>Phone</dt><dd><a href="tel:' + c.phone.replace(/\s/g, '') + '">' + esc(c.phone) + '</a></dd><dt>Email</dt><dd><a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></dd>' + (c.company ? '<dt>Company</dt><dd>' + esc(c.company) + '</dd>' : '') + '<dt>Other listings</dt><dd>' + (st.listings().filter(function (x) { return x.ownerId === c.id && x.id !== p.id; }).map(function (x) { return '<a class="lnk" href="#/property/' + x.id + '">' + esc(x.title) + '</a>'; }).join(', ') || '—') + '</dd></dl><p class="badge-sample" style="margin-top:14px">' + I('info', 12) + 'Synthetic contact for the template</p></article>' : ES.empty('user', 'No owner linked', 'Edit the listing to link an owner or landlord.');
     }
   };
   ES.timeline = timeline;
@@ -238,7 +238,7 @@
       '<div><div class="pr__k">Lowest acceptable</div><div class="pr__v"><b id="prM"></b><em class="muted" id="prRoom"></em></div>' +
       '<div class="rng"><span class="rng__t"></span><span class="rng__f rng__f--dark" id="fM"></span><span class="rng__ticks"></span><input type="range" min="' + lo + '" max="' + hi + '" step="' + step + '" value="' + S.min + '" id="rM" aria-label="Lowest acceptable price"><span class="rng__k" id="kM"><i></i><i></i><i></i></span></div></div></div>' +
       '<div class="ins" id="prIns" role="status"></div>' +
-      '<p class="pr__note">' + I('info', 12) + 'Market estimate of ' + f.money(p.estimate, true) + ' is demo sample data, not an independent valuation.</p>' +
+      '<p class="pr__note">' + I('info', 12) + 'Market estimate of ' + f.money(p.estimate, true) + ' is template sample data, not an independent valuation.</p>' +
       '<div class="pr__acts"><button class="btn" id="prCancel">Cancel</button><button class="btn btn--dark" id="prSave">Save changes</button></div>';
     var rT = el.querySelector('#rT'), rM = el.querySelector('#rM');
     function upd() {
@@ -275,7 +275,7 @@
 
   /* ---------------- gallery & floor plans ---------------- */
   function gallery(p, i) {
-    var panel = ES.open('modal', ES.head(p.title, p.images.length + ' photos · ' + esc(p.area)) + '<div class="ovl__body"><div class="pv__main" style="aspect-ratio:3/2"><img id="gImg" src="' + p.images[i] + '" alt=""><div class="pv__nav"><button data-g="-1" aria-label="Previous">' + I('left', 15) + '</button><button data-g="1" aria-label="Next">' + I('right', 15) + '</button></div></div><div class="thumbs">' + p.images.map(function (s, j) { return '<button data-gi="' + j + '" class="' + (j === i ? 'is-on' : '') + '"><img src="' + s + '" alt=""></button>'; }).join('') + '</div><p class="pr__note">' + I('info', 12) + 'Photography via Unsplash. Demo listing details are fictional.</p></div>', { wide: true, label: 'Photo gallery' });
+    var panel = ES.open('modal', ES.head(p.title, p.images.length + ' photos · ' + esc(p.area)) + '<div class="ovl__body"><div class="pv__main" style="aspect-ratio:3/2"><img id="gImg" src="' + p.images[i] + '" alt=""><div class="pv__nav"><button data-g="-1" aria-label="Previous">' + I('left', 15) + '</button><button data-g="1" aria-label="Next">' + I('right', 15) + '</button></div></div><div class="thumbs">' + p.images.map(function (s, j) { return '<button data-gi="' + j + '" class="' + (j === i ? 'is-on' : '') + '"><img src="' + s + '" alt=""></button>'; }).join('') + '</div><p class="pr__note">' + I('info', 12) + 'Photography via Unsplash. Template listing details are fictional.</p></div>', { wide: true, label: 'Photo gallery' });
     function show(j) { i = (j + p.images.length) % p.images.length; panel.querySelector('#gImg').src = p.images[i]; panel.querySelectorAll('[data-gi]').forEach(function (b, k) { b.classList.toggle('is-on', k === i); }); }
     panel.addEventListener('click', function (e) { var a = e.target.closest('[data-g]'), t = e.target.closest('[data-gi]'); if (a) show(i + +a.dataset.g); if (t) show(+t.dataset.gi); });
     panel.addEventListener('keydown', function (e) { if (e.key === 'ArrowRight') show(i + 1); if (e.key === 'ArrowLeft') show(i - 1); });
@@ -299,7 +299,7 @@
     var house = isHouse(p) && p.floors > 1, kind = !p.beds ? 'office' : (house ? which : 'upper'), per = house ? p.size / 2 : p.size;
     var panel = ES.open('modal', ES.head(house ? (kind === 'ground' ? 'Ground floor' : 'Upper floor') : 'Floor plan', esc(p.title) + ' · ' + f.n(Math.round(per)) + ' m² measured') + '<div class="ovl__body"><div id="fpBox">' + planSVG(kind, per) + '</div>' +
       (house ? '<div class="fp-tabs seg"><button data-fp="ground" class="' + (kind === 'ground' ? 'is-on' : '') + '">Ground floor</button><button data-fp="upper" class="' + (kind === 'upper' ? 'is-on' : '') + '">Upper floor</button></div>' : '') +
-      '<div class="fp-rooms" id="fpRooms">' + PLANS[kind].rooms.map(function (r) { return '<span data-room="' + r[0] + '">' + r[0] + '<em>' + Math.round(per * r[5]) + ' m²</em></span>'; }).join('') + '</div><p class="pr__note">' + I('info', 12) + 'Indicative layout generated for the demo — not a surveyed plan.</p></div>', { wide: true, label: 'Floor plan' });
+      '<div class="fp-rooms" id="fpRooms">' + PLANS[kind].rooms.map(function (r) { return '<span data-room="' + r[0] + '">' + r[0] + '<em>' + Math.round(per * r[5]) + ' m²</em></span>'; }).join('') + '</div><p class="pr__note">' + I('info', 12) + 'Indicative layout generated for the template — not a surveyed plan.</p></div>', { wide: true, label: 'Floor plan' });
     panel.addEventListener('click', function (e) { var b = e.target.closest('[data-fp]'); if (b) { ES.close(); setTimeout(function () { floorPlan(p, b.dataset.fp); }, 230); } });
     panel.addEventListener('mouseover', function (e) { var r = e.target.closest('[data-room]'); if (r) panel.querySelector('#fpBox').innerHTML = planSVG(kind, per, r.dataset.room); });
   }
@@ -337,7 +337,7 @@
       ES.field('Plot size', '<input name="plot" value="' + esc(p.plot || '') + '" placeholder="e.g. 0.5 acre">') +
       ES.field('Parking bays', '<input name="parking" data-num type="number" min="0" value="' + p.parking + '">') +
       '</div><div class="fld"><span class="fld__l">Amenities</span><div class="cks">' + ES.AMENITIES.map(function (a) { return '<label class="ck"><input type="checkbox" data-multi name="amenities" value="' + esc(a) + '"' + (p.amenities.indexOf(a) > -1 ? ' checked' : '') + '>' + esc(a) + '</label>'; }).join('') + '</div></div></fieldset>' +
-      '<fieldset class="fs"><legend>Photos</legend><p class="fld__h" style="margin-top:-8px">Pick from the demo photo library or upload your own (stored in this browser only, resized to 1200px).</p><div class="imgpick" id="imgpick">' + imgs.map(function (s) { return '<label><img src="' + s + '" alt="" loading="lazy"><input type="checkbox" data-multi name="images" value="' + s + '"' + ((p.images || []).indexOf(s) > -1 ? ' checked' : '') + ' aria-label="Use photo"></label>'; }).join('') + '</div><label class="drop" id="drop">' + I('upload', 20) + '<b>Upload photos</b><span>JPG, PNG or WebP · up to 8 MB each</span><input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden id="upl"></label></fieldset>' +
+      '<fieldset class="fs"><legend>Photos</legend><p class="fld__h" style="margin-top:-8px">Pick from the template photo library or upload your own (stored in this browser only, resized to 1200px).</p><div class="imgpick" id="imgpick">' + imgs.map(function (s) { return '<label><img src="' + s + '" alt="" loading="lazy"><input type="checkbox" data-multi name="images" value="' + s + '"' + ((p.images || []).indexOf(s) > -1 ? ' checked' : '') + ' aria-label="Use photo"></label>'; }).join('') + '</div><label class="drop" id="drop">' + I('upload', 20) + '<b>Upload photos</b><span>JPG, PNG or WebP · up to 8 MB each</span><input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden id="upl"></label></fieldset>' +
       '<fieldset class="fs"><legend>People & publishing</legend><div class="g4">' +
       ES.field('Assigned agent', ES.select('agentId', st.s.team.map(function (u) { return { v: u.id, l: u.name }; }), p.agentId)) +
       ES.field('Owner / landlord', ES.select('ownerId', [{ v: '', l: 'Select a contact…' }].concat(owners.map(function (c) { return { v: c.id, l: c.name }; })), p.ownerId)) +

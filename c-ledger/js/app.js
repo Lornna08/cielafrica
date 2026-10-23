@@ -25,7 +25,7 @@
   function shell() {
     var me = st.me(), co = st.S.settings.company;
     document.body.innerHTML =
-      '<div class="demo-bar" role="region" aria-label="Demo notice"><a class="db-back" href="../index.html"><b>‹</b><span> Ciel Africa</span></a><span class="db-msg"><i class="db-dot" aria-hidden="true"></i><span class="db-long">You’re exploring the <b>C-Ledger demo</b>. Changes affect sample data only.</span><span class="db-short"><b>C-Ledger demo</b> · sample data only</span></span><span class="db-a"><button class="db-btn" data-act="reset">Reset demo</button><a class="db-btn db-hide" href="./#features">View features</a><a class="db-btn db-btn--p" href="../quote.html?template=C-Ledger">Get C-Ledger</a></span></div>' +
+      '<div class="demo-bar" role="region" aria-label="Template notice"><a class="db-back" href="../index.html"><b>‹</b><span> Ciel Africa</span></a><span class="db-msg"><i class="db-dot" aria-hidden="true"></i><span class="db-long">You’re exploring the <b>C-Ledger template</b>. Changes affect sample data only.</span><span class="db-short"><b>C-Ledger template</b> · sample data only</span></span><span class="db-a"><button class="db-btn" data-act="reset">Reset template</button><a class="db-btn db-hide" href="./#features">View features</a><a class="db-btn db-btn--p" href="../quote.html?template=C-Ledger">Get C-Ledger</a></span></div>' +
       '<div class="app" id="app">' +
       '<aside class="side" id="side" aria-label="Main navigation"><div class="side__in">' +
         '<div class="side__brand"><a class="brand" href="#/overview" aria-label="C-Ledger overview"><span class="brand__m">' + I('leaf', 18) + '</span><span class="brand__w">C-Ledger</span></a><button class="ib side__col" data-act="collapse" aria-label="Collapse sidebar">' + I('panel', 17) + '</button></div>' +
@@ -53,14 +53,14 @@
 
   function onAct(e) {
     var a = e.target.closest('[data-act]'); if (!a) return; var act = a.dataset.act;
-    if (act === 'reset') CL.confirm({ title: 'Reset the demo?', text: 'All changes you made — entries, invoices, reconciliations and settings — are replaced with fresh sample books. This only affects this browser.', ok: 'Reset demo', icon: 'refresh', tone: 'a', onOk: function () { st.reset(); CL.toast('Demo reset — fresh sample books loaded'); location.hash = '#/overview'; } });
+    if (act === 'reset') CL.confirm({ title: 'Reset the template?', text: 'All changes you made — entries, invoices, reconciliations and settings — are replaced with fresh sample books. This only affects this browser.', ok: 'Reset template', icon: 'refresh', tone: 'a', onOk: function () { st.reset(); CL.toast('Template reset — fresh sample books loaded'); location.hash = '#/overview'; } });
     else if (act === 'collapse') { var app = document.getElementById('app'); app.classList.toggle('is-col'); st.setPref('sidebar', app.classList.contains('is-col') ? 'collapsed' : 'open'); }
     else if (act === 'drawer') drawer();
     else if (act === 'search') palette();
     else if (act === 'notes') notes();
     else if (act === 'help') help();
     else if (act === 'company') CL.menu(a, [{ label: st.S.settings.company.name, icon: 'check', fn: function () { } }, '-', { label: 'Add another company', icon: 'plus', hint: 'Production', disabled: true, fn: function () { } }, { label: 'Company settings', icon: 'building', fn: function () { location.hash = '#/settings/company'; } }]);
-    else if (act === 'me') { var me = st.me(); CL.menu(a, [{ label: me.name + ' · ' + st.E.roleName(st.actor().role), icon: 'user', disabled: true, fn: function () { } }, { label: 'Demo identity — not a signed-in account', icon: 'info', disabled: true, fn: function () { } }, '-', { label: 'View as another role…', icon: 'shield', fn: function () { location.hash = '#/team/roles'; } }, { label: 'Preferences', icon: 'settings', fn: function () { location.hash = '#/settings/preferences'; } }, { label: 'Reset demo', icon: 'refresh', fn: function () { document.querySelector('[data-act=reset]').click(); } }]); }
+    else if (act === 'me') { var me = st.me(); CL.menu(a, [{ label: me.name + ' · ' + st.E.roleName(st.actor().role), icon: 'user', disabled: true, fn: function () { } }, { label: 'Template identity — not a signed-in account', icon: 'info', disabled: true, fn: function () { } }, '-', { label: 'View as another role…', icon: 'shield', fn: function () { location.hash = '#/team/roles'; } }, { label: 'Preferences', icon: 'settings', fn: function () { location.hash = '#/settings/preferences'; } }, { label: 'Reset template', icon: 'refresh', fn: function () { document.querySelector('[data-act=reset]').click(); } }]); }
     else if (act === 'new') CL.newMenu(a);
   }
   /** Global "New transaction" menu — also used by page buttons. */
@@ -103,7 +103,7 @@
     var v = document.getElementById('view'), page = CL.pages[current.name];
     var nav = NAV_OF[current.name] || current.name;
     document.querySelectorAll('[data-nav]').forEach(function (a) { var on = a.dataset.nav === nav; a.classList.toggle('is-on', on); if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
-    document.title = (TITLES[current.name] || 'C-Ledger') + ' · C-Ledger demo';
+    document.title = (TITLES[current.name] || 'C-Ledger') + ' · C-Ledger template';
     var role = st.actor().role; document.getElementById('meRole').textContent = st.E.roleName(role) + (st.S.viewAs ? ' (viewing as)' : '');
     document.documentElement.setAttribute('data-role', role);
     if (!page) { v.innerHTML = CL.empty('info', 'This page is on its way', 'Choose another section from the menu.'); return; }
@@ -164,7 +164,7 @@
   }
 
   function help() {
-    CL.open('modal', CL.head('Getting around C-Ledger', 'A working demo with sample books for a fictional design studio.', 'help') + '<div class="ovl__body help">' +
+    CL.open('modal', CL.head('Getting around C-Ledger', 'A working template with sample books for a fictional design studio.', 'help') + '<div class="ovl__body help">' +
       '<div class="help__g"><div><h3>Try these</h3><ul>' +
       '<li><a href="#/journal/new">Post a journal entry</a> — it won’t post until debits equal credits.</li>' +
       '<li><a href="#/invoices">Issue an invoice and record a receipt</a> — watch Accounts Receivable move.</li>' +

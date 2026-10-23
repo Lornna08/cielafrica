@@ -1,6 +1,6 @@
 /* ============================================================
-   CIEL SHOP — Demo dataset
-   Everything here is synthetic. The demo business ("Mawe Home &
+   CIEL SHOP — Template dataset
+   Everything here is synthetic. The template business ("Mawe Home &
    Pantry"), its customers, suppliers and orders are invented.
 
    Rather than hard-coding numbers, the dataset is produced by a

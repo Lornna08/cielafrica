@@ -4,7 +4,7 @@
    these selectors and writes through these actions, so stock,
    orders and reports can never drift apart.
 
-   Demo persistence: the browser's localStorage under a dedicated
+   Template persistence: the browser's localStorage under a dedicated
    key (cielshop:demo:v4). It never touches real customer data and
    is separate from anything a production deployment would use.
    ============================================================ */
@@ -576,7 +576,7 @@ window.CS = window.CS || {};
     if (o.fulfilment === 'cancelled') fail('This order is cancelled.');
     if (o.payment.status !== 'pending') fail('This order is already ' + store.statusLabel(o.payment.status).toLowerCase() + '.');
     o.payment.status = 'paid'; o.payment.paidAt = iso(); if (method) o.payment.method = method;
-    tl(o, 'paid', 'Payment recorded (' + o.payment.method + ') — demo only, no money moved');
+    tl(o, 'paid', 'Payment recorded (' + o.payment.method + ') — template only, no money moved');
     commit({ text: 'Marked ' + o.number + ' as paid', link: '#/orders/' + o.id, kind: 'order' });
   };
   store.cancelOrder = function (id, reason, refund) {
@@ -587,7 +587,7 @@ window.CS = window.CS || {};
     if (o.payment.status === 'paid' && refund) {
       var amt = CS.orderTotal(o) - store.refunded(o);
       o.refunds.push({ at: iso(), amount: amt, reason: 'Order cancelled', method: o.payment.method, by: S.currentUserId });
-      o.payment.status = 'refunded'; tl(o, 'refund', 'Refund of ' + CS.ui.money(amt) + ' recorded (demo — no payment processed)');
+      o.payment.status = 'refunded'; tl(o, 'refund', 'Refund of ' + CS.ui.money(amt) + ' recorded (template — no payment processed)');
     }
     commit({ text: 'Cancelled order ' + o.number, link: '#/orders/' + o.id, kind: 'order' });
   };
@@ -599,7 +599,7 @@ window.CS = window.CS || {};
     if (a > max) fail('You can refund at most ' + CS.ui.money(max) + ' on this order.');
     o.refunds.push({ at: iso(), amount: a, reason: String(reason || 'Goodwill refund'), method: o.payment.method, by: S.currentUserId });
     o.payment.status = a === max ? 'refunded' : 'partially_refunded';
-    tl(o, 'refund', 'Refund of ' + CS.ui.money(a) + ' recorded — ' + (reason || 'goodwill') + ' (demo — no payment processed)');
+    tl(o, 'refund', 'Refund of ' + CS.ui.money(a) + ' recorded — ' + (reason || 'goodwill') + ' (template — no payment processed)');
     commit({ text: 'Recorded refund on ' + o.number, link: '#/orders/' + o.id, kind: 'order' });
   };
   store.addNote = function (id, text) {
@@ -655,7 +655,7 @@ window.CS = window.CS || {};
     if (refundAmt > 0) {
       o.refunds.push({ at: iso(), amount: refundAmt, reason: 'Return ' + r.number, method: o.payment.method, by: S.currentUserId });
       o.payment.status = store.refunded(o) >= CS.orderTotal(o) ? 'refunded' : 'partially_refunded';
-      tl(o, 'refund', 'Refund of ' + CS.ui.money(refundAmt) + ' recorded (demo — no payment processed)');
+      tl(o, 'refund', 'Refund of ' + CS.ui.money(refundAmt) + ' recorded (template — no payment processed)');
     }
     if (store.returnable(o).every(function (x) { return x.max <= 0; })) o.fulfilment = 'returned';
     commit({ text: 'Logged return ' + r.number + ' on ' + o.number, link: '#/returns', kind: 'return' });
@@ -697,7 +697,7 @@ window.CS = window.CS || {};
     if (po.status !== 'draft') fail('This purchase order has already been placed.');
     var sup = store.supplier(po.supplierId);
     po.status = 'ordered'; po.orderedAt = iso(); if (!po.expectedAt) po.expectedAt = iso(new Date(Date.now() + sup.leadDays * DAY));
-    commit({ text: 'Placed ' + po.number + ' with ' + sup.name + ' (demo — nothing was sent)', link: '#/purchase-orders/' + po.id, kind: 'stock' });
+    commit({ text: 'Placed ' + po.number + ' with ' + sup.name + ' (template — nothing was sent)', link: '#/purchase-orders/' + po.id, kind: 'stock' });
   };
   store.cancelPO = function (id) {
     var po = store.po(id); if (!po) fail('Purchase order not found.');
@@ -791,7 +791,7 @@ window.CS = window.CS || {};
     var e = email(d.email); if (!e) fail('Enter an email address.');
     if (S.team.some(function (u) { return u.email.toLowerCase() === e.toLowerCase(); })) fail('That person is already on the team.');
     S.team.push({ id: 'u-' + Date.now().toString(36), name: name, email: e, role: d.role || 'Staff', invited: true });
-    commit({ text: 'Added ' + name + ' to the team (demo — no email sent)', link: '#/settings', kind: 'settings' });
+    commit({ text: 'Added ' + name + ' to the team (template — no email sent)', link: '#/settings', kind: 'settings' });
   };
   store.removeMember = function (id) {
     if (id === S.currentUserId) fail('You can’t remove yourself.');

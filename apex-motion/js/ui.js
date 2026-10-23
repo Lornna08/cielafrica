@@ -85,15 +85,15 @@
       col('Customer service', [['info/contact', 'Contact'], ['info/faq', 'FAQs'], ['info/shipping', 'Shipping'], ['info/returns', 'Returns'], ['info/fitment', 'Fitment Support']]) +
       col('Company', [['info/about', 'About'], ['journal', 'Journal'], ['gallery', 'Gallery'], ['info/privacy', 'Privacy Policy'], ['info/terms', 'Terms and Conditions']]) +
       '</div><div class="ftr__word" aria-hidden="true">' + esc(C.store.name) + '</div>' +
-      '<div class="ftr__bot"><span>© ' + new Date().getFullYear() + ' ' + esc(C.store.name) + '. Demo store with sample products and prices.</span>' +
-        '<nav>' + C.contact.social.map(function (s) { return '<a href="' + s.url + '">' + s.name + '</a>'; }).join('') + '<button id="resetd" style="text-decoration:underline;text-underline-offset:2px;font-size:12.5px">Reset demo</button></nav>' +
+      '<div class="ftr__bot"><span>© ' + new Date().getFullYear() + ' ' + esc(C.store.name) + '. Template store with sample products and prices.</span>' +
+        '<nav>' + C.contact.social.map(function (s) { return '<a href="' + s.url + '">' + s.name + '</a>'; }).join('') + '<button id="resetd" style="text-decoration:underline;text-underline-offset:2px;font-size:12.5px">Reset template</button></nav>' +
         '<span class="credit">' + esc(C.credit.text) + ' <a href="' + C.credit.url + '" target="_blank" rel="noopener">' + esc(C.credit.name) + '</a></span></div></div>';
     U.$('#newsf').onsubmit = function (e) {
       e.preventDefault(); var v = U.$('#newsin').value.trim(), m = U.$('#newsmsg');
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) { m.textContent = 'Enter a valid email address.'; return; }
-      db.subscribe(); U.$('#newsin').value = ''; m.textContent = 'Thanks — in this demo your email is not stored or sent anywhere.';
+      db.subscribe(); U.$('#newsin').value = ''; m.textContent = 'Thanks — in this template your email is not stored or sent anywhere.';
     };
-    U.$('#resetd').onclick = function () { if (confirm('Reset the demo? This clears your bag, wishlist, demo account and demo orders in this browser.')) { db.reset(); ui.toast('Demo reset'); A.go(''); } };
+    U.$('#resetd').onclick = function () { if (confirm('Reset the template? This clears your bag, wishlist, template account and template orders in this browser.')) { db.reset(); ui.toast('Template reset'); A.go(''); } };
   };
 
   /* ---------- product card ---------- */

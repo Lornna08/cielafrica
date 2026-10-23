@@ -84,7 +84,7 @@
     var sub = store.subtotal(o), total = store.total(o), refunded = store.refunded(o), vat = S().business.vatRate;
     var stepIdx = store.FLOW.indexOf(o.fulfilment);
     var canReturn = ['shipped', 'delivered', 'returned'].indexOf(o.fulfilment) >= 0 && store.returnable(o).some(function (x) { return x.max > 0; });
-    var html = '<div class="dhead"><div class="dhead__m"><h1>Order ' + o.number + '</h1><div class="meta">' + ui.pill(o.payment.status) + ui.pill(o.fulfilment) + '<span>' + ui.dateTime(o.createdAt) + '</span>·<span>' + o.channel + '</span>' + (o.demo ? '<span class="tag">created in demo</span>' : '') + '</div></div><div class="ph__acts">';
+    var html = '<div class="dhead"><div class="dhead__m"><h1>Order ' + o.number + '</h1><div class="meta">' + ui.pill(o.payment.status) + ui.pill(o.fulfilment) + '<span>' + ui.dateTime(o.createdAt) + '</span>·<span>' + o.channel + '</span>' + (o.demo ? '<span class="tag">created in template</span>' : '') + '</div></div><div class="ph__acts">';
     if (o.fulfilment === 'draft') html += '<a class="btn" href="#/orders/' + o.id + '/edit">' + ui.icon('edit', 15) + 'Edit draft</a><button class="btn btn--p" data-to="new">' + ui.icon('check', 15) + 'Confirm order</button>';
     else {
       if (o.fulfilment === 'new') html += '<a class="btn" href="#/orders/' + o.id + '/edit">' + ui.icon('edit', 15) + 'Edit</a>';
@@ -149,7 +149,7 @@
   }
   CS.orderMove = move;
   function markPaid(o) {
-    ui.modal({ title: 'Record payment for ' + o.number, sub: 'Demo only — no money is collected.', body: ui.field('Payment method', ui.select('m', PAY_METHODS, o.payment.method)) + '<div class="note note--plain" style="margin-top:12px">' + ui.icon('info', 15) + '<span>Amount: <b>' + ui.money(store.total(o)) + '</b></span></div>', ok: 'Mark as paid', onOk: function (m) { return ui.run(function () { store.markPaid(o.id, m.el.querySelector('[name=m]').value); }, o.number + ' marked as paid') ? undefined : false; } });
+    ui.modal({ title: 'Record payment for ' + o.number, sub: 'Template only — no money is collected.', body: ui.field('Payment method', ui.select('m', PAY_METHODS, o.payment.method)) + '<div class="note note--plain" style="margin-top:12px">' + ui.icon('info', 15) + '<span>Amount: <b>' + ui.money(store.total(o)) + '</b></span></div>', ok: 'Mark as paid', onOk: function (m) { return ui.run(function () { store.markPaid(o.id, m.el.querySelector('[name=m]').value); }, o.number + ' marked as paid') ? undefined : false; } });
   }
   function cancelDialog(o) {
     var paid = o.payment.status === 'paid' || o.payment.status === 'partially_refunded';
@@ -207,7 +207,7 @@
     html += '</div><div class="stack"><div class="card"><div class="card__h"><h3>Order details</h3></div><div class="card__b"><div class="stack" style="gap:12px">' +
       ui.field('Sales channel', ui.select('channel', S().channels, d.channel)) + ui.field('Fulfil from', ui.select('warehouseId', app.whOptions(), d.warehouseId)) + ui.field('Delivery method', ui.select('deliveryMethod', S().deliveryMethods, d.deliveryMethod)) + ui.field('Delivery address', ui.input('address', d.address, { ph: 'Estate, street or building' })) +
       ui.field('Shipping charge', '<div class="addon"><span>KES</span>' + ui.input('shipping', d.shipping, { type: 'number', min: 0 }) + '</div>') + ui.field('Discount', '<div class="addon"><span>KES</span>' + ui.input('discount', d.discount, { type: 'number', min: 0 }) + '</div>') + '</div></div></div>' +
-      (isNew ? '<div class="card"><div class="card__h"><h3>Payment</h3></div><div class="card__b"><div class="stack" style="gap:12px">' + ui.field('Method', ui.select('paymentMethod', PAY_METHODS, 'M-Pesa')) + '<label class="switch"><input type="checkbox" name="paid" checked><i></i>Payment already received</label><p class="muted" style="font-size:12px">Demo only — no payment is taken.</p></div></div></div>' +
+      (isNew ? '<div class="card"><div class="card__h"><h3>Payment</h3></div><div class="card__b"><div class="stack" style="gap:12px">' + ui.field('Method', ui.select('paymentMethod', PAY_METHODS, 'M-Pesa')) + '<label class="switch"><input type="checkbox" name="paid" checked><i></i>Payment already received</label><p class="muted" style="font-size:12px">Template only — no payment is taken.</p></div></div></div>' +
         '<div class="card"><div class="card__h"><h3>Note</h3></div><div class="card__b"><textarea class="ta" name="note" rows="2" placeholder="Internal note (optional)"></textarea></div></div>' : '') + '</div></form>';
     return {
       title: isNew ? 'Create order' : 'Edit', crumbs: isNew ? [['Orders', '#/orders']] : [['Orders', '#/orders'], [o.number, '#/orders/' + o.id]], html: html, static: true,
@@ -337,7 +337,7 @@
   CS.returnsPage = function () {
     var rets = S().returns.slice().reverse();
     var refunded = rets.reduce(function (t, r) { return t + (r.refund.amount || 0); }, 0), units = rets.reduce(function (t, r) { return t + r.lines.reduce(function (a, l) { return a + l.qty; }, 0); }, 0), restocked = rets.reduce(function (t, r) { return t + r.lines.filter(function (l) { return l.condition === 'resellable'; }).reduce(function (a, l) { return a + l.qty; }, 0); }, 0);
-    var html = app.ph('Returns & refunds', 'Returned goods only go back into stock when they’re marked resellable. Refunds are records — no money moves in the demo.', '<button class="btn btn--p" id="newret">' + ui.icon('plus', 15) + 'New return</button>');
+    var html = app.ph('Returns & refunds', 'Returned goods only go back into stock when they’re marked resellable. Refunds are records — no money moves in the template.', '<button class="btn btn--p" id="newret">' + ui.icon('plus', 15) + 'New return</button>');
     html += app.tabs(TABS.map(function (t) { return [t[0], t[1], t[0] === 'returns' ? '#/returns' : '#/orders?tab=' + t[0]]; }), 'returns');
     html += '<div class="grid g-4" style="margin-bottom:16px">' + [['Returns logged', ui.num(rets.length)], ['Units returned', ui.num(units)], ['Restocked', ui.num(restocked) + ' <small>units</small>'], ['Refunds recorded', '<small>KES</small>' + ui.num(refunded)]].map(function (k) { return '<div class="card kpi"><div class="kpi__l">' + k[0] + '</div><div class="kpi__v num">' + k[1] + '</div></div>'; }).join('') + '</div>';
     html += '<div class="card card--flush"><div id="rt"></div></div>';
@@ -376,7 +376,7 @@
     c = c || {};
     ui.modal({
       title: c.id ? 'Edit customer' : 'Add customer', size: 'wide',
-      body: '<div class="fgrid">' + ui.field('Full name or business', ui.input('name', c.name), { req: true }) + ui.field('Type', ui.select('type', ['Retail', 'Wholesale'], c.type || 'Retail')) + ui.field('Email', ui.input('email', c.email, { type: 'email' })) + ui.field('Phone', ui.input('phone', c.phone, { ph: '+254 7…' })) + ui.field('City', ui.input('city', c.city || 'Nairobi')) + ui.field('Notes', ui.input('notes', c.notes, { ph: 'Delivery instructions, terms…' })) + '</div><p class="muted" style="font-size:12px;margin-top:12px">Demo customers are synthetic. Don’t enter real people’s details.</p>',
+      body: '<div class="fgrid">' + ui.field('Full name or business', ui.input('name', c.name), { req: true }) + ui.field('Type', ui.select('type', ['Retail', 'Wholesale'], c.type || 'Retail')) + ui.field('Email', ui.input('email', c.email, { type: 'email' })) + ui.field('Phone', ui.input('phone', c.phone, { ph: '+254 7…' })) + ui.field('City', ui.input('city', c.city || 'Nairobi')) + ui.field('Notes', ui.input('notes', c.notes, { ph: 'Delivery instructions, terms…' })) + '</div><p class="muted" style="font-size:12px;margin-top:12px">Template customers are synthetic. Don’t enter real people’s details.</p>',
       ok: c.id ? 'Save' : 'Add customer',
       onOk: function (m) { var d = ui.read(m.el); var r = ui.run(function () { return c.id ? (store.updateCustomer(c.id, d), c) : store.addCustomer(d); }, c.id ? 'Customer updated' : 'Customer added'); if (r && !c.id) app.go('#/customers/' + r.id); return r ? undefined : false; }
     });

@@ -123,7 +123,7 @@
     render: function (v, p, q) {
       var E = st.E, id = p[0];
       if (id === 'new' || q.edit) return editor(v, id === 'new' ? null : E.journal(id), q);
-      var j = E.journal(id); if (!j) { v.innerHTML = CL.empty('journal', 'Journal entry not found', 'It may have been deleted (drafts only) or the demo was reset.', '<a class="btn" href="#/journals">All journal entries</a>'); return; }
+      var j = E.journal(id); if (!j) { v.innerHTML = CL.empty('journal', 'Journal entry not found', 'It may have been deleted (drafts only) or the template was reset.', '<a class="btn" href="#/journals">All journal entries</a>'); return; }
       var t = E.totals(j.lines), probs = j.status === 'draft' ? E.validate(j) : [], rev = j.reversedBy ? E.journal(j.reversedBy) : null, orig = j.reverses ? E.journal(j.reverses) : null;
       var trail = st.S.audit.filter(function (a) { return a.recordId === j.id || (a.recordType === 'journal' && rev && a.recordId === rev.id); });
       var per = E.periodOf(j.date);
@@ -146,7 +146,7 @@
           (j.notes ? '<p class="muted" style="margin-top:12px">' + I('info', 13) + ' ' + esc(j.notes) + '</p>' : '') +
           (j.attachments && j.attachments.length ? '<div style="margin-top:12px" class="chips">' + j.attachments.map(function (a) { return '<span class="chip">' + I('clip', 13) + esc(a.name) + ' <b>' + Math.round(a.size / 1024) + ' KB</b></span>'; }).join('') + '</div>' : '') + '</article>' +
           '<aside class="g"><article class="card"><header class="card__h"><span class="card__t">' + I('info', 16) + 'Details</span></header><dl class="kv"><dt>Reference</dt><dd>' + esc(j.ref) + '</dd><dt>Created</dt><dd>' + (j.createdAt ? f.date(j.createdAt) : '—') + ' · ' + esc(j.createdBy || '—') + '</dd><dt>Status</dt><dd>' + (j.status === 'draft' ? 'Draft — no effect on balances' : 'Posted') + '</dd><dt>Balanced</dt><dd>' + (t.diff ? '<span class="neg">No — off by ' + f.num(Math.abs(t.diff)) + '</span>' : '<span class="pos">Yes</span>') + '</dd></dl></article>' +
-          '<article class="card"><header class="card__h"><span class="card__t">' + I('clock', 16) + 'Audit trail</span></header>' + (trail.length ? '<div class="tl">' + trail.map(function (a) { return '<div class="tl__i"><span class="tl__d">' + I(a.action.indexOf('reverse') >= 0 ? 'reverse' : a.action.indexOf('post') >= 0 ? 'check' : 'edit', 14) + '</span><span><b>' + esc(a.summary) + '</b><em>' + esc(a.actor.name) + ' · ' + f.date(a.at) + ' ' + f.time(a.at) + '</em></span></div>'; }).join('') + '</div>' : '<p class="muted small">Created by the sample-data generator before the demo’s audit window.</p>') + '</article></aside>' +
+          '<article class="card"><header class="card__h"><span class="card__t">' + I('clock', 16) + 'Audit trail</span></header>' + (trail.length ? '<div class="tl">' + trail.map(function (a) { return '<div class="tl__i"><span class="tl__d">' + I(a.action.indexOf('reverse') >= 0 ? 'reverse' : a.action.indexOf('post') >= 0 ? 'check' : 'edit', 14) + '</span><span><b>' + esc(a.summary) + '</b><em>' + esc(a.actor.name) + ' · ' + f.date(a.at) + ' ' + f.time(a.at) + '</em></span></div>'; }).join('') + '</div>' : '<p class="muted small">Created by the sample-data generator before the template’s audit window.</p>') + '</article></aside>' +
         '</div>';
       if (innerWidth < 980) v.querySelector('#jg').style.gridTemplateColumns = 'minmax(0,1fr)';
       v.onclick = function (e) {

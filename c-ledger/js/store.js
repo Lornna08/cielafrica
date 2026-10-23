@@ -1,6 +1,6 @@
 /* ============================================================
-   C-Ledger — demo store: persistence, current user, period, events
-   The demo keeps its sample books in this browser only (localStorage).
+   C-Ledger — template store: persistence, current user, period, events
+   The template keeps its sample books in this browser only (localStorage).
    This is NOT production storage — see README for the production design.
    ============================================================ */
 (function () {
@@ -25,7 +25,7 @@
     if (raw) {
       try {
         var S = JSON.parse(raw), age = Date.now() - (S.createdAt || 0);
-        // untouched demos refresh after 12 hours so dates stay current; edited ones are kept for 30 days
+        // untouched templates refresh after 12 hours so dates stay current; edited ones are kept for 30 days
         if (S.v === 1 && S.seededFor && (S.touched ? age < 30 * 864e5 : age < 12 * 3600e3)) { store.S = S; attach(); return; }
       } catch (e) { }
     }

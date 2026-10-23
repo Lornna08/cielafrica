@@ -1,7 +1,7 @@
 /* ============================================================
-   Reside Ke — demo dataset
+   Reside Ke — template dataset
    Fictional agency, people, listings and transactions. Dates are
-   generated relative to "today" so the demo always looks current.
+   generated relative to "today" so the template always looks current.
    Nothing here is a real property, valuation or sale.
    ============================================================ */
 window.ES = window.ES || {};

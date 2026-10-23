@@ -13,7 +13,7 @@ APEX.config = {
     tagline: 'Performance parts, fitted right.',
     description: 'Performance wheels, premium components and carefully selected upgrades for drivers who expect more from every build.',
     basePath: '/apex-motion/',   // where the store is served from (must end with /)
-    demo: true                   // demo mode: browser-only data, simulated checkout
+    demo: true                   // template mode: browser-only data, simulated checkout
   },
 
   /* Design tokens — mirrored into CSS custom properties at boot */
@@ -33,7 +33,7 @@ APEX.config = {
   /* Money */
   currency: { code: 'USD', symbol: '$', locale: 'en-US', decimals: 0 },
 
-  /* Shipping rules (demo values) */
+  /* Shipping rules (template values) */
   shipping: {
     freeOver: 150,
     methods: [
@@ -44,7 +44,7 @@ APEX.config = {
     heavyItemNote: 'Wheels and tyres ship in sets on a pallet service. Single items ship by courier.'
   },
 
-  /* Sample discount codes (demo only) */
+  /* Sample discount codes (template only) */
   discounts: [
     { code: 'APEX10', type: 'percent', value: 10, label: '10% off your first order' },
     { code: 'TRACKDAY', type: 'fixed', value: 25, minSubtotal: 200, label: '$25 off orders over $200' }

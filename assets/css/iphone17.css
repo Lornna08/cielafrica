@@ -1,0 +1,38 @@
+/* ============================================================
+   iPhone 17 Pro Max mockup — shared by every phone mockup on the site.
+   Proportions follow the 6.9" display (440 × 956 pt): thin uniform
+   bezels, Dynamic Island, aluminium frame with Action button, volume,
+   side button and Camera Control. All sizes are in cqw of .ip17, so
+   the phone scales cleanly at any width.
+
+   <div class="ip17 ip17--blue">                (sets the width)
+     <div class="ip17__body"><i class="ip17__k ip17__k--act"></i>…
+       <div class="ip17__bezel"><div class="ip17__scr">
+         <div class="ip17__sb">9:41 + icons</div><i class="ip17__di"></i>
+         <img|video>  <i class="ip17__hb"></i>
+   ============================================================ */
+.ip17{container-type:inline-size;--ip-a:#56678A;--ip-b:#1C2539;--ip-hi:rgba(255,255,255,.55);--ip-scr:#fff;--ip-ink:#111}
+.ip17--blue{--ip-a:#56678A;--ip-b:#1C2539;--ip-hi:rgba(214,226,255,.55)}           /* Deep Blue */
+.ip17--orange{--ip-a:#F39A55;--ip-b:#B4501A;--ip-hi:rgba(255,214,180,.7)}          /* Cosmic Orange */
+.ip17--silver{--ip-a:#F4F5F6;--ip-b:#AEB2B8;--ip-hi:rgba(255,255,255,.95)}         /* Silver */
+.ip17__body{position:relative;border-radius:17.4cqw;padding:1.45cqw;
+  background:linear-gradient(140deg,var(--ip-a) 0%,var(--ip-b) 38%,var(--ip-a) 62%,var(--ip-b) 100%);
+  box-shadow:inset 0 0 0 .3cqw var(--ip-hi),inset 0 0 0 .75cqw rgba(0,0,0,.18),0 40px 60px -28px rgba(14,22,18,.55),0 12px 24px -12px rgba(14,22,18,.3)}
+.ip17__bezel{border-radius:16cqw;background:#030405;padding:2.35cqw;box-shadow:inset 0 0 0 .25cqw #1A1C20}
+.ip17__scr{position:relative;display:flex;flex-direction:column;aspect-ratio:440/956;border-radius:13.7cqw;overflow:hidden;background:var(--ip-scr);-webkit-mask-image:-webkit-radial-gradient(white,black);isolation:isolate;padding-bottom:5.6cqw}
+/* the bottom 34pt is the home-indicator safe area, as on iOS — content never sits under the bar */
+.ip17__scr::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(125deg,rgba(255,255,255,.10) 0%,rgba(255,255,255,0) 34%)}
+/* status bar sits in the safe area beside the Dynamic Island */
+.ip17__sb{flex:none;position:relative;z-index:2;height:11.4cqw;display:flex;align-items:center;justify-content:space-between;padding:.6cqw 7.2cqw 0 9.6cqw;background:var(--ip-scr);color:var(--ip-ink);font:600 3.75cqw/1 -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,"Segoe UI",system-ui,sans-serif;letter-spacing:-.01em}
+.ip17__sb svg{width:15.4cqw;height:auto;fill:currentColor;stroke:currentColor;display:block}
+.ip17__di{position:absolute;z-index:4;left:50%;top:2.35cqw;width:26.8cqw;height:7.8cqw;margin-left:-13.4cqw;border-radius:5cqw;background:#000}
+.ip17__di::after{content:"";position:absolute;right:3.2cqw;top:50%;width:2.4cqw;height:2.4cqw;margin-top:-1.2cqw;border-radius:50%;background:radial-gradient(circle at 35% 35%,#1E2A44 0%,#05070C 60%)}
+.ip17__scr>img,.ip17__scr>video{position:relative;z-index:1;flex:1;min-height:0;width:100%;height:auto;object-fit:cover;object-position:top center;display:block;border-radius:0}
+.ip17__hb{position:absolute;z-index:4;left:50%;bottom:1.7cqw;width:30cqw;height:1.05cqw;margin-left:-15cqw;border-radius:1cqw;background:rgba(10,10,10,.82)}
+/* buttons on the aluminium frame */
+.ip17__k{position:absolute;width:1.15cqw;border-radius:.7cqw;background:linear-gradient(90deg,var(--ip-b),var(--ip-a) 60%,var(--ip-b))}
+.ip17__k--act{left:-.85cqw;top:17%;height:3.6%}
+.ip17__k--vu{left:-.85cqw;top:24%;height:7.2%}
+.ip17__k--vd{left:-.85cqw;top:33%;height:7.2%}
+.ip17__k--pwr{right:-.85cqw;top:26%;height:10.5%}
+.ip17__k--cam{right:-.55cqw;top:54%;height:7%;width:.9cqw;background:linear-gradient(90deg,#0B0D12,#2A3142 55%,#0B0D12)}

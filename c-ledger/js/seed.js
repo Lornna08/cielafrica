@@ -1,8 +1,8 @@
 /* ============================================================
-   C-Ledger — demo workspace generator
+   C-Ledger — template workspace generator
    Builds a fictional company's last 12 months by running real operations
    through the engine (issue invoice, record receipt, post bill …), so every
-   figure in the demo is derived from posted, balanced journal entries.
+   figure in the template is derived from posted, balanced journal entries.
    Deterministic: the same "today" always gives the same workspace.
    ============================================================ */
 (function (root) {
@@ -24,9 +24,9 @@
 
   var ACCOUNTS = [
     ['1000', 'Petty Cash', 'asset', 'cash', 'Cash float kept at the studio for small purchases.'],
-    ['1010', 'Operating Account', 'asset', 'bank', 'Main current account for receipts and supplier payments (demo account — fictional).'],
-    ['1020', 'Reserve Savings Account', 'asset', 'bank', 'Interest-earning reserve (demo account — fictional).'],
-    ['1030', 'Mobile Money Float', 'asset', 'bank', 'Business till float for customer mobile payments (demo — fictional).'],
+    ['1010', 'Operating Account', 'asset', 'bank', 'Main current account for receipts and supplier payments (template account — fictional).'],
+    ['1020', 'Reserve Savings Account', 'asset', 'bank', 'Interest-earning reserve (template account — fictional).'],
+    ['1030', 'Mobile Money Float', 'asset', 'bank', 'Business till float for customer mobile payments (template — fictional).'],
     ['1100', 'Accounts Receivable', 'asset', 'ar', 'Amounts owed by customers on issued invoices. Control account.'],
     ['1200', 'Inventory — Materials', 'asset', 'inventory', 'Finishing materials held for fit-out projects.'],
     ['1250', 'Prepayments', 'asset', 'current', 'Expenses paid in advance.'],
@@ -39,7 +39,7 @@
     ['2150', 'PAYE & Statutory Deductions', 'liability', 'statutory', 'Payroll deductions withheld and due for remittance.'],
     ['2200', 'Customer Credits', 'liability', 'custcredit', 'Customer overpayments held on account.'],
     ['2300', 'Accrued Expenses', 'liability', 'current', 'Expenses incurred but not yet billed.'],
-    ['2500', 'Loans Payable', 'liability', 'loan', 'Equipment term loan (demo — fictional lender).'],
+    ['2500', 'Loans Payable', 'liability', 'loan', 'Equipment term loan (template — fictional lender).'],
     ['3000', "Owner's Capital", 'equity', 'capital', 'Capital contributed by the owners.'],
     ['3100', 'Retained Earnings', 'equity', 'retained', 'Accumulated profits from earlier years.'],
     ['4000', 'Service Revenue — Design', 'income', 'revenue', 'Interior design and consultancy fees.'],
@@ -101,11 +101,11 @@
     var S = {
       v: 1, rev: 0, seededFor: T, seq: {},
       settings: {
-        company: { name: 'Kilele Design Studio Ltd', short: 'Kilele Design', pin: 'P05XXXXXXXX (demo)', email: 'accounts@kilele.example', phone: '+254 700 000 123', address: '4th Floor, Fictional Plaza, Westlands, Nairobi', initials: 'KD', website: 'kilele.example', bankNote: 'Operating Account — demo details only' },
+        company: { name: 'Kilele Design Studio Ltd', short: 'Kilele Design', pin: 'P05XXXXXXXX (template)', email: 'accounts@kilele.example', phone: '+254 700 000 123', address: '4th Floor, Fictional Plaza, Westlands, Nairobi', initials: 'KD', website: 'kilele.example', bankNote: 'Operating Account — template details only' },
         currency: 'KES', fyStartMonth: 1, dateFormat: 'd MMM yyyy', numberFormat: '1,234.56', theme: 'forest', weekStart: 'mon',
         taxRates: [{ id: 'vat16', name: 'VAT 16%', rate: 16 }, { id: 'zero', name: 'Zero-rated 0%', rate: 0 }, { id: 'exempt', name: 'Exempt', rate: 0 }, { id: 'none', name: 'No tax', rate: 0 }],
         numbering: { journal: { prefix: 'JE-', next: 1, pad: 4 }, invoice: { prefix: 'INV-', next: 1041, pad: 4 }, receipt: { prefix: 'RCT-', next: 1, pad: 4 }, bill: { prefix: 'BILL-', next: 1, pad: 4 }, payment: { prefix: 'PAY-', next: 1, pad: 4 }, expense: { prefix: 'EXP-', next: 1, pad: 4 }, transfer: { prefix: 'TRF-', next: 1, pad: 4 }, customer: { prefix: 'CUS-', next: 1, pad: 3 }, supplier: { prefix: 'SUP-', next: 1, pad: 3 } },
-        defaults: {}, invoice: { terms: 30, footer: 'Thank you for your business. Payment details are on file with your accounts team (demo).', accent: true },
+        defaults: {}, invoice: { terms: 30, footer: 'Thank you for your business. Payment details are on file with your accounts team (template).', accent: true },
         ageing: [30, 60, 90], notifications: { overdue: true, billsDue: true, reconciliation: true, weekly: false }, decimals: 2
       },
       accounts: [], contacts: [], journals: [], invoices: [], receipts: [], bills: [], payments: [], expenses: [], transfers: [], recs: [], recLines: {}, periods: [], audit: [], opKeys: {},
@@ -281,7 +281,7 @@
       rc.lines.forEach(function (s, i) { if (stmt[i].key && i < Math.ceil(stmt.length * 0.6)) s.match = stmt[i].key; });
     }
 
-    // drafts & pending work for the demo
+    // drafts & pending work for the template
     at(T, TEAM[3]);
     var dInv = E.saveInvoice({ contactId: cust[3].id, issue: T, due: addDays(T, 30), lines: [{ desc: 'Warehouse office fit-out — deposit', accountId: A('4100'), qty: 1, price: KES(850000), disc: 0, taxId: 'vat16' }, { desc: 'Design development', accountId: A('4000'), qty: 1, price: KES(180000), disc: 0, taxId: 'vat16' }], ref: 'PO-7781', notes: 'Deposit of 40% before mobilisation.' });
     var dBill = E.saveBill({ contactId: sup.materials[1].id, ref: 'BRI-40912', issue: addDays(T, -1), due: addDays(T, 29), desc: 'Lighting for Amani Boutique Hotel', lines: [{ desc: 'LED pendants & drivers', accountId: A('5000'), amount: KES(186400), taxId: 'vat16' }] });
@@ -300,7 +300,7 @@
     at(addDays(lmStart, 6), TEAM[1]);
     S.periods.forEach(function (p) { if (p.key < lmStart.slice(0, 7)) { E.closePeriod(p.key); } });
 
-    // keep the audit trail to the recent past so the demo stays light
+    // keep the audit trail to the recent past so the template stays light
     var cut = addDays(T, -75); S.audit = S.audit.filter(function (a) { return a.at.slice(0, 10) >= cut; });
     S.team.forEach(function (u) { var last = S.audit.filter(function (a) { return a.actor.id === u.id; }).pop(); u.lastActive = last ? last.at : null; });
     S.seededAt = T; S.rev++;

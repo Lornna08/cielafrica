@@ -175,8 +175,8 @@
           '<details><summary>Returns</summary><div class="acc__b">' + esc(C.policies.returns) + '</div></details>' +
           '<details><summary>Fitment notes</summary><div class="acc__b">' + esc(C.policies.fitment) + '</div></details></div>' +
       '</div></div>' +
-      '<section class="sec" id="reviews" style="padding-top:30px" aria-labelledby="rvh"><div class="rail-h"><h3 id="rvh">Reviews <span class="tag-demo">Demo reviews</span></h3></div><div class="reviews"><div class="rv__sum"><b class="num">' + p.rating.toFixed(1) + '</b>' + U.stars(p.rating) + '<p class="muted" style="font-size:13px;margin-top:8px">' + p.reviews + ' sample ratings. These reviews are demonstration content for this template, not real customer reviews.</p></div><div>' +
-        reviews.map(function (r) { return '<div class="rv">' + U.stars(r.s) + '<h5>' + esc(r.t) + '</h5><p>' + esc(r.b) + '</p><small>Demo reviewer · ' + esc(r.car) + '</small></div>'; }).join('') + '</div></div></section>' +
+      '<section class="sec" id="reviews" style="padding-top:30px" aria-labelledby="rvh"><div class="rail-h"><h3 id="rvh">Reviews <span class="tag-demo">Template reviews</span></h3></div><div class="reviews"><div class="rv__sum"><b class="num">' + p.rating.toFixed(1) + '</b>' + U.stars(p.rating) + '<p class="muted" style="font-size:13px;margin-top:8px">' + p.reviews + ' sample ratings. These reviews are demonstration content for this template, not real customer reviews.</p></div><div>' +
+        reviews.map(function (r) { return '<div class="rv">' + U.stars(r.s) + '<h5>' + esc(r.t) + '</h5><p>' + esc(r.b) + '</p><small>Template reviewer · ' + esc(r.car) + '</small></div>'; }).join('') + '</div></div></section>' +
       '<section style="padding-bottom:90px" aria-labelledby="relh"><div class="rail-h"><h3 id="relh">You may also like</h3><span class="sp"></span><button class="round round--line" data-rail="-1" aria-label="Previous">' + i('arrowL', 18) + '</button><button class="round" data-rail="1" aria-label="Next">' + i('arrow', 18) + '</button></div><div class="rail" id="rail">' + related.map(ui.card).join('') + '</div></section>' +
     '</div></div>';
 
