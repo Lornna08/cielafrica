@@ -86,7 +86,7 @@ The demo keeps all state in `APEX.db` (`js/core.js`). To connect a real backend:
 Static hosting is enough. On Vercel, this rewrite (already in the repository's `vercel.json`) serves deep links:
 
 ```json
-{ "source": "/apex-motion/:path((?!.*\\.).*)", "destination": "/apex-motion/index.html" }
+{ "source": "/apex-motion/((?!.*\\.).*)", "destination": "/apex-motion" }
 ```
 
 ## Credits
