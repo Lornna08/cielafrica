@@ -66,5 +66,17 @@
       "source": "/apex-motion/((?!.*\\.).*)",
       "destination": "/apex-motion"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/estora",
+      "destination": "/reside-ke",
+      "permanent": true
+    },
+    {
+      "source": "/estora/:path*",
+      "destination": "/reside-ke/:path*",
+      "permanent": true
+    }
   ]
 }

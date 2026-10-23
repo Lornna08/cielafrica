@@ -1,5 +1,5 @@
 /* ============================================================
-   ESTORA — UI kit: formatting, icons, overlays, charts
+   Reside Ke — UI kit: formatting, icons, overlays, charts
    ============================================================ */
 (function () {
   'use strict';

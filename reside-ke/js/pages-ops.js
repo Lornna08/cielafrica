@@ -1,5 +1,5 @@
 /* ============================================================
-   ESTORA — Rentals, calendar, tasks, documents, team, analytics,
+   Reside Ke — Rentals, calendar, tasks, documents, team, analytics,
    settings
    ============================================================ */
 (function () {
@@ -43,7 +43,7 @@
       }
       if (tab === 'payments') {
         var P = st.s.payments.slice().sort(function (a, b2) { return new Date(b2.due) - new Date(a.due); });
-        b.innerHTML = '<p class="muted" style="font-size:12.5px;margin-bottom:10px">' + I('info', 12) + ' Sample payment records. “Record received” notes a payment in ESTORA — it does not collect or verify money. Connect M-Pesa or your bank feed in production.</p><div class="t-wrap"><table class="t"><thead><tr><th>Month</th><th>Property</th><th>Tenant</th><th class="r">Amount</th><th>Due</th><th>Status</th><th>Recorded</th><th></th></tr></thead><tbody>' + P.map(function (x) {
+        b.innerHTML = '<p class="muted" style="font-size:12.5px;margin-bottom:10px">' + I('info', 12) + ' Sample payment records. “Record received” notes a payment in Reside Ke — it does not collect or verify money. Connect M-Pesa or your bank feed in production.</p><div class="t-wrap"><table class="t"><thead><tr><th>Month</th><th>Property</th><th>Tenant</th><th class="r">Amount</th><th>Due</th><th>Status</th><th>Recorded</th><th></th></tr></thead><tbody>' + P.map(function (x) {
           var l = st.lease(x.leaseId), p = st.prop(l.propertyId), t = st.contact(l.tenantId), late = x.status === 'late' || (x.status === 'due' && new Date(x.due) < Date.now());
           return '<tr><td><b>' + f.MON[new Date(x.due).getMonth()] + ' ' + new Date(x.due).getFullYear() + '</b></td><td>' + esc(p.title) + '</td><td>' + esc(t.name) + '</td><td class="r num">' + f.money(x.amount) + '</td><td>' + f.date(x.due) + '</td><td>' + (x.status === 'paid' ? ES.pill('Received', 'green') : late ? ES.pill('Overdue', 'red') : ES.pill('Due', 'amber')) + '</td><td>' + (x.recordedAt ? f.date(x.recordedAt) : '<span class="muted">—</span>') + '</td><td class="r">' + (x.status !== 'paid' ? '<button class="btn btn--sm" data-r="pay" data-id="' + x.id + '">Record received</button>' : '') + '</td></tr>';
         }).join('') + '</tbody></table></div>';
@@ -121,7 +121,7 @@
         body = Object.keys(groups).length ? '<div class="agenda">' + Object.keys(groups).map(function (k) { return '<div class="agenda__d"><h3>' + f.day(k) + (f.day(k) !== f.date(k) ? ' · ' + f.date(k) : '') + '</h3>' + groups[k].map(agItem).join('') + '</div>'; }).join('') + '</div>' : ES.empty('cal', 'Nothing in the next three weeks', 'Schedule a viewing or follow-up.');
         body = '<p class="muted" style="font-size:12.5px;margin-bottom:12px">Next 21 days · ' + up.length + ' events</p>' + body;
       }
-      v.innerHTML = head + body + '<p class="pr__note" style="margin-top:14px">' + I('info', 12) + 'Events live in ESTORA only — the demo is not connected to Google or Outlook calendars.</p>';
+      v.innerHTML = head + body + '<p class="pr__note" style="margin-top:14px">' + I('info', 12) + 'Events live in Reside Ke only — the demo is not connected to Google or Outlook calendars.</p>';
       v.onchange = function (e) { var k = e.target.dataset.cf; if (k) { C[k] = e.target.value; ES.app.refresh(); } };
       v.onclick = function (e) {
         var b = e.target.closest('[data-c]'), ev = e.target.closest('[data-ev]'), more = e.target.closest('[data-day]');
@@ -236,7 +236,7 @@
     var d = st.s.docs.filter(function (x) { return x.id === id; })[0]; if (!d) return;
     var p = d.propertyId ? st.prop(d.propertyId) : null;
     var panel = ES.open('drawer', ES.head(d.name, ES.DOC_KINDS[d.kind]) + '<div class="ovl__body"><div class="drop" style="cursor:default;margin-bottom:16px">' + I('file', 26) + '<b>Sample record</b><span>File contents aren’t stored in the demo. This is not a real legal document.</span></div><dl class="kv"><dt>Status</dt><dd>' + d.status + '</dd><dt>Size</dt><dd>' + (d.size >= 1024 ? (d.size / 1024).toFixed(1) + ' MB' : d.size + ' KB') + '</dd><dt>Property</dt><dd>' + (p ? '<a class="lnk" href="#/property/' + p.id + '">' + esc(p.title) + '</a>' : '—') + '</dd>' + (d.dealId ? '<dt>Deal</dt><dd><a class="lnk" href="#/deal/' + d.dealId + '">' + (st.deal(d.dealId) || {}).ref + '</a></dd>' : '') + '<dt>Added</dt><dd>' + f.dt(d.at) + ' by ' + esc(st.user(d.by).name) + '</dd></dl></div><div class="ovl__foot"><button class="btn btn--danger" data-dz="rm">' + I('trash', 14) + 'Remove</button></div>', { label: d.name });
-    panel.addEventListener('click', function (e) { if (e.target.closest('[data-dz=rm]')) { ES.close(); setTimeout(function () { ES.confirm({ title: 'Remove this document?', icon: 'trash', tone: 'red', ok: 'Remove', text: d.name + ' will be removed from ESTORA.', onOk: function () { ES.try(function () { st.removeDoc(id); }, 'Document removed'); } }); }, 240); } });
+    panel.addEventListener('click', function (e) { if (e.target.closest('[data-dz=rm]')) { ES.close(); setTimeout(function () { ES.confirm({ title: 'Remove this document?', icon: 'trash', tone: 'red', ok: 'Remove', text: d.name + ' will be removed from Reside Ke.', onOk: function () { ES.try(function () { st.removeDoc(id); }, 'Document removed'); } }); }, 240); } });
   }
 
   /* ======================= TEAM ======================= */
@@ -300,8 +300,8 @@
         var b = e.target.closest('[data-a]'), r = e.target.closest('tr[data-href]');
         if (r) { ES.app.go(r.dataset.href); return; } if (!b) return;
         if (b.dataset.a === 'm') { AU.months = +b.dataset.v; ES.app.refresh(); }
-        if (b.dataset.a === 'csv1') ES.csv('estora-listing-performance.csv', [['Ref', 'Listing', 'Area', 'Type', 'Views', 'Leads', 'Viewings', 'Offers', 'Days listed', 'Asking (KES)']].concat(perf.map(function (x) { return [x.p.ref, x.p.title, x.p.area, x.p.type, x.p.views, x.leads, x.views, x.offers, st.daysOnMarket(x.p), x.p.price]; })));
-        if (b.dataset.a === 'csv2') ES.csv('estora-agent-performance.csv', [['Agent', 'Role', 'Active listings', 'Open deals', 'Closed', 'Closed value (KES)', 'Commission (KES)', 'Lead conversion %']].concat(agents.map(function (a) { return [a.u.name, a.u.role, a.listings, a.open, a.won, a.value, a.comm, a.conv]; })));
+        if (b.dataset.a === 'csv1') ES.csv('reside-ke-listing-performance.csv', [['Ref', 'Listing', 'Area', 'Type', 'Views', 'Leads', 'Viewings', 'Offers', 'Days listed', 'Asking (KES)']].concat(perf.map(function (x) { return [x.p.ref, x.p.title, x.p.area, x.p.type, x.p.views, x.leads, x.views, x.offers, st.daysOnMarket(x.p), x.p.price]; })));
+        if (b.dataset.a === 'csv2') ES.csv('reside-ke-agent-performance.csv', [['Agent', 'Role', 'Active listings', 'Open deals', 'Closed', 'Closed value (KES)', 'Commission (KES)', 'Lead conversion %']].concat(agents.map(function (a) { return [a.u.name, a.u.role, a.listings, a.open, a.won, a.value, a.comm, a.conv]; })));
       };
     }
   };
@@ -321,7 +321,7 @@
         '<div class="pd-col"><article class="card"><header class="card__h"><span class="card__t">' + I('refresh', 16) + 'Demo data</span></header><p class="desc" style="font-size:13px">Everything in this demo is sample data stored in your browser (key <code>' + ES.config.storageKey + '</code>). Nothing is sent to a server, and no real clients, payments or messages are involved.</p><div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap"><button class="btn" data-st="json">' + I('download', 14) + 'Export data (JSON)</button><button class="btn btn--danger" data-act="reset">' + I('refresh', 14) + 'Reset demo</button></div></article>' +
         '<article class="card"><header class="card__h"><span class="card__t">' + I('info', 16) + 'In a production deployment</span></header><ul style="margin-left:18px;display:flex;flex-direction:column;gap:7px;color:var(--ink-2);font-size:13px;line-height:1.5"><li>Sign-in with roles (principal, agent, lettings, admin) and per-agency tenancy</li><li>Database with audit history and server-side validation</li><li>Secure document storage with access controls</li><li>Real-time team chat, email/SMS and calendar sync (Google, Outlook)</li><li>M-Pesa / bank reconciliation for rent and commission</li><li>Website & property-portal listing feeds</li></ul><p class="badge-sample" style="margin-top:12px">' + I('info', 12) + 'Not configured in this demo</p></article></div></div>';
       v.querySelector('#sf').onsubmit = function (e) { e.preventDefault(); var d = ES.formData(e.target); ES.try(function () { st.saveSettings(d); }, 'Settings saved'); var a = document.querySelector('.top__agency'); if (a) a.textContent = st.s.settings.agency; };
-      v.onclick = function (e) { if (e.target.closest('[data-st=json]')) { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(st.s, null, 2)], { type: 'application/json' })); a.download = 'estora-demo-data.json'; document.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); }, 300); ES.toast('Exported estora-demo-data.json'); } };
+      v.onclick = function (e) { if (e.target.closest('[data-st=json]')) { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(st.s, null, 2)], { type: 'application/json' })); a.download = 'reside-ke-demo-data.json'; document.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); }, 300); ES.toast('Exported reside-ke-demo-data.json'); } };
     }
   };
 })();

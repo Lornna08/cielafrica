@@ -1,5 +1,5 @@
 /* ============================================================
-   ESTORA — product website
+   Reside Ke — product website
    ============================================================ */
 :root{
   --bg:#F3F5F9; --card:#fff; --line:#E3E7EF; --ink:#0F1729; --ink-2:#3B4458; --ink-3:#6B7489; --ink-4:#9AA2B4;
@@ -39,6 +39,8 @@ svg{display:block;flex-shrink:0}
 .nav.is-s{border-color:var(--line)}
 .nav__in{display:flex;align-items:center;gap:28px;height:72px}
 .logo{display:inline-flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.16em;font-size:16px}
+.logo__w{white-space:nowrap}
+.logo__w em{font-style:normal;display:inline-block;font-size:.6em;font-weight:700;letter-spacing:.1em;line-height:1;padding:3px 4px 3px 5px;margin-left:.5em;border-radius:5px;background:var(--blue);color:#fff;vertical-align:.3em}
 .logo__m{width:34px;height:34px;border-radius:10px;background:var(--ink);color:#fff;display:grid;place-items:center}
 .logo small{font-size:11px;letter-spacing:0;font-weight:500;color:var(--ink-3);margin-left:4px}
 .nav__l{display:flex;gap:26px;font-size:14.5px;font-weight:500;color:var(--ink-2)}

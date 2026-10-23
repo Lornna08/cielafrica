@@ -1,10 +1,10 @@
 /* ============================================================
-   ESTORA — central data layer
+   Reside Ke — central data layer
    One state object; every screen reads through these selectors and
    writes through these actions so listings, deals, commissions and
    reports stay consistent.
 
-   Demo persistence: browser localStorage under "estora:demo:v1".
+   Demo persistence: browser localStorage under "reside-ke:demo:v1".
    It is isolated sample data — never real customer records — and a
    production deployment would replace this module with an API.
    ============================================================ */

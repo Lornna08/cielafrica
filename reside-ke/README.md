@@ -1,12 +1,12 @@
-# ESTORA — Real Estate CRM by Ciel Africa
+# Reside Ke — Real Estate CRM by Ciel Africa
 
-ESTORA is a standalone real estate workspace for agencies: listings, leads, contacts, deals, rentals,
+Reside Ke is a standalone real estate workspace for agencies: listings, leads, contacts, deals, rentals,
 commissions, calendar, documents, analytics and team chat. This folder holds two things:
 
 | Path | What it is |
 | --- | --- |
-| `index.html` | Public product website (`/estora/`) — hero, features, interactive preview, workflow, deployment, pricing, FAQ |
-| `demo.html` | The interactive demo (`/estora/demo.html`) — the full app running on sample data, no sign-up |
+| `index.html` | Public product website (`/reside-ke/`) — hero, features, interactive preview, workflow, deployment, pricing, FAQ |
+| `demo.html` | The interactive demo (`/reside-ke/demo.html`) — the full app running on sample data, no sign-up |
 
 Both are static: plain HTML, CSS and JavaScript, no build step and no server code. They deploy as part of
 the main Ciel Africa site on Vercel.
@@ -17,7 +17,7 @@ Any static file server works. From the repository root:
 
 ```bash
 python3 -m http.server 8000
-# open http://localhost:8000/estora/ and http://localhost:8000/estora/demo.html
+# open http://localhost:8000/reside-ke/ and http://localhost:8000/reside-ke/demo.html
 ```
 
 Opening `demo.html` directly from the file system also works in most browsers.
@@ -25,7 +25,7 @@ Opening `demo.html` directly from the file system also works in most browsers.
 ## Folder layout
 
 ```
-estora/
+reside-ke/
   index.html            product website
   demo.html             demo app shell (loads the scripts below in order)
   css/site.css          product website styles
@@ -59,7 +59,7 @@ estora/
   one month's rent. Closing a deal as won marks the listing sold or let, records commission as *earned*
   and, for rentals, creates a lease. Expected (weighted pipeline) and earned commission are always kept
   separate. Stage probabilities live in `ES.STAGES`.
-- **Persistence** — state is saved to `localStorage` under `estora:demo:v1`. Untouched sessions refresh
+- **Persistence** — state is saved to `localStorage` under `reside-ke:demo:v1`. Untouched sessions refresh
   after 12 hours and edited ones after 30 days. **Reset demo** (with confirmation) restores the sample data.
 - **Chat** — the team chat is simulated: messages you send stay in your browser and a teammate "replies"
   after a short typing indicator.
@@ -108,4 +108,4 @@ The demo is a faithful front end, not a finished multi-user system. A production
 - audit log, backups and data export
 
 Ciel Africa offers this as a managed cloud deployment, an install on your own server, or a custom build.
-Contact: +254 706 549 703 or `quote.html?template=ESTORA`.
+Contact: +254 706 549 703 or `quote.html?template=Reside%20Ke`.

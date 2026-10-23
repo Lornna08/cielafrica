@@ -1,5 +1,5 @@
 /* ============================================================
-   ESTORA — Leads & Contacts
+   Reside Ke — Leads & Contacts
    ============================================================ */
 (function () {
   'use strict';
@@ -43,7 +43,7 @@
       v.oninput = function (e) { var el = e.target.closest('[data-lf]'); if (!el) return; U[el.dataset.lf] = el.value; if (el.dataset.lf === 'q') { clearTimeout(v._t); v._t = setTimeout(function () { ES.app.refresh(); var i = v.querySelector('[data-lf=q]'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }, 180); } else ES.app.refresh(); };
       v.onclick = function (e) {
         var b = e.target.closest('[data-ld]'), r = e.target.closest('[data-lead]');
-        if (b) { var k = b.dataset.ld; if (k === 'st') { U.status = b.dataset.v; ES.app.refresh(); } if (k === 'new') edit(); if (k === 'csv') ES.csv('estora-leads.csv', [['Name', 'Phone', 'Email', 'Source', 'Interested in', 'Budget (KES)', 'Location', 'Type', 'Agent', 'Status', 'Last contact', 'Next follow-up', 'Created']].concat(L.map(function (l) { return [l.name, l.phone, l.email, l.source, l.propertyId ? st.prop(l.propertyId).title : '', l.budget, l.location, l.ptype, st.user(l.agentId).name, sname(l.status), l.lastContact ? f.dateLong(l.lastContact) : '', l.nextFollowUp ? f.dt(l.nextFollowUp) : '', f.dateLong(l.createdAt)]; }))); return; }
+        if (b) { var k = b.dataset.ld; if (k === 'st') { U.status = b.dataset.v; ES.app.refresh(); } if (k === 'new') edit(); if (k === 'csv') ES.csv('reside-ke-leads.csv', [['Name', 'Phone', 'Email', 'Source', 'Interested in', 'Budget (KES)', 'Location', 'Type', 'Agent', 'Status', 'Last contact', 'Next follow-up', 'Created']].concat(L.map(function (l) { return [l.name, l.phone, l.email, l.source, l.propertyId ? st.prop(l.propertyId).title : '', l.budget, l.location, l.ptype, st.user(l.agentId).name, sname(l.status), l.lastContact ? f.dateLong(l.lastContact) : '', l.nextFollowUp ? f.dt(l.nextFollowUp) : '', f.dateLong(l.createdAt)]; }))); return; }
         if (r) open(r.dataset.lead);
       };
       var m = location.hash.match(/lead=([\w]+)/); if (m) { history.replaceState(null, '', '#/leads'); setTimeout(function () { open(m[1]); }, 30); }
@@ -130,7 +130,7 @@
       v.oninput = function (e) { if (e.target.dataset.cf === 'q') { CU.q = e.target.value; clearTimeout(v._t); v._t = setTimeout(function () { ES.app.refresh(); var i = v.querySelector('[data-cf=q]'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }, 180); } };
       v.onclick = function (e) {
         var b = e.target.closest('[data-ct]'), r = e.target.closest('tr[data-href]');
-        if (b) { if (b.dataset.ct === 't') { CU.type = b.dataset.v; ES.app.refresh(); } if (b.dataset.ct === 'new') editContact(); if (b.dataset.ct === 'csv') ES.csv('estora-contacts.csv', [['Name', 'Company', 'Types', 'Phone', 'Email', 'Agent', 'Added']].concat(L.map(function (c) { return [c.name, c.company, c.types.join('; '), c.phone, c.email, st.user(c.agentId).name, f.dateLong(c.createdAt)]; }))); return; }
+        if (b) { if (b.dataset.ct === 't') { CU.type = b.dataset.v; ES.app.refresh(); } if (b.dataset.ct === 'new') editContact(); if (b.dataset.ct === 'csv') ES.csv('reside-ke-contacts.csv', [['Name', 'Company', 'Types', 'Phone', 'Email', 'Agent', 'Added']].concat(L.map(function (c) { return [c.name, c.company, c.types.join('; '), c.phone, c.email, st.user(c.agentId).name, f.dateLong(c.createdAt)]; }))); return; }
         if (r) ES.app.go(r.dataset.href);
       };
     }

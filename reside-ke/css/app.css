@@ -1,5 +1,5 @@
 /* ============================================================
-   ESTORA — application design system
+   Reside Ke — application design system
    Cool light canvas, white rounded panels, navy type, royal-blue
    accent, mint for positive, amber for attention, red for overdue.
    ============================================================ */
@@ -52,7 +52,8 @@ svg{display:block;flex-shrink:0}
 .top{display:flex;align-items:center;gap:8px;height:58px}
 .brand{display:inline-flex;align-items:center;gap:10px}
 .brand__m{width:34px;height:34px;border-radius:10px;background:#0F1729;color:#fff;display:grid;place-items:center}
-.brand__w{font-weight:700;font-size:16px;letter-spacing:.14em}
+.brand__w{font-weight:700;font-size:16px;letter-spacing:.14em;white-space:nowrap}
+.brand__w em{font-style:normal;display:inline-block;font-size:.6em;font-weight:700;letter-spacing:.1em;line-height:1;padding:3px 4px 3px 5px;margin-left:.5em;border-radius:5px;background:var(--blue);color:#fff;vertical-align:.3em}
 .top__agency{margin-left:10px;padding-left:12px;border-left:1px solid var(--line-2);color:var(--ink-3);font-size:12.5px;font-weight:500}
 .top__sp{flex:1}
 .top .top__menu,.top .top__chat{display:none}

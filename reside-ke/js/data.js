@@ -1,5 +1,5 @@
 /* ============================================================
-   ESTORA — demo dataset
+   Reside Ke — demo dataset
    Fictional agency, people, listings and transactions. Dates are
    generated relative to "today" so the demo always looks current.
    Nothing here is a real property, valuation or sale.
@@ -11,7 +11,7 @@ window.ES = window.ES || {};
   var DAY = 864e5;
 
   ES.config = {
-    product: 'ESTORA',
+    product: 'Reside Ke',
     agency: 'Northgate Realty',
     city: 'Nairobi',
     currency: 'KES',
@@ -20,7 +20,7 @@ window.ES = window.ES || {};
     saleRate: 3,          // % of sale price
     rentMonths: 1,        // letting fee, in months of rent
     monthlyTarget: 3000000,
-    storageKey: 'estora:demo:v1'
+    storageKey: 'reside-ke:demo:v1'
   };
 
   ES.STAGES = [

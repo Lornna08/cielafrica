@@ -1,5 +1,5 @@
 /* ============================================================
-   ESTORA — application shell: navigation, routing, search,
+   Reside Ke — application shell: navigation, routing, search,
    notifications and the live team chat panel
    ============================================================ */
 (function () {
@@ -32,11 +32,11 @@
   /* ---------------- shell ---------------- */
   function shell() {
     document.body.innerHTML =
-      '<div class="demo-bar" role="region" aria-label="Demo notice"><span class="dot" aria-hidden="true"></span><span class="demo-bar__t">You’re exploring the <b>ESTORA demo</b>. Changes affect sample data only.</span><span class="demo-bar__a"><button class="db-btn" data-act="reset">Reset demo</button><a class="db-btn db-hide" href="./#features">View features</a><a class="db-btn db-btn--p" href="../quote.html?template=ESTORA">Get ESTORA</a></span></div>' +
+      '<div class="demo-bar" role="region" aria-label="Demo notice"><span class="dot" aria-hidden="true"></span><span class="demo-bar__t">You’re exploring the <b>Reside Ke demo</b>. Changes affect sample data only.</span><span class="demo-bar__a"><button class="db-btn" data-act="reset">Reset demo</button><a class="db-btn db-hide" href="./#features">View features</a><a class="db-btn db-btn--p" href="../quote.html?template=Reside%20Ke">Get Reside Ke</a></span></div>' +
       '<div class="app" id="app">' +
       '<div class="main">' +
       '<header class="top"><button class="ib top__menu" data-act="drawer" aria-label="Open navigation">' + I('menu', 20) + '</button>' +
-      '<a class="brand" href="#/overview" aria-label="ESTORA overview"><span class="brand__m">' + I('logo', 18) + '</span><span class="brand__w">ESTORA</span></a>' +
+      '<a class="brand" href="#/overview" aria-label="Reside Ke overview"><span class="brand__m">' + I('logo', 18) + '</span><span class="brand__w">RESIDE<em>KE</em></span></a>' +
       '<span class="top__agency">' + esc(st.s.settings.agency) + '</span><span class="top__sp"></span>' +
       '<button class="ib ib--round" data-act="search" aria-label="Search (Ctrl+K)">' + I('search', 18) + '</button>' +
       '<button class="ib ib--round" data-act="notes" aria-label="Notifications">' + I('bell', 18) + '<i class="ib__dot" id="noteDot" hidden></i></button>' +
@@ -98,7 +98,7 @@
     document.documentElement.classList.remove('is-drawer');
     render(same);
     if (!same) { window.scrollTo(0, 0); var v = document.getElementById('view'); try { v.focus({ preventScroll: true }); } catch (e) { } }
-    var t = (TAB_OF[current.name] || current.name); document.title = (t.charAt(0).toUpperCase() + t.slice(1)) + ' · ESTORA demo';
+    var t = (TAB_OF[current.name] || current.name); document.title = (t.charAt(0).toUpperCase() + t.slice(1)) + ' · Reside Ke demo';
     document.documentElement.classList.toggle('is-chatroute', current.name === 'chat');
   }
   ES.app = { go: function (h) { if (location.hash === h) go(); else location.hash = h; }, refresh: function () { render(true); }, current: function () { return current; } };
@@ -111,7 +111,7 @@
     else if (act === 'search') openSearch();
     else if (act === 'notes') openNotes(a);
     else if (act === 'help') openHelp();
-    else if (act === 'me') ES.menu(a, [{ label: st.me().name + ' — ' + st.me().role, icon: 'user', disabled: true }, '-', { label: 'Settings', icon: 'gear', go: '#/settings' }, { label: 'Team', icon: 'users', go: '#/team' }, { label: 'Reset demo data', icon: 'refresh', act: 'reset' }, '-', { label: 'Back to the ESTORA site', icon: 'out', href: './' }], function (it) { if (it.go) ES.app.go(it.go); else if (it.href) location.href = it.href; else if (it.act) document.querySelector('[data-act=reset]').click(); });
+    else if (act === 'me') ES.menu(a, [{ label: st.me().name + ' — ' + st.me().role, icon: 'user', disabled: true }, '-', { label: 'Settings', icon: 'gear', go: '#/settings' }, { label: 'Team', icon: 'users', go: '#/team' }, { label: 'Reset demo data', icon: 'refresh', act: 'reset' }, '-', { label: 'Back to the Reside Ke site', icon: 'out', href: './' }], function (it) { if (it.go) ES.app.go(it.go); else if (it.href) location.href = it.href; else if (it.act) document.querySelector('[data-act=reset]').click(); });
     else if (act === 'more') ES.menu(a, MORE.map(function (m) { var b = m.badge ? m.badge() : 0; return { label: m.label + (b ? ' (' + b + ')' : ''), icon: m.icon, go: '#/' + m.id + (m.sub ? '/' + m.sub : '') }; }), function (it) { ES.app.go(it.go); });
     else if (act === 'drawer') openDrawerNav();
     else if (act === 'chatm') { if (innerWidth > 1180) { ES.ui.chat.open = !ES.ui.chat.open; document.documentElement.classList.toggle('is-chat-off', !ES.ui.chat.open); } else ES.app.go('#/chat'); }
@@ -119,7 +119,7 @@
 
   function openDrawerNav() {
     var items = PRIMARY.concat(MORE.filter(function (m) { return !m.sub; }));
-    var p = ES.open('drawer', '<div class="dnav"><div class="dnav__h"><span class="brand"><span class="brand__m">' + I('logo', 18) + '</span><span class="brand__w">ESTORA</span></span><button class="ib" data-close aria-label="Close">' + I('x', 18) + '</button></div>' +
+    var p = ES.open('drawer', '<div class="dnav"><div class="dnav__h"><span class="brand"><span class="brand__m">' + I('logo', 18) + '</span><span class="brand__w">RESIDE<em>KE</em></span></span><button class="ib" data-close aria-label="Close">' + I('x', 18) + '</button></div>' +
       items.map(function (t) { var on = (TAB_OF[current.name] || current.name) === t.id, b = t.badge ? t.badge() : 0; return '<a href="#/' + t.id + '" class="dnav__a' + (on ? ' is-on' : '') + '">' + I(t.icon, 18) + '<span>' + t.label + '</span>' + (b ? '<i>' + b + '</i>' : '') + '</a>'; }).join('') +
       '<a href="#/chat" class="dnav__a">' + I('chat', 18) + '<span>Team chat</span>' + (st.unreadCount() ? '<i>' + st.unreadCount() + '</i>' : '') + '</a></div>', { label: 'Navigation', cls: 'ovl--left' });
     p.addEventListener('click', function (e) { if (e.target.closest('a')) ES.close(); });
@@ -174,7 +174,7 @@
     });
   }
   function openHelp() {
-    ES.open('modal', ES.head('Getting around ESTORA') + '<div class="ovl__body help"><p>This is a working demo filled with sample data for a fictional Nairobi agency. Try these:</p><ul>' +
+    ES.open('modal', ES.head('Getting around Reside Ke') + '<div class="ovl__body help"><p>This is a working demo filled with sample data for a fictional Nairobi agency. Try these:</p><ul>' +
       ['Open <a href="#/property/p1041">Karura Ridge House</a> and drag the price sliders — the gauge and market insight update live.', 'Drag a card on the <a href="#/deals">Deals board</a> to a new stage. Closing a deal records its commission.', 'Add a lead on <a href="#/leads">Leads</a>, schedule a follow-up, then convert it to a contact and deal.', 'Send a message in the team chat. Replies are simulated in this demo.', 'Press <kbd>Ctrl</kbd> + <kbd>K</kbd> (or <kbd>/</kbd>) to search everything.'].map(function (t) { return '<li>' + t + '</li>'; }).join('') +
       '</ul><p class="muted">Everything you change is stored only in this browser. Use <b>Reset demo</b> in the top bar to start over.</p></div>', { label: 'Help' }).addEventListener('click', function (e) { if (e.target.closest('a')) ES.close(); });
   }

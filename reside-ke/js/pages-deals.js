@@ -1,5 +1,5 @@
 /* ============================================================
-   ESTORA — Deals pipeline board, deal workspace, sales, commissions
+   Reside Ke — Deals pipeline board, deal workspace, sales, commissions
    ============================================================ */
 (function () {
   'use strict';
@@ -250,7 +250,7 @@
       v.onclick = function (e) {
         var b = e.target.closest('[data-s]'), r = e.target.closest('tr[data-href]');
         if (b && b.dataset.s === 'new') newModal({});
-        else if (b && b.dataset.s === 'csv') ES.csv('estora-sales.csv', [['Ref', 'Property', 'Buyer', 'Seller', 'Agent', 'Stage', 'Value (KES)', 'Rate %', 'Expected commission (KES)', 'Actual commission (KES)', 'Probability %', 'Expected close', 'Closed']].concat(L.map(function (d) { var won = d.stage === 'won'; return [d.ref, st.prop(d.propertyId).title, (st.contact(d.buyerId) || {}).name, (st.contact(d.sellerId) || {}).name, st.user(d.agentId).name, st.stage(d.stage).name, d.value, d.rate != null ? d.rate : st.s.settings.saleRate, won ? '' : st.commission(d), won ? st.commission(d) : '', st.stage(d.stage).p, f.dateLong(d.expectedClose), d.closedAt ? f.dateLong(d.closedAt) : '']; })));
+        else if (b && b.dataset.s === 'csv') ES.csv('reside-ke-sales.csv', [['Ref', 'Property', 'Buyer', 'Seller', 'Agent', 'Stage', 'Value (KES)', 'Rate %', 'Expected commission (KES)', 'Actual commission (KES)', 'Probability %', 'Expected close', 'Closed']].concat(L.map(function (d) { var won = d.stage === 'won'; return [d.ref, st.prop(d.propertyId).title, (st.contact(d.buyerId) || {}).name, (st.contact(d.sellerId) || {}).name, st.user(d.agentId).name, st.stage(d.stage).name, d.value, d.rate != null ? d.rate : st.s.settings.saleRate, won ? '' : st.commission(d), won ? st.commission(d) : '', st.stage(d.stage).p, f.dateLong(d.expectedClose), d.closedAt ? f.dateLong(d.closedAt) : '']; })));
         else if (r) ES.app.go(r.dataset.href);
       };
     }
@@ -295,8 +295,8 @@
         if (k === 'p') { CU.period = +b.dataset.p; ES.app.refresh(); }
         if (k === 'st') { CU.status = b.dataset.v; ES.app.refresh(); }
         if (k === 'ap') ES.try(function () { st.setCommissionStatus(b.dataset.id, 'approved'); }, 'Commission approved');
-        if (k === 'pay') ES.confirm({ title: 'Record commission as paid?', icon: 'wallet', tone: 'green', ok: 'Record as paid', text: 'This marks the commission as settled in ESTORA. In the demo no payment is made or verified.', onOk: function () { ES.try(function () { st.setCommissionStatus(b.dataset.id, 'paid'); }, 'Commission recorded as paid'); } });
-        if (k === 'csv') ES.csv('estora-commissions.csv', [['Deal', 'Property', 'Type', 'Agent', 'Deal value (KES)', 'Rate', 'Commission (KES)', 'Status', 'Closed']].concat(rows.map(function (d) { return [d.ref, st.prop(d.propertyId).title, d.kind, st.user(d.agentId).name, d.value, d.kind === 'rent' ? st.s.settings.rentMonths + ' month(s)' : (d.rate != null ? d.rate : st.s.settings.saleRate) + '%', st.commission(d), d.commissionStatus, f.dateLong(d.closedAt)]; })));
+        if (k === 'pay') ES.confirm({ title: 'Record commission as paid?', icon: 'wallet', tone: 'green', ok: 'Record as paid', text: 'This marks the commission as settled in Reside Ke. In the demo no payment is made or verified.', onOk: function () { ES.try(function () { st.setCommissionStatus(b.dataset.id, 'paid'); }, 'Commission recorded as paid'); } });
+        if (k === 'csv') ES.csv('reside-ke-commissions.csv', [['Deal', 'Property', 'Type', 'Agent', 'Deal value (KES)', 'Rate', 'Commission (KES)', 'Status', 'Closed']].concat(rows.map(function (d) { return [d.ref, st.prop(d.propertyId).title, d.kind, st.user(d.agentId).name, d.value, d.kind === 'rent' ? st.s.settings.rentMonths + ' month(s)' : (d.rate != null ? d.rate : st.s.settings.saleRate) + '%', st.commission(d), d.commissionStatus, f.dateLong(d.closedAt)]; })));
       };
     }
   };

@@ -1,5 +1,5 @@
 /* ============================================================
-   ESTORA — Overview dashboard
+   Reside Ke — Overview dashboard
    ============================================================ */
 (function () {
   'use strict';
@@ -84,7 +84,7 @@
         if (a === 'fp' || a === 'fn') { var n = feat.images.length; ui.feat = (ui.feat + (a === 'fn' ? 1 : -1) + n) % n; var img = v.querySelector('.ft__img'); img.src = feat.images[ui.feat]; v.querySelector('.ft__n').textContent = pad(ui.feat + 1) + ' / ' + pad(n); }
         if (a === 'lead') { ES.app.go('#/leads'); setTimeout(function () { ES.pages.leads.open(b.dataset.id); }, 60); }
         if (a === 'more') ES.menu(b, [{ label: 'Export pipeline (CSV)', icon: 'download', k: 'csv' }, { label: 'Book a viewing', icon: 'cal', k: 'view' }, { label: 'Add a lead', icon: 'user', k: 'lead' }], function (it) {
-          if (it.k === 'csv') ES.csv('estora-pipeline.csv', [['Ref', 'Property', 'Buyer/Tenant', 'Stage', 'Value (KES)', 'Probability %', 'Expected commission (KES)', 'Weighted (KES)', 'Expected close', 'Agent']].concat(st.openDeals().map(function (d) { return [d.ref, st.prop(d.propertyId).title, (st.contact(d.buyerId) || {}).name, st.stage(d.stage).name, d.value, st.stage(d.stage).p, st.commission(d), st.weighted(d), f.dateLong(d.expectedClose), st.user(d.agentId).name]; })));
+          if (it.k === 'csv') ES.csv('reside-ke-pipeline.csv', [['Ref', 'Property', 'Buyer/Tenant', 'Stage', 'Value (KES)', 'Probability %', 'Expected commission (KES)', 'Weighted (KES)', 'Expected close', 'Agent']].concat(st.openDeals().map(function (d) { return [d.ref, st.prop(d.propertyId).title, (st.contact(d.buyerId) || {}).name, st.stage(d.stage).name, d.value, st.stage(d.stage).p, st.commission(d), st.weighted(d), f.dateLong(d.expectedClose), st.user(d.agentId).name]; })));
           if (it.k === 'view') ES.pages.calendar.edit(null, { type: 'viewing' });
           if (it.k === 'lead') { ES.app.go('#/leads'); setTimeout(function () { ES.pages.leads.edit(); }, 60); }
         });

@@ -1,4 +1,4 @@
-# ESTORA demo photography
+# Reside Ke demo photography
 
 All photographs are from Unsplash (https://unsplash.com) and used under the Unsplash License.
 Each download was registered through the Unsplash API. Listings, people and figures shown with

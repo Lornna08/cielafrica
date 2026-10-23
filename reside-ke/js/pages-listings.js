@@ -1,5 +1,5 @@
 /* ============================================================
-   ESTORA — Listings, property workspace, pricing tool, listing form
+   Reside Ke — Listings, property workspace, pricing tool, listing form
    ============================================================ */
 (function () {
   'use strict';
@@ -82,7 +82,7 @@
         if (k === 'view') U.view = b.dataset.v;
         if (k === 'pg') { U.page += +b.dataset.v; window.scrollTo(0, 0); }
         if (k === 'clear') { ['type', 'status', 'area', 'beds', 'agent', 'min', 'max', 'listed', 'q'].forEach(function (x) { U[x] = ''; }); U.page = 1; }
-        if (k === 'csv') { ES.csv('estora-listings.csv', [['Ref', 'Title', 'Type', 'Category', 'Status', 'Location', 'Asking (KES)', 'Beds', 'Baths', 'Size (m²)', 'Agent', 'Date listed', 'Views', 'Leads']].concat(L.map(function (p) { return [p.ref, p.title, p.type, p.category, f.status(p.status), p.area, p.price, p.beds, p.baths, p.size, st.user(p.agentId).name, f.dateLong(p.listedAt), p.views, leadsBy[p.id] || 0]; }))); return; }
+        if (k === 'csv') { ES.csv('reside-ke-listings.csv', [['Ref', 'Title', 'Type', 'Category', 'Status', 'Location', 'Asking (KES)', 'Beds', 'Baths', 'Size (m²)', 'Agent', 'Date listed', 'Views', 'Leads']].concat(L.map(function (p) { return [p.ref, p.title, p.type, p.category, f.status(p.status), p.area, p.price, p.beds, p.baths, p.size, st.user(p.agentId).name, f.dateLong(p.listedAt), p.views, leadsBy[p.id] || 0]; }))); return; }
         ES.app.refresh();
       };
     }
