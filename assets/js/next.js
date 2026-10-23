@@ -19,7 +19,7 @@
   /* services preview (desktop): follows the pointer down the empty middle of the list */
   var list = $('#svcList');
   if (list && matchMedia('(hover: hover) and (pointer: fine)').matches && !RM) {
-    var imgs = ['assets/img/home/meridian-ui.webp', 'assets/img/home/transit-ui.webp', 'assets/img/ciel-shop/card.webp?v=20261022d', 'assets/img/reside-ke/card.webp?v=20261023c', 'assets/img/c-ledger/card.webp?v=20261023a', 'assets/img/apex-motion/card.webp?v=20261023a'];
+    var imgs = ['assets/img/home/meridian-ui.webp', 'assets/img/home/transit-ui.webp', 'assets/img/ciel-shop/card.webp?v=20261022d', 'assets/img/reside-ke/card.webp?v=20261023c', 'assets/img/c-ledger/card.webp?v=20261023z', 'assets/img/apex-motion/card.webp?v=20261023a'];
     var svp = document.createElement('div'); svp.className = 'svp'; svp.setAttribute('aria-hidden', 'true');
     svp.innerHTML = imgs.map(function (s) { return '<img src="' + s + '" alt="" loading="lazy">'; }).join('');
     list.appendChild(svp);
