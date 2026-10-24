@@ -162,6 +162,10 @@
     {
       "source": "/apex-motion/((?!.*\\.).*)",
       "destination": "/apex-motion"
+    },
+    {
+      "source": "/njia/((?!.*\\.).*)",
+      "destination": "/njia"
     }
   ],
   "redirects": [
