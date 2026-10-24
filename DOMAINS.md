@@ -50,8 +50,8 @@ Emails are only sent for things that are actually true. "Registered" requires a 
 | .africa | ZACR RDAP (`rdap.nic.africa`) | Registered / no record found |
 | .org | Public Interest Registry RDAP | Registered / no record found |
 | .info .ai .digital .software .agency .solutions .consulting .studio | Identity Digital RDAP | Registered / no record found; **premium prices not shown** |
-| .biz .tech .online .site .store .dev .app .cloud .shop .design .blog .xyz | Their registries' RDAP servers (IANA bootstrap list) | Registered / no record found; **premium prices not shown** |
-| .co, .io, .me | **No public RDAP.** Public DNS only | Can prove a name is **taken** (it has nameservers). Can't prove it's free, so these show **"Availability needs confirmation"** and are verified before payment. |
+| .biz .tech .online .site .store .dev .app .cloud .design .blog .xyz | Their registries' RDAP servers (IANA bootstrap list) | Registered / no record found; **premium prices not shown** |
+| .co, .io, .me, .shop | **No public RDAP** (.co/.io/.me), or RDAP that refuses cloud servers (.shop, GMO Registry returns HTTP 429). Public DNS only | Can prove a name is **taken** (it has nameservers). Can't prove it's free, so these show **"Availability needs confirmation"** and are verified before payment. |
 
 - **"No record found" is shown as Available (preliminary).** It doesn't reserve the name, and it can't rule out registry-reserved or premium names. Short names (≤ 4 letters) in premium-prone extensions are always verified before payment.
 - **What we never do:** scrape registrar sites, use a WHOIS reseller, or invent results. If a registry times out, the result says *"Couldn't check right now"*, not available.
