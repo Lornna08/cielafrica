@@ -44,6 +44,87 @@
       ]
     },
     {
+      "source": "/api/domains(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ]
+    },
+    {
+      "source": "/domains-order",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        }
+      ]
+    },
+    {
+      "source": "/domains/order",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        }
+      ]
+    },
+    {
+      "source": "/domains-admin",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        }
+      ]
+    },
+    {
+      "source": "/domains/admin",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        }
+      ]
+    },
+    {
       "source": "/(.*)",
       "headers": [
         {
@@ -63,13 +144,37 @@
   ],
   "rewrites": [
     {
+      "source": "/api/domains/:path*",
+      "destination": "/api/domains?route=:path*"
+    },
+    {
+      "source": "/domains/order",
+      "destination": "/domains-order"
+    },
+    {
+      "source": "/domains/admin",
+      "destination": "/domains-admin"
+    },
+    {
+      "source": "/domains/terms",
+      "destination": "/domains-terms"
+    },
+    {
       "source": "/apex-motion/((?!.*\\.).*)",
       "destination": "/apex-motion"
     }
   ],
   "redirects": [
-    { "source": "/nice", "destination": "/", "permanent": false },
-    { "source": "/next", "destination": "/", "permanent": false },
+    {
+      "source": "/nice",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/next",
+      "destination": "/",
+      "permanent": false
+    },
     {
       "source": "/estora",
       "destination": "/reside-ke",
