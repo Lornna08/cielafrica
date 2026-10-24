@@ -149,7 +149,7 @@
     var sw = e.target.closest('[data-swap]');
     if (sw) {
       var a = sw.getAttribute('data-swap').split(':'), p = N.byId[a[0]], card = sw.closest('.pc'), img = card && U.$('.pc__a', card);
-      if (img) { var id = p.imgs[+a[1]]; img.srcset = [360, 600, 900].map(function (w) { return U.src(id, w) + ' ' + w + 'w'; }).join(', '); img.src = U.src(id, 600); img.style.objectPosition = (p.pos && p.pos[+a[1]]) || ''; }
+      if (img) { var id = p.imgs[+a[1]]; img.srcset = U.sizesOf(id).map(function (w) { return U.src(id, w) + ' ' + w + 'w'; }).join(', '); img.src = U.src(id, 600); img.style.objectPosition = (p.pos && p.pos[+a[1]]) || ''; }
       U.$$('.dot', sw.parentNode).forEach(function (d) { d.classList.toggle('is-on', d === sw); });
     }
   });

@@ -18,6 +18,6 @@ A Ciel Africa store template: an original streetwear label ("NJIA" is Swahili fo
 `store.demo: true` keeps the bag, orders and account in the browser and simulates the M-Pesa prompt (nothing is charged). To go live, connect `NJIA.db` and `NJIA.pay.mpesa` in `js/core.js` to your back end (for example a WooCommerce or custom API). The server should send the STK push and confirm it with an STK query before marking an order paid. Never put API keys in front-end files.
 
 ## Images
-Photos are served from the Unsplash CDN (hotlinked as the Unsplash API guidelines require) and credited on `/njia/credits`. They are styling placeholders, not photos of NJIA products. Replace them with your own product photography before launch.
+Photos come from Unsplash (downloads registered through the Unsplash API), stored as WebP in `img/u/`: editorial images in black and white at 900/1600 px, product images at 480/960 px. They are credited on `/njia/credits` and are styling placeholders, not photos of NJIA products. Replace them with your own product photography (same file names, or update `data/catalog.js`) before launch.
 
 Serve the folder from a web server at `/njia/` (deep links rely on the rewrite in `vercel.json`).

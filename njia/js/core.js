@@ -22,13 +22,18 @@
   U.date = function (iso) { return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); };
   U.plural = function (n, w) { return n + ' ' + w + (n === 1 ? '' : 's'); };
 
-  /* ---------- images (Unsplash CDN; hotlinked as the Unsplash API guidelines ask) ---------- */
-  U.src = function (id, w, mono) { return 'https://images.unsplash.com/' + id + '?auto=format&fit=max&q=72&w=' + w + (mono ? '&sat=-100' : ''); };
+  /* ---------- images (Unsplash photos, self-hosted as WebP in img/u/) ----------
+     Editorial photos are stored in black and white at 900/1600 px, product
+     photos in colour at 480/960 px. Swap in your own files with the same names. */
+  var E0 = N.editorial, MONO = {};
+  [E0.hero, E0.details, E0.detailsInset, E0.custom, E0.customHero, E0.customDetail].concat(E0.tiles, N.lookbook.looks).forEach(function (x) { MONO[x.img] = 1; });
+  U.sizesOf = function (id) { return MONO[id] ? [900, 1600] : [480, 960]; };
+  U.src = function (id, w) { var s = U.sizesOf(id), pick = w > s[0] ? s[1] : s[0]; return 'img/u/' + id.replace('photo-', '') + '-' + pick + '.webp'; };
   U.img = function (id, o) {
     o = o || {};
-    var ws = o.widths || [360, 600, 900], mono = !!o.mono;
-    var set = ws.map(function (w) { return U.src(id, w, mono) + ' ' + w + 'w'; }).join(', ');
-    return '<img src="' + U.src(id, ws[1] || ws[0], mono) + '" srcset="' + set + '" sizes="' + (o.sizes || '(max-width: 760px) 50vw, 25vw') + '" alt="' + U.esc(o.alt || '') + '"' +
+    var ws = U.sizesOf(id), want = (o.widths || [360, 600, 900])[1] || 600;
+    var set = ws.map(function (w) { return U.src(id, w) + ' ' + w + 'w'; }).join(', ');
+    return '<img src="' + U.src(id, want) + '" srcset="' + set + '" sizes="' + (o.sizes || '(max-width: 760px) 50vw, 25vw') + '" alt="' + U.esc(o.alt || '') + '"' +
       (o.pos ? ' style="object-position:' + o.pos + '"' : '') + (o.eager ? ' fetchpriority="high"' : ' loading="lazy"') + ' decoding="async"' + (o.cls ? ' class="' + o.cls + '"' : '') + '>';
   };
 

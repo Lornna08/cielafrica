@@ -242,7 +242,7 @@
 
     var root = app(), info = U.$('.pdp__info', root), track = U.$('[data-track]', root), cur = 0;
     var ld = document.createElement('script'); ld.type = 'application/ld+json'; ld.id = 'ld';
-    ld.textContent = JSON.stringify({ '@context': 'https://schema.org', '@type': 'Product', name: p.name, description: p.desc, sku: p.id.toUpperCase(), brand: { '@type': 'Brand', name: 'NJIA' }, image: p.imgs.map(function (x) { return U.src(x, 1200); }),
+    ld.textContent = JSON.stringify({ '@context': 'https://schema.org', '@type': 'Product', name: p.name, description: p.desc, sku: p.id.toUpperCase(), brand: { '@type': 'Brand', name: 'NJIA' }, image: p.imgs.map(function (x) { return location.origin + C.store.basePath + U.src(x, 1200); }),
       offers: { '@type': 'Offer', priceCurrency: 'KES', price: p.price, availability: out ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock' } });
     document.head.appendChild(ld);
 
