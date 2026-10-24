@@ -1,5 +1,5 @@
 /* CIEL AFRICA — homepage: rotating hero word, hero lean, services showcase,
-   sketch-to-live build journey, 10-second brief, Nairobi clock. */
+   sketch-to-live build journey, 10-second brief. */
 (function () {
   'use strict';
   var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -85,8 +85,4 @@
     upd();
   }
 
-  /* Nairobi clock */
-  var clk = $$('[data-clock]');
-  var tick = function () { var t; try { t = new Intl.DateTimeFormat('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date()); } catch (e) { t = ''; } clk.forEach(function (c) { c.textContent = t; }); };
-  if (clk.length) { tick(); setInterval(tick, 20000); }
 })();
