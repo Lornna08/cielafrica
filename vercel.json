@@ -68,6 +68,7 @@
     }
   ],
   "redirects": [
+    { "source": "/nice", "destination": "/next", "permanent": false },
     {
       "source": "/estora",
       "destination": "/reside-ke",
