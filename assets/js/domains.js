@@ -11,7 +11,7 @@
   var money = function (n) { return n == null ? '—' : 'KES ' + String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); };
   var API = '/api/domains/';
 
-  var cfg = null, tldMap = {}, results = {}, runId = 0;
+  var cfg = null, tldMap = {}, results = {}, runId = 0, noTop = false;
   var form = $('#dmForm'), qIn = $('#dmQ'), extSel = $('#dmExt'), go = $('#dmGo'), err = $('#dmErr'), box = $('#results');
 
   function api(route, body) {
@@ -93,6 +93,7 @@
     var hero = box.closest('.dmh'); if (hero && !hero.classList.contains('dmh--done')) { hero.classList.add('dmh--done'); scrollTo(0, 0); }
     $('#dmNotes').innerHTML = (r.notes || []).map(function (n) { return '<p>' + esc(n) + '</p>'; }).join('');
     var p = r.primary, explicit = r.query.explicitTld;
+    noTop = !!explicit;
     results[p.domain] = { r: p, price: p.price };
     $('#dmMain').innerHTML = explicit ? one(p) : '';
     var groups = r.groups.map(function (g) { return { id: g.id, title: g.id === 'ext' ? 'Available extensions' : 'More ideas', items: g.items.slice() }; });
@@ -102,9 +103,12 @@
     if (!explicit && p.state === 'available') ext.unshift({ domain: p.domain, price: p.price });
     var list = [{ id: 'ext', title: explicit ? 'Other extensions' : 'Available extensions', items: ext }, { id: 'ideas', title: 'More ideas', items: ideas }].filter(function (g) { return g.items.length; });
     var toCheck = [];
+    var TAG = { com: 'Most popular', 'co.ke': 'Kenyan', ke: 'Kenyan', africa: 'Pan-African', org: 'Organisations', net: 'Classic', online: 'Online', info: 'Info', biz: 'Business', dev: 'Developers', app: 'Apps', ai: 'AI', cloud: 'Cloud', digital: 'Digital', agency: 'Agencies', design: 'Design', consulting: 'Consulting', blog: 'Blogs' };
     $('#dmGroups').innerHTML = list.map(function (g) {
-      return '<div class="dmgrp" data-g="' + g.id + '"><h3>' + esc(g.title) + '</h3><ul class="dml">' + g.items.map(function (it) {
+      return '<div class="dmgrp" data-g="' + g.id + '"><h3>' + esc(g.title) + '</h3><ul class="dmcards">' + g.items.map(function (it, n) {
         if (!results[it.domain]) { results[it.domain] = { r: null, price: it.price }; toCheck.push(it.domain); }
+        results[it.domain].tag = g.id === 'ext' ? (TAG[split(it.domain).tld] || '') : 'Idea';
+        results[it.domain].top = g.id === 'ext' && n === 0 && !explicit;
         return row(it.domain);
       }).join('') + '</ul></div>';
     }).join('');
@@ -121,12 +125,16 @@
     else if (s !== 'registered' && s !== 'reserved') act = '<button class="btn btn--dark" data-retry-main="' + esc(p.domain) + '">Try again</button>';
     return '<div class="dmone" data-state="' + esc(s) + '"><div class="dmdom">' + domHtml(p.domain) + '</div>' + status + act + '</div>';
   }
+  var ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
   function row(d) {
-    var x = results[d] || {}, r = x.r, p = x.price;
+    var x = results[d] || {}, r = x.r, p = x.price, sp = split(d);
     var ready = r && r.state === 'available' && p;
-    return '<li data-d="' + esc(d) + '"><span class="dml__d">' + domHtml(d) + '</span>' +
-      '<span class="dml__p">' + (ready ? money(p.total) + '<small>' + (p.years > 1 ? p.years + ' yrs · ' : '') + 'renews ' + money(p.renewal) + '</small>' : '<span class="dmsk"></span>') + '</span>' +
-      '<span class="dml__a">' + (ready ? '<button class="btn btn--dark" data-buy="' + esc(d) + '">Buy</button>' : '<button class="btn btn--ghost" disabled>Buy</button>') + '</span></li>';
+    return '<li class="dmc' + (x.top ? ' dmc--top' : '') + (ready ? '' : ' is-wait') + '" data-d="' + esc(d) + '">' +
+      '<span class="dmc__tag">' + esc(x.top ? 'Best match' : (x.tag || '')) + '</span>' +
+      '<span class="dmc__d"><b>' + esc(sp.label) + '</b><em>.' + esc(sp.tld) + '</em></span>' +
+      '<span class="dmc__p">' + (ready ? money(p.total) + '<small>' + (p.years > 1 ? p.years + ' years' : 'first year') + '</small>' : '<span class="dmsk"></span>') + '</span>' +
+      '<span class="dmc__r">' + (ready ? 'Renews at ' + money(p.renewal) + '/yr' : '&nbsp;') + '</span>' +
+      (ready ? '<button class="dmc__buy" data-buy="' + esc(d) + '">Buy' + ARROW + '</button>' : '<button class="dmc__buy" disabled>Buy' + ARROW + '</button>') + '</li>';
   }
   function check(list, retried) {
     return api('check', { domains: list, fresh: !!retried }).then(function (j) {
@@ -144,6 +152,11 @@
     });
   }
   function tidy() {
+    var eg = $('#dmGroups .dmgrp[data-g="ext"]');
+    if (eg && !$('.dmc--top', eg) && !noTop) {
+      var first = $('li.dmc', eg);
+      if (first && results[first.dataset.d] && results[first.dataset.d].r) { results[first.dataset.d].top = true; first.outerHTML = row(first.dataset.d); }
+    }
     $$('#dmGroups .dmgrp').forEach(function (g) { if (!$('li', g)) g.remove(); });
     var none = !$('#dmGroups li') && !$('#dmMain .dmone[data-state="available"]');
     var pending = Object.keys(results).some(function (d) { return !results[d].r; });

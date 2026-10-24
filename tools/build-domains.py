@@ -5,7 +5,7 @@ Edit the BODY_* blocks below (or the shell), then re-run."""
 import pathlib, re
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-V = '20261024h'  # cache-buster for domains assets
+V = '20261024l'  # cache-buster for domains assets
 
 NAV_LINKS = [('index.html', 'Home'), ('work.html', 'Work'), ('services.html', 'Services'), ('templates.html', 'Templates'),
              ('products.html', 'Products'), ('domains.html', 'Domains'), ('about.html', 'About'), ('insights.html', 'Insights'), ('contact.html', 'Contact')]
@@ -69,9 +69,9 @@ def page(file, title, desc, canonical, active, body, scripts, robots=None, base=
 <link rel="manifest" href="site.webmanifest?v=20261021i">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/base.css?v=20261021i">
-<link rel="stylesheet" href="assets/css/components.css?v=20261024e">
+<link rel="stylesheet" href="assets/css/components.css?v=20261024l">
 <link rel="stylesheet" href="assets/css/domains.css?v={V}">
 </head>
 <body class="dm">
@@ -82,7 +82,7 @@ def page(file, title, desc, canonical, active, body, scripts, robots=None, base=
 </main>
 {FOOT if active is not None else ''}
 <script src="assets/js/site.js?v=20261021i"></script>
-{'<script src="assets/js/cart.js?v=20261021i"></script>' if active is not None else ''}
+{'<script src="assets/js/cart.js?v=20261024l"></script>' if active is not None else ''}
 {scripts}
 </body>
 </html>

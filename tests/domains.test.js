@@ -123,7 +123,7 @@ test('suggestions: grouped, deduped, limited, industry aware, no brand look-alik
 test('pricing: first year + renewals, tax included/added, verification reasons', () => {
   const s = { currency: 'KES', taxRate: 0, pricesIncludeTax: true };
   const q = quote(T('com'), 3, s, 'brightstudio');
-  assert.equal(q.total, 1850 + 2600 * 2);
+  assert.equal(q.total, 1850 + 2050 * 2);
   assert.equal(q.verifyBeforePayment, false);
   const v = quote(T('com'), 1, { currency: 'KES', taxRate: 0.16, pricesIncludeTax: false }, 'x1x');
   assert.equal(v.tax, Math.round(1850 * 0.16)); assert.equal(v.total, 1850 + v.tax);
@@ -202,13 +202,13 @@ test('registry not answering → no order is taken (never sold unchecked)', asyn
 test('no database → token checkout: STK push, server-side confirmation, emails', async () => {
   const r = rig({ durable: false });
   const o = await r.call('POST', 'order', { domain: 'kilele.co.ke', years: 2, customer: cust, agree: true, idemKey: idem() });
-  assert.equal(o.status, 201); assert.ok(o.json.token); assert.equal(o.json.amount, 1700 + 2500);
+  assert.equal(o.status, 201); assert.ok(o.json.token); assert.equal(o.json.amount, 1700 + 1900);
   assert.ok(r.mail.sent.some(m => m.to === 'team'), 'team gets the order details');
   // tampered token is rejected
   const bad = o.json.token.replace(/^./, c => c === 'e' ? 'f' : 'e');
   assert.equal((await r.call('POST', 'pay', { token: bad, phone: '0712345678' })).status, 400);
   const p = await r.call('POST', 'pay', { token: o.json.token, phone: '0712345678' });
-  assert.equal(p.status, 200); assert.equal(r.mpesa.st.lastAmount, 4200);
+  assert.equal(p.status, 200); assert.equal(r.mpesa.st.lastAmount, 3600);
   assert.equal((await r.call('POST', 'status', { token: o.json.token, crid: p.json.crid, at: 'forged' })).status, 400);
   const st = await r.call('POST', 'status', { token: o.json.token, crid: p.json.crid, at: p.json.at });
   assert.equal(st.json.status, 'paid');
@@ -257,12 +257,12 @@ async function paidOrder(r, domain, method) {
 test('M-Pesa: success confirmed server-side, duplicate callbacks are harmless', async () => {
   const r = rig();
   const { ref, k } = await paidOrder(r);
-  assert.equal(r.mpesa.st.lastAmount, 1850 + 2600, 'charged the quoted 2-year total');
+  assert.equal(r.mpesa.st.lastAmount, 1850 + 2050, 'charged the quoted 2-year total');
   // a forged callback (bad token) is ignored
   await r.call('POST', 'mpesa-callback', { Body: { stkCallback: { CheckoutRequestID: 'ws_CO_1', ResultCode: 0 } } }, { qs: 'o=' + ref + '&t=forged' });
   let v = (await r.store.get('dc:order:' + ref)); assert.equal(v.payment.status, 'pending');
   // a real callback + duplicates
-  const cb = { Body: { stkCallback: { CheckoutRequestID: 'ws_CO_1', ResultCode: 0, CallbackMetadata: { Item: [{ Name: 'Amount', Value: 4450 }, { Name: 'MpesaReceiptNumber', Value: 'SJK3XY12AB' }] } } } };
+  const cb = { Body: { stkCallback: { CheckoutRequestID: 'ws_CO_1', ResultCode: 0, CallbackMetadata: { Item: [{ Name: 'Amount', Value: 3900 }, { Name: 'MpesaReceiptNumber', Value: 'SJK3XY12AB' }] } } } };
   const t = sec.sign('mpesa|' + ref);
   for (let i = 0; i < 3; i++) { const x = await r.call('POST', 'mpesa-callback', cb, { qs: 'o=' + ref + '&t=' + t }); assert.equal(x.json.ResultCode, 0); }
   v = await r.store.get('dc:order:' + ref);
@@ -309,7 +309,7 @@ test('Card: signed webhook verified, bad signature rejected, refund via provider
   await r.call('POST', 'admin/action', { ref, action: 'set_status', data: { status: 'unavailable', reason: 'taken minutes before' } });
   const rf = await r.call('POST', 'admin/action', { ref, action: 'refund_start', data: {} });
   assert.equal(rf.json.order.refund.status, 'processing', 'not claimed as refunded yet');
-  assert.equal(r.paystack.st.refunds[0].amount, 1850 + 2600);
+  assert.equal(r.paystack.st.refunds[0].amount, 1850 + 2050);
   const raw2 = JSON.stringify({ event: 'refund.processed', data: { id: 777, transaction: { reference: ref + '-1' } } });
   await r.call('POST', 'paystack-webhook', raw2, { headers: { 'x-paystack-signature': crypto.createHmac('sha512', 'sk_test_x').update(raw2).digest('hex') } });
   o = await r.store.get('dc:order:' + ref); assert.equal(o.status, 'refunded'); assert.equal(o.refund.status, 'completed');

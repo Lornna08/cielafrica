@@ -27,7 +27,7 @@ Customers search, get honest availability and creative alternatives, and order. 
 
 Already configured and reused: the `MPESA_*` keys (production Till), `RESEND_API_KEY`, `MAIL_FROM` and `MAIL_TO`.
 
-**Prices (Oct 24):** Truehost-based starting prices + KES 500 on the first year and + KES 700 on renewal. With the database connected, edit them in the admin under **Pricing & settings**.
+**Prices (Oct 24):** Truehost-based starting prices + KES 500 on the first year; renewal = first-year price + KES 200. With the database connected, edit them in the admin under **Pricing & settings**.
 
 **Switched off by default:**
 - .co, .io, .me and .shop: no automatic availability check is possible from the server.
