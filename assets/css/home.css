@@ -53,10 +53,10 @@
 .htpl__feat{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);align-items:start;background:var(--ink);color:var(--paper);border-radius:14px;overflow:hidden;box-shadow:0 40px 70px -46px rgba(20,20,20,.6)}
 .htpl__media{position:relative;display:block;min-width:0;aspect-ratio:16/10;background:#F6F4EF;overflow:hidden}
 .htpl__media video,.htpl__media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top left;display:block}
-/* dashboard fills the box (readable, like the other cards) with an iPhone 17 Pro Max in front — like the hero's laptop + phone */
+/* dashboard shown whole at its true shape, iPhone 17 Pro Max beside it (never on top) */
 .htpl__duo{position:absolute;inset:0;background:radial-gradient(90% 80% at 85% 100%,rgba(23,107,69,.16),transparent 70%),linear-gradient(160deg,#EDF4EF 0%,#F6F8F6 70%)}
-.htpl__dash{position:absolute;inset:0;overflow:hidden;background:#F6F8F6}
-.htpl__phone{position:absolute;right:2.5%;bottom:5%;width:19.5%;z-index:2;filter:drop-shadow(0 24px 30px rgba(16,40,28,.35))}
+.htpl__dash{position:absolute;left:2.5%;top:5.1%;width:75.5%;aspect-ratio:1600/1308;border-radius:10px;overflow:hidden;background:#F6F8F6;border:1px solid rgba(16,40,28,.08);box-shadow:0 30px 60px -34px rgba(16,40,28,.5),0 8px 18px -10px rgba(16,40,28,.18)}
+.htpl__phone{position:absolute;right:2.5%;bottom:5.1%;width:18%;z-index:2}
 .htpl__phone .ip17__scr>img{position:relative;inset:auto;height:auto}
 .htpl__live{position:absolute;left:1rem;bottom:1rem;display:inline-flex;align-items:center;gap:.45rem;font-family:var(--disp);font-size:.76rem;font-weight:600;color:#fff;background:rgba(20,20,20,.82);backdrop-filter:blur(6px);padding:.38rem .75rem;border-radius:999px}
 .htpl__live::before{content:"";width:6px;height:6px;border-radius:50%;background:#3DD68C;box-shadow:0 0 0 3px rgba(61,214,140,.25);animation:hlive 1.8s ease-in-out infinite}
