@@ -27,25 +27,21 @@
   function stopPoll() { if (poll) clearTimeout(poll); poll = null; }
 
   var STEPS = [
-    ['placed', 'Order placed', 'We saved your order and emailed you a copy.'],
-    ['verify', 'Confirmed with the registry', 'Availability and price checked before payment.'],
-    ['paid', 'Payment confirmed', 'Verified with the payment provider.'],
-    ['registering', 'Registering', 'We register the domain by hand with the registry.'],
-    ['done', 'Registered', 'The registry confirmed it’s yours.']
+    ['placed', 'Order placed', 'We saved your order.'],
+    ['paid', 'Payment received', 'Your domain is being registered in your name.'],
+    ['done', 'Registered', 'Your domain details are in your email.']
   ];
   function stage(o) {
     var s = o.status;
-    if (s === 'awaiting_verification') return { at: 1, bad: false };
-    if (s === 'pending_payment') return { at: 2, bad: false };
-    if (s === 'pending_registration') return { at: 3, bad: false };
-    if (s === 'registration_in_progress') return { at: 3, bad: false, now: true };
-    if (s === 'registered') return { at: 5, bad: false };
-    return { at: o.payment.status === 'paid' ? 3 : 1, bad: true };
+    if (s === 'awaiting_verification' || s === 'pending_payment') return { at: 1, bad: false };
+    if (s === 'pending_registration' || s === 'registration_in_progress') return { at: 2, bad: false };
+    if (s === 'registered') return { at: 3, bad: false };
+    return { at: o.payment.status === 'paid' ? 2 : 1, bad: true };
   }
 
   function render() {
-    var o = data.order, st = stage(o), needVerify = !!o.verification.required;
-    var tl = STEPS.filter(function (x) { return x[0] !== 'verify' || needVerify; }).map(function (x, n) {
+    var o = data.order, st = stage(o);
+    var tl = STEPS.map(function (x, n) {
       var idx = STEPS.indexOf(x), cls = idx < st.at ? 'done' : idx === st.at ? (st.bad ? 'bad' : 'now') : '';
       if (st.bad && idx === st.at) return '<li class="bad"><span class="dmtl__i">!</span><div><b>' + esc(o.statusLabel) + '</b><span>' + badText(o) + '</span></div></li>';
       return '<li class="' + cls + '"><span class="dmtl__i">' + (cls === 'done' ? '✓' : n + 1) + '</span><div><b>' + x[1] + '</b><span>' + x[2] + '</span></div></li>';
@@ -60,7 +56,7 @@
       (o.refund.status !== 'none' ? '<dt>Refund</dt><dd>' + esc(refundLabel(o)) + '</dd>' : '') +
       '<dt>Registrant</dt><dd>' + esc(o.customer.name) + '</dd><dt>Email</dt><dd>' + esc(o.customer.email) + '</dd></dl></div>' +
       '<div class="dmcard"><h2>Need help?</h2><p style="font-size:.92rem">Quote <b>' + esc(o.ref) + '</b> and we’ll find your order straight away.</p><div class="dmlinks" style="margin-top:1rem"><a class="btn btn--dark btn--sm" href="https://wa.me/' + esc(s.whatsapp || '254706549703') + '?text=' + encodeURIComponent('Hi Ciel Africa, about my domain order ' + o.ref) + '" target="_blank" rel="noopener">WhatsApp</a><a class="btn btn--ghost btn--sm" href="mailto:' + esc(s.email || 'hello@cielafrica.com') + '?subject=' + encodeURIComponent('Domain order ' + o.ref) + '">Email us</a></div>' +
-      '<p style="font-size:.82rem;margin-top:1rem">Search results don’t reserve a domain. It’s yours once this page says <b>Registered</b>. <a href="/domains/terms" style="text-decoration:underline">Terms</a>.</p></div>';
+      '<p style="font-size:.82rem;margin-top:1rem"><a href="/domains/terms" style="text-decoration:underline">Domain terms</a></p></div>';
     root.innerHTML = '<div class="dmop__grid"><div>' + left + '</div><div>' + right + '</div></div>';
     bind();
   }
@@ -71,28 +67,26 @@
     if (o.status === 'cancelled') return 'This order was closed. Nothing was charged.';
     if (o.status === 'refund_pending') return 'Your refund has been started. Timing depends on the payment provider.';
     if (o.status === 'refunded') return 'Your refund is complete.';
-    return o.payment.status === 'paid' ? 'We couldn’t register this domain. You’re eligible for a full refund, or an alternative at the same price if you agree.' : 'This domain can’t be registered. Nothing was charged.';
+    return o.payment.status === 'paid' ? 'This domain couldn’t be registered. You’ll get a full refund, or another domain at the same price if you prefer.' : 'This domain is no longer available. Nothing was charged.';
   }
 
   function actionCard(o) {
     if (o.priceChange && !o.priceChange.accepted && !o.priceChange.declined) {
-      return '<div class="dmcard"><h2>The registry price is different</h2><p>We checked with the registry: <b>' + esc(o.domain) + '</b> costs <b>' + money(o.priceChange.to) + '</b> for this term (you saw ' + money(o.priceChange.from) + '). Nothing has been charged. Would you like to continue?</p><div class="dmlinks"><button class="btn btn--p" data-act="accept_price">Accept ' + money(o.priceChange.to) + '</button><button class="btn btn--ghost" data-act="decline_price">No thanks, cancel</button></div><div id="actMsg" style="margin-top:.8rem"></div></div>';
+      return '<div class="dmcard"><h2>Updated price</h2><p><b>' + esc(o.domain) + '</b> costs <b>' + money(o.priceChange.to) + '</b> for this term (you saw ' + money(o.priceChange.from) + '). Nothing has been charged. Would you like to continue?</p><div class="dmlinks"><button class="btn btn--p" data-act="accept_price">Accept ' + money(o.priceChange.to) + '</button><button class="btn btn--ghost" data-act="decline_price">No thanks, cancel</button></div><div id="actMsg" style="margin-top:.8rem"></div></div>';
     }
     if (o.proposal && !o.proposal.decided) {
       return '<div class="dmcard"><h2>Would this work instead?</h2><p>We can register <b>' + esc(o.proposal.domain) + '</b> at the same price you paid. We’ll only switch with your agreement — otherwise you get a full refund.</p><div class="dmlinks"><button class="btn btn--p" data-act="accept_alternative">Yes, register ' + esc(o.proposal.domain) + '</button><button class="btn btn--ghost" data-act="decline_alternative">No, refund me</button></div><div id="actMsg" style="margin-top:.8rem"></div></div>';
     }
-    if (o.status === 'awaiting_verification') return '<div class="dmcard"><h2>We’re confirming your domain</h2><p>Before taking any payment, we check with the registry that <b>' + esc(o.domain) + '</b> can be registered and what it costs. You’ll get an email with a payment link — usually within one working day.</p></div>';
+    if (o.status === 'awaiting_verification') return '<div class="dmcard"><h2>Order received</h2><p>We’ll email you a payment link for <b>' + esc(o.domain) + '</b> shortly.</p></div>';
     if (o.status !== 'pending_payment') return '';
-    if (!data.ordering) return '<div class="dmcard"><h2>Payment</h2><p>Online payment isn’t open yet. We’ll contact you to complete this order.</p></div>';
+    if (!data.ordering) return '<div class="dmcard"><h2>Payment</h2><p>Payments are paused for a moment. Please WhatsApp us on +254 706 549 703.</p></div>';
     var p = o.payment;
     if (p.pending) return '<div class="dmcard"><h2>Waiting for your payment</h2><p>Check your phone and enter your M-Pesa PIN. This page updates on its own once Safaricom confirms the payment — please don’t pay twice.</p><div class="dmlinks"><button class="btn btn--ghost btn--sm" data-refresh>I’ve paid — check now</button></div>' + payMsg + '</div>';
     var mp = data.payments.mpesa, cd = data.payments.card;
     return '<div class="dmcard"><h2>Pay ' + money(o.amount) + '</h2><div class="dmpay">' +
+      '<div class="pms"><div class="pm pm--on">M-Pesa</div><div class="pm pm--off" aria-disabled="true">Card</div></div>' +
       (mp ? '<div class="fld"><label for="payPhone">M-Pesa number</label><input id="payPhone" type="tel" inputmode="tel" placeholder="0712 345 678" maxlength="16" autocomplete="tel"></div><button class="btn btn--p" data-pay="mpesa">Pay with M-Pesa</button>' : '') +
-      (mp && cd ? '<div class="dmpay__or">or</div>' : '') +
-      (cd ? '<button class="btn btn--dark" data-pay="card">Pay by card</button>' : '') +
-      (!mp && !cd ? '<p>Payment methods are temporarily unavailable. Please contact us with your reference.</p>' : '') +
-      '<p style="font-size:.82rem">You’ll get a payment prompt on your phone. We register the domain once payment is confirmed. If it can’t be registered, you’re eligible for a full refund.</p>' + payMsg + '</div></div>';
+      '<p style="font-size:.82rem">You’ll get a payment prompt on your phone — enter your M-Pesa PIN to finish.</p>' + payMsg + '</div></div>';
   }
 
   function bind() {

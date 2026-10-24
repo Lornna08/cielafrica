@@ -123,16 +123,18 @@ test('suggestions: grouped, deduped, limited, industry aware, no brand look-alik
 test('pricing: first year + renewals, tax included/added, verification reasons', () => {
   const s = { currency: 'KES', taxRate: 0, pricesIncludeTax: true };
   const q = quote(T('com'), 3, s, 'brightstudio');
-  assert.equal(q.total, 1350 + 1900 * 2);
+  assert.equal(q.total, 1850 + 2600 * 2);
   assert.equal(q.verifyBeforePayment, false);
   const v = quote(T('com'), 1, { currency: 'KES', taxRate: 0.16, pricesIncludeTax: false }, 'x1x');
-  assert.equal(v.tax, Math.round(1350 * 0.16)); assert.equal(v.total, 1350 + v.tax);
+  assert.equal(v.tax, Math.round(1850 * 0.16)); assert.equal(v.total, 1850 + v.tax);
   const inc = quote(T('com'), 1, { currency: 'KES', taxRate: 0.16, pricesIncludeTax: true }, 'abcde');
-  assert.equal(inc.total, 1350); assert.equal(inc.tax, Math.round(1350 - 1350 / 1.16));
+  assert.equal(inc.total, 1850); assert.equal(inc.tax, Math.round(1850 - 1850 / 1.16));
   assert.equal(quote(T('ai'), 1, s, 'abc').ok, false, '.ai min 2 years');
-  assert.ok(quote(T('tech'), 1, s, 'brightstudio').verifyReasons.includes('price'));
-  assert.ok(quote(T('online'), 1, s, 'abc').verifyReasons.includes('premium'));
-  assert.ok(quote(T('co'), 1, s, 'brightstudio').verifyBeforePayment, 'dns-only extensions verify first');
+  assert.equal(quote(T('online'), 1, s, 'abc').verifyBeforePayment, false, 'no review step: pay directly');
+  assert.equal(quote(T('tech'), 1, s, 'brightstudio').ok, false, 'unpriced extensions are off');
+  assert.equal(quote(T('co'), 1, s, 'brightstudio').ok, false, 'dns-only extensions are off');
+  // every enabled extension has a price and is payable straight away
+  merge(null).tlds.filter(t => t.enabled).forEach(t => { assert.ok(t.register > 0 && t.renew > 0, t.tld); assert.equal(t.verifyBeforePayment, false, t.tld); assert.equal(t.method, 'rdap', t.tld); });
 });
 
 /* ---------- availability states ---------- */
@@ -181,20 +183,51 @@ test('rate limiting kicks in', async () => {
 });
 
 /* ---------- orders ---------- */
-test('ordering closed → saved as a verification request, no payment possible', async () => {
+test('orders go straight to payment; sales paused in the admin blocks new orders', async () => {
   const r = rig();
   const o = await r.call('POST', 'order', { domain: 'kilele.co.ke', years: 1, customer: cust, agree: true, idemKey: idem() });
-  assert.equal(o.status, 201); assert.equal(o.json.status, 'awaiting_verification');
-  const k = new URL('https://x' + o.json.link).searchParams.get('k');
-  const p = await r.call('POST', 'pay', { ref: o.json.ref, k, method: 'mpesa', phone: '0712345678' });
-  assert.equal(p.status, 403);
+  assert.equal(o.status, 201); assert.equal(o.json.status, 'pending_payment');
+  await saveConfig(r.store, { settings: { orderingEnabled: false } }); await getConfig(r.store, true);
+  const c = await r.call('POST', 'order', { domain: 'kilele2.co.ke', years: 1, customer: cust, agree: true, idemKey: idem() });
+  assert.equal(c.status, 503); assert.equal(c.json.code, 'closed');
+  await saveConfig(r.store, { settings: { orderingEnabled: true } }); await getConfig(r.store, true);
 });
 
-test('no database → request is emailed, nothing stored or charged', async () => {
+test('registry not answering → no order is taken (never sold unchecked)', async () => {
+  const r = rig({ rdap: { 'flaky.com': 'timeout' } });
+  const o = await r.call('POST', 'order', { domain: 'flaky.com', years: 1, customer: cust, agree: true, idemKey: idem() });
+  assert.equal(o.status, 503); assert.equal(o.json.code, 'check');
+});
+
+test('no database → token checkout: STK push, server-side confirmation, emails', async () => {
   const r = rig({ durable: false });
-  const o = await r.call('POST', 'order', { domain: 'kilele.co.ke', years: 1, customer: cust, agree: true, idemKey: idem() });
-  assert.equal(o.status, 202); assert.equal(o.json.requestOnly, true);
-  assert.ok(r.mail.sent.some(m => m.to === 'team'));
+  const o = await r.call('POST', 'order', { domain: 'kilele.co.ke', years: 2, customer: cust, agree: true, idemKey: idem() });
+  assert.equal(o.status, 201); assert.ok(o.json.token); assert.equal(o.json.amount, 1700 + 2500);
+  assert.ok(r.mail.sent.some(m => m.to === 'team'), 'team gets the order details');
+  // tampered token is rejected
+  const bad = o.json.token.replace(/^./, c => c === 'e' ? 'f' : 'e');
+  assert.equal((await r.call('POST', 'pay', { token: bad, phone: '0712345678' })).status, 400);
+  const p = await r.call('POST', 'pay', { token: o.json.token, phone: '0712345678' });
+  assert.equal(p.status, 200); assert.equal(r.mpesa.st.lastAmount, 4200);
+  assert.equal((await r.call('POST', 'status', { token: o.json.token, crid: p.json.crid, at: 'forged' })).status, 400);
+  const st = await r.call('POST', 'status', { token: o.json.token, crid: p.json.crid, at: p.json.at });
+  assert.equal(st.json.status, 'paid');
+  await r.call('POST', 'status', { token: o.json.token, crid: p.json.crid, at: p.json.at });
+  assert.equal(r.mail.sent.filter(m => m.kind === 'payment_confirmed').length, 1, 'one customer email');
+  assert.equal(r.mail.sent.filter(m => m.to === 'team' && /PAID/.test(m.subject)).length, 1, 'one PAID email');
+  // a cancelled payment is not confirmed
+  r.mpesa.st.next = 'failed';
+  const p2 = await r.call('POST', 'pay', { token: o.json.token, phone: '0712345678' });
+  assert.equal((await r.call('POST', 'status', { token: o.json.token, crid: p2.json.crid, at: p2.json.at })).json.status, 'failed');
+});
+
+test('search without an extension flags it so taken .com is not shown as the headline', async () => {
+  const r = rig({ rdap: { 'brandhouse.com': 200 } });
+  const s = await r.call('POST', 'search', { q: 'brand house' });
+  assert.equal(s.json.query.explicitTld, false);
+  assert.ok(s.json.groups[0].items.length >= 6, 'wide list of extensions');
+  const e = await r.call('POST', 'search', { q: 'brandhouse.com' });
+  assert.equal(e.json.query.explicitTld, true);
 });
 
 test('validation, terms, taken-on-recheck, duplicate submit', async () => {
@@ -224,19 +257,19 @@ async function paidOrder(r, domain, method) {
 test('M-Pesa: success confirmed server-side, duplicate callbacks are harmless', async () => {
   const r = rig();
   const { ref, k } = await paidOrder(r);
-  assert.equal(r.mpesa.st.lastAmount, 1350 + 1900, 'charged the quoted 2-year total');
+  assert.equal(r.mpesa.st.lastAmount, 1850 + 2600, 'charged the quoted 2-year total');
   // a forged callback (bad token) is ignored
   await r.call('POST', 'mpesa-callback', { Body: { stkCallback: { CheckoutRequestID: 'ws_CO_1', ResultCode: 0 } } }, { qs: 'o=' + ref + '&t=forged' });
   let v = (await r.store.get('dc:order:' + ref)); assert.equal(v.payment.status, 'pending');
   // a real callback + duplicates
-  const cb = { Body: { stkCallback: { CheckoutRequestID: 'ws_CO_1', ResultCode: 0, CallbackMetadata: { Item: [{ Name: 'Amount', Value: 3250 }, { Name: 'MpesaReceiptNumber', Value: 'SJK3XY12AB' }] } } } };
+  const cb = { Body: { stkCallback: { CheckoutRequestID: 'ws_CO_1', ResultCode: 0, CallbackMetadata: { Item: [{ Name: 'Amount', Value: 4450 }, { Name: 'MpesaReceiptNumber', Value: 'SJK3XY12AB' }] } } } };
   const t = sec.sign('mpesa|' + ref);
   for (let i = 0; i < 3; i++) { const x = await r.call('POST', 'mpesa-callback', cb, { qs: 'o=' + ref + '&t=' + t }); assert.equal(x.json.ResultCode, 0); }
   v = await r.store.get('dc:order:' + ref);
   assert.equal(v.payment.status, 'paid'); assert.equal(v.status, 'pending_registration'); assert.equal(v.payment.receipt, 'SJK3XY12AB');
   assert.equal(r.mail.sent.filter(m => m.kind === 'payment_confirmed').length, 1, 'one confirmation email');
   const view = await r.call('GET', 'order', undefined, { qs: 'ref=' + ref + '&k=' + k });
-  assert.equal(view.json.order.statusLabel, 'Paid · pending registration');
+  assert.equal(view.json.order.statusLabel, 'Payment received');
   assert.equal(view.json.order.customer.phone.includes('•••'), true, 'phone masked');
   assert.equal((await r.call('GET', 'order', undefined, { qs: 'ref=' + ref + '&k=wrong' })).status, 404);
 });
@@ -276,7 +309,7 @@ test('Card: signed webhook verified, bad signature rejected, refund via provider
   await r.call('POST', 'admin/action', { ref, action: 'set_status', data: { status: 'unavailable', reason: 'taken minutes before' } });
   const rf = await r.call('POST', 'admin/action', { ref, action: 'refund_start', data: {} });
   assert.equal(rf.json.order.refund.status, 'processing', 'not claimed as refunded yet');
-  assert.equal(r.paystack.st.refunds[0].amount, 1350 + 1900);
+  assert.equal(r.paystack.st.refunds[0].amount, 1850 + 2600);
   const raw2 = JSON.stringify({ event: 'refund.processed', data: { id: 777, transaction: { reference: ref + '-1' } } });
   await r.call('POST', 'paystack-webhook', raw2, { headers: { 'x-paystack-signature': crypto.createHmac('sha512', 'sk_test_x').update(raw2).digest('hex') } });
   o = await r.store.get('dc:order:' + ref); assert.equal(o.status, 'refunded'); assert.equal(o.refund.status, 'completed');
@@ -331,9 +364,9 @@ test('admin: access control, login limits, workflow guards, registration, M-Pesa
 });
 
 test('admin: verify with a new price needs customer approval; alternative domain needs consent', async () => {
-  const r = rig(); await openShop(r);
-  const o = await r.call('POST', 'order', { domain: 'kilele.co', years: 1, customer: cust, agree: true, idemKey: idem() });
-  assert.equal(o.json.status, 'awaiting_verification'); assert.equal(o.json.order.amount, 1200);
+  const r = rig(); await saveConfig(r.store, { tlds: { com: { verifyBeforePayment: true } } }); await getConfig(r.store, true);
+  const o = await r.call('POST', 'order', { domain: 'kilele.com', years: 1, customer: cust, agree: true, idemKey: idem() });
+  assert.equal(o.json.status, 'awaiting_verification'); assert.equal(o.json.order.amount, 1850);
   const k = new URL('https://x' + o.json.link).searchParams.get('k');
   await r.call('POST', 'admin/login', { password: 'test-admin-pass-123' });
   const v = await r.call('POST', 'admin/action', { ref: o.json.ref, action: 'mark_verified', data: { amount: 2400 } });
@@ -351,7 +384,7 @@ test('admin: verify with a new price needs customer approval; alternative domain
 });
 
 test('admin: confirming a price for an on-request extension makes it payable without a price-change step', async () => {
-  const r = rig(); await openShop(r);
+  const r = rig(); await saveConfig(r.store, { tlds: { software: { enabled: true } } }); await getConfig(r.store, true);
   const o = await r.call('POST', 'order', { domain: 'kilele.software', years: 1, customer: cust, agree: true, idemKey: idem() });
   assert.equal(o.json.status, 'awaiting_verification'); assert.equal(o.json.order.amount, null);
   await r.call('POST', 'admin/login', { password: 'test-admin-pass-123' });

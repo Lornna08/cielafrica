@@ -6,42 +6,44 @@ Customers search, get honest availability and creative alternatives, and order. 
 
 ---
 
-## 1. One-time setup (≈15 minutes)
+## 1. How it works right now
+
+- Customers search, choose a domain, enter their details and **pay with an M-Pesa STK push** in the checkout. There is no review step.
+- Every payment is confirmed with Safaricom (STK Query) on the server before it counts.
+- **Before the orders database is connected**, each order is carried in a signed token:
+  - You get two emails: **"New order (awaiting payment)"** with all the customer's details, then **"PAID — register …"** once Safaricom confirms the payment.
+  - The customer gets a payment confirmation email.
+  - Register the domain on Truehost with the customer's details, then email them the domain details.
+- Card is shown at checkout but can't be selected yet.
+
+## 2. Recommended setup (unlocks the admin dashboard)
 
 | # | What | Where | Why |
 |---|------|-------|-----|
-| 1 | **Orders database** — Upstash for Redis (free plan) | Vercel → cielafrica → **Storage** → Create/Connect → *Upstash for Redis* → connect to this project. Vercel adds `KV_REST_API_URL` + `KV_REST_API_TOKEN`. | Orders, the audit history, pricing edits and rate limits are stored here. Until it's connected, the page runs in **requests-only** mode: requests are emailed to you and nobody is charged. |
-| 2 | **`ADMIN_PASSWORD`** | Vercel → Settings → Environment Variables (Production) | Sign-in for /domains/admin, checked on the server. Use a long, unique password. |
-| 3 | `DOMAINS_SECRET` *(recommended)* | Same place — any long random string | Signs admin sessions and M-Pesa callback links. If it's missing, a key is derived from `ADMIN_PASSWORD`. |
-| 4 | Redeploy | Vercel → Deployments → Redeploy (or push a commit) | Loads the new variables. |
-| 5 | Review prices | /domains/admin → **Pricing & settings** | The defaults are starting points, a little above Truehost's public list. Set your own prices and save. |
-| 6 | Small live test | Turn on **Accept orders & payments online**, order a cheap domain, pay with your own M-Pesa, then refund yourself from the admin | Proves the whole loop on your real Till before customers use it. |
+| 1 | **Orders database**: Upstash for Redis (free plan) | Vercel → cielafrica → **Storage** → Create/Connect → *Upstash for Redis* → connect to this project (adds `KV_REST_API_URL` + `KV_REST_API_TOKEN`) | Stores orders, history and price edits, gives customers an order page, and turns on the admin. |
+| 2 | **`ADMIN_PASSWORD`** | Vercel → Settings → Environment Variables | Sign-in for /domains/admin |
+| 3 | `DOMAINS_SECRET` (recommended) | Any long random string | Signs sessions and payment tokens. Without it, a key is derived from your existing server secrets. |
+| 4 | Redeploy | Vercel → Deployments → Redeploy | Loads the new variables |
 
-Already configured and reused: `MPESA_CONSUMER_KEY`, `MPESA_CONSUMER_SECRET`, `MPESA_SHORTCODE`, `MPESA_PASSKEY`, `MPESA_TILL`, `MPESA_ENV=production`, `RESEND_API_KEY`, `MAIL_FROM`, `MAIL_TO`.
+Already configured and reused: the `MPESA_*` keys (production Till), `RESEND_API_KEY`, `MAIL_FROM` and `MAIL_TO`.
 
-**Optional — card payments (Paystack):** set `PAYSTACK_SECRET_KEY` (start with `sk_test_…`). In Paystack → Settings → API, set the webhook URL to `https://cielafrica.com/api/domains/paystack-webhook`. Card is hidden from customers until the key exists. Paystack refunds are started from the admin through the Paystack API.
+**Prices (Oct 24):** Truehost-based starting prices + KES 500 on the first year and + KES 700 on renewal. With the database connected, edit them in the admin under **Pricing & settings**.
 
-Other optional variables: `DOMAINS_BASE_URL` (defaults to https://cielafrica.com) and `DOMAINS_REGISTRAR` (defaults to `manual-truehost`).
+**Switched off by default:**
+- .co, .io, .me and .shop: no automatic availability check is possible from the server.
+- .tech, .software, .site, .store, .solutions, .xyz and .studio: no price set.
 
-## 2. Daily operations
+Turn any of them on in the admin once you've set a price (and, for the first group, are happy to check availability yourself).
 
-1. **New paid order** → you get the email "PAID — register *x* on Truehost".
-2. In the admin, open the order (filter **Paid · to register**). Click **Recheck now**, then **Copy name & open Truehost** and search for it there.
-3. If it's free on Truehost, buy it using the **customer's registrant details** shown in the admin. Then:
-   - set the status to **Registration in progress** and tick "I rechecked" (the customer is emailed);
-   - record the **Truehost ref**, nameservers and expiry, then set **Registered** (the customer is emailed).
-4. If it can't be registered, set **Unavailable** or **Failed** with a reason (the customer is emailed). Then either:
-   - **Offer an alternative** at the same price (the customer accepts or declines on their order page), or
-   - **Start the refund**. Card refunds go through Paystack automatically. For M-Pesa, send the money back yourself, then **Record refund completed** with the M-Pesa transaction code (the customer is emailed).
-5. **Requests** (extensions marked "Verify first", names without a price, or anything the registry couldn't confirm) arrive as **Pending payment / verification**. Check the name and price on Truehost, then click **Mark verified**:
-   - If you enter a different total, the customer must accept it before they can pay.
-   - For names with no list price, the price you enter becomes the price.
-   - In both cases the customer gets a payment link.
-6. **Export CSV** gives your records for accounting. **Clean up** deletes unpaid orders older than 30 days; paid orders are kept.
+## Daily operations (with the database)
 
-Emails are only sent for things that are actually true. "Registered" requires a Truehost reference, and "Refund completed" requires the provider's confirmation or your M-Pesa code.
+1. A **"PAID — register *x* on Truehost"** email arrives.
+2. In the admin, open the order (filter **Paid · to register**) and click **Recheck now**.
+3. Register the domain on Truehost with the customer's registrant details. Record the Truehost ref, nameservers and expiry, then set the status to **Registered** (the customer is emailed).
+4. If it can't be registered, set **Unavailable**. Then offer an alternative at the same price, or start the refund: send the M-Pesa refund yourself and record the transaction code.
+5. Use **Export CSV** for accounting, and **Clean up** to delete unpaid orders older than 30 days.
 
-## 3. Where availability comes from (research, Oct 2026)
+## 3. Where availability comes from (internal — not shown to customers) (research, Oct 2026)
 
 | Extensions | Source | What it can say |
 |---|---|---|
