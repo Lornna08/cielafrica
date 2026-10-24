@@ -43,8 +43,10 @@ module.exports = async function handler(req, res){
   // honeypot: ignore bots that fill the hidden _honey field
   if (data._honey) return res.status(200).json({ ok:true });
 
-  // strip FormSubmit-era helper fields
-  ['_subject','_captcha','_template','_next','_honey'].forEach(k=>{ delete data[k]; });
+  const isBrief = data._form === 'brief';
+  const ref = String(data._ref || '').slice(0, 80);
+  // strip helper fields
+  ['_subject','_captcha','_template','_next','_honey','_form','_ref'].forEach(k=>{ delete data[k]; });
 
   const name  = data.Name || data.name || '';
   const email = data.Email || data.email || '';
@@ -52,10 +54,12 @@ module.exports = async function handler(req, res){
 
   const rows = Object.keys(data)
     .filter(k => String(data[k]).trim() !== '')
-    .map(k => `<tr><td style="padding:6px 12px;background:#faf9f6;font-weight:600;border:1px solid #eee">${esc(k)}</td><td style="padding:6px 12px;border:1px solid #eee">${esc(data[k])}</td></tr>`)
+    .map(k => k.startsWith('## ')
+      ? `<tr><td colspan="2" style="padding:14px 0 6px;font-weight:700;font-size:15px;border:0">${esc(k.slice(3))}</td></tr>`
+      : `<tr><td style="padding:6px 12px;background:#faf9f6;font-weight:600;border:1px solid #eee">${esc(k)}</td><td style="padding:6px 12px;border:1px solid #eee;white-space:pre-wrap">${esc(data[k])}</td></tr>`)
     .join('');
 
-  const subject = `New ${data.Details ? 'project brief' : 'enquiry'} — ${esc(name||email)}`;
+  const subject = `New ${isBrief || data.Details ? 'project brief' : 'enquiry'} — ${name||email}${ref ? ' · ' + ref : ''}`.replace(/[\r\n]+/g,' ').slice(0, 160);
   const html = `
     <div style="font-family:Arial,sans-serif;color:#141414;max-width:560px">
       <h2 style="margin:0 0 4px">New message from cielafrica.com</h2>

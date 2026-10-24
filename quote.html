@@ -28,6 +28,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/base.css?v=20261021i">
 <link rel="stylesheet" href="assets/css/components.css?v=20261024l">
+<link rel="stylesheet" href="assets/css/brief.css?v=20261025a">
 </head>
 <body>
 <a href="#main" class="sr-only">Skip to content</a>
@@ -42,23 +43,50 @@
 </header>
 <div class="mobile-menu" id="mobileMenu"><a href="index.html"><span class="brk">‹</span> Home</a><a href="work.html"><span class="brk">‹</span> Work</a><a href="services.html"><span class="brk">‹</span> Services</a><a href="templates.html"><span class="brk">‹</span> Templates</a><a href="products.html"><span class="brk">‹</span> Products</a><a href="domains.html"><span class="brk">‹</span> Domains</a><a href="about.html"><span class="brk">‹</span> About</a><a href="insights.html"><span class="brk">‹</span> Insights</a><a href="contact.html"><span class="brk">‹</span> Contact</a><a href="quote.html" class="btn btn--p">Start a project</a></div>
 <main id="main">
-<section class="phead wrap">
+<section class="phead wrap bf-phead">
   <div class="crumb"><span class="brk">‹</span> Start a project</div>
   <div class="hl"><h1>Tell us what you're<br><span class="em">trying to make.</span></h1></div>
-  <p class="lead">The more you share, the sharper our first response. No obligation — we'll tell you honestly whether and how we'd build it.</p>
-</section><section class="sec wrap">
-      <form class="form ciel-form" action="/api/contact" method="POST">
-        <input type="text" name="_honey" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px">
-        <div class="field--row"><div class="field"><label>Your name</label><input type="text" name="Name" id="qname" required placeholder="Jane Doe"></div><div class="field"><label>Email</label><input type="email" name="Email" required placeholder="jane@company.com"></div></div>
-        <div class="field--row"><div class="field"><label>Phone / WhatsApp</label><input type="tel" name="Phone" required placeholder="+254 7XX XXX XXX"></div><div class="field"><label>Company (optional)</label><input type="text" name="Company" placeholder="Company name"></div></div>
-        <div class="field--row"><div class="field"><label>What do you need?</label><select name="Project type" id="qtype"><option>Website design &amp; development</option><option>Web application</option><option>Mobile app</option><option>E-commerce / online shop</option><option>Custom software / SaaS</option><option>Business or management system</option><option>Institutional / enterprise system</option><option>Payments &amp; M-Pesa integration</option><option>API &amp; integrations</option><option>Trading system / Expert Advisor</option><option>AI &amp; automation</option><option>WordPress / CMS</option><option>UI/UX &amp; product design</option><option>A product from the shelf</option><option>A template customised</option><option>Maintenance &amp; support</option><option>Not sure yet</option></select></div><div class="field"><label>Rough budget (KES)</label><select name="Budget"><option>Under 20,000</option><option>20,000 – 50,000</option><option>50,000 – 100,000</option><option>100,000 – 300,000</option><option>300,000 – 700,000</option><option>700,000+</option><option>Not sure yet</option></select></div></div>
-        <div class="field"><label>Timeline</label><select name="Timeline"><option>As soon as possible</option><option>Within 1 month</option><option>1–3 months</option><option>Flexible / no rush</option><option>Just exploring</option></select></div>
-        <div class="field"><label>Reference (optional)</label><input type="text" name="Reference" id="qref" placeholder="Product or template name"></div>
-        <div class="field"><label>Tell us more</label><textarea name="Details" required placeholder="What are you building, and what does success look like?"></textarea></div>
-        <div><button class="btn btn--p btn--lg" type="submit">Send project brief</button></div>
-        <div class="form-status" role="status"></div>
+  <p class="lead">A short guided brief, about five minutes. It gives us everything we need to reply properly. No obligation: we'll tell you honestly whether and how we'd build it.</p>
+</section>
+<section class="wrap bf-sec">
+  <div class="bf" id="brief">
+    <div class="bf-main">
+      <div class="bf-ctx" id="bf-ctx" hidden></div>
+      <div class="bf-prog"><ol class="bf-steps" id="bf-steps"></ol><div class="bf-track"><span id="bf-bar"></span></div></div>
+      <form class="bf-form" id="bf-form" novalidate onsubmit="return false">
+        <input type="text" name="_honey" id="bf-honey" tabindex="-1" autocomplete="off" aria-hidden="true" class="bf-honey">
+        <div class="bf-body" id="bf-body" aria-live="polite"></div>
+        <div class="bf-status" id="bf-status" role="status"></div>
+        <div class="bf-nav">
+          <button type="button" class="bf-btn bf-btn--ghost" id="bf-back" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>Back</button>
+          <span class="bf-nav__sp"></span>
+          <a class="bf-btn bf-btn--wa" id="bf-wa" hidden target="_blank" rel="noopener"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19z"/></svg>Send on WhatsApp</a>
+          <button type="button" class="bf-btn bf-btn--p" id="bf-next">Continue</button>
+        </div>
       </form>
-    </section>
+    </div>
+    <aside class="bf-side" aria-label="Your brief">
+      <div class="bf-card">
+        <div class="bf-card__h"><h2>Your brief</h2><button type="button" class="bf-link bf-link--muted" id="bf-reset">Start over</button></div>
+        <div id="bf-sum"></div>
+        <p class="bf-saved"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Saved in this browser as you type</p>
+      </div>
+      <div class="bf-card bf-card--next">
+        <h2>What happens next</h2>
+        <ol class="bf-next">
+          <li><b>We read your brief</b><span>A real person on the team reviews everything you shared.</span></li>
+          <li><b>We get in touch</b><span>On WhatsApp, a call or email, whichever you chose, with questions or a first view.</span></li>
+          <li><b>You get a proposal</b><span>Scope, price and timeline in writing before any work starts.</span></li>
+        </ol>
+      </div>
+      <div class="bf-card bf-card--alt">
+        <p>Rather talk first?</p>
+        <a href="https://wa.me/254706549703?text=Hello%20Ciel%20Africa%2C%20I%27d%20like%20to%20talk%20about%20a%20project." target="_blank" rel="noopener">WhatsApp +254 706 549 703</a>
+        <a href="mailto:hello@cielafrica.com">hello@cielafrica.com</a>
+      </div>
+    </aside>
+  </div>
+</section>
 </main>
 <footer class="foot">
   <div class="wrap">
@@ -88,30 +116,5 @@
 <script src="assets/js/render.js?v=20261021i"></script>
 <script src="assets/js/site.js?v=20261021i"></script>
 <script src="assets/js/cart.js?v=20261024l"></script>
-<script>(function(){var q=new URLSearchParams(location.search);var ref=q.get('template')||q.get('product')||q.get('project');
-      if(ref){var r=document.getElementById('qref');if(r)r.value=ref;var t=document.getElementById('qtype');
-        if(t){if(q.get('template'))t.value='A template customised';else if(q.get('product'))t.value='A product from the shelf';}}
-      var brief=q.get('brief');if(brief){var d=document.querySelector('textarea[name="Details"]');if(d&&!d.value)d.value=brief.slice(0,2000);}
-    })();</script><script>(function(){
-  document.querySelectorAll('form.ciel-form').forEach(function(f){
-    f.addEventListener('submit',function(e){
-      e.preventDefault();
-      var st=f.querySelector('.form-status'); var btn=f.querySelector('button[type=submit]');
-      var data={}; new FormData(f).forEach(function(v,k){data[k]=v;});
-      if(data._honey){return;}
-      btn.disabled=true; var old=btn.textContent; btn.textContent='Sending…';
-      if(st){st.className='form-status';st.textContent='';}
-      fetch('/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
-        .then(function(r){return r.json().catch(function(){return {ok:r.ok};});})
-        .then(function(res){
-          if(res && res.ok){ window.location.href='thanks.html'; }
-          else { throw new Error((res&&res.error)||'error'); }
-        })
-        .catch(function(){
-          btn.disabled=false; btn.textContent=old;
-          if(st){st.className='form-status form-status--err';st.innerHTML='Something went wrong. Please email <a href="mailto:hello@cielafrica.com">hello@cielafrica.com</a> or try again.';}
-        });
-    });
-  });
-})();</script></body>
+<script src="assets/js/brief.js?v=20261025a"></script></body>
 </html>
