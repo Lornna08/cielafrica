@@ -128,15 +128,19 @@
       '<span class="dml__p">' + (ready ? money(p.total) + '<small>' + (p.years > 1 ? p.years + ' yrs · ' : '') + 'renews ' + money(p.renewal) + '</small>' : '<span class="dmsk"></span>') + '</span>' +
       '<span class="dml__a">' + (ready ? '<button class="btn btn--dark" data-buy="' + esc(d) + '">Buy</button>' : '<button class="btn btn--ghost" disabled>Buy</button>') + '</span></li>';
   }
-  function check(list) {
-    return api('check', { domains: list }).then(function (j) {
-      (j.ok ? j.results : list.map(function (d) { return { domain: d, state: 'temporarily_unavailable' }; })).forEach(function (r) {
+  function check(list, retried) {
+    return api('check', { domains: list, fresh: !!retried }).then(function (j) {
+      var res = j.ok ? j.results : list.map(function (d) { return { domain: d, state: 'temporarily_unavailable' }; });
+      var again = retried ? [] : res.filter(function (r) { return r.state === 'temporarily_unavailable'; }).map(function (r) { return r.domain; });
+      res = res.filter(function (r) { return again.indexOf(r.domain) === -1; });
+      res.forEach(function (r) {
         if (!results[r.domain]) return; results[r.domain].r = r;
         var li = $('#dmGroups li[data-d="' + CSS.escape(r.domain) + '"]'); if (!li) return;
         if (r.state === 'available') li.outerHTML = row(r.domain);
         else { li.classList.add('is-gone'); setTimeout(function () { li.remove(); tidy(); }, 300); }
       });
       (j.invalid || []).forEach(function (b) { var li = $('#dmGroups li[data-d="' + CSS.escape(b.domain) + '"]'); if (li) li.remove(); });
+      if (again.length) return new Promise(function (ok) { setTimeout(ok, 1200); }).then(function () { return check(again, true); });
     });
   }
   function tidy() {

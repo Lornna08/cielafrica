@@ -5,7 +5,7 @@ Edit the BODY_* blocks below (or the shell), then re-run."""
 import pathlib, re
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-V = '20261024g'  # cache-buster for domains assets
+V = '20261024h'  # cache-buster for domains assets
 
 NAV_LINKS = [('index.html', 'Home'), ('work.html', 'Work'), ('services.html', 'Services'), ('templates.html', 'Templates'),
              ('products.html', 'Products'), ('domains.html', 'Domains'), ('about.html', 'About'), ('insights.html', 'Insights'), ('contact.html', 'Contact')]
