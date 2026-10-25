@@ -39,6 +39,16 @@ window.OS = window.OS || {};
   var shell, view, current = null, lastHash = null;
   function boot() {
     store.init();
+    // With <base href="/orbit/">, "#/route" links would point at /orbit/#/route (a full reload
+    // and a redirect, since the page is served at /orbit). Keep them as in-page hash changes.
+    document.addEventListener('click', function (e) {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      var a = e.target.closest && e.target.closest('a[href^="#"]');
+      if (!a || a.target) return;
+      e.preventDefault();
+      var h = a.getAttribute('href');
+      if (h.length > 1 && location.hash !== h) location.hash = h;
+    });
     document.body.insertAdjacentHTML('afterbegin',
       '<div class="demo-bar" role="region" aria-label="Template notice"><a class="demo-bar__back" href="../index.html" aria-label="Back to Ciel Africa"><b>‹</b><span> Ciel Africa</span></a><span class="dot"></span><span class="demo-bar__msg"><b><span class="txt-long">You’re exploring the </span>ORBIT Social template<span class="txt-long">.</span></b> <span class="txt-long">Sample accounts and data, saved in this browser only. Nothing is posted to real networks.</span></span>' +
       '<span class="demo-bar__acts"><button type="button" data-guide class="hide-sm">Guide</button><button type="button" data-reset>Reset</button><a class="pri" href="../quote.html?template=ORBIT%20Social">Get ORBIT</a></span></div>' +
@@ -70,7 +80,7 @@ window.OS = window.OS || {};
     window.addEventListener('hashchange', function () { render(); });
     store.subscribe(function (what) { chrome(); if (current && current.onChange) current.onChange(what); else if (current && !current.static) render(true); });
     if (!store.persistOk()) setTimeout(function () { ui.toast('Your browser is blocking storage, so changes will reset when you leave the page.', 'info'); }, 800);
-    if (!location.hash || location.hash === '#' || location.hash === '#/') location.replace('#/overview');
+    if (!location.hash || location.hash === '#' || location.hash === '#/') location.replace(location.pathname + location.search + '#/overview');
     render();
     tick(true);
     setInterval(function () { tick(false); }, 30000);
@@ -143,7 +153,7 @@ window.OS = window.OS || {};
   app.updateQuery = function (q) {
     var hash = location.hash.replace(/^#/, ''), path = hash.split('?')[0];
     var qs = Object.keys(q).filter(function (k) { return q[k] !== '' && q[k] != null; }).map(function (k) { return encodeURIComponent(k) + '=' + encodeURIComponent(q[k]); }).join('&');
-    history.replaceState(null, '', '#' + path + (qs ? '?' + qs : ''));
+    history.replaceState(null, '', location.pathname + location.search + '#' + path + (qs ? '?' + qs : ''));
     lastHash = location.hash.replace(/^#/, '');
   };
 

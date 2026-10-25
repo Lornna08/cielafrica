@@ -10,9 +10,9 @@
 .hero::before{content:"";position:absolute;inset:-6rem calc(50% - 50vw) -2rem;z-index:-2;pointer-events:none;
   background-image:radial-gradient(rgba(20,20,20,.09) 1px,transparent 1.2px);background-size:22px 22px;
   -webkit-mask-image:radial-gradient(65% 65% at 72% 45%,#000 0%,transparent 75%);mask-image:radial-gradient(65% 65% at 72% 45%,#000 0%,transparent 75%)}
-.aur{position:absolute;z-index:-1;border-radius:50%;filter:blur(80px);pointer-events:none;opacity:.22;will-change:transform}
-.aur--a{width:440px;height:440px;right:8%;top:2%;background:radial-gradient(closest-side,#FFB083,transparent);animation:aurA 18s ease-in-out infinite}
-.aur--b{width:340px;height:340px;right:34%;top:44%;background:radial-gradient(closest-side,#FFD9C2,transparent);animation:aurB 21s ease-in-out infinite}
+.aur{position:absolute;z-index:-1;border-radius:50%;pointer-events:none;opacity:.22;will-change:transform}
+.aur--a{width:600px;height:600px;right:calc(8% - 80px);top:calc(2% - 80px);background:radial-gradient(closest-side,#FFB083,rgba(255,176,131,.45) 40%,rgba(255,176,131,0));animation:aurA 18s ease-in-out infinite}
+.aur--b{width:480px;height:480px;right:calc(34% - 70px);top:calc(44% - 70px);background:radial-gradient(closest-side,#FFD9C2,rgba(255,217,194,.45) 40%,rgba(255,217,194,0));animation:aurB 21s ease-in-out infinite}
 @keyframes aurA{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-40px,30px) scale(1.1)}}
 @keyframes aurB{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,-24px) scale(.92)}}
 .rot{display:inline-grid;vertical-align:bottom;overflow:hidden;padding:.12em 0 .16em;margin:-.12em 0 -.16em}

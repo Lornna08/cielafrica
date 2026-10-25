@@ -196,7 +196,7 @@
       if (!p) return null;
       d.id = p.id; ui$.dirty = false; ui$.savedAt = p.updatedAt;
       store.setPref(draftKey(params.id), null); store.setPref(draftKey(null), null);
-      if (!params.id) { params.id = p.id; app.updateQuery({}); history.replaceState(null, '', '#/compose/' + p.id); }
+      if (!params.id) { params.id = p.id; app.updateQuery({}); history.replaceState(null, '', location.pathname + location.search + '#/compose/' + p.id); }
       if (!silent) ui.toast(p.status === 'draft' && editing && editing.status !== 'draft' ? 'Saved. Approvals were reset; resubmit when ready.' : 'Saved');
       editing = p; restored = null;
       return p;
