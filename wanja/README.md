@@ -38,7 +38,7 @@ Every photograph was downloaded from Wix's original media store (`static.wixstat
 |---|---|---|---|---|
 | `rooftop-cap-gaze` | Lifestyle & Venue Collaborations | `317c2f_67e9587a45fc44559c9d9774d94eab9f~mv2.jpeg` | 828×1466 | 480, 800, 828 |
 | `blend-street` | Lifestyle & Venue Collaborations | `317c2f_1f81a95d92224bef9362c8518ec8fdb1~mv2.jpeg` | 1200×1600 | 480, 800, 1200 |
-| `rooftop-cap-seated` | Lifestyle & Venue Collaborations | `317c2f_4bdf3c2f9ec443b59287422b31fb150e~mv2.jpeg` | 879×1564 | 480, 800, 879 |
+| `rooftop-cap-seated` | Commercial Brand (was Lifestyle on Wix) | `317c2f_4bdf3c2f9ec443b59287422b31fb150e~mv2.jpeg` | 879×1564 | 480, 800, 879 |
 | `cocoa-chair-lean` | Contemporary Fashion | `317c2f_83a2b281b8c445daaa7c83cee534323b~mv2.jpeg` | 1279×1600 | 480, 800, 1200, 1279 |
 | `cocoa-standing` | Contemporary Fashion | `317c2f_6965a7e3defe4f7c893172b9bf755516~mv2.jpeg` | 1280×1600 | 480, 800, 1200, 1280 |
 | `cocoa-smile-standing` | Contemporary Fashion | `317c2f_a11dbca5475d483b85e583164b27d3ac~mv2.jpeg` | 1279×1600 | 480, 800, 1200, 1279 |
@@ -49,13 +49,9 @@ Every photograph was downloaded from Wix's original media store (`static.wixstat
 | `noir-roses-gesture` | Editorial Glamour | `317c2f_3d1f6a34da0d402787a79cd133caf398~mv2.jpeg` | 1279×1600 | 480, 800, 1200, 1279 |
 | `noir-roses-standing` | Editorial Glamour | `317c2f_4673de3ae7eb468dabadb0e53b345dec~mv2.jpeg` | 1280×1600 | 480, 800, 1200, 1280 |
 | `monochrome-portrait` | Editorial Glamour | `317c2f_90ef8c895e5a445a8ea7e1f4152d308e~mv2.jpeg` | 1066×1600 | 480, 800, 1066 |
-| `tribe-crop-tee` | Commercial Brand | `317c2f_f5e89ef6f5a2442690c6b16fb29c6ff8~mv2.jpeg` | 757×1280 | 480, 757 |
-| `tribe-grey-tee` | Commercial Brand | `317c2f_3b26ef0e482b4426bdfc451b255120c4~mv2.jpeg` | 718×1280 | 480, 718 |
-| `tribe-hoodie-knees` | Commercial Brand | `317c2f_c5811924c4b54b36aa1b543bb4836c25~mv2.jpeg` | 1063×1280 | 480, 800, 1063 |
-| `tribe-duo` | Commercial Brand | `317c2f_66096ca46ea747b09d5a23d0af5c5c22~mv2.jpeg` | 772×1280 | 480, 772 |
-| `tribe-sweatsuit-back` | Commercial Brand | `317c2f_187ce04083e9467e94fc788f321955ef~mv2.jpeg` | 1600×1452 | 480, 800, 1200, 1600 |
-| `tribe-hoodie-floor` | Commercial Brand | `317c2f_6168cf36219f4a729e345f225974a6f8~mv2.jpeg` | 718×1280 | 480, 718 |
 | `event-pink-fleece` | Event appearances (rate card only) | `ratecard.pdf (page 1, embedded image)` | 420×630 | 420 |
+
+`maitu-event` (Lifestyle & Venue Collaborations, also the chapter cover) was supplied by Ciel Africa on 25 Oct 2026. The original is kept in `img/original/maitu-event.jpg`.
 
 `event-pink-fleece` is not on the Wix site. It is embedded on page 1 of the rate card PDF, was extracted unchanged at 420×630, and is shown beside Event Appearances on the rate card.
 
@@ -64,7 +60,6 @@ Every photograph was downloaded from Wix's original media store (`static.wixstat
 | Brand | Original Wix file | Here |
 |---|---|---|
 | NBO Closet | `317c2f_9490c4475e654a51b91a0522647e02c7~mv2.jpg` | `img/brands/nbo-closet-360.webp` |
-| Tribe Nomad | `317c2f_b33b55571850487d8f6d271963003584~mv2.jpeg` | `img/brands/tribe-nomad-360.webp` |
 | Vista Digital | `317c2f_8af0dcebbaa5498aab5bcd484a1da1fe~mv2.jpeg` | `img/brands/vista-digital-360.webp` |
 | Lil Secret Resort | `317c2f_c6a102a7143a4565bf3d8f299c37740c~mv2.jpeg` | `img/brands/lil-secret-resort-360.webp` |
 | Reside KE | `317c2f_13df10928ffb48a9b3d032c17ded29ef~mv2.jpeg` | `img/brands/reside-ke-360.webp` |
@@ -83,3 +78,8 @@ Every photograph was downloaded from Wix's original media store (`static.wixstat
 | `wanja@nbocloset.com` | Email icon in the Wix social bar |
 | Instagram `@wanjah._`, TikTok `@wanjah._`, X `@wanja16_` | Wix social bar (the rate card also lists `@wanjah._`) |
 | Chapter descriptions | The four Wix portfolio project pages. Spelling was corrected ("Lifestye & Venue Collabrations"), but the wording is unchanged. |
+
+
+## Changes after migration
+
+- **25 Oct 2026, on Ciel Africa’s request: Tribe Nomad removed.** The logo, the six campaign photos and every mention in the copy are gone, and the Commercial Brand description no longer names a brand. Commercial Brand now shows the seated rooftop photo, and Lifestyle & Venue Collaborations opens with the new event photo.

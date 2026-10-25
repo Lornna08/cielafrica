@@ -135,7 +135,7 @@
   /* ---------- home ---------- */
   function cats(el) {
     el.innerHTML = D.CATEGORIES.map(function (c) {
-      return '<a class="cat reveal" href="' + BASE + '/portfolio/' + c.id + '">' + img(c.cover || c.photos[0], { sizes: '(max-width: 640px) 50vw, 25vw' }) + '<span class="cat__t"><b>' + esc(c.name) + '</b><span>' + c.photos.length + ' photos</span></span></a>';
+      return '<a class="cat reveal" href="' + BASE + '/portfolio/' + c.id + '">' + img(c.cover || c.photos[0], { sizes: '(max-width: 640px) 50vw, 25vw' }) + '<span class="cat__t"><b>' + esc(c.name) + '</b><span>' + c.photos.length + (c.photos.length === 1 ? ' photo' : ' photos') + '</span></span></a>';
     }).join('');
   }
   function featured(el) {
@@ -156,16 +156,15 @@
   /* ---------- portfolio ---------- */
   function portfolio() {
     var tabs = $('[data-tabs]'), box = $('[data-chapters]');
-    var total = 0; D.CATEGORIES.forEach(function (c) { total += c.photos.length; });
-    tabs.innerHTML = '<a class="tab" href="' + BASE + '/portfolio" data-cat="">All <span>' + total + '</span></a>' + D.CATEGORIES.map(function (c) { return '<a class="tab" href="' + BASE + '/portfolio/' + c.id + '" data-cat="' + c.id + '">' + esc(c.name) + ' <span>' + c.photos.length + '</span></a>'; }).join('');
+    tabs.innerHTML = '<a class="tab" href="' + BASE + '/portfolio" data-cat="">All</a>' + D.CATEGORIES.map(function (c) { return '<a class="tab" href="' + BASE + '/portfolio/' + c.id + '" data-cat="' + c.id + '">' + esc(c.name) + '</a>'; }).join('');
     function cur() { var m = location.pathname.match(/\/portfolio\/([a-z]+)/); return m && CAT[m[1]] ? m[1] : ''; }
     function chapter(c, single) {
       group(c.id, c.photos, c.name);
-      var tribe = c.brand ? D.BRANDS.filter(function (b) { return b.name === c.brand; })[0] : null;
+      var partner = c.brand ? D.BRANDS.filter(function (b) { return b.name === c.brand; })[0] : null;
       var h = '<section class="chapter" id="' + c.id + '" aria-labelledby="h-' + c.id + '"><div class="chapter__h"><span class="eyebrow">' + esc(c.kicker) + '</span><h2 id="h-' + c.id + '">' + (single ? esc(c.name) : '<a href="' + BASE + '/portfolio/' + c.id + '" data-cat="' + c.id + '">' + esc(c.name) + '</a>') + '</h2>' +
-        (tribe ? '<div class="tribe"><img src="' + IMG + tribe.img + '" alt="" width="40" height="40">Campaign for ' + esc(tribe.name) + '</div>' : '') +
+        (partner ? '<div class="partner"><img src="' + IMG + partner.img + '" alt="" width="40" height="40">Campaign for ' + esc(partner.name) + '</div>' : '') +
         '<div class="desc is-short">' + c.body.map(function (p) { return '<p>' + esc(p) + '</p>'; }).join('') + '</div>' + (c.body.length > 1 ? '<button type="button" class="more" data-more aria-expanded="false">Read more</button>' : '') + '</div>' +
-        '<div class="grid">' + c.photos.map(function (s, i) { return tile(s, c.id, i); }).join('') + '</div>';
+        '<div class="grid' + (c.photos.length === 1 ? ' grid--one' : '') + '">' + c.photos.map(function (s, i) { return tile(s, c.id, i); }).join('') + '</div>';
       if (single) {
         var k = D.CATEGORIES.indexOf(c), nx = D.CATEGORIES[(k + 1) % D.CATEGORIES.length];
         h += '<div class="next"><a class="link" href="' + BASE + '/portfolio" data-cat="">' + I.left + ' All work</a><a class="link" href="' + BASE + '/portfolio/' + nx.id + '" data-cat="' + nx.id + '">Next: ' + esc(nx.name) + ' ' + I.arrow + '</a></div>';
@@ -175,6 +174,7 @@
     function paint(id, first) {
       $$('.tab', tabs).forEach(function (a) { a.setAttribute('aria-current', a.getAttribute('data-cat') === id ? 'true' : 'false'); });
       var act = $('.tab[aria-current="true"]', tabs); if (act && !first) act.scrollIntoView({ block: 'nearest', inline: 'center', behavior: RM ? 'auto' : 'smooth' });
+      else if (act && act.parentNode.scrollWidth > act.parentNode.clientWidth) { var sc = act.parentNode; sc.scrollLeft = act.offsetLeft - sc.offsetLeft - (sc.clientWidth - act.offsetWidth) / 2; }
       box.innerHTML = id ? chapter(CAT[id], true) : D.CATEGORIES.map(function (c) { return chapter(c, false); }).join('');
       var c = CAT[id];
       document.title = (c ? c.name + ' — ' : 'Portfolio — ') + D.profile.name;

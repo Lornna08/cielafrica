@@ -41,7 +41,7 @@ window.PF = {
    "o": "blend-street.jpg"
   },
   "rooftop-cap-seated": {
-   "c": "lifestyle",
+   "c": "commercial",
    "w": 879,
    "h": 1564,
    "s": [
@@ -192,81 +192,6 @@ window.PF = {
    "src": "wix:317c2f_90ef8c895e5a445a8ea7e1f4152d308e~mv2.jpeg",
    "o": "monochrome-portrait.jpg"
   },
-  "tribe-crop-tee": {
-   "c": "commercial",
-   "w": 757,
-   "h": 1280,
-   "s": [
-    480,
-    757
-   ],
-   "alt": "Wanja in a white Tribe Nomad crop tee and bright green cargo trousers, hand on hip",
-   "src": "wix:317c2f_f5e89ef6f5a2442690c6b16fb29c6ff8~mv2.jpeg",
-   "o": "tribe-crop-tee.jpg"
-  },
-  "tribe-grey-tee": {
-   "c": "commercial",
-   "w": 718,
-   "h": 1280,
-   "s": [
-    480,
-    718
-   ],
-   "alt": "Wanja crouching in a grey Tribe Nomad T-shirt and white socks against a white backdrop",
-   "src": "wix:317c2f_3b26ef0e482b4426bdfc451b255120c4~mv2.jpeg",
-   "o": "tribe-grey-tee.jpg"
-  },
-  "tribe-hoodie-knees": {
-   "c": "commercial",
-   "w": 1063,
-   "h": 1280,
-   "s": [
-    480,
-    800,
-    1063
-   ],
-   "alt": "Wanja seated with knees drawn up in a black Tribe Nomad hoodie and yellow shorts",
-   "src": "wix:317c2f_c5811924c4b54b36aa1b543bb4836c25~mv2.jpeg",
-   "o": "tribe-hoodie-knees.jpg"
-  },
-  "tribe-duo": {
-   "c": "commercial",
-   "w": 772,
-   "h": 1280,
-   "s": [
-    480,
-    772
-   ],
-   "alt": "Wanja laughing beside a male model, both wearing Tribe Nomad T-shirts and joggers",
-   "src": "wix:317c2f_66096ca46ea747b09d5a23d0af5c5c22~mv2.jpeg",
-   "o": "tribe-duo.jpg"
-  },
-  "tribe-sweatsuit-back": {
-   "c": "commercial",
-   "w": 1600,
-   "h": 1452,
-   "s": [
-    480,
-    800,
-    1200,
-    1600
-   ],
-   "alt": "Wanja in a blue Tribe Nomad sweatsuit, turned away to show the back print, against a blue backdrop",
-   "src": "wix:317c2f_187ce04083e9467e94fc788f321955ef~mv2.jpeg",
-   "o": "tribe-sweatsuit-back.jpg"
-  },
-  "tribe-hoodie-floor": {
-   "c": "commercial",
-   "w": 718,
-   "h": 1280,
-   "s": [
-    480,
-    718
-   ],
-   "alt": "Wanja seated in a black Tribe Nomad hoodie, yellow shorts and black sneakers against a white backdrop",
-   "src": "wix:317c2f_6168cf36219f4a729e345f225974a6f8~mv2.jpeg",
-   "o": "tribe-hoodie-floor.jpg"
-  },
   "event-pink-fleece": {
    "c": "event",
    "w": 420,
@@ -277,6 +202,19 @@ window.PF = {
    "alt": "Wanja smiling at an outdoor event in a pink and cream fleece jacket",
    "src": "ratecard.pdf (page 1, embedded image)",
    "o": "event-pink-fleece.jpg"
+  },
+  "maitu-event": {
+   "c": "lifestyle",
+   "w": 962,
+   "h": 1280,
+   "s": [
+    480,
+    800,
+    962
+   ],
+   "alt": "Wanja in a white strapless lace top, tiered white skirt and sunglasses in front of a navy Maitú Múkabete event backdrop",
+   "src": "supplied by Ciel Africa (25 Oct 2026)",
+   "o": "maitu-event.jpg"
   }
  },
  "CATEGORIES": [
@@ -290,11 +228,11 @@ window.PF = {
     "Her strength in this category lies in creating content that doesn’t just showcase a space, but sells an experience. Through expressive styling, relaxed posing and authentic presence, she helps hospitality and lifestyle brands connect emotionally with their audience while maintaining a polished, influencer-ready aesthetic."
    ],
    "photos": [
+    "maitu-event",
     "rooftop-cap-gaze",
-    "blend-street",
-    "rooftop-cap-seated"
+    "blend-street"
    ],
-   "cover": "rooftop-cap-gaze",
+   "cover": "maitu-event",
    "source": "https://wanjaa.wixsite.com/wanja/portfolio-collections/portfolio/stylish-fashion-modeling-1"
   },
   {
@@ -337,30 +275,24 @@ window.PF = {
   {
    "id": "commercial",
    "name": "Commercial Brand",
-   "kicker": "Campaign · Tribe Nomad",
+   "kicker": "Brand campaigns",
    "body": [
-    "In this commercial brand campaign, Wanja models for Tribe Nomad, bringing a confident, effortless energy that aligns perfectly with the brand’s identity. The styling is relaxed and minimal, allowing the product to stand out while her presence adds personality and authenticity.",
-    "Wanja’s ability to embody a brand’s lifestyle makes the campaign feel natural rather than staged. Her posture, expression and grounded presence communicate comfort, confidence and modern street appeal: qualities essential for contemporary fashion brands.",
+    "In commercial brand work, Wanja brings a confident, effortless energy that aligns with a brand’s identity. The styling is relaxed and minimal, allowing the product to stand out while her presence adds personality and authenticity.",
+    "Wanja’s ability to embody a brand’s lifestyle makes a campaign feel natural rather than staged. Her posture, expression and grounded presence communicate comfort, confidence and modern street appeal: qualities essential for contemporary fashion brands.",
     "This category highlights her strength in commercial modelling: showcasing products clearly, authentically, and in a way that resonates with everyday consumers while maintaining a polished visual standard."
    ],
    "photos": [
-    "tribe-crop-tee",
-    "tribe-hoodie-knees",
-    "tribe-duo",
-    "tribe-grey-tee",
-    "tribe-sweatsuit-back",
-    "tribe-hoodie-floor"
+    "rooftop-cap-seated"
    ],
-   "cover": "tribe-crop-tee",
-   "source": "https://wanjaa.wixsite.com/wanja/portfolio-collections/portfolio/stylish-fashion-modeling",
-   "brand": "Tribe Nomad"
+   "cover": "rooftop-cap-seated",
+   "source": "https://wanjaa.wixsite.com/wanja/portfolio-collections/portfolio/stylish-fashion-modeling"
   }
  ],
  "FEATURED": [
   "cocoa-chair-lean",
   "noir-roses-seated",
+  "maitu-event",
   "rooftop-cap-gaze",
-  "tribe-duo",
   "monochrome-portrait",
   "cocoa-standing"
  ],
@@ -538,13 +470,6 @@ window.PF = {
    "w": 1563,
    "h": 1563,
    "src": "wix:317c2f_9490c4475e654a51b91a0522647e02c7~mv2.jpg"
-  },
-  {
-   "name": "Tribe Nomad",
-   "img": "brands/tribe-nomad-360.webp",
-   "w": 1284,
-   "h": 1275,
-   "src": "wix:317c2f_b33b55571850487d8f6d271963003584~mv2.jpeg"
   },
   {
    "name": "Vista Digital",

@@ -101,6 +101,7 @@ p{margin:0}
 /* photo grid (masonry, no cropping) */
 .grid{columns:2;column-gap:10px}
 .grid figure{break-inside:avoid;margin:0 0 10px}
+.grid--one{columns:1;max-width:520px}
 .tile{display:block;width:100%;border-radius:var(--r);overflow:hidden;background:var(--soft);cursor:zoom-in;position:relative}
 .tile img{width:100%;transition:transform .5s ease}
 .tile:hover img{transform:scale(1.03)}
@@ -169,8 +170,8 @@ a.svc:hover{border-color:var(--accent)}
 .chapter__h .desc p+p{margin-top:10px}
 .desc.is-short p:not(:first-child){display:none}
 .more{margin-top:8px;font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:3px;color:var(--accent)}
-.tribe{display:inline-flex;align-items:center;gap:10px;margin-top:12px;font-size:13px;font-weight:600}
-.tribe img{width:40px;height:40px;border-radius:4px;object-fit:cover}
+.partner{display:inline-flex;align-items:center;gap:10px;margin-top:12px;font-size:13px;font-weight:600}
+.partner img{width:40px;height:40px;border-radius:4px;object-fit:cover}
 .next{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:24px;padding-top:18px;border-top:1px solid var(--line)}
 .chapters{transition:opacity .25s}
 .chapters.is-leaving{opacity:0}
