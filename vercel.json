@@ -4,6 +4,15 @@
   "trailingSlash": false,
   "headers": [
     {
+      "source": "/muse/assets/img/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
       "source": "/wanja/assets/img/(.*)",
       "headers": [
         {
@@ -179,6 +188,10 @@
     {
       "source": "/wanja/portfolio/:chapter(lifestyle|fashion|glamour|commercial)",
       "destination": "/wanja/portfolio"
+    },
+    {
+      "source": "/muse/portfolio/:chapter(portraits|beauty|editorial|campaigns)",
+      "destination": "/muse/portfolio"
     }
   ],
   "redirects": [

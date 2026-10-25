@@ -5,34 +5,25 @@ It replaces the Wix site at `wanjaa.wixsite.com/wanja` with the same content, ph
 
 ## Pages
 
-| URL | File |
+| URL | What it is |
 |---|---|
-| `/wanja` | `index.html`: cover, introduction, selected work, chapters, services, brands, invitation |
-| `/wanja/portfolio` | `portfolio.html`: all four chapters |
-| `/wanja/portfolio/lifestyle` · `/fashion` · `/glamour` · `/commercial` | same file. `vercel.json` rewrites these deep links, and `assets/wanja.js` reads the path. |
-| `/wanja/about` | `about.html` |
-| `/wanja/rates` | `rates.html` (the old `/wanja/rate-card` redirects here) |
-| `/wanja/contact` | `contact.html`: direct channels plus the brand enquiry form |
+| `/wanja` | Profile first, as on the Wix site: her profile photo, name, roles and tagline, with buttons for work and quick links. Below that: portfolio categories, selected photos, About, services and rates, brands, and a contact panel. |
+| `/wanja/portfolio` | All four categories, with tabs. Each category also has its own link: `/wanja/portfolio/lifestyle`, `/fashion`, `/glamour` and `/commercial`. |
+| `/wanja/about` | About, services, areas of work and brands |
+| `/wanja/rates` | The full rate card, with an "Enquire" link on every service. `/wanja/rate-card` redirects here. |
+| `/wanja/contact` | Direct channels and the brand enquiry form |
 
-The styles live in `assets/wanja.css` and load only on these pages, so nothing leaks into the rest of Ciel Africa.
+## How it's built and how to update it
 
-## Updating content
+The pages are generated. **Don't edit the HTML in `wanja/` by hand**, because the next build overwrites it. Instead:
 
-Everything that changes lives in **`assets/data.js`**:
+1. Edit `tools/portfolio/wanja.json`. It holds the photos, categories and copy, the rates and terms, and the contact details. When Wanja's prices change, update `rates` there and replace `assets/wanja-mwangi-rate-card.pdf`.
+2. Run `python3 tools/portfolio/build.py wanja`.
+3. Commit the result.
 
-- **Photographs per chapter** (`CATEGORIES[].photos`), with alt text and chapter copy.
-- **Rates** (`RATES`): copied exactly from the March 2026 rate card. **Update this list and replace `assets/wanja-mwangi-rate-card.pdf` whenever Wanja's pricing changes.**
-- **Booking terms** (`TERMS`), **services** (`SERVICES`), **brands** (`BRANDS`) and **contact details** (`CONTACT`).
+The shared styles and behaviour live in `tools/portfolio/pf.css` and `pf.js`, and are copied into `wanja/assets/` on every build. The same builder produces the MUSE template (`/muse`) from `template.json`.
 
-After editing, bump `?v=` on `data.js`, `wanja.js` and `wanja.css` in the five HTML files.
-
-## Enquiry form
-
-The form posts to the existing `/api/contact` function with `_form: "wanja"`. The server always sends these enquiries to `WANJA_MAIL_TO`, falling back to `wanjamary916@gmail.com`. It never uses an address supplied by the browser. Replies go straight to the sender.
-
-If email isn't configured (`RESEND_API_KEY` missing) or Resend rejects the message, the visitor sees an error, along with ready-made email and WhatsApp links that carry their message. The form never shows success unless the server confirms delivery.
-
-`MAIL_FROM` must be a domain that is verified in Resend. Otherwise Resend only delivers to the account owner.
+Type is set in Playfair Display (the name and headings) and Inter (everything else).
 
 ## Image migration
 
@@ -66,7 +57,7 @@ Every photograph was downloaded from Wix's original media store (`static.wixstat
 | `tribe-hoodie-floor` | Commercial Brand | `317c2f_6168cf36219f4a729e345f225974a6f8~mv2.jpeg` | 718×1280 | 480, 718 |
 | `event-pink-fleece` | Event appearances (rate card only) | `ratecard.pdf (page 1, embedded image)` | 420×630 | 420 |
 
-`event-pink-fleece` is not on the Wix site. It is embedded on page 1 of the rate card PDF, and was extracted unchanged at 420×630.
+`event-pink-fleece` is not on the Wix site. It is embedded on page 1 of the rate card PDF, was extracted unchanged at 420×630, and is shown beside Event Appearances on the rate card.
 
 ### Brands worked with (homepage strip on the Wix site)
 

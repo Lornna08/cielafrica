@@ -1,0 +1,700 @@
+{
+ "out": "muse/",
+ "base": "/muse",
+ "site": "https://cielafrica.com",
+ "real": false,
+ "credit": "Template by Ciel Africa",
+ "banner": "MUSE portfolio template · sample profile, Unsplash photos",
+ "template_name": "MUSE Portfolio",
+ "profile": {
+  "name": "Amara Njeri",
+  "first": "Amara",
+  "roles": [
+   "Photographer",
+   "Creative director",
+   "Visual storyteller"
+  ],
+  "tagline": "Fashion, beauty and portrait photographer creating warm, honest images.",
+  "short": "Fashion, beauty and portrait photographer.",
+  "location": "Nairobi, Kenya",
+  "city": "Nairobi",
+  "country": "KE",
+  "photo": "photographer"
+ },
+ "hello": "Photographer · Sample profile",
+ "title": "Amara Njeri — Fashion & Portrait Photographer (template)",
+ "desc": "MUSE, a personal portfolio template by Ciel Africa: profile, portfolio categories, about, rate card and enquiry form. Sample profile with Unsplash photos.",
+ "about_photo": "golden-hands",
+ "about_title": "Honest, warm images for people and brands",
+ "about": [
+  "Amara Njeri is a sample profile for this template: a Nairobi-based photographer working across portraits, beauty, editorial and brand campaigns.",
+  "Replace this text with your own story: who you work with, how you work and what clients can expect."
+ ],
+ "about_long": [
+  "Amara Njeri is a sample profile used to show how this portfolio template works. She is a fictional Nairobi-based fashion, beauty and portrait photographer.",
+  "On your own site this section tells your story: the kind of work you love, who you have worked with, and what it feels like to book you.",
+  "Everything on these pages, from portfolio categories and photos to services, prices and contact details, is edited from one simple content file."
+ ],
+ "facts": [
+  [
+   "Based in",
+   "Nairobi, Kenya"
+  ],
+  [
+   "Works across",
+   "Portrait, beauty & campaigns"
+  ],
+  [
+   "Available for",
+   "Studio & location shoots"
+  ]
+ ],
+ "svc_intro": "Sessions, editorial days and brand campaigns. Sample prices in Kenyan shillings: set your own in the content file.",
+ "categories": [
+  {
+   "id": "portraits",
+   "name": "Portraits",
+   "kicker": "People, light and character",
+   "cover": "braids-eyes-closed",
+   "photos": [
+    "braids-white-top",
+    "braids-camisole-gaze",
+    "braids-eyes-closed",
+    "mono-profile",
+    "ponytail-profile",
+    "golden-hands"
+   ],
+   "body": [
+    "Portraits built on light and patience. Amara works slowly with every sitter, so the final frame feels like the person rather than the pose.",
+    "Sessions take place in the studio or on location in Nairobi, with natural or controlled light depending on the mood you want."
+   ]
+  },
+  {
+   "id": "beauty",
+   "name": "Beauty",
+   "kicker": "Skin, texture and detail",
+   "cover": "headwrap-hoops",
+   "photos": [
+    "headwrap-hoops",
+    "headwrap-rest",
+    "locs-laugh",
+    "locs-gaze",
+    "locs-tilt"
+   ],
+   "body": [
+    "Clean, close beauty work for skincare, hair and jewellery brands, retouched to keep real skin texture.",
+    "Amara works with your make-up artist and stylist, or can bring a trusted team."
+   ]
+  },
+  {
+   "id": "editorial",
+   "name": "Editorial",
+   "kicker": "Concept-led fashion stories",
+   "cover": "green-pose",
+   "photos": [
+    "turtleneck-rope",
+    "pinstripe-afro",
+    "afro-playful",
+    "green-arms-crossed",
+    "green-pose",
+    "turtleneck-wide"
+   ],
+   "body": [
+    "Concept-led fashion stories for magazines, designers and lookbooks, from mood board to final edit.",
+    "Bold colour, graphic styling and a sense of play: images made to stop the scroll."
+   ]
+  },
+  {
+   "id": "campaigns",
+   "name": "Brand & lifestyle",
+   "kicker": "Campaigns that feel real",
+   "cover": "pink-tracksuit",
+   "photos": [
+    "beige-suit-chair",
+    "pink-tracksuit",
+    "beige-hijab",
+    "cafe-peace",
+    "cafe-smile"
+   ],
+   "body": [
+    "Campaign and lifestyle imagery for fashion labels, cafés and lifestyle brands: images that sell a feeling, not just a product.",
+    "Every campaign comes with web and social crops, ready for your launch."
+   ]
+  }
+ ],
+ "featured": [
+  "headwrap-hoops",
+  "pink-tracksuit",
+  "braids-eyes-closed",
+  "cafe-peace",
+  "green-pose",
+  "locs-laugh"
+ ],
+ "services": [
+  "Portrait photography",
+  "Beauty & editorial shoots",
+  "Brand campaigns",
+  "Product & lifestyle content",
+  "Creative direction",
+  "Retouching"
+ ],
+ "rates": [
+  {
+   "id": "portrait",
+   "name": "Portrait sessions",
+   "items": [
+    [
+     "Portrait session",
+     "KES 8,000",
+     "1 hour · 10 edited images"
+    ],
+    [
+     "Extended portrait session",
+     "KES 14,000",
+     "2 hours · 20 edited images"
+    ],
+    [
+     "Headshots",
+     "KES 5,000",
+     "30 minutes · 5 edited images"
+    ]
+   ]
+  },
+  {
+   "id": "editorial",
+   "name": "Beauty & editorial",
+   "items": [
+    [
+     "Beauty shoot",
+     "KES 18,000",
+     "Half day"
+    ],
+    [
+     "Editorial shoot",
+     "KES 32,000",
+     "Full day"
+    ],
+    [
+     "Creative direction",
+     "KES 15,000–30,000",
+     "Per project"
+    ]
+   ]
+  },
+  {
+   "id": "brand",
+   "name": "Brand & campaign",
+   "items": [
+    [
+     "Brand campaign",
+     "KES 25,000",
+     "Half day"
+    ],
+    [
+     "Brand campaign",
+     "KES 45,000",
+     "Full day"
+    ],
+    [
+     "Product & lifestyle content",
+     "KES 15,000",
+     "15 edited images"
+    ]
+   ]
+  },
+  {
+   "id": "extras",
+   "name": "Extras",
+   "items": [
+    [
+     "Additional edited image",
+     "KES 800"
+    ],
+    [
+     "Express delivery",
+     "+30%",
+     "Within 48 hours"
+    ],
+    [
+     "Studio hire",
+     "At cost"
+    ]
+   ]
+  }
+ ],
+ "terms": [
+  "50% deposit secures your date",
+  "Balance due before final delivery",
+  "Edited images delivered within 7 working days",
+  "Travel outside Nairobi billed separately"
+ ],
+ "brands": [
+  {
+   "name": "Kijani Studio",
+   "img": "brands/kijani-studio-360.webp",
+   "w": 360,
+   "h": 360,
+   "src": "sample"
+  },
+  {
+   "name": "Lumen Coffee",
+   "img": "brands/lumen-coffee-360.webp",
+   "w": 360,
+   "h": 360,
+   "src": "sample"
+  },
+  {
+   "name": "Maua Beauty",
+   "img": "brands/maua-beauty-360.webp",
+   "w": 360,
+   "h": 360,
+   "src": "sample"
+  },
+  {
+   "name": "Pwani House",
+   "img": "brands/pwani-house-360.webp",
+   "w": 360,
+   "h": 360,
+   "src": "sample"
+  },
+  {
+   "name": "Savanna Threads",
+   "img": "brands/savanna-threads-360.webp",
+   "w": 360,
+   "h": 360,
+   "src": "sample"
+  },
+  {
+   "name": "Zuri Agency",
+   "img": "brands/zuri-agency-360.webp",
+   "w": 360,
+   "h": 360,
+   "src": "sample"
+  }
+ ],
+ "photos": {
+  "photographer": {
+   "c": "about",
+   "w": 1600,
+   "h": 2400,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Amara holding a camera up to her eye outdoors",
+   "src": "unsplash:2L-qjlBmhBI",
+   "credit": [
+    "Emmanuel Yeboah Okine",
+    "emmanuel_okine"
+   ]
+  },
+  "braids-white-top": {
+   "c": "portraits",
+   "w": 1600,
+   "h": 2400,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Portrait of a woman with braids in a white camisole against a dark backdrop",
+   "src": "unsplash:FYxhALJcywI",
+   "credit": [
+    "Gideon Hezekiah",
+    "gideonhezekiah"
+   ]
+  },
+  "braids-camisole-gaze": {
+   "c": "portraits",
+   "w": 1600,
+   "h": 2400,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Close portrait of a woman with braids looking into the camera",
+   "src": "unsplash:6oU5SYnjfMQ",
+   "credit": [
+    "Gideon Hezekiah",
+    "gideonhezekiah"
+   ]
+  },
+  "braids-eyes-closed": {
+   "c": "portraits",
+   "w": 1600,
+   "h": 2400,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Woman with braids, eyes closed and head tilted, in warm studio light",
+   "src": "unsplash:WCEMFqEIVek",
+   "credit": [
+    "Gideon Hezekiah",
+    "gideonhezekiah"
+   ]
+  },
+  "mono-profile": {
+   "c": "portraits",
+   "w": 1600,
+   "h": 2400,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Black-and-white close-up of a woman with braids",
+   "src": "unsplash:gbRTZdPv03w",
+   "credit": [
+    "Gideon Hezekiah",
+    "gideonhezekiah"
+   ]
+  },
+  "ponytail-profile": {
+   "c": "portraits",
+   "w": 1600,
+   "h": 2240,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Profile of a woman with a long braided ponytail against a tan backdrop",
+   "src": "unsplash:QS9ZX5UnS14",
+   "credit": [
+    "jekafe",
+    "jekafe"
+   ]
+  },
+  "golden-hands": {
+   "c": "portraits",
+   "w": 1600,
+   "h": 2133,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Woman in warm golden light with her hands raised to her face",
+   "src": "unsplash:GmD1ozPp0QA",
+   "credit": [
+    "Sẹ́gun Toríọlá",
+    "seguntoriola"
+   ]
+  },
+  "headwrap-hoops": {
+   "c": "beauty",
+   "w": 1600,
+   "h": 2400,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Beauty portrait of a woman in a cream headwrap and gold hoop earrings",
+   "src": "unsplash:1I3_xTAXTxo",
+   "credit": [
+    "Gideon Hezekiah",
+    "gideonhezekiah"
+   ]
+  },
+  "headwrap-rest": {
+   "c": "beauty",
+   "w": 1600,
+   "h": 2400,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Woman in a cream headwrap resting her chin on her hands",
+   "src": "unsplash:XhhB5DCpbSA",
+   "credit": [
+    "Gideon Hezekiah",
+    "gideonhezekiah"
+   ]
+  },
+  "locs-laugh": {
+   "c": "beauty",
+   "w": 1600,
+   "h": 2400,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Woman with long locs laughing, wearing a beaded collar",
+   "src": "unsplash:57-0lgqwQOY",
+   "credit": [
+    "Gideon Hezekiah",
+    "gideonhezekiah"
+   ]
+  },
+  "locs-gaze": {
+   "c": "beauty",
+   "w": 1600,
+   "h": 2400,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Close beauty portrait of a woman with long locs and a beaded collar",
+   "src": "unsplash:KoMVonRUZ5A",
+   "credit": [
+    "Gideon Hezekiah",
+    "gideonhezekiah"
+   ]
+  },
+  "locs-tilt": {
+   "c": "beauty",
+   "w": 1600,
+   "h": 2400,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Woman with long locs tilting her head in soft studio light",
+   "src": "unsplash:tRf6Fu3RYE4",
+   "credit": [
+    "Gideon Hezekiah",
+    "gideonhezekiah"
+   ]
+  },
+  "turtleneck-rope": {
+   "c": "editorial",
+   "w": 1600,
+   "h": 2400,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Woman in a white turtleneck holding green and white rope braids",
+   "src": "unsplash:61xt7ELYQGA",
+   "credit": [
+    "Gideon Hezekiah",
+    "gideonhezekiah"
+   ]
+  },
+  "pinstripe-afro": {
+   "c": "editorial",
+   "w": 1600,
+   "h": 1067,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Woman with a voluminous afro in a pinstripe blazer, head tilted back",
+   "src": "unsplash:8YkE6veYNUw",
+   "credit": [
+    "Gideon Hezekiah",
+    "gideonhezekiah"
+   ]
+  },
+  "afro-playful": {
+   "c": "editorial",
+   "w": 1600,
+   "h": 2339,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Playful portrait of a woman with an afro sticking out her tongue",
+   "src": "unsplash:4c-wxrZMFsY",
+   "credit": [
+    "Gideon Hezekiah",
+    "gideonhezekiah"
+   ]
+  },
+  "green-arms-crossed": {
+   "c": "editorial",
+   "w": 1600,
+   "h": 2000,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Woman in a white crop top and jeans with arms crossed against a deep green backdrop",
+   "src": "unsplash:lMRlRS-ww84",
+   "credit": [
+    "Sẹ́gun Toríọlá",
+    "seguntoriola"
+   ]
+  },
+  "green-pose": {
+   "c": "editorial",
+   "w": 1600,
+   "h": 2000,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Woman with a hand in her hair against a deep green backdrop",
+   "src": "unsplash:7KN1DvUb_Zw",
+   "credit": [
+    "Sẹ́gun Toríọlá",
+    "seguntoriola"
+   ]
+  },
+  "turtleneck-wide": {
+   "c": "editorial",
+   "w": 1600,
+   "h": 1067,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Wide frame of a woman in a white turtleneck with green rope braids",
+   "src": "unsplash:gzfJ92jKs2g",
+   "credit": [
+    "Gideon Hezekiah",
+    "gideonhezekiah"
+   ]
+  },
+  "beige-suit-chair": {
+   "c": "campaigns",
+   "w": 1600,
+   "h": 2000,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Woman in a beige suit seated on a white chair against a warm beige backdrop",
+   "src": "unsplash:SS1Oldoervo",
+   "credit": [
+    "Sẹ́gun Toríọlá",
+    "seguntoriola"
+   ]
+  },
+  "pink-tracksuit": {
+   "c": "campaigns",
+   "w": 1600,
+   "h": 2000,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Woman in a pink tracksuit with hands on hips against a pink backdrop",
+   "src": "unsplash:2XC-i05hZF0",
+   "credit": [
+    "Sẹ́gun Toríọlá",
+    "seguntoriola"
+   ]
+  },
+  "beige-hijab": {
+   "c": "campaigns",
+   "w": 1600,
+   "h": 2000,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Woman in a beige outfit and patterned hijab seated on the studio floor",
+   "src": "unsplash:j3Gg3CMiyzs",
+   "credit": [
+    "Sẹ́gun Toríọlá",
+    "seguntoriola"
+   ]
+  },
+  "cafe-peace": {
+   "c": "campaigns",
+   "w": 1600,
+   "h": 2397,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Woman in a café making a peace sign",
+   "src": "unsplash:vGYsNdTZl8A",
+   "credit": [
+    "FOTOGRAFÍA EDITORIAL",
+    "fotografiaeditorial"
+   ]
+  },
+  "cafe-smile": {
+   "c": "campaigns",
+   "w": 1600,
+   "h": 2000,
+   "s": [
+    480,
+    800,
+    1200,
+    1600
+   ],
+   "alt": "Smiling woman with curly hair at a wooden café table",
+   "src": "unsplash:Ll9YOG20UFI",
+   "credit": [
+    "Nolan Manning",
+    "nolanrmanning"
+   ]
+  }
+ },
+ "contact": {
+  "email": "hello@amaranjeri.example",
+  "phone": "+254 700 000 000",
+  "tel": "+254700000000",
+  "wa": "254700000000",
+  "instagram": [
+   "@amara.njeri.studio",
+   "https://www.instagram.com/"
+  ],
+  "tiktok": [
+   "@amaranjeri",
+   "https://www.tiktok.com/"
+  ]
+ },
+ "cta_title": "Planning a shoot or campaign?",
+ "cta_text": "Share your idea and dates, and Amara will reply with availability and a quote.",
+ "port_desc": "Portfolio of a sample photographer profile in the MUSE template: portraits, beauty, editorial and brand campaigns.",
+ "port_intro": "Portraits, beauty, editorial and brand work. Tap any photo to view it in full.",
+ "about_desc": "About the sample photographer profile in the MUSE portfolio template by Ciel Africa.",
+ "rates_desc": "Sample rate card in the MUSE portfolio template: sessions, editorial, campaigns and extras.",
+ "rates_intro": "Sample services and prices in Kenyan shillings. On your site these come straight from your own rate card.",
+ "rates_note": "Sample prices for the template. Your rates and terms are set in one content file and can be changed any time.",
+ "contact_desc": "Contact page of the MUSE portfolio template, with direct channels and an enquiry form.",
+ "contact_intro": "For portraits, editorials and brand campaigns. In this template the contact details are placeholders.",
+ "form_intro": "Share a few details and Amara will reply by email.",
+ "form_note": "Template preview: this form does not send. On a live site it emails you directly.",
+ "form": {
+  "mode": "demo",
+  "key": "muse"
+ },
+ "credits_html": "<section class=\"sec\" aria-labelledby=\"cr-h\"><div class=\"wrap\"><div class=\"sec__h\"><div><span class=\"eyebrow\">Template</span><h2 id=\"cr-h\">Photo credits</h2><p>Sample photographs from Unsplash, used under the Unsplash License. Replace them with your own work.</p></div></div><ul class=\"note\" style=\"columns:2;column-gap:28px;padding-left:18px\"><li><a href=\"https://unsplash.com/photos/2L-qjlBmhBI\" target=\"_blank\" rel=\"noopener\">photographer</a> by Emmanuel Yeboah Okine (<a href=\"https://unsplash.com/@emmanuel_okine\" target=\"_blank\" rel=\"noopener\">@emmanuel_okine</a>)</li><li><a href=\"https://unsplash.com/photos/FYxhALJcywI\" target=\"_blank\" rel=\"noopener\">braids-white-top</a> by Gideon Hezekiah (<a href=\"https://unsplash.com/@gideonhezekiah\" target=\"_blank\" rel=\"noopener\">@gideonhezekiah</a>)</li><li><a href=\"https://unsplash.com/photos/6oU5SYnjfMQ\" target=\"_blank\" rel=\"noopener\">braids-camisole-gaze</a> by Gideon Hezekiah (<a href=\"https://unsplash.com/@gideonhezekiah\" target=\"_blank\" rel=\"noopener\">@gideonhezekiah</a>)</li><li><a href=\"https://unsplash.com/photos/WCEMFqEIVek\" target=\"_blank\" rel=\"noopener\">braids-eyes-closed</a> by Gideon Hezekiah (<a href=\"https://unsplash.com/@gideonhezekiah\" target=\"_blank\" rel=\"noopener\">@gideonhezekiah</a>)</li><li><a href=\"https://unsplash.com/photos/gbRTZdPv03w\" target=\"_blank\" rel=\"noopener\">mono-profile</a> by Gideon Hezekiah (<a href=\"https://unsplash.com/@gideonhezekiah\" target=\"_blank\" rel=\"noopener\">@gideonhezekiah</a>)</li><li><a href=\"https://unsplash.com/photos/QS9ZX5UnS14\" target=\"_blank\" rel=\"noopener\">ponytail-profile</a> by jekafe (<a href=\"https://unsplash.com/@jekafe\" target=\"_blank\" rel=\"noopener\">@jekafe</a>)</li><li><a href=\"https://unsplash.com/photos/GmD1ozPp0QA\" target=\"_blank\" rel=\"noopener\">golden-hands</a> by Sẹ́gun Toríọlá (<a href=\"https://unsplash.com/@seguntoriola\" target=\"_blank\" rel=\"noopener\">@seguntoriola</a>)</li><li><a href=\"https://unsplash.com/photos/1I3_xTAXTxo\" target=\"_blank\" rel=\"noopener\">headwrap-hoops</a> by Gideon Hezekiah (<a href=\"https://unsplash.com/@gideonhezekiah\" target=\"_blank\" rel=\"noopener\">@gideonhezekiah</a>)</li><li><a href=\"https://unsplash.com/photos/XhhB5DCpbSA\" target=\"_blank\" rel=\"noopener\">headwrap-rest</a> by Gideon Hezekiah (<a href=\"https://unsplash.com/@gideonhezekiah\" target=\"_blank\" rel=\"noopener\">@gideonhezekiah</a>)</li><li><a href=\"https://unsplash.com/photos/57-0lgqwQOY\" target=\"_blank\" rel=\"noopener\">locs-laugh</a> by Gideon Hezekiah (<a href=\"https://unsplash.com/@gideonhezekiah\" target=\"_blank\" rel=\"noopener\">@gideonhezekiah</a>)</li><li><a href=\"https://unsplash.com/photos/KoMVonRUZ5A\" target=\"_blank\" rel=\"noopener\">locs-gaze</a> by Gideon Hezekiah (<a href=\"https://unsplash.com/@gideonhezekiah\" target=\"_blank\" rel=\"noopener\">@gideonhezekiah</a>)</li><li><a href=\"https://unsplash.com/photos/tRf6Fu3RYE4\" target=\"_blank\" rel=\"noopener\">locs-tilt</a> by Gideon Hezekiah (<a href=\"https://unsplash.com/@gideonhezekiah\" target=\"_blank\" rel=\"noopener\">@gideonhezekiah</a>)</li><li><a href=\"https://unsplash.com/photos/61xt7ELYQGA\" target=\"_blank\" rel=\"noopener\">turtleneck-rope</a> by Gideon Hezekiah (<a href=\"https://unsplash.com/@gideonhezekiah\" target=\"_blank\" rel=\"noopener\">@gideonhezekiah</a>)</li><li><a href=\"https://unsplash.com/photos/8YkE6veYNUw\" target=\"_blank\" rel=\"noopener\">pinstripe-afro</a> by Gideon Hezekiah (<a href=\"https://unsplash.com/@gideonhezekiah\" target=\"_blank\" rel=\"noopener\">@gideonhezekiah</a>)</li><li><a href=\"https://unsplash.com/photos/4c-wxrZMFsY\" target=\"_blank\" rel=\"noopener\">afro-playful</a> by Gideon Hezekiah (<a href=\"https://unsplash.com/@gideonhezekiah\" target=\"_blank\" rel=\"noopener\">@gideonhezekiah</a>)</li><li><a href=\"https://unsplash.com/photos/lMRlRS-ww84\" target=\"_blank\" rel=\"noopener\">green-arms-crossed</a> by Sẹ́gun Toríọlá (<a href=\"https://unsplash.com/@seguntoriola\" target=\"_blank\" rel=\"noopener\">@seguntoriola</a>)</li><li><a href=\"https://unsplash.com/photos/7KN1DvUb_Zw\" target=\"_blank\" rel=\"noopener\">green-pose</a> by Sẹ́gun Toríọlá (<a href=\"https://unsplash.com/@seguntoriola\" target=\"_blank\" rel=\"noopener\">@seguntoriola</a>)</li><li><a href=\"https://unsplash.com/photos/gzfJ92jKs2g\" target=\"_blank\" rel=\"noopener\">turtleneck-wide</a> by Gideon Hezekiah (<a href=\"https://unsplash.com/@gideonhezekiah\" target=\"_blank\" rel=\"noopener\">@gideonhezekiah</a>)</li><li><a href=\"https://unsplash.com/photos/SS1Oldoervo\" target=\"_blank\" rel=\"noopener\">beige-suit-chair</a> by Sẹ́gun Toríọlá (<a href=\"https://unsplash.com/@seguntoriola\" target=\"_blank\" rel=\"noopener\">@seguntoriola</a>)</li><li><a href=\"https://unsplash.com/photos/2XC-i05hZF0\" target=\"_blank\" rel=\"noopener\">pink-tracksuit</a> by Sẹ́gun Toríọlá (<a href=\"https://unsplash.com/@seguntoriola\" target=\"_blank\" rel=\"noopener\">@seguntoriola</a>)</li><li><a href=\"https://unsplash.com/photos/j3Gg3CMiyzs\" target=\"_blank\" rel=\"noopener\">beige-hijab</a> by Sẹ́gun Toríọlá (<a href=\"https://unsplash.com/@seguntoriola\" target=\"_blank\" rel=\"noopener\">@seguntoriola</a>)</li><li><a href=\"https://unsplash.com/photos/vGYsNdTZl8A\" target=\"_blank\" rel=\"noopener\">cafe-peace</a> by FOTOGRAFÍA EDITORIAL (<a href=\"https://unsplash.com/@fotografiaeditorial\" target=\"_blank\" rel=\"noopener\">@fotografiaeditorial</a>)</li><li><a href=\"https://unsplash.com/photos/Ll9YOG20UFI\" target=\"_blank\" rel=\"noopener\">cafe-smile</a> by Nolan Manning (<a href=\"https://unsplash.com/@nolanrmanning\" target=\"_blank\" rel=\"noopener\">@nolanrmanning</a>)</li></ul></div></section>\n",
+ "data_header": "/* MUSE portfolio template — sample content (fictional profile, Unsplash photos).\n   Replace everything here with the real person's details and work. */\n"
+}
