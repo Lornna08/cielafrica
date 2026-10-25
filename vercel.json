@@ -4,6 +4,15 @@
   "trailingSlash": false,
   "headers": [
     {
+      "source": "/wanja/assets/img/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
       "source": "/assets/(.*)",
       "headers": [
         {
@@ -166,6 +175,10 @@
     {
       "source": "/njia/((?!.*\\.).*)",
       "destination": "/njia"
+    },
+    {
+      "source": "/wanja/portfolio/:chapter(lifestyle|fashion|glamour|commercial)",
+      "destination": "/wanja/portfolio"
     }
   ],
   "redirects": [
@@ -188,6 +201,16 @@
       "source": "/estora/:path*",
       "destination": "/reside-ke/:path*",
       "permanent": true
+    },
+    {
+      "source": "/wanja/rate-card",
+      "destination": "/wanja/rates",
+      "permanent": true
+    },
+    {
+      "source": "/wanja/services",
+      "destination": "/wanja/rates",
+      "permanent": false
     }
   ]
 }
