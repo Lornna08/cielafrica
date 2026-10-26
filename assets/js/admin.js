@@ -343,7 +343,11 @@
 
   /* ---------- serialize ---------- */
   function j(v) { return JSON.stringify(v); }
-  function objLine(o, keys) { return '{ ' + keys.filter(function (k) { return o[k] !== undefined; }).map(function (k) { return k + ':' + j(o[k]); }).join(', ') + ' }'; }
+  // Known keys first (in this order), then any other fields the item has, so nothing set in the data files is lost on save.
+  function objLine(o, keys) {
+    var all = keys.concat(Object.keys(o).filter(function (k) { return keys.indexOf(k) < 0; }));
+    return '{ ' + all.filter(function (k) { return o[k] !== undefined; }).map(function (k) { return k + ':' + j(o[k]); }).join(', ') + ' }';
+  }
 
   function buildProducts() {
     return hdr('Digital Products') +
