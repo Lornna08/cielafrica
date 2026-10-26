@@ -1,0 +1,17 @@
+/* Ciel M-Pesa for WooCommerce — kept small so the store theme stays in charge. */
+.ciel-mpesa{--ciel-mpesa-accent:#1F9D55}
+.ciel-mpesa-badge{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;line-height:1;color:#fff;background:#3CA33C;border-radius:4px;padding:4px 6px;vertical-align:middle}
+.ciel-mpesa-label{display:inline-flex;align-items:center;gap:6px}
+.ciel-mpesa-fields label{display:block;font-weight:600;margin:6px 0 4px}
+.ciel-mpesa-fields input[type=tel]{width:100%;max-width:320px;font-size:16px}
+.ciel-mpesa-fields input[type=tel]:focus{border-color:var(--ciel-mpesa-accent);outline:2px solid color-mix(in srgb,var(--ciel-mpesa-accent) 35%,transparent);outline-offset:0}
+.ciel-mpesa-input{width:100%;max-width:320px;padding:10px 12px;border:1px solid #c7c7c7;border-radius:4px;font-size:16px}
+.ciel-mpesa-error{color:#b32d2e;margin:6px 0 0;font-size:.92em}
+.ciel-mpesa-sandbox{display:inline-block;font-size:.85em;background:#fcefd2;color:#7a4e00;border-radius:4px;padding:2px 8px;margin:0 0 6px}
+.ciel-mpesa-status{display:flex;gap:14px;align-items:flex-start;border:1px solid #ddd;border-left:4px solid var(--ciel-mpesa-accent);border-radius:6px;padding:16px 18px;margin:0 0 24px;background:#fff}
+.ciel-mpesa-status__title{display:block;font-size:1.05em}
+.ciel-mpesa-status__msg{margin:4px 0 0}
+.ciel-mpesa-status[data-state=paid]{border-left-color:#1a7f37}
+.ciel-mpesa-status[data-state=failed],.ciel-mpesa-status[data-state=cancelled],.ciel-mpesa-status[data-state=expired],.ciel-mpesa-status[data-state=timeout]{border-left-color:#b32d2e}
+.ciel-mpesa-status[data-state=review]{border-left-color:#9a6200}
+.ciel-mpesa-retry{margin-top:10px}

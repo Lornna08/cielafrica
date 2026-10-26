@@ -1,0 +1,14 @@
+{
+  "name": "ciel-mpesa-stk",
+  "version": "1.0.0",
+  "description": "M-Pesa STK Push (Lipa na M-Pesa Online) for Node.js web apps: Daraja client, verified callbacks, idempotent payment records and a themeable checkout page.",
+  "main": "src/index.js",
+  "files": ["src", "public", "examples", "theme.example.json", ".env.example", "README.md", "LICENSE.txt", "CHANGELOG.md"],
+  "engines": { "node": ">=18.17" },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "example": "node examples/node-http/server.js"
+  },
+  "license": "SEE LICENSE IN LICENSE.txt",
+  "private": true
+}

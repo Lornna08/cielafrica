@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pay with M-Pesa</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="checkout.css">
+<style>html,body{margin:0;min-height:100%}body{background:#F4F2EE}</style>
+</head>
+<body>
+<main id="checkout" class="cm"></main>
+<noscript><p style="font-family:sans-serif;padding:24px">Please turn on JavaScript to pay with M-Pesa.</p></noscript>
+<script src="checkout.js"></script>
+<script>
+/* Loads YOUR order from YOUR server (the amount shown is display only; the server
+   charges what resolveOrder() returns) and the theme from theme.json. */
+(function () {
+  var id = new URLSearchParams(location.search).get('order') || '';
+  var el = document.getElementById('checkout');
+  Promise.all([
+    fetch('theme.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
+    fetch('orders/' + encodeURIComponent(id) + '.json', { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('Order not found'); return r.json(); })
+  ]).then(function (res) {
+    document.body.style.background = (CielCheckout.validateTheme(res[0]).colors.background);
+    CielCheckout.mount(el, { theme: res[0], order: res[1], transport: CielCheckout.httpTransport('/mpesa') });
+  }).catch(function (e) {
+    el.innerHTML = '<div class="cm__shell" style="padding:24px"><b>We could not load this order.</b><p class="cm__desc">' + (e.message || '') + '</p></div>';
+  });
+})();
+</script>
+</body>
+</html>

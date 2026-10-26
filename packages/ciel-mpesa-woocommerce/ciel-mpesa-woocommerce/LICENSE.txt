@@ -1,0 +1,23 @@
+Ciel M-Pesa for WooCommerce — WordPress plugin
+Copyright (c) 2026 Ciel Africa. All rights reserved.
+
+This software is licensed, not sold, to the person or business that bought it from
+Ciel Africa ("you").
+
+You may:
+  - install, modify and use it in websites and applications that you own or operate,
+    or that you build for your own clients;
+  - keep copies for backup.
+
+You may not:
+  - resell, sublicense, share or publish the source code, in original or modified form,
+    as a product, library, template or plugin of your own;
+  - remove this notice from copies of the source code.
+
+The software is provided "as is", without warranty of any kind. You are responsible
+for your Daraja credentials, for testing in the Safaricom sandbox before going live,
+and for reconciling payments with your M-Pesa statements. Ciel Africa is not liable for
+losses arising from its use, to the extent the law allows.
+
+M-Pesa is a trademark of Safaricom PLC. Ciel Africa is not affiliated with or endorsed
+by Safaricom.
