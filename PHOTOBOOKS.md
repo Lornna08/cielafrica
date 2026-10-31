@@ -62,3 +62,11 @@ Admin → Orders: filter by status, product, date or customer; open an order to 
 ## Example photos
 
 The landing page examples use licensed Unsplash photos already in this repo; credits in `assets/img/pb-demo/CREDITS.md`. Customer photos are never used.
+
+## Sample-filled books (v2)
+
+- New books start from **Choose a design** (`/photo-books/studio#/new`). Each design opens as a finished book filled with sample photos from `data/pb-samples.js` (Unsplash, hotlinked with photographer credit; a few licensed copies live in `assets/img/pb-demo/`).
+- Customers add photos from the editor's guide bar; `PBApp.fillSamples()` puts them into sample frames in reading order (cover first). Tapping a photo shows **Replace / Adjust / Remove**.
+- Sample photos are never printable: `PBE.validate()` returns a `sample` error while any remain, which blocks preview approval, PDF export and ordering.
+- The old describe-first flow is still available at `#/new/story`.
+- Landing links can open a design directly: `/photo-books/studio#/new?t=<template>&go=1` (optional `&f=<format>`).

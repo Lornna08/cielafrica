@@ -37,11 +37,12 @@
     var p = S.project;
     if (!p.pages || !p.pages.length) { if (A.orderedPhotos().length) A.autoDesign(); else { location.hash = '#/p/' + p.id + '/photos'; return; } }
     document.body.classList.add('st--editor');
-    var ed = { cur: { kind: 'page', i: 0 }, sel: null, tab: 'photos', zoom: 1, guides: false, placing: null, sheet: !mq.matches, trayFilter: 'all' };
+    var ed = { cur: { kind: 'cover' }, sel: null, tab: 'photos', imp: null, zoom: 1, guides: false, placing: null, sheet: !mq.matches, trayFilter: 'all' };
     app.innerHTML = '<div class="ed">' +
       '<div class="ed-bar"><div class="ed-bar__g"><button class="ibtn" data-a="undo" title="Undo (Ctrl+Z)" aria-label="Undo">' + I('undo') + '</button><button class="ibtn" data-a="redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo">' + I('redo') + '</button></div>' +
       '<div class="ed-bar__g ed-bar__mid"><button class="btn btn--sm btn--ghost" data-a="regen">' + I('refresh') + '<span>Regenerate layout</span></button><button class="btn btn--sm btn--ghost" data-a="check">' + I('check') + '<span>Check book</span></button></div>' +
       '<div class="ed-bar__g"><button class="ibtn ed-z" data-a="zout" aria-label="Zoom out">' + I('zoomout') + '</button><button class="btn btn--sm btn--ghost ed-zoom ed-z" data-a="zfit" aria-label="Fit to screen">100%</button><button class="ibtn ed-z" data-a="zin" aria-label="Zoom in">' + I('zoomin') + '</button><label class="ed-guides"><input type="checkbox" data-a="guides"> <span>Safe area</span></label><a class="btn btn--sm btn--p" href="#/p/' + p.id + '/preview">' + I('eye') + '<span>Preview</span></a></div></div>' +
+      '<div class="ed-guide" id="guide" aria-live="polite"></div><input type="file" id="edFile" multiple accept="' + PBPhotos.accept + '" hidden>' +
       '<div class="ed-body"><aside class="ed-panel" id="panel"><div class="ed-tabs" role="tablist" id="tabs"></div><div class="ed-pbody" id="pbody"></div></aside>' +
       '<section class="ed-stage" id="stage"><div class="ed-placing" id="placing" hidden></div><div class="ed-canvas" id="canvas"></div><div class="ed-nav"><button class="ibtn" data-a="prev" aria-label="Previous page">' + I('left') + '</button><span id="where"></span><button class="ibtn" data-a="next" aria-label="Next page">' + I('right') + '</button></div></section></div>' +
       '<div class="ed-strip" id="strip" aria-label="Pages"></div></div>';
@@ -69,7 +70,9 @@
           var x = Math.max(0, s.rect.x), y = Math.max(0, s.rect.y), x2 = Math.min(r.w, s.rect.x + s.rect.w), y2 = Math.min(r.h, s.rect.y + s.rect.h);
           var on = ed.sel && ed.sel.t === 'slot' && ed.sel.w === w && ed.sel.i === s.i;
           var low = s.dpi && s.dpi < 150 ? ' hs--low' : '';
-          hs += '<button type="button" class="hs hs--slot' + (on ? ' sel' : '') + (s.photo ? '' : ' hs--empty') + low + '" data-w="' + w + '" data-slot="' + s.i + '"' + (on && s.photo ? '' : ' draggable="' + (!!s.photo) + '"') + ' style="left:' + (x / r.w * 100) + '%;top:' + (y / r.h * 100) + '%;width:' + ((x2 - x) / r.w * 100) + '%;height:' + ((y2 - y) / r.h * 100) + '%" aria-label="' + (s.photo ? 'Photo' : 'Empty photo frame') + ' ' + (s.i + 1) + (low ? ', low resolution' : '') + '">' + (low ? '<i class="hs__warn" title="' + s.dpi + ' dpi">' + I('alert') + '</i>' : '') + (on && s.photo ? '<i class="hs__pan">' + I('move') + ' Drag to reposition</i>' : '') + '</button>';
+          var smp = s.photo && S.photos[s.photo] && S.photos[s.photo].sample;
+          hs += '<button type="button" class="hs hs--slot' + (on ? ' sel' : '') + (s.photo ? '' : ' hs--empty') + (smp ? ' hs--sample' : '') + low + '" data-w="' + w + '" data-slot="' + s.i + '"' + (on && s.photo ? '' : ' draggable="' + (!!s.photo) + '"') + ' style="left:' + (x / r.w * 100) + '%;top:' + (y / r.h * 100) + '%;width:' + ((x2 - x) / r.w * 100) + '%;height:' + ((y2 - y) / r.h * 100) + '%" aria-label="' + (s.photo ? 'Photo' : 'Empty photo frame') + ' ' + (s.i + 1) + (low ? ', low resolution' : '') + '">' + (low ? '<i class="hs__warn" title="' + s.dpi + ' dpi">' + I('alert') + '</i>' : '') + (smp && !on ? '<i class="hs__smp">Sample</i>' : '') + (on && s.photo && !smp ? '<i class="hs__pan">' + I('move') + ' Drag to reposition</i>' : '') + '</button>';
+          if (on) hs += floatBar(s, x, y, x2, y2, r, w, smp);
         });
         r.texts.forEach(function (t) {
           var on = ed.sel && ed.sel.t === 'text' && ed.sel.w === w && ed.sel.key === t.key;
@@ -79,6 +82,53 @@
       var label = v.kind === 'page' ? 'Page ' + (v.i + 1) + (p.pages[v.i].locked ? ' · kept' : '') : v.kind === 'front' ? 'Front cover' : v.kind === 'back' ? 'Back cover' : 'Spine';
       var cur = v.kind === 'page' && ed.page === v.i;
       return '<div class="pg' + (v.kind === 'spine' ? ' pg--spine' : '') + (cur ? ' pg--cur' : '') + '" data-pg="' + w + '" style="width:' + (r.w * k) + 'px;height:' + (r.h * k) + 'px">' + SV.svg(r, { url: urlFor, guides: ed.guides && v.kind !== 'spine', empty: 'editor', label: label }) + '<div class="pg-ov">' + hs + '</div><span class="pg-lab">' + label + '</span></div>';
+    }
+    function floatBar(s, x, y, x2, y2, r, w, smp) {
+      var top = y / r.h * 100, below = top < 14;
+      return '<div class="ed-float' + (below ? ' ed-float--below' : '') + '" style="left:' + ((x + x2) / 2 / r.w * 100) + '%;top:' + ((below ? y2 : y) / r.h * 100) + '%">' +
+        '<button type="button" class="btn btn--sm btn--p" data-e="replace">' + I('image') + (s.photo ? 'Replace' : 'Add photo') + '</button>' +
+        (s.photo && !smp ? '<button type="button" class="btn btn--sm btn--ghost" data-e="adjust">' + I('move') + 'Adjust</button>' : '') +
+        (s.photo ? '<button type="button" class="btn btn--sm btn--ghost" data-e="remove" aria-label="Remove photo">' + I('trash') + '</button>' : '') +
+        '<button type="button" class="btn btn--sm btn--ghost" data-a="desel" aria-label="Close">' + I('x') + '</button></div>';
+    }
+    /* ---------- guide: what to do next ---------- */
+    function guide() {
+      var g = document.getElementById('guide'), left = A.sampleSlots().length, mine = A.orderedPhotos().length, unused = A.unusedPhotos().length, h;
+      if (ed.imp) h = '<div class="ed-guide__in"><span class="ed-guide__spin"></span><div><b>Adding your photos… ' + ed.imp.done + ' of ' + ed.imp.total + '</b><span>They’re stored privately in this browser and placed into the book as they arrive.</span></div><div class="ed-guide__bar"><i style="width:' + Math.round(ed.imp.done / Math.max(1, ed.imp.total) * 100) + '%"></i></div></div>';
+      else if (left) h = '<div class="ed-guide__in ed-guide__in--go"><div><b>' + (mine ? left + ' sample photo' + (left === 1 ? '' : 's') + ' left to replace' : 'This book is filled with sample photos') + '</b><span>' + (mine ? 'Add more photos and they fill the remaining samples in order, or tap any photo and choose Replace.' : 'Add your photos and they replace the samples automatically, in order — starting with the cover. Or tap any photo to replace just that one.') + '</span></div><button type="button" class="btn btn--p" data-a="add">' + I('upload') + (mine ? 'Add more photos' : 'Add your photos') + '</button></div>';
+      else if (unused) h = '<div class="ed-guide__in ed-guide__in--ok"><div><b>' + I('check') + ' All samples replaced.</b><span>' + unused + ' of your photos aren’t in the book yet. Add pages for them or drag them onto any frame.</span></div><button type="button" class="btn btn--ghost" data-a="fitall">Add pages for them</button><a class="btn btn--p" href="#/p/' + p.id + '/preview">Preview book</a></div>';
+      else h = '<div class="ed-guide__in ed-guide__in--ok"><div><b>' + I('check') + ' Every frame has your photos.</b><span>Tap any photo or text to change it, then preview your book.</span></div><button type="button" class="btn btn--ghost" data-a="add">' + I('upload') + 'Add photos</button><a class="btn btn--p" href="#/p/' + p.id + '/preview">Preview book</a></div>';
+      if (ed.impMsg) h += '<p class="ed-guide__msg">' + esc(ed.impMsg) + '</p>';
+      g.innerHTML = h;
+    }
+    function addFiles(files, target) {
+      if (!files || !files.length) return;
+      ed.imp = { done: 0, total: files.length }; ed.impMsg = ''; guide();
+      A.importFiles(files, function (d, t) { ed.imp = { done: d, total: t }; guide(); }).then(function (r) {
+        ed.imp = null;
+        A.snapshot();
+        var ids = r.ids.slice(), placed = 0;
+        if (target && ids.length) { var o = slotObj(parseW(target.w), target.i, true), m = S.photos[ids[0]]; o.photo = ids.shift(); o.zoom = 1; o.fx = 0.5; o.fy = m && m.h > m.w * 1.12 ? 0.42 : 0.5; placed++; }
+        placed += A.fillSamples(ids);
+        if (p.sampleTitle && p.title === p.sampleTitle && !(p.cover || {}).title) { /* the customer writes their own title; keep the sample until then */ }
+        A.save(true); ed.sel = null;
+        var extra = r.ids.length - placed;
+        ed.impMsg = (r.ids.length ? r.ids.length + ' photo' + (r.ids.length === 1 ? '' : 's') + ' added' + (placed ? ', ' + placed + ' placed in the book' : '') + (extra > 0 ? ', ' + extra + ' waiting in Your photos' : '') + '.' : '') + (r.fails.length ? ' ' + r.fails.length + ' not added: ' + r.fails.slice(0, 3).join('; ') : '');
+        all();
+        A.toast(r.ids.length ? (placed ? 'Your photos are in the book' : 'Photos added') : 'No photos were added', r.ids.length ? '' : 'err');
+      });
+    }
+    function replaceModal(sel) {
+      var list = A.orderedPhotos(), use = A.usage();
+      list = list.filter(function (m) { return !use[m.id]; }).concat(list.filter(function (m) { return use[m.id]; }));
+      var html = '<label class="rp-up btn btn--p btn--block">' + I('upload') + 'Upload from this device<input type="file" id="rpFile" accept="' + PBPhotos.accept + '" multiple hidden></label>' +
+        (list.length ? '<p class="pn-hint">Or choose one of your photos:</p><div class="rp-grid">' + list.map(function (m) { return '<button type="button" class="rp-i" data-rp="' + m.id + '"><img alt="' + esc(m.name) + '" data-rpt="' + m.id + '">' + (use[m.id] ? '<i>In book</i>' : '') + '</button>'; }).join('') + '</div>' : '<p class="pn-hint">Your photos stay on this device. If you pick several, the first goes here and the rest replace other sample photos.</p>');
+      var pr = A.modal('Choose a photo', html, [{ label: 'Cancel', value: false }]);
+      var body = document.getElementById('modalBody');
+      body.querySelectorAll('[data-rpt]').forEach(function (img) { var id = img.getAttribute('data-rpt'), u = A.url(id, 'thumb'); if (u) img.src = u; else S.urls[id + ':thumb'].p.then(function (x) { img.src = x; }); });
+      body.addEventListener('click', function (e) { var b = e.target.closest('[data-rp]'); if (!b) return; document.getElementById('modal').hidden = true; body.innerHTML = ''; placePhoto(sel.w, sel.i, b.getAttribute('data-rp')); });
+      body.querySelector('#rpFile').addEventListener('change', function () { var fl = Array.prototype.slice.call(this.files || []); document.getElementById('modal').hidden = true; body.innerHTML = ''; addFiles(fl, sel); });
+      return pr;
     }
     function drawCanvas() {
       var k = scale(), vs = views();
@@ -120,7 +170,7 @@
 
     /* ---------- panel ---------- */
     function tabs() {
-      var T = [['photos', 'Photos', 'image'], [ed.cur.kind === 'cover' ? 'cover' : 'layout', ed.cur.kind === 'cover' ? 'Cover' : 'Layout', 'grid'], ['text', 'Text', 'type'], ['style', 'Style', 'palette'], ['book', 'Book', 'book']];
+      var T = [['photos', 'Photos', 'image'], [ed.cur.kind === 'cover' ? 'cover' : 'layout', ed.cur.kind === 'cover' ? 'Cover' : 'Layout', 'grid'], ['text', 'Text', 'type'], ['style', 'Design', 'palette'], ['book', 'Book', 'book']];
       if (ed.sel) T.unshift(['edit', 'Edit', 'edit']);
       if (ed.tab === 'layout' && ed.cur.kind === 'cover') ed.tab = 'cover';
       if (ed.tab === 'cover' && ed.cur.kind !== 'cover') ed.tab = 'layout';
@@ -143,10 +193,11 @@
       var pg = ed.cur.kind === 'page' ? p.pages[ed.page] : null;
       if (ed.tab === 'photos') {
         var list = A.orderedPhotos(), use = A.usage(), shown = ed.trayFilter === 'unused' ? list.filter(function (m) { return !use[m.id]; }) : list;
-        h = '<div class="pn-h"><h3>Your photos</h3><a class="btn btn--sm btn--ghost" href="#/p/' + p.id + '/photos">' + I('plus') + 'Add</a></div>' +
+        h = '<div class="pn-h"><h3>Your photos</h3><a class="btn btn--sm btn--ghost" href="#/p/' + p.id + '/photos">Manage</a></div>' +
+          '<button type="button" class="btn btn--p btn--block pn-add" data-a="add">' + I('upload') + 'Add photos</button>' +
           '<div class="seg"><button type="button" data-tray="all" class="' + (ed.trayFilter === 'all' ? 'on' : '') + '">All ' + list.length + '</button><button type="button" data-tray="unused" class="' + (ed.trayFilter === 'unused' ? 'on' : '') + '">Not used ' + list.filter(function (m) { return !use[m.id]; }).length + '</button></div>' +
           '<p class="pn-hint">' + (ed.sel && ed.sel.t === 'slot' ? 'Tap a photo to put it in the selected frame.' : mq.matches ? 'Tap a photo, then tap a frame.' : 'Drag a photo onto a frame, or tap it and then a frame.') + '</p>' +
-          '<div class="tray">' + shown.map(function (m) { return '<button type="button" class="tray__i' + (ed.placing === m.id ? ' on' : '') + '" draggable="true" data-ph="' + m.id + '" aria-label="' + esc(m.name) + (use[m.id] ? ', used ' + use[m.id] + ' times' : ', not used') + '"><img alt="" data-tt="' + m.id + '">' + (use[m.id] ? '<i>' + use[m.id] + '</i>' : '') + (m.low ? '<em>Low res</em>' : '') + '</button>'; }).join('') + (shown.length ? '' : '<p class="muted">' + (list.length ? 'Every photo is in the book.' : 'No photos yet.') + '</p>') + '</div>';
+          '<div class="tray">' + shown.map(function (m) { return '<button type="button" class="tray__i' + (ed.placing === m.id ? ' on' : '') + '" draggable="true" data-ph="' + m.id + '" aria-label="' + esc(m.name) + (use[m.id] ? ', used ' + use[m.id] + ' times' : ', not used') + '"><img alt="" data-tt="' + m.id + '">' + (use[m.id] ? '<i>' + use[m.id] + '</i>' : '') + (m.low ? '<em>Low res</em>' : '') + '</button>'; }).join('') + '</div>' + (shown.length ? '' : '<p class="muted">' + (list.length ? 'Every photo is in the book.' : 'No photos yet. Photos you add replace the sample photos in order.') + '</p>');
       } else if (ed.tab === 'layout' && pg) {
         var groups = [[1, '1 photo'], [2, '2 photos'], [3, '3 photos'], [4, '4 photos'], [5, '5 photos'], [6, '6 photos'], [0, 'Text & blank']];
         h = '<div class="pn-h"><h3>Page ' + (ed.page + 1) + '</h3><span class="muted">' + esc((E.LMAP[pg.layout] || {}).name || '') + '</span></div>' +
@@ -206,6 +257,7 @@
       if (s.t === 'slot') {
         var o = slotObj(v, s.i) || {}, m = o.photo && S.photos[o.photo], r = render(v), rs = r.slots[s.i] || {};
         var pages = p.pages.map(function (x, i) { return '<option value="' + i + '">Page ' + (i + 1) + '</option>'; }).join('');
+        if (m && m.sample) return '<div class="pn-h"><h3>Sample photo</h3><button type="button" class="ibtn" data-a="desel" aria-label="Done">' + I('x') + '</button></div><div class="ep ep--smp"><img data-tt="' + m.id + '" alt=""><div><b>Sample photo</b><span>Shows how this frame looks. Replace it with one of yours — samples can’t be printed.</span><span class="muted">Photo: ' + esc(m.credit) + ' / Unsplash</span></div></div><button type="button" class="btn btn--p btn--block" data-e="replace">' + I('image') + 'Replace with my photo</button>';
         return '<div class="pn-h"><h3>Photo frame</h3><button type="button" class="ibtn" data-a="desel" aria-label="Done">' + I('x') + '</button></div>' +
           (m ? '<div class="ep"><img data-tt="' + m.id + '" alt=""><div><b>' + esc(m.name) + '</b><span>' + m.w + ' × ' + m.h + ' px</span>' + (rs.dpi ? '<span class="' + (rs.dpi < 150 ? 'warn' : 'ok') + '">' + rs.dpi + ' dpi at this size' + (rs.dpi < 100 ? ' — will look soft' : rs.dpi < 150 ? ' — may look soft' : ' — good for print') + '</span>' : '') + (m.taken ? '<span class="muted">Taken ' + new Date(m.taken).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ' (from the file)</span>' : '') + '</div></div>' +
             '<label class="fld fld--sm"><span>Zoom</span><input type="range" min="1" max="3" step="0.02" data-zoom value="' + (o.zoom || 1) + '"></label>' +
@@ -238,11 +290,11 @@
       if (v.kind !== 'page') return null; var pg = p.pages[v.i]; pg.style = pg.style || {}; if (!pg.style[key] && create) pg.style[key] = {}; return pg.style[key];
     }
 
-    function all() { drawCanvas(); drawStrip(); panel(); placingBar(); }
+    function all() { guide(); drawCanvas(); drawStrip(); panel(); placingBar(); }
     A.onChange = all;
     function change(fn, light) { A.snapshot(); fn(); A.save(); if (light) { light(); } else all(); }
     function placingBar() { var b = document.getElementById('placing'); if (!ed.placing) { b.hidden = true; return; } b.hidden = false; b.innerHTML = '<span>Tap a frame to place this photo</span><button type="button" class="btn btn--sm btn--ghost" data-a="cancelplace">Cancel</button>'; }
-    function select(sel) { ed.sel = sel; if (sel) { ed.tab = 'edit'; ed.sheet = true; } if (sel && sel.w.indexOf('page:') === 0) ed.page = +sel.w.split(':')[1]; all(); }
+    function select(sel) { ed.sel = sel; if (sel) { ed.tab = 'edit'; ed.sheet = !mq.matches || sel.t === 'text'; } if (sel && sel.w.indexOf('page:') === 0) ed.page = +sel.w.split(':')[1]; all(); }
     function go(target) {
       ed.sel = null; ed.placing = null;
       if (target === 'cover') ed.cur = { kind: 'cover' };
@@ -278,6 +330,8 @@
       if (a === 'regen') return regenerate();
       if (a === 'refit') return regenerate(true);
       if (a === 'check') return check();
+      if (a === 'add') { ed.impMsg = ''; return document.getElementById('edFile').click(); }
+      if (a === 'fitall') return regenerate(true);
       if (a === 'addend') return change(function () { p.pages.push({ id: A.uid('pg'), layout: 'blank', slots: [], texts: {} }, { id: A.uid('pg'), layout: 'blank', slots: [], texts: {} }); }, function () { go(p.pages.length - 2); });
       if (t.hasAttribute('data-tab')) { var tb = t.getAttribute('data-tab'); if (mq.matches && ed.tab === tb && ed.sheet) ed.sheet = false; else { ed.tab = tb; ed.sheet = true; } return panel(); }
       if (t.hasAttribute('data-cside')) { ed.coverSide = t.getAttribute('data-cside'); return all(); }
@@ -325,7 +379,7 @@
     });
     // click on page background selects that page (for the Layout tab)
     canvas.addEventListener('click', function (e) {
-      if (e.target.closest('.hs')) return;
+      if (e.target.closest('.hs,.ed-float')) return;
       var pgEl = e.target.closest('[data-pg]'); if (!pgEl) return;
       var v = parseW(pgEl.getAttribute('data-pg'));
       ed.sel = null;
@@ -389,7 +443,8 @@
     }
     function editAction(a) {
       var v = parseW(ed.sel.w), o = slotObj(v, ed.sel.i, true);
-      if (a === 'replace') { ed.tab = 'photos'; ed.sheet = true; A.toast('Choose a photo for the selected frame'); return panel(); }
+      if (a === 'replace') return replaceModal({ w: ed.sel.w, i: ed.sel.i });
+      if (a === 'adjust') { ed.tab = 'edit'; ed.sheet = true; return all(); }
       if (a === 'reset') return change(function () { o.zoom = 1; o.fx = 0.5; o.fy = 0.5; });
       if (a === 'remove') return change(function () { delete o.photo; });
     }
@@ -474,10 +529,14 @@
       if ((e.key === 'Delete' || e.key === 'Backspace') && ed.sel && ed.sel.t === 'slot') { e.preventDefault(); editAction('remove'); }
     }
     document.addEventListener('keydown', key);
+    document.getElementById('edFile').addEventListener('change', function () { var fl = Array.prototype.slice.call(this.files || []); this.value = ''; addFiles(fl, null); });
     var rz; function onResize() { clearTimeout(rz); rz = setTimeout(function () { if (ed.cur.kind === 'page' && !mq.matches) { /* spread view */ } all(); }, 120); }
     window.addEventListener('resize', onResize);
     A.leave = function () { document.removeEventListener('keydown', key); window.removeEventListener('resize', onResize); };
     if (mq.matches) ed.sheet = false;
+    // open on the cover when it shows a photo, otherwise on the first photo spread
+    var cst = (p.cover && p.cover.style) || E.theme(p.templateId).cover.style;
+    if (!E.COVER_STYLES.filter(function (x) { return x.id === cst; })[0].photo && p.pages.length > 2) { ed.cur = { kind: 'page', i: 1 }; ed.page = 1; }
     all();
     A.track('editor_open', { pages: p.pages.length });
   };

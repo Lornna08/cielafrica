@@ -483,19 +483,22 @@
       if (n < f.pages.min || n > f.pages.max) errors.push({ code: 'pages', msg: 'This format needs between ' + f.pages.min + ' and ' + f.pages.max + ' pages (this book has ' + n + ').' });
       if ((n - f.pages.min) % (f.pages.step || 2)) errors.push({ code: 'pages', msg: 'Page count must go up in steps of ' + (f.pages.step || 2) + '.' });
     }
+    var smp = [];
     function check(r, where) {
-      r.slots.forEach(function (s) { if (!s.photo) errors.push({ code: 'empty', where: where, msg: where.label + ': a photo frame is empty. Add a photo or choose a layout with fewer photos.' }); else if (!photos[s.photo]) errors.push({ code: 'missing', where: where, msg: where.label + ': a photo is missing from this device. Upload it again or replace it.' }); });
+      r.slots.forEach(function (s) { if (!s.photo) errors.push({ code: 'empty', where: where, msg: where.label + ': a photo frame is empty. Add a photo or choose a layout with fewer photos.' }); else if (!photos[s.photo]) errors.push({ code: 'missing', where: where, msg: where.label + ': a photo is missing from this device. Upload it again or replace it.' }); else if (photos[s.photo].sample) smp.push(where); });
       r.warn.forEach(function (w) { w.where = where; warnings.push(w); });
     }
     if (!f) return { errors: errors, warnings: warnings };
     check(renderFront(cfg, project, photos), { kind: 'front', label: 'Front cover' });
     check(renderBack(cfg, project, photos), { kind: 'back', label: 'Back cover' });
     renderSpine(cfg, project).warn.forEach(function (w) { w.where = { kind: 'spine', label: 'Spine' }; warnings.push(w); });
-    for (var i = 0; i < n; i++) check(renderPage(cfg, project, i, photos), { kind: 'page', index: i, label: 'Page ' + (i + 1) });
+    for (var i = 0; i < n; i++) check(renderPage(cfg, project, i, photos), { kind: 'page', index: i, i: i, label: 'Page ' + (i + 1) });
+    if (smp.length) errors.unshift({ code: 'sample', where: smp[0], count: smp.length, msg: smp.length + ' sample photo' + (smp.length === 1 ? ' still needs' : 's still need') + ' replacing with your own (first: ' + smp[0].label.toLowerCase() + '). Sample photos can\u2019t be printed or exported.' });
     var blanks = (project.pages || []).filter(function (p) { return p.layout === 'blank'; }).length;
     if (blanks > 2) warnings.push({ level: 'low', code: 'blank', msg: blanks + ' pages are blank. Add more photos or reduce the page count.' });
     var ct = coverTexts(project);
     if (!ct.title) warnings.push({ level: 'low', code: 'notitle', msg: 'The cover has no title.' });
+    if (project.sampleTitle && ct.title === project.sampleTitle) warnings.push({ level: 'low', code: 'sampletitle', where: { kind: 'front', label: 'Front cover' }, msg: 'The cover still shows the sample title \u201c' + ct.title + '\u201d. Tap it to write your own.' });
     return { errors: errors, warnings: warnings };
   }
 

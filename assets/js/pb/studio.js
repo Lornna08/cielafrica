@@ -42,12 +42,13 @@
   /* ---------- photo URLs (object URLs from device storage) ---------- */
   A.url = function (id, kind) {
     var k = id + ':' + (kind || 'prev');
+    if (window.PBSamples && PBSamples.isSample(id)) { if (!S.urls[k]) S.urls[k] = { u: PBSamples.url(PBSamples.get(id), kind === 'thumb' ? 480 : 1400), p: null, ext: true }; S.urls[k].p = Promise.resolve(S.urls[k].u); return S.urls[k].u; }
     if (S.urls[k]) return S.urls[k].u;
     S.urls[k] = { u: '', p: ST.blob(id, kind || 'prev').then(function (b) { if (b) { S.urls[k].u = URL.createObjectURL(b); } return S.urls[k].u; }) };
     return '';
   };
   A.loadUrls = function (ids, kind) { return Promise.all(ids.map(function (id) { A.url(id, kind); return S.urls[id + ':' + (kind || 'prev')].p; })); };
-  function dropUrls() { Object.keys(S.urls).forEach(function (k) { if (S.urls[k].u) URL.revokeObjectURL(S.urls[k].u); }); S.urls = {}; }
+  function dropUrls() { Object.keys(S.urls).forEach(function (k) { if (S.urls[k].u && !S.urls[k].ext) URL.revokeObjectURL(S.urls[k].u); }); S.urls = {}; }
 
   /* ---------- project load / save ---------- */
   var saveT, saving = false, again = false;
@@ -80,10 +81,75 @@
       S.project = p;
       return ST.photos(id).then(function (list) {
         S.photos = {}; list.forEach(function (m) { S.photos[m.id] = m; });
+        A.addSamples(p);
         var known = {}; (p.photoOrder || []).forEach(function (x) { if (S.photos[x]) known[x] = 1; });
         p.photoOrder = (p.photoOrder || []).filter(function (x) { return S.photos[x]; }).concat(list.filter(function (m) { return !known[m.id]; }).sort(function (a, b) { return a.added - b.added; }).map(function (m) { return m.id; }));
         return p;
       });
+    });
+  };
+  /** sample photos referenced by a project (they live outside device storage) */
+  A.addSamples = function (p, photos) {
+    photos = photos || S.photos; if (!window.PBSamples) return;
+    function add(id) { if (id && PBSamples.isSample(id)) photos[id] = PBSamples.get(id); }
+    (p.sampleIds || []).forEach(add);
+    (p.pages || []).forEach(function (pg) { (pg.slots || []).forEach(function (s) { add(s && s.photo); }); });
+    if (p.cover) { add(p.cover.photo && p.cover.photo.photo); add(p.cover.back && p.cover.back.photo && p.cover.back.photo.photo); }
+  };
+  /** frames that still show a sample photo, in reading order (cover first) */
+  A.sampleSlots = function () {
+    var p = S.project, out = [];
+    function chk(o, where, i) { if (o && o.photo && PBSamples.isSample(o.photo)) out.push({ o: o, where: where, i: i }); }
+    if (p.cover) { chk(p.cover.photo, 'front', 0); if (p.cover.back) chk(p.cover.back.photo, 'back', 0); }
+    (p.pages || []).forEach(function (pg, pi) { (pg.slots || []).forEach(function (sl, i) { chk(sl, 'page:' + pi, i); }); });
+    return out;
+  };
+  /** put the customer's photos into sample frames, in order. Returns how many were placed. */
+  A.fillSamples = function (ids) {
+    var slots = A.sampleSlots(), n = 0;
+    ids.forEach(function (id) { var s = slots[n]; if (!s) return; var m = S.photos[id]; s.o.photo = id; s.o.zoom = 1; s.o.fx = 0.5; s.o.fy = m && m.h > m.w * 1.12 ? 0.42 : 0.5; n++; });
+    return n;
+  };
+  A.unusedPhotos = function () { var u = A.usage(); return A.orderedPhotos().filter(function (m) { return !u[m.id]; }); };
+  /** a finished-looking book for a design, filled with sample photos (not saved) */
+  A.sampleProject = function (tid, fmtId) {
+    var r = PBSamples.book(E, CFG, tid, fmtId);
+    r.p.id = A.uid('pb'); r.p.createdAt = Date.now(); r.p.name = A.tplMeta(tid).name + ' book';
+    return r;
+  };
+  /** start a book from a design and save it on this device */
+  A.createBook = function (tid, fmtId) {
+    var p = A.sampleProject(tid, fmtId).p;
+    p.seed = Math.floor(Math.random() * 1e6) + 1;
+    return ST.saveProject(p).then(function () { ST.persist(); A.track('project_created', { format: p.formatId, template: tid, from: 'design' }); return p; });
+  };
+  /** add photo files from this device. onProg(done,total,fails). Resolves with the new photo ids in order. */
+  A.importFiles = function (files, onProg) {
+    var p = S.project, lim = CFG.limits || {}, ids = [], fails = [], done = 0;
+    files = Array.prototype.slice.call(files || []);
+    var room = (lim.maxPhotosPerProject || 300) - p.photoOrder.length;
+    if (files.length > room) { fails.push((files.length - Math.max(0, room)) + ' photo(s) over the limit of ' + (lim.maxPhotosPerProject || 300) + ' were not added.'); files = files.slice(0, Math.max(0, room)); }
+    var hashes = {}; Object.keys(S.photos).forEach(function (id) { if (!S.photos[id].sample) hashes[S.photos[id].hash] = 1; });
+    var total = files.length, q = files.map(function (f, i) { return { f: f, i: i }; }), slots = new Array(total);
+    if (onProg) onProg(0, total, fails);
+    return new Promise(function (res) {
+      if (!total) return res({ ids: [], fails: fails });
+      var busy = 0;
+      function pump() {
+        while (busy < 2 && q.length) {
+          var it = q.shift(); busy++;
+          (function (it) {
+            PBPhotos.importFile(it.f, { projectId: p.id, uid: A.uid, hashes: hashes, limits: lim }).then(function (r) {
+              hashes[r.meta.hash] = 1;
+              return ST.savePhoto(r.meta, r.blobs).then(function () { S.photos[r.meta.id] = r.meta; slots[it.i] = r.meta.id; });
+            }).catch(function (e) { fails.push((it.f.name ? it.f.name + ': ' : '') + (e.message || 'could not be added')); }).then(function () {
+              busy--; done++; if (onProg) onProg(done, total, fails);
+              if (!busy && !q.length) { ids = slots.filter(Boolean); p.photoOrder = p.photoOrder.concat(ids); A.track('upload_complete', { count: ids.length }); res({ ids: ids, fails: fails }); } else pump();
+            });
+          })(it);
+        }
+      }
+      pump();
     });
   };
   A.orderedPhotos = function () { return S.project.photoOrder.map(function (id) { return S.photos[id]; }).filter(Boolean); };
@@ -103,7 +169,11 @@
     var t = A.tplMeta(tid), th = E.theme(tid);
     var pr = { formatId: formatId || 'sq21', templateId: tid, title: title != null ? title : (t.sample || t.name), subtitle: '', pages: [], cover: {} };
     if (!title && t.collection === 'destinations') pr.title = { 'zanzibar-blue': 'Zanzibar', 'zanzibar-night': 'Zanzibar', 'paris-rose': 'Paris', 'cape-coral': 'Cape Town', 'amsterdam-canal': 'Amsterdam', 'diani-shore': 'Diani', 'savanna-gold': 'Savanna', 'lamu-dhow': 'Lamu' }[tid] || t.name;
-    return SV.svg(E.renderFront(CFG, pr, {}), { empty: 'sample', sampleFill: th.soft === '#FFFFFF' ? '#E8E6E0' : shade(th.bg), label: t.name + ' cover' });
+    if (window.PBSamples && PBSamples.coverStyle(tid) && title == null) pr.cover.style = PBSamples.coverStyle(tid);
+    var ph = {}, need = E.COVER_STYLES.filter(function (s) { return s.id === (pr.cover.style || th.cover.style); })[0].photo;
+    if (need && window.PBSamples) { var m = PBSamples.forTemplate(tid, 1)[0]; ph[m.id] = m; pr.cover.photo = { photo: m.id, fy: 0.42 }; }
+    if (!title && window.PBSamples) pr.title = PBSamples.title(tid);
+    return SV.svg(E.renderFront(CFG, pr, ph), { url: function (id) { return PBSamples.url(PBSamples.get(id), 600); }, empty: 'sample', sampleFill: th.soft === '#FFFFFF' ? '#E8E6E0' : shade(th.bg), label: t.name + ' cover' });
   };
   function shade(hex) { var n = parseInt(String(hex).slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255, l = (r * 299 + g * 587 + b * 114) / 1000; var k = l > 140 ? -38 : 40; function c(v) { return Math.max(0, Math.min(255, v + k)); } return 'rgb(' + c(r) + ',' + c(g) + ',' + c(b) + ')'; }
   A.shade = shade;
@@ -112,7 +182,7 @@
   A.steps = function (active) {
     var nav = document.getElementById('steps'), p = S.project;
     if (!p || !active) { nav.hidden = true; return; }
-    var L = [['photos', 'Photos'], ['design', 'Design'], ['preview', 'Preview'], ['order', 'Order']];
+    var L = [['design', 'Design'], ['preview', 'Preview'], ['order', 'Order']];
     nav.hidden = false;
     nav.innerHTML = '<span class="st-steps__name" title="' + esc(p.name) + '">' + esc(p.name || 'Photo book') + '</span>' + L.map(function (x, i) { return '<a href="#/p/' + p.id + '/' + x[0] + '"' + (x[0] === active ? ' aria-current="step"' : '') + '><i>' + (i + 1) + '</i>' + x[1] + '</a>'; }).join('');
   };
@@ -130,7 +200,8 @@
       return A.open(m[1]).then(function () { A.steps(m[2]); A.setSave(S.project.updatedAt ? 'Saved' : '', 'ok'); return A.views[m[2]](q); }).catch(function (e) { A.steps(null); app.innerHTML = '<section class="st-wrap st-empty"><h1>Book not found</h1><p>' + esc(e.message) + '</p><p class="muted">Books are saved in the browser where they were made. If you designed it on another device or browser, open it there.</p><a class="btn btn--p" href="#/">My books</a></section>'; });
     }
     A.steps(null); A.setSave('');
-    if (h === '/new') return newView(q);
+    if (h === '/new') return chooser(q);
+    if (h === '/new/story') return newView(q);
     return home();
   }
   window.addEventListener('hashchange', route);
@@ -143,16 +214,17 @@
       app.innerHTML = '<section class="st-wrap st-home">' +
         '<div class="st-head"><div><p class="eyebrow">Photo Book Studio</p><h1>Your photo books</h1><p class="lead">Saved privately in this browser on this device. Your photos are not uploaded while you design.</p></div><a class="btn btn--p btn--lg" href="#/new">' + A.icon('plus') + 'New photo book</a></div>' +
         (list.length ? '<div class="st-books">' + list.map(function (p) {
-          return '<article class="st-book" data-id="' + p.id + '"><a class="st-book__cov" href="#/p/' + p.id + '/' + (p.pages && p.pages.length ? 'design' : 'photos') + '" aria-label="Open ' + esc(p.name) + '"><div class="st-book__svg" data-cover="' + p.id + '"></div></a><div class="st-book__b"><h3>' + esc(p.name || 'Untitled photo book') + '</h3><p>' + esc(E.format(CFG, p.formatId).name) + ' · ' + (p.pages ? p.pages.length : 0) + ' pages · edited ' + A.when(p.updatedAt || p.createdAt) + '</p>' +
-            '<div class="st-book__acts"><a class="btn btn--sm btn--p" href="#/p/' + p.id + '/' + (p.pages && p.pages.length ? 'design' : 'photos') + '">Open</a><button class="btn btn--sm btn--ghost" data-act="rename">Rename</button><button class="btn btn--sm btn--ghost" data-act="dup">Duplicate</button><button class="btn btn--sm btn--ghost btn--warn" data-act="del">Delete</button></div></div></article>';
-        }).join('') + '</div>' : '<div class="st-emptybox"><h2>No photo books yet</h2><p>Start with a few words about your book. You can add photos in the next step.</p><a class="btn btn--p" href="#/new">Create your photo book</a></div>') +
+          return '<article class="st-book" data-id="' + p.id + '"><a class="st-book__cov" href="#/p/' + p.id + '/design" aria-label="Open ' + esc(p.name) + '"><div class="st-book__svg" data-cover="' + p.id + '"></div></a><div class="st-book__b"><h3>' + esc(p.name || 'Untitled photo book') + '</h3><p>' + esc(E.format(CFG, p.formatId).name) + ' · ' + (p.pages ? p.pages.length : 0) + ' pages · edited ' + A.when(p.updatedAt || p.createdAt) + '</p>' +
+            '<div class="st-book__acts"><a class="btn btn--sm btn--p" href="#/p/' + p.id + '/design">Open</a><button class="btn btn--sm btn--ghost" data-act="rename">Rename</button><button class="btn btn--sm btn--ghost" data-act="dup">Duplicate</button><button class="btn btn--sm btn--ghost btn--warn" data-act="del">Delete</button></div></div></article>';
+        }).join('') + '</div>' : '<div class="st-emptybox"><h2>No photo books yet</h2><p>Pick a design and you\u2019ll get a finished-looking book straight away. Then add your photos \u2014 they replace the samples.</p><a class="btn btn--p" href="#/new">Choose a design</a></div>') +
         (buys.length ? '<h2 class="st-h2">Purchases on this device</h2><div class="st-buys">' + buys.sort(function (a, b) { return b.createdAt - a.createdAt; }).map(function (b) { return '<div class="st-buy"><b>' + esc(b.ref || '') + '</b><span>' + (b.product === 'print' ? 'Printed book' : 'Digital PDF') + ' · ' + esc(b.name || '') + ' · ' + A.when(b.createdAt) + ' · ' + (b.status === 'paid' ? 'Paid' : esc(b.status || '')) + '</span><a class="btn btn--sm" href="#/p/' + b.projectId + '/order">View</a></div>'; }).join('') + '</div>' : '') +
         '<aside class="st-note"><h3>Where your photos are kept</h3><p>Projects and photographs are stored in this browser’s private storage on this device. Ciel Africa can’t see them. A printed order sends only the final print files, after payment. Deleting a book here removes its photos from this device. Clearing your browser data also deletes them, so keep your originals.</p></aside></section>';
       list.forEach(function (p) {
         var el = app.querySelector('[data-cover="' + p.id + '"]'); if (!el) return;
         var ph = {}; var cid = p.cover && p.cover.photo && p.cover.photo.photo;
+        A.addSamples(p, ph); if (cid && PBSamples.isSample(cid)) cid = null;
         var draw = function () { el.innerHTML = SV.svg(E.renderFront(CFG, p, ph), { url: function (id) { return A.url(id, 'thumb'); }, empty: 'sample' }); };
-        if (cid) ST.photos(p.id).then(function (l) { l.forEach(function (m) { ph[m.id] = m; }); return ST.blob(cid, 'thumb'); }).then(function (b) { if (b) S.urls[cid + ':thumb'] = { u: URL.createObjectURL(b), p: Promise.resolve() }; draw(); }); else draw();
+        if (cid) ST.photos(p.id).then(function (l) { l.forEach(function (m) { ph[m.id] = m; }); A.addSamples(p, ph); return ST.blob(cid, 'thumb'); }).then(function (b) { if (b) S.urls[cid + ':thumb'] = { u: URL.createObjectURL(b), p: Promise.resolve() }; draw(); }); else draw();
       });
       app.onclick = function (e) {
         var b = e.target.closest('[data-act]'); if (!b) return;
@@ -165,13 +237,63 @@
     }).catch(function (e) { app.innerHTML = '<section class="st-wrap st-empty"><h1>Storage unavailable</h1><p>' + esc(e.message) + '</p></section>'; });
   }
 
+  /* ---------- New book: choose a design (opens filled with sample photos) ---------- */
+  function chooser(q) {
+    var fmts = (CFG.formats || []).filter(function (f) { return f.enabled !== false; });
+    var st = { fmt: (q.f && fmts.some(function (f) { return f.id === q.f; })) ? q.f : fmts[0].id, cat: 'all' };
+    if (q.t && E.THEMES[q.t] && q.go) { app.innerHTML = '<div class="st-loading">Preparing your book…</div>'; return start(q.t); }
+    var cats = (CFG.categories || []).filter(function (c) { return A.visibleTemplates().some(function (t) { return t.category === c.id; }); });
+    app.innerHTML = '<section class="st-wrap ch">' +
+      '<div class="ch-head"><div><p class="eyebrow">New photo book</p><h1>Choose a design</h1><p class="lead">Every design opens as a finished book filled with sample photos. Add your own photos and they drop straight into place — then change anything you like.</p></div>' +
+      '<ol class="ch-how" aria-label="How it works"><li><i>1</i>Pick a design</li><li><i>2</i>Add your photos</li><li><i>3</i>Preview &amp; order</li></ol></div>' +
+      '<div class="ch-bar"><div class="gfilters" id="cats"><button type="button" class="gfilter on" data-cat="all">All designs</button><button type="button" class="gfilter" data-cat="destinations">Destinations</button>' + cats.map(function (c) { return '<button type="button" class="gfilter" data-cat="' + c.id + '">' + esc(c.name) + '</button>'; }).join('') + '</div>' +
+      '<label class="ch-size">Size <select id="fmtSel">' + fmts.map(function (f) { return '<option value="' + f.id + '"' + (f.id === st.fmt ? ' selected' : '') + '>' + esc(f.name + ' · ' + f.size) + '</option>'; }).join('') + '</select></label></div>' +
+      '<div class="ch-grid" id="chGrid"></div>' +
+      '<div class="ch-alt"><div><h2>Prefer to start from your own photos?</h2><p>Describe your book, get title ideas, add your photos and let the layout assistant arrange them.</p></div><a class="btn btn--ghost" href="#/new/story">Start from my photos</a></div>' +
+      '<p class="ch-credit">Sample photos from <a href="https://unsplash.com/?utm_source=ciel_africa&utm_medium=referral" target="_blank" rel="noopener">Unsplash</a>, shown only to illustrate the designs. They can’t be printed — you replace every one with your own.</p></section>';
+    var grid = document.getElementById('chGrid');
+    function draw() {
+      var pc = function (id) { var x = PBSamples.coverStyle(id) || E.theme(id).cover.style; return E.COVER_STYLES.filter(function (c) { return c.id === x; })[0].photo ? 0 : 1; };
+      var list = A.visibleTemplates().filter(function (t) { return st.cat === 'all' || t.category === st.cat || t.collection === st.cat; });
+      list = list.filter(function (t) { return !pc(t.id); }).concat(list.filter(function (t) { return pc(t.id); }));
+      grid.innerHTML = list.map(function (t) {
+        var ph = PBSamples.forTemplate(t.id, 4, true);
+        return '<article class="ch-card"><button type="button" class="ch-card__cov" data-peek="' + t.id + '" aria-label="Look inside ' + esc(t.name) + '"><span class="ch-book">' + A.templateCover(t.id, null, st.fmt) + '</span><span class="ch-peek">' + A.icon('eye') + 'Look inside</span></button>' +
+          '<div class="ch-card__strip" aria-hidden="true">' + ph.map(function (m) { return '<img loading="lazy" alt="" src="' + esc(PBSamples.url(m, 240)) + '">'; }).join('') + '</div>' +
+          '<div class="ch-card__b"><h3>' + esc(t.name) + '</h3><p>' + esc(t.desc || '') + '</p><button type="button" class="btn btn--p btn--block" data-use="' + t.id + '">Use this design</button></div></article>';
+      }).join('');
+    }
+    function peek(tid) {
+      var sp = A.sampleProject(tid, st.fmt), p = sp.p, ph = sp.photos, t = A.tplMeta(tid);
+      var u = function (id) { return PBSamples.url(PBSamples.get(id), 700); };
+      var pg = function (i) { return '<div class="pk-pg">' + SV.svg(E.renderPage(CFG, p, i, ph), { url: u, empty: 'sample' }) + '</div>'; };
+      var html = '<div class="pk"><div class="pk-cov">' + SV.svg(E.renderFront(CFG, p, ph), { url: u, empty: 'sample' }) + '</div>' +
+        '<div class="pk-sp">' + pg(1) + pg(2) + '</div><div class="pk-sp">' + pg(3) + pg(4) + '</div><div class="pk-sp">' + pg(5) + pg(6) + '</div></div>' +
+        '<p class="pn-hint">' + esc(t.desc || '') + ' These are sample photos — yours replace them.</p>';
+      A.modal(t.name, html, [{ label: 'Back', value: false }, { label: 'Use this design', value: true, primary: true }]).then(function (ok) { if (ok) start(tid); });
+      var bx = document.querySelector('.st-modal__box'); bx.classList.add('st-modal__box--wide'); setTimeout(function () { bx.scrollTop = 0; }, 60);
+    }
+    function start(tid) {
+      A.createBook(tid, st.fmt).then(function (p) { location.replace('#/p/' + p.id + '/design'); }).catch(function (er) { A.toast(er.message || 'Could not create the book', 'err'); });
+    }
+    app.querySelector('.ch').addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.cat) { st.cat = b.dataset.cat; app.querySelectorAll('[data-cat]').forEach(function (x) { x.classList.toggle('on', x === b); }); draw(); }
+      else if (b.dataset.use) { b.disabled = true; b.textContent = 'Preparing your book…'; start(b.dataset.use); }
+      else if (b.dataset.peek) peek(b.dataset.peek);
+    });
+    document.getElementById('fmtSel').addEventListener('change', function () { st.fmt = this.value; draw(); });
+    draw();
+    A.track('create_start', { flow: 'design' });
+  }
+
   /* ---------- New book: story, suggestions, look, format ---------- */
   var EXAMPLES = ['A collection of my favourite memories.', 'Our relationship and the places we’ve visited.', 'My childhood and growing-up years.', 'Our wedding day and celebrations.', 'My baby’s first year.', 'A family holiday.', 'My graduation journey.', 'My life at twenty-five.', 'A birthday celebration.', 'A photography portfolio.', 'A collection of our best moments together.'];
   function newView(q) {
     var st = { tpl: q.t && E.THEMES[q.t] ? q.t : null, fmt: (CFG.formats || []).filter(function (f) { return f.enabled !== false; })[0].id, seed: 1, sug: null, cat: 'all', caps: null };
     var cats = (CFG.categories || []).filter(function (c) { return A.visibleTemplates().some(function (t) { return t.category === c.id; }); });
     app.innerHTML = '<form class="st-wrap st-new" id="newF" novalidate>' +
-      '<div class="st-head"><div><p class="eyebrow">New photo book</p><h1>Tell us the story behind your book.</h1><p class="lead">What memories would you like to keep? Write as much or as little as you like — it’s only used to suggest ideas, and you can change everything later.</p></div></div>' +
+      '<div class="st-head"><div><p class="eyebrow">New photo book · <a href="#/new">or choose a ready-made design</a></p><h1>Tell us the story behind your book.</h1><p class="lead">What memories would you like to keep? Write as much or as little as you like — it’s only used to suggest ideas, and you can change everything later.</p></div></div>' +
       '<div class="st-new__grid"><div class="st-new__main">' +
         '<label class="fld"><span>About your book <em>optional</em></span><textarea id="desc" rows="5" maxlength="1500" placeholder="e.g. Ten days in Zanzibar with my sisters in March 2026 — the beaches, Stone Town and our boat trip."></textarea></label>' +
         '<div class="chips" aria-label="Examples">' + EXAMPLES.map(function (x) { return '<button type="button" class="chip" data-ex="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '</div>' +
@@ -261,7 +383,7 @@
       var hint = !n ? 'Add your photos to get started.' : n < lo ? n + ' photos. A ' + pages + '-page book looks best with at least ' + lo + ' — add more, or the assistant will use calmer single-photo pages.' : n > hi ? n + ' photos is a lot for ' + pages + ' pages. The assistant will add pages (up to ' + f.pages.max + ') or leave some in your tray.' : n + ' photos — a good amount for about ' + pages + ' pages.';
       var lows = list.filter(function (m) { return m.low; }).length;
       app.innerHTML = '<section class="st-wrap st-photos">' +
-        '<div class="st-head"><div><p class="eyebrow">Step 1 of 4</p><h1>Add your photos</h1><p class="lead">' + esc(hint) + '</p></div><div class="st-head__acts">' + (n ? '<button class="btn btn--p btn--lg" id="toDesign">' + (p.pages && p.pages.length ? 'Continue designing' : 'Design my book') + ' ' + A.icon('right') + '</button>' : '') + '</div></div>' +
+        '<div class="st-head"><div><p class="eyebrow">Your photos</p><h1>Add your photos</h1><p class="lead">' + esc(hint) + '</p></div><div class="st-head__acts">' + (n ? '<button class="btn btn--p btn--lg" id="toDesign">' + (p.pages && p.pages.length ? 'Continue designing' : 'Design my book') + ' ' + A.icon('right') + '</button>' : '') + '</div></div>' +
         '<label class="st-drop" id="drop" tabindex="0"><input type="file" id="file" multiple accept="' + PBPhotos.accept + '" hidden>' + A.icon('upload') + '<b>Drop photos here or choose files</b><span>JPEG, PNG or WebP · up to ' + (lim.maxFileMB || 40) + ' MB each · up to ' + (lim.maxPhotosPerProject || 300) + ' photos. On a phone, tap to pick from your gallery.</span></label>' +
         '<div class="st-prog" id="prog" hidden></div>' +
         (n ? '<div class="st-ptools"><div class="st-ptools__l"><b>' + n + ' photo' + (n === 1 ? '' : 's') + '</b>' + (lows ? '<span class="tag tag--warn">' + lows + ' low resolution</span>' : '') + '<button class="btn btn--sm btn--ghost" id="selAll">Select all</button><button class="btn btn--sm btn--ghost btn--warn" id="rmSel" disabled>Remove selected</button></div><div class="st-ptools__r"><label class="sel">Order <select id="sort"><option value="">My order (drag to rearrange)</option><option value="date">By date taken</option><option value="name">By file name</option></select></label></div></div>' +
