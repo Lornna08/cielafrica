@@ -19,7 +19,8 @@ const ALLOWED = {
   'products.js':  'data/products.js',
   'templates.js': 'data/templates.js',
   'work.js':      'data/work.js',
-  'team.js':      'data/team.js'
+  'team.js':      'data/team.js',
+  'photobooks.js': 'data/photobooks.js'
 };
 
 module.exports = async function handler(req, res) {

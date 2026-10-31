@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photo Books admin — Ciel Africa</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png?v=20261021i">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/pb-studio.css?v=20261031a">
+<style>
+.ad{max-width:1240px;margin:0 auto;padding:28px 20px 80px}
+.ad-tabs{display:flex;gap:6px;margin:18px 0 22px;flex-wrap:wrap}
+.ad-tabs button{padding:9px 16px;border-radius:999px;border:1px solid var(--line-strong);font-weight:600;font-size:14px;background:#fff}
+.ad-tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.ad-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+.ad-card h2{font-size:1.15rem;margin-bottom:10px}
+.ad-ck{list-style:none;display:grid;gap:8px;font-size:14px}
+.ad-ck li{display:flex;gap:10px;align-items:flex-start}
+.ad-ck b{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;flex:none;font-size:12px;color:#fff}
+.ad-ck .y b{background:var(--green)}.ad-ck .n b{background:var(--amber)}
+.ad-ck span small{display:block;color:var(--ink-faint)}
+.ad-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.ad-filters select,.ad-filters input{border:1px solid var(--line-strong);border-radius:9px;padding:8px 10px;background:#fff;font-size:14px}
+.ad-t{width:100%;border-collapse:collapse;font-size:13.5px}
+.ad-t th,.ad-t td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.ad-t th{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint)}
+.ad-t tr[data-ref]{cursor:pointer}.ad-t tr[data-ref]:hover{background:var(--paper)}
+.pill{display:inline-block;padding:3px 8px;border-radius:999px;font-size:12px;font-weight:600;background:var(--paper-3)}
+.pill--paid,.pill--ready,.pill--delivered,.pill--pdf_delivered{background:#E3F4E9;color:#17633A}
+.pill--awaiting_payment,.pill--preparing{background:#FBF1DC;color:#8A5A0B}
+.pill--payment_failed,.pill--cancelled,.pill--refunded{background:#FBE6E1;color:#9B2C14}
+.ad-tw{overflow-x:auto}
+.ad-od{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ad-od dl{display:grid;grid-template-columns:140px 1fr;gap:6px 10px;font-size:14px}.ad-od dt{color:var(--ink-faint)}
+.ad-hist{list-style:none;font-size:13.5px;display:grid;gap:6px}
+.ad-cfg table{width:100%;border-collapse:collapse;font-size:13.5px}
+.ad-cfg th,.ad-cfg td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+.ad-cfg input[type=number]{width:110px;border:1px solid var(--line-strong);border-radius:8px;padding:7px 8px}
+.ad-cfg input[type=number].miss{border-color:var(--amber);background:#FFF8EA}
+.ad-cfg input[type=text]{width:100%;border:1px solid var(--line-strong);border-radius:8px;padding:7px 8px}
+.ad-miss{background:#FFF8EA;border:1px solid #EEDDB5;border-radius:10px;padding:10px 12px;font-size:13.5px;margin-bottom:12px}
+.ad-bar{position:sticky;bottom:0;background:linear-gradient(transparent,var(--paper) 30%);padding:16px 0;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.ad-login{max-width:380px;margin:60px auto}
+@media (max-width:760px){.ad-od{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="st-top"><a class="st-brand" href="/photo-books"><img src="/assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa"><span>Photo Books admin</span></a><div class="st-save" id="who"></div></header>
+<main class="ad" id="ad"><div class="st-loading">Loading…</div></main>
+<div class="st-toast" id="toast" role="status" aria-live="polite"></div>
+<script src="/data/photobooks.js?v=20261031a"></script>
+<script src="/assets/js/pb/metrics.js?v=20261031a"></script>
+<script src="/assets/js/pb/art.js?v=20261031a"></script>
+<script src="/assets/js/pb/engine.js?v=20261031a"></script>
+<script src="/assets/js/pb/admin.js?v=20261031a"></script>
+</body>
+</html>
