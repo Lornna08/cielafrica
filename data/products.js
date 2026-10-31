@@ -9,7 +9,7 @@ window.CIEL = window.CIEL || {};
 window.CIEL.productCategories = [
   "All","WordPress Plugins","Payments & M-Pesa","Business Systems","WordPress Themes",
   "Website Templates","Laravel Packages","React Components","Admin Dashboards",
-  "SMS & USSD","Automation Scripts","AI Tools","APIs"
+  "SMS & USSD","Automation Scripts","AI Tools","APIs","Photo Books"
 ];
 
 window.CIEL.products = [
@@ -47,5 +47,7 @@ window.CIEL.products = [
   { id:"prd-25", art:"admin", name:"Clinic & Hospital System", category:"Business Systems", desc:"Patient records, appointments, billing with M-Pesa, pharmacy stock and lab results for clinics.", meta:"EMR · Appointments · Billing · Pharmacy", price:72000, rating:5.0, reviews:0, badge:"", image:"" },
   { id:"prd-26", art:"admin", name:"Restaurant & QR Ordering", category:"Business Systems", desc:"Scan-to-order from the table, kitchen display, M-Pesa payment and daily sales — for restaurants and cafés.", meta:"QR order · Kitchen display · M-Pesa", price:34000, rating:4.8, reviews:0, badge:"new", image:"" },
   { id:"prd-27", art:"admin", name:"Delivery & Dispatch Platform", category:"Business Systems", desc:"Orders, rider app, live tracking, zones and COD/M-Pesa reconciliation for delivery businesses.", meta:"Rider app · Tracking · Zones · COD", price:85000, rating:4.9, reviews:0, badge:"", image:"" },
-  { id:"prd-28", art:"admin", name:"E-commerce Store (Headless)", category:"Business Systems", desc:"A fast standalone online store — catalogue, cart, M-Pesa & card checkout, inventory and order admin. Not WordPress.", meta:"Catalogue · Cart · M-Pesa · Admin", price:48000, rating:4.9, reviews:0, badge:"popular", image:"" }
+  { id:"prd-28", art:"admin", name:"E-commerce Store (Headless)", category:"Business Systems", desc:"A fast standalone online store — catalogue, cart, M-Pesa & card checkout, inventory and order admin. Not WordPress.", meta:"Catalogue · Cart · M-Pesa · Admin", price:48000, rating:4.9, reviews:0, badge:"popular", image:"" },
+  /* ---------- Photo Books (customer product: priced in data/photobooks.js, ordered at /photo-books) ---------- */
+  { id:"pb-photobooks", art:"photobook", name:"Photo Books", category:"Photo Books", desc:"Turn your photos into a beautifully designed photo book. Describe it, add your photos, let the layout assistant arrange them, then personalise every page.", meta:"Design free · Print-ready PDF · Printed books coming soon", price:null, priceLabel:"Free to design", link:"/photo-books", cta:"Create yours", rating:5.0, reviews:0, badge:"new", image:"" }
 ];

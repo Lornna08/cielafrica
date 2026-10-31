@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your photo book order — Ciel Africa</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png?v=20261021i">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/pb-studio.css?v=20261031a">
+<style>
+.os{max-width:720px;margin:0 auto;padding:36px 20px 80px}
+.os-tl{list-style:none;margin:22px 0;display:grid;gap:0}
+.os-tl li{display:grid;grid-template-columns:26px 1fr;gap:12px;padding-bottom:18px;position:relative}
+.os-tl li::before{content:'';position:absolute;left:12px;top:22px;bottom:0;width:2px;background:var(--line)}
+.os-tl li:last-child::before{display:none}
+.os-tl i{width:26px;height:26px;border-radius:50%;background:var(--paper-3);display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:700;color:var(--ink-faint)}
+.os-tl .done i{background:var(--green);color:#fff}.os-tl .cur i{background:var(--orange);color:#fff}
+.os-tl b{display:block}.os-tl small{color:var(--ink-faint)}
+</style>
+</head>
+<body>
+<header class="st-top"><a class="st-brand" href="/photo-books"><img src="/assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa"><span>Photo Books</span></a></header>
+<main class="os" id="os"><div class="st-loading">Loading your order…</div></main>
+<script>
+(function () {
+  var el = document.getElementById('os'), t = new URLSearchParams(location.search).get('t');
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function when(x) { return new Date(x).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+  if (!t) { el.innerHTML = '<h1>Order link missing</h1><p class="lead">Open the link from your order email.</p>'; return; }
+  fetch('/api/photobooks?route=order&t=' + encodeURIComponent(t), { headers: { 'X-Requested-With': 'ciel' } }).then(function (r) { return r.json(); }).then(function (j) {
+    if (!j.ok) throw new Error(j.error || 'Order not found');
+    var o = j.order, print = o.product === 'print';
+    var steps = print ? [['paid', 'Paid'], ['preparing', 'Preparing print files'], ['ready', 'Ready for printing'], ['printing', 'Printing'], [o.delivery && /collect/i.test(o.delivery.option || '') ? 'ready_collection' : 'dispatched', o.delivery && /collect/i.test(o.delivery.option || '') ? 'Ready for collection' : 'Dispatched'], ['delivered', 'Delivered']] : [['paid', 'Paid'], ['pdf_delivered', 'PDF downloaded']];
+    var seen = {}; (o.history || []).forEach(function (h) { seen[h.status] = h; });
+    var curIdx = -1; steps.forEach(function (s, i) { if (seen[s[0]]) curIdx = i; });
+    var stopped = ['cancelled', 'refunded', 'payment_failed'].indexOf(o.status) >= 0;
+    el.innerHTML = '<p class="eyebrow">Order ' + esc(o.ref) + '</p><h1>' + esc(o.statusLabel || o.status) + '</h1><p class="lead">' + (print ? 'Printed photo book' : 'Digital photo book') + (o.specs ? ' · ' + esc(o.specs.pages) + ' pages' + (o.specs.quantity > 1 ? ' · ' + o.specs.quantity + ' copies' : '') : '') + (o.delivery ? ' · ' + esc(o.delivery.option) : '') + '</p>' +
+      (j.limited ? '<p class="box box--warn">Detailed tracking isn’t available for this order. We’ll email you with any updates.</p>' : '') +
+      (stopped ? '<div class="box box--err">This order is ' + esc(o.statusLabel) + '.</div>' : '<ol class="os-tl">' + steps.map(function (s, i) { var h = seen[s[0]]; return '<li class="' + (i < curIdx ? 'done' : i === curIdx ? 'cur' : '') + '"><i>' + (i <= curIdx ? '✓' : i + 1) + '</i><div><b>' + s[1] + '</b>' + (h ? '<small>' + when(h.at) + (h.note ? ' — ' + esc(h.note) : '') + '</small>' : '') + '</div></li>'; }).join('') + '</ol>') +
+      (print && o.files && o.files.length < 2 && o.status === 'preparing' ? '<div class="box box--warn">We’re waiting for your approved print files. Open your book in the studio on the device you designed it on and choose <b>Send print files</b> under “Your orders”.</div>' : '') +
+      '<p class="muted" style="font-size:13.5px">Questions? Email <a href="mailto:hello@cielafrica.com">hello@cielafrica.com</a> with your order number.</p>';
+  }).catch(function (e) { el.innerHTML = '<h1>We couldn’t open this order</h1><p class="lead">' + esc(e.message) + '</p>'; });
+})();
+</script>
+</body>
+</html>
