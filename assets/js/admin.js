@@ -9,32 +9,28 @@
 (function () {
   'use strict';
 
-  /* ---- access gate (client-side only — keep the URL private) ---- */
-  var PASS = 'ciel2026';          // <-- change this to your own password
-  var KEY_OK = 'ciel_admin_ok';
+  /* ---- sign-in: checked on the server with ADMIN_PASSWORD (same session as Ciel HQ) ---- */
   var KEY_DRAFT = 'ciel_admin_draft';
-
   var gate = document.getElementById('gate');
   var app  = document.getElementById('app');
   var CIEL = window.CIEL || {};
-
   var ENTERED_PASS = '';   // kept in memory only, used to authenticate to /api/save
-
-  function unlock() { gate.style.display = 'none'; app.classList.add('on'); boot(); }
-
+  var booted = false;
+  function unlock() { gate.style.display = 'none'; app.classList.add('on'); if (!booted) { booted = true; boot(); } }
+  fetch('/api/hq?route=me', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (m) {
+    if (m.signedIn) return unlock();
+    if (!m.setup || !m.setup.adminPassword) document.getElementById('gateErr').textContent = 'Set ADMIN_PASSWORD in Vercel (Project → Settings → Environment Variables) and redeploy, then sign in.';
+  }).catch(function () {});
   document.getElementById('gateBtn').addEventListener('click', tryPass);
   document.getElementById('gatePass').addEventListener('keydown', function (e) { if (e.key === 'Enter') tryPass(); });
   function tryPass() {
-    var v = document.getElementById('gatePass').value;
-    if (v === PASS) {
-      ENTERED_PASS = v;
-      try { localStorage.setItem(KEY_OK, '1'); } catch (e) {}
-      unlock();
-    } else { document.getElementById('gateErr').textContent = 'Wrong password.'; }
+    var v = document.getElementById('gatePass').value, er = document.getElementById('gateErr');
+    er.textContent = 'Checking…';
+    fetch('/api/hq?route=login', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'ciel' }, body: JSON.stringify({ password: v }) })
+      .then(function (r) { return r.json(); }).then(function (j) { if (j.ok) { ENTERED_PASS = v; er.textContent = ''; unlock(); } else er.textContent = j.error || 'Wrong password.'; }, function () { er.textContent = 'Can’t reach the server.'; });
   }
   document.getElementById('logoutBtn').addEventListener('click', function () {
-    try { localStorage.removeItem(KEY_OK); } catch (e) {}
-    location.reload();
+    fetch('/api/hq?route=logout', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'ciel' }, body: '{}' }).then(function () { location.href = '/admin'; });
   });
 
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
@@ -448,6 +444,6 @@
 
   /* ---- auto-unlock for returning users (runs last, when D & all
          functions are defined, so the app renders correctly) ---- */
-  try { if (localStorage.getItem(KEY_OK) === '1') unlock(); } catch (e) {}
+  /* sign-in is checked above with the server */
 
 })();

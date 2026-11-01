@@ -38,7 +38,7 @@
     document.getElementById('lf').onsubmit = function (e) { e.preventDefault(); api('admin-login', { password: document.getElementById('pw').value }).then(list, function (er) { document.getElementById('lm').textContent = er.message; }); };
   }
   var all = [], filt = { q: '', s: '' };
-  function top(extra) { return '<div class="ao__top"><img src="/assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa"><h1>Photo Book orders</h1>' + (extra || '') + '<button class="btn btn--ghost btn--sm" id="lo">Sign out</button></div>'; }
+  function top(extra) { return '<div class="ao__top"><a href="/admin"><img src="/assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa"></a><h1>Photo Book orders</h1><a class="btn btn--ghost btn--sm" href="/admin">Ciel HQ</a>' + (extra || '') + '<button class="btn btn--ghost btn--sm" id="lo">Sign out</button></div>'; }
   function admin(on) { try { if (on) localStorage.setItem('pbk_admin', '1'); else localStorage.removeItem('pbk_admin'); } catch (e) { } }
   function wireTop() { var lo = document.getElementById('lo'); if (lo) lo.onclick = function () { admin(false); api('admin-logout', {}).then(login); }; }
   function list() {
@@ -47,6 +47,7 @@
     api('pbk-admin-orders').then(function (r) {
       if (!r.storage) { root.innerHTML = top() + '<div class="ao__card"><p class="ao__msg">Order storage is not connected to this deployment yet.</p></div>'; wireTop(); return; }
       all = r.orders; drawList();
+      var h = decodeURIComponent((location.hash || '').slice(1)); if (/^PB-[0-9A-Z]{8}$/.test(h)) { history.replaceState(null, '', location.pathname); detail(h); }
     }).catch(function (e) { if (e.status === 401) return login(); root.innerHTML = top() + '<p class="ao__msg">' + esc(e.message) + '</p>'; wireTop(); });
   }
   function drawList() {
@@ -77,7 +78,7 @@
         (o.delivery ? '<dt>Delivery</dt><dd>' + esc(o.delivery.name) + '</dd>' : '') + (a ? '<dt>Address</dt><dd>' + esc([a.line1, a.area, a.town, a.county].filter(Boolean).join(', ')) + (a.notes ? '<br><i>' + esc(a.notes) + '</i>' : '') + '</dd>' : '') +
         (g ? '<dt>Gift</dt><dd>🎁 For ' + esc(g.to || '—') + (g.phone ? ' · ' + esc(g.phone) : '') + (g.note ? '<br>“' + esc(g.note) + '”' : '') + '</dd>' : '') +
         '<dt>Lines</dt><dd>' + (o.lines || []).map(function (l) { return esc(l.label) + (l.qty > 1 ? ' × ' + l.qty : '') + ' — ' + money(l.amount * (l.qty || 1)); }).join('<br>') + '</dd></dl>' +
-        '<h2 style="margin-top:1.2rem">Status</h2><div class="ao__acts"><select id="ss">' + SET.map(function (k) { return '<option value="' + k + '"' + (o.status === k ? ' selected' : '') + '>' + LABEL[k] + '</option>'; }).join('') + '</select></div><textarea id="sn" rows="2" placeholder="Note (optional)" style="margin-top:.4rem"></textarea><button class="btn btn--dark btn--sm" id="sb" style="margin-top:.4rem">Update status</button>' +
+        '<h2 style="margin-top:1.2rem">Status</h2><div class="ao__acts"><select id="ss">' + SET.map(function (k) { return '<option value="' + k + '"' + (o.status === k ? ' selected' : '') + '>' + LABEL[k] + '</option>'; }).join('') + '</select></div><textarea id="sn" rows="2" placeholder="Note (optional)" style="margin-top:.4rem"></textarea><label style="display:flex;gap:.4rem;align-items:center;font-size:.86rem;margin-top:.4rem"><input type="checkbox" id="se" checked> Email the customer</label><button class="btn btn--dark btn--sm" id="sb" style="margin-top:.4rem">Update status</button>' +
         '<ul class="ao__hist">' + (o.history || []).slice().reverse().map(function (h) { return '<li><b>' + esc(LABEL[h.status] || h.status) + '</b> · ' + when(h.at) + (h.note ? ' — ' + esc(h.note) : '') + '</li>'; }).join('') + '</ul></div>' +
         '<div class="ao__card"><h2>Books</h2>' + (o.items || []).map(function (it) {
           var b = r.books[it.projectId] || { print: [], view: [] }, bk = b.book || {};
@@ -87,7 +88,7 @@
         }).join('') + '<p class="ao__msg">Print files: 000 = front cover, then the pages in order, last = back cover. Each page is ' + ((BOOK.trimW || 210) + 6) + ' × ' + ((BOOK.trimH || 280) + 6) + ' mm (3 mm bleed) at 300 dpi; the PDF’s TrimBox is ' + (BOOK.trimW || 210) + ' × ' + (BOOK.trimH || 280) + ' mm.</p></div></div>';
       wireTop(); document.getElementById('bk').onclick = drawList;
       var td = document.getElementById('tdel'); if (td) td.onclick = function () { if (!confirm('Delete test order ' + o.ref + ' and its files now?')) return; api('pbk-admin-delete', { ref: o.ref }).then(function () { all = all.filter(function (y) { return y.ref !== o.ref; }); drawList(); }, function (e) { alert(e.message); }); };
-      document.getElementById('sb').onclick = function () { api('pbk-admin-status', { ref: o.ref, status: document.getElementById('ss').value, note: document.getElementById('sn').value }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { alert(e.message); }); };
+      document.getElementById('sb').onclick = function () { api('pbk-admin-status', { ref: o.ref, status: document.getElementById('ss').value, note: document.getElementById('sn').value, notify: document.getElementById('se').checked }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { alert(e.message); }); };
       (o.items || []).forEach(function (it) {
         var b = r.books[it.projectId], el = root.querySelector('[data-pid="' + it.projectId + '"]'); if (!b || !el) return;
         var msg = el.querySelector('[data-msg]');

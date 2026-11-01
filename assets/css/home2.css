@@ -172,3 +172,9 @@
   .qb__go .btn{flex:1 1 0;min-width:0;padding:.85rem .6rem;font-size:.95rem;justify-content:center;white-space:nowrap}
   .qb__note{margin-top:.6rem;font-size:.82rem;min-height:0}
 }
+/* phones: tighter rhythm between the header, the eyebrow, the device mockups and the headline */
+@media(max-width:900px){
+  .hero{padding-top:1.2rem}
+  .hero__copy .eyebrow{margin-bottom:0}
+  .hero__art.hx{margin:1rem auto 1.5rem}
+}

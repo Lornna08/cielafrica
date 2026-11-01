@@ -35,7 +35,7 @@
   PBK.ICON = ICON;
   var ICON_EDIT = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>';
 
-  var V3 = '4';
+  var V3 = '5';
   function bookName(t, pi) { return t === 'blank' ? 'blank-' + (pi || 0) : t.kind === 'vector' ? t.cat + '-' + t.slug + '-' + (pi || 0) : 'travel-' + t.slug; }
   /** 3D book thumbnail (440×550) for a cover template. */
   function mockSrc(t, pi) { return '/assets/pbk/c/3/' + bookName(t, pi) + '.webp?v=' + V3; }
@@ -60,6 +60,7 @@
     document.body.classList.remove('pbk-editing');
     if (seg === 'design') { if (window.PBKEditor) PBKEditor.open(main); return; }
     if (seg === 'my-books') return myBooks();
+    if (seg === 'track') return track();
     if (seg === 'checkout') { if (window.PBKShop) PBKShop.checkout(main); return; }
     if (C.cat(seg) || seg === 'blank') return category(seg);
     landing();
@@ -186,7 +187,7 @@
       '<section class="pk-spec wrap"><div class="pk-spec__card"><div><span class="eyebrow"><span class="brk">‹</span> The book</span><h2>Price by pages</h2><p>Every book is a portrait hardcover, ' + esc(BOOK.size || '21 × 28 cm') + '. Start with ' + BOOK.pages.min + ' pages and add more as you go: the price depends on the number of pages.</p></div>' +
       '<div class="pk-calc"><label for="pkPages">Pages <output id="pkPagesOut">' + BOOK.pages.default + '</output></label><input type="range" id="pkPages" min="' + BOOK.pages.min + '" max="' + BOOK.pages.max + '" step="' + BOOK.pages.step + '" value="' + BOOK.pages.default + '"><div class="pk-calc__price" id="pkPrice">' + esc(priceLabel(BOOK.pages.default)) + '</div>' + (price(BOOK.pages.min) == null ? '<p class="pk-calc__note">Prices are being finalised. You can design and save your book now.</p>' : '') + '</div></div></section>' +
       trust() + faq() +
-      '<section class="wrap"><div class="pk-band"><h2>Ready to make yours?</h2><p>Choose a cover and start adding photos.</p><button class="btn btn--p btn--lg" data-pick>Create my photo book ' + ICON.arrow + '</button></div></section>';
+      '<section class="wrap"><div class="pk-band"><h2>Ready to make yours?</h2><p>Choose a cover and start adding photos.</p><button class="btn btn--p btn--lg" data-pick>Create my photo book ' + ICON.arrow + '</button><p class="pk-band__track">Already ordered? <a data-go href="' + BASE + '/track">Track your order</a> · <a data-go href="' + BASE + '/my-books">My books</a></p></div></section>';
     bindCommon(); flowStart(flow); continueCard(); if (window.PBKShop) PBKShop.resumeBanner(main);
     var r = document.getElementById('pkPages');
     if (r) r.addEventListener('input', function () { document.getElementById('pkPagesOut').textContent = r.value; document.getElementById('pkPrice').textContent = priceLabel(+r.value); });
@@ -276,7 +277,7 @@
         (w.sub || !t || t.kind === 'vector' ? '<label class="pk-fld"><span>Subtitle</span><input id="pkSu" maxlength="30" value="' + esc(st.cu.sub != null ? st.cu.sub : w.sub) + '" autocomplete="off"></label>' : '');
       if (w.year != null) h += '<label class="pk-fld pk-fld--yr"><span>Year</span><input id="pkYr" maxlength="9" inputmode="numeric" value="' + esc(st.cu.year != null ? st.cu.year : w.year) + '" autocomplete="off"></label>';
       if (canT || w.year != null) h += '<label class="pk-check"><input type="checkbox" id="pkSh"' + ((st.cu.sh != null ? +st.cu.sh : w.sh) ? ' checked' : '') + '><span>Shadow behind the words</span></label>';
-      if (!t) h += '<div class="pk-fld"><span>Sticker</span><div class="pk-stks" id="pkStks">' + ['', 'fl:two-hearts', 'fl:camera-with-flash', 'fl:airplane', 'fl:desert-island', 'fl:beach-with-umbrella', 'fl:sunflower', 'fl:bouquet', 'fl:birthday-cake', 'fl:balloon', 'fl:party-popper', 'fl:ring', 'fl:teddy-bear', 'fl:dog-face', 'fl:cat-face', 'fl:glowing-star', 'fl:rainbow', 'fl:red-heart', 'fl:lion', 'fl:giraffe', 'fl:elephant', 'fl:palm-tree', 'fl:camping', 'fl:house-with-garden', 'fl:wrapped-gift', 'fl:crown', 'fl:butterfly', 'fl:hibiscus', 'fl:clinking-glasses', 'fl:soft-ice-cream'].map(function (k) { return '<button type="button" data-stk="' + k + '"' + ((st.cu.stk || '') === k ? ' class="is-on"' : '') + ' aria-label="' + (k ? k.slice(3).replace(/-/g, ' ') : 'No sticker') + '">' + (k ? '<img src="/assets/pbk/fl/t/' + k.slice(3) + '.webp" alt="" loading="lazy" width="56" height="56">' : '<i>None</i>') + '</button>'; }).join('') + '</div><small class="pk-opt__note">More stickers, emoji and words in the editor.</small></div>';
+      if (!t) h += '<div class="pk-fld"><span>Artwork</span><div class="pk-stks" id="pkStks"><button type="button" data-stk=""' + (!st.cu.stk ? ' class="is-on"' : '') + ' aria-label="No artwork"><i>None</i></button>' + Object.keys(C.PH_ART).map(function (k) { var v = 'ph:' + k; return '<button type="button" data-stk="' + v + '"' + (st.cu.stk === v ? ' class="is-on"' : '') + ' aria-label="' + k + '"><img src="/assets/pbk/art2/s/' + k + '.webp" alt="" loading="lazy"></button>'; }).join('') + C.ORDER.map(function (id) { return C.TPL[id]; }).filter(function (x) { return x.layered; }).map(function (x) { var k = 'tr:' + x.slug; return '<button type="button" data-stk="' + k + '"' + (st.cu.stk === k ? ' class="is-on"' : '') + ' aria-label="' + esc(x.name) + '"><img src="' + x.artThumb + '" alt="" loading="lazy"></button>'; }).join('') + '</div><small class="pk-opt__note">More artwork, emoji and words in the editor.</small></div>';
       if (t && t.kind === 'vector') h += '<div class="pk-fld"><span>Colours</span>' + sw('pal', t.palettes, st.c, true) + '</div>';
       else if (canC) {
         var base = t ? t.bg : C.BLANK[st.c] || C.BLANK[0];
@@ -368,6 +369,34 @@
     var on = covers.querySelector('.is-on'); if (on && on.offsetTop > covers.clientHeight) covers.scrollTop = on.offsetTop - 8;
   }
 
+  /* ---------------- order tracking ---------------- */
+  function track() {
+    document.title = 'Track your order · Photo Books — Ciel Africa';
+    var q = new URLSearchParams(location.search), ref = q.get('ref') || '', tok = q.get('t') || '';
+    main.innerHTML = '<section class="pk-track wrap"><div class="pk-head"><span class="eyebrow"><span class="brk">‹</span> Photo Books</span><h1>Track your order</h1><p>Enter the order number from your email (it starts with PB-) and the phone number or email you ordered with.</p></div>' +
+      '<form class="pk-track__f" id="tkF"><label><span>Order number</span><input id="tkRef" placeholder="PB-XXXXXXXX" value="' + esc(ref) + '" autocomplete="off" required></label><label><span>Phone or email</span><input id="tkC" placeholder="0712 345 678 or you@email.com" autocomplete="email"' + (tok ? '' : ' required') + '></label><button class="btn btn--p btn--lg">Track order ' + ICON.arrow + '</button></form><div id="tkOut"></div></section>';
+    var f = document.getElementById('tkF'), out = document.getElementById('tkOut');
+    function go(useTok) {
+      out.innerHTML = '<p class="pk-empty">Looking up your order…</p>';
+      fetch('/api/photobooks?route=pbk-track', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'ciel' }, credentials: 'same-origin', body: JSON.stringify({ ref: document.getElementById('tkRef').value, contact: document.getElementById('tkC').value, t: useTok ? tok : undefined }) })
+        .then(function (r) { return r.json(); }).then(function (j) {
+          if (!j.ok) { out.innerHTML = '<p class="pk-track__err">' + esc(j.error || 'We couldn’t find that order.') + '</p>'; return; }
+          var o = j.order, print = o.items.some(function (i) { return i.product === 'print'; });
+          var steps = [['Paid', 0], ['Pages received', 1], ['Printing', 2], [o.status === 'ready_collection' ? 'Ready to collect' : 'On its way', 3], ['Delivered', 4]];
+          var when = function (t) { return t ? new Date(t).toLocaleString('en-KE', { dateStyle: 'medium', timeStyle: 'short' }) : ''; };
+          out.innerHTML = '<div class="pk-track__card"><div class="pk-track__top"><div><span class="pk-track__ref">' + esc(o.ref) + (o.test ? ' · TEST' : '') + '</span><h2>' + esc(o.label) + '</h2></div><b>' + money(o.total) + '</b></div>' +
+            (print && o.step >= 0 ? '<ol class="pk-track__steps">' + steps.map(function (s2) { return '<li class="' + (s2[1] < o.step ? 'is-done' : s2[1] === o.step ? 'is-now' : '') + '"><i></i><span>' + s2[0] + '</span></li>'; }).join('') + '</ol>' : '') +
+            (print && o.status === 'paid' ? '<div class="pk-track__todo"><b>We’re still waiting for your book’s pages.</b> They send from the phone or computer you designed the book on. Open <a data-go href="' + BASE + '/my-books">My books</a> there and tap <b>Send now</b>: it continues from where it stopped.</div>' : '') +
+            '<ul class="pk-track__items">' + o.items.map(function (i) { return '<li><b>' + esc(i.name) + '</b><span>' + (i.product === 'digital' ? 'Print-ready PDF' : 'Printed hardcover × ' + i.qty) + ' · ' + i.pages + ' pages</span></li>'; }).join('') + '</ul>' +
+            (o.delivery ? '<p class="pk-track__del">' + esc(o.delivery) + '</p>' : '') +
+            '<h3>History</h3><ul class="pk-track__hist">' + o.history.slice().reverse().map(function (h) { return '<li><b>' + esc(h.label) + '</b><span>' + when(h.at) + '</span></li>'; }).join('') + '</ul>' +
+            '<p class="pk-track__help">Questions? <a target="_blank" rel="noopener" href="https://wa.me/254706549703?text=' + encodeURIComponent('Hello Ciel Africa, about my photo book order ' + o.ref) + '">WhatsApp us</a> or email hello@cielafrica.com.</p></div>';
+        }, function () { out.innerHTML = '<p class="pk-track__err">Can’t reach Ciel Africa right now. Check your connection and try again.</p>'; });
+    }
+    f.addEventListener('submit', function (e) { e.preventDefault(); go(false); });
+    if (ref && tok) go(true);
+  }
+
   /* ---------------- template chooser (modal) ---------------- */
   var dlg;
   PBK.pick = function (cat, onPick) {
@@ -423,6 +452,14 @@
       list.forEach(function (p) {
         var cv = box.querySelector('canvas[data-p="' + p.id + '"]'); if (!cv || !p.cover) return; C.fixCover(p.cover, p.tpl);
         R.renderBook(p.cover, C.spineFor(p.cover, p.tpl, p.pal), { pages: (p.pages || []).length, photo: function () { return null; } }).then(function (m) { cv.width = m.width; cv.height = m.height; cv.getContext('2d').drawImage(m, 0, 0); }).catch(function () {});
+      });
+      if (window.PBKShop) PBKShop.purchases().then(function (pl) {
+        pl.forEach(function (pu) {
+          var card = box.querySelector('canvas[data-p="' + pu.projectId + '"]'); card = card && card.closest('.pk-myb'); if (!card) return;
+          var info = document.createElement('div'); info.className = 'pk-myb__paid' + (pu.product === 'print' && !pu.done ? ' is-todo' : '');
+          info.innerHTML = pu.product === 'print' ? (pu.done ? '✓ Order ' + esc(pu.ref) + ': pages sent to Ciel Africa. <a data-go href="' + BASE + '/track?ref=' + encodeURIComponent(pu.ref) + '">Track order</a>' : 'Order ' + esc(pu.ref) + ' is paid, but its pages haven’t finished sending. <a class="btn btn--p btn--sm" data-go href="' + BASE + '/checkout?sent=' + encodeURIComponent(pu.ref) + '">Send now</a>') : '✓ PDF paid (' + esc(pu.ref) + ')';
+          card.querySelector('div').appendChild(info);
+        });
       });
       box.querySelectorAll('[data-del]').forEach(function (b) {
         b.addEventListener('click', function () {

@@ -262,11 +262,24 @@
           "value": "strict-origin-when-cross-origin"
         }
       ]
+    },
+    {
+      "source": "/admin-content",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        }
+      ]
     }
   ],
   "rewrites": [
     {
-      "source": "/photobooks/:page(travel|kenya|event|couple|friends|baby|pets|family|year|someone|blank|design|my-books|checkout)",
+      "source": "/photobooks/:page(travel|kenya|event|couple|friends|baby|pets|family|year|someone|blank|design|my-books|checkout|track)",
       "destination": "/photobooks"
     },
     {
@@ -304,6 +317,10 @@
     {
       "source": "/muse/portfolio/:chapter(portraits|beauty|editorial|campaigns)",
       "destination": "/muse/portfolio"
+    },
+    {
+      "source": "/admin/content",
+      "destination": "/admin-content"
     }
   ],
   "redirects": [

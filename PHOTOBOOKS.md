@@ -117,12 +117,11 @@ The landing page examples use licensed Unsplash photos already in this repo; cre
 - **Covers.** The CIEL AFRICA mark is drawn by the renderer on every front cover (small, near the bottom edge);
   it was removed from the travel artwork. Years are live text (2026 by default) and can be changed on the
   category page and in the editor; Year covers carry a year too. "Shadow behind the words" is a real,
-  visible drop shadow and can be switched on or off. Illustrated covers use Fluent Emoji artwork (MIT,
-  `assets/pbk/fl/LICENSE.txt`).
+  visible drop shadow and can be switched on or off.
 - **Back cover** (`PBKShop.backDoc`): cover colour, a map sticker of the place for travel and Kenya covers
   (`assets/pbk/maps/`), the cover's own artwork for the others, and cielafrica.com / hello@cielafrica.com
   bottom right.
-- **Editor.** Illustrated, travel, emoji, word and classic sticker sets; 26 fonts (loaded on demand); lock;
+- **Editor.** Artwork (travel cut-outs), emoji and word stickers; 26 fonts (loaded on demand); lock;
   movable empty frames; photos dragged from the library onto frames or onto pages in the strip (press and
   hold on phones); uploaded stickers can be cropped, adjusted and cut out; "Undo edit" and "Original" per photo.
 - **Preview.** Always an open book (two pages), also on phones; no page shake; no pinch zoom.
@@ -131,3 +130,15 @@ The landing page examples use licensed Unsplash photos already in this repo; cre
   `/photobooks/orders`, and the server only accepts its KES 5 price (`book.testPrice`) with the admin session.
   Test orders are marked TEST and are deleted with their files after 24 hours (when the inbox loads, and by the
   daily cron `/api/photobooks?route=pbk-cron`; set `CRON_SECRET` in Vercel to lock that route to Vercel's cron).
+
+## Ciel HQ (/admin) and order follow-up
+
+- `/admin` is **Ciel HQ**: overview (revenue, orders to handle, what needs attention), all orders in one list
+  (photo books, website shop, domains), calendar, task board, customers with notes, and links to every tool.
+  Sign-in is checked on the server with `ADMIN_PASSWORD`; the same session works for Photo Book orders and Domains.
+  Data: `lib/hq/handler.js` (`/api/hq`), private Blob `hq/*.json`; shop orders are recorded by `/api/stkquery`
+  in `shop/orders/` when M-Pesa confirms a payment. The old content manager is at `/admin/content`.
+- Customers can track an order at `/photobooks/track` (order number + phone or email, or the signed link in
+  their emails). Status changes made in HQ or Photo Book orders email the customer (branded template:
+  `lib/photobooks/mail.js`).
+- Cover artwork: four covers use photo cut-outs from Unsplash (`assets/pbk/art2/CREDITS.txt`).

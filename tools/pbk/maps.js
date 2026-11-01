@@ -41,9 +41,9 @@ function build(name, lat, lon, hi) {
 }
 function svg(m, fill, pinC) {
   const [px, py] = m.pin;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600"><defs><filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="7"/></filter></defs>` +
-    `<path d="${m.d}" transform="translate(5 9)" fill="#000" fill-opacity=".22" stroke="#000" stroke-opacity=".22" stroke-width="26" stroke-linejoin="round" filter="url(#s)"/>` +
-    `<path d="${m.d}" fill="#fff" stroke="#fff" stroke-width="26" stroke-linejoin="round"/>` +
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600"><defs><filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="9"/></filter></defs>` +
+    `<path d="${m.d}" transform="translate(6 12)" fill="#000" fill-opacity=".22" stroke="#000" stroke-opacity=".22" stroke-width="34" stroke-linejoin="round" filter="url(#s)"/>` +
+    `<path d="${m.d}" fill="#fff" stroke="#fff" stroke-width="34" stroke-linejoin="round"/>` +
     `<path d="${m.d}" fill="${fill}"/>` +
     `<g transform="translate(${px.toFixed(1)} ${py.toFixed(1)})"><path d="M0 0C-6-14-24-26-24-44A24 24 0 0 1 24-44C24-26 6-14 0 0Z" fill="#000" fill-opacity=".25" transform="translate(3 4)"/><path d="M0 0C-6-14-24-26-24-44A24 24 0 0 1 24-44C24-26 6-14 0 0Z" fill="${pinC}" stroke="#fff" stroke-width="6" stroke-linejoin="round"/><circle cy="-44" r="8.5" fill="#fff"/></g></svg>`;
 }

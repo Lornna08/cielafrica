@@ -70,18 +70,23 @@
     var map = null;
     if (t && t.kind === 'raster' && t.slug !== 'asia') map = '/assets/pbk/maps/' + t.slug + '.svg';
     else if (t && t.cat === 'kenya') map = '/assets/pbk/maps/kenya-' + t.slug + '-' + (p.pal || 0) + '.svg';
-    if (map) { doc.els.push({ id: 'map', t: 'img', src: map, x: 330, y: 540, w: 440, h: 440 }); return doc; }
+    if (map) {
+      doc.els.push({ id: 'map', t: 'img', src: map, x: 210, y: 380, w: 680, h: 680 });
+      var lab = t.cat === 'kenya' ? ({ nairobi: 'NAIROBI · KENYA', mombasa: 'MOMBASA · KENYA', serengeti: 'SERENGETI' }[t.slug] || 'KENYA') : t.name.toUpperCase();
+      doc.els.push({ id: 'place', t: 'text', role: 'place', text: lab, x: 200, y: 1100, w: 700, h: 44, cap: 40, align: 'center', font: 'spartan', color: brand, ls: 0.18 });
+      return doc;
+    }
     var art = (c.els || []).filter(function (e) { return e.id === 'art' && (e.t === 'art' || (e.t === 'img' && e.src)); })[0];
     if (!art && t && t.layered) art = { t: 'img', src: t.art, w: t.artBox[2], h: t.artBox[3] };
     if (art) {
-      var k = Math.min(400 / art.w, 400 / art.h), w = art.w * k, h = art.h * k;
-      var e = { id: 'art', t: art.t, x: 550 - w / 2, y: 760 - h / 2, w: w, h: h }; if (art.t === 'art') e.art = art.art; else e.src = art.src;
+      var k = Math.min(560 / art.w, 560 / art.h), w = art.w * k, h = art.h * k;
+      var e = { id: 'art', t: art.t, x: 550 - w / 2, y: 740 - h / 2, w: w, h: h }; if (art.t === 'art') e.art = art.art; else e.src = art.src;
       doc.els.push(e);
     }
     return doc;
   }
   /** docs in print order: front cover, pages…, back cover */
-  function docs(p) { C.fixCover(p.cover, p.tpl); return [p.cover].concat(p.pages).concat([backDoc(p)]); }
+  function docs(p) { C.fixCover(p.cover, p.tpl); return [p.cover].concat(p.pages).concat([p.back || backDoc(p)]); }
   /** a page at trim size (px wide), optionally with bleed (mirrored edges) */
   function renderPage(doc, src, px, bleedPx) {
     return src.load(doc).then(function () { return R.toCanvas(doc, px, { photo: src.url, empty: 'none' }); }).then(function (c) {
@@ -163,6 +168,18 @@
     });
   }
 
+  /** a rough upload time for printed books: pages × (render + upload), more photos take longer */
+  function sendEstimate(projects) {
+    var sec = 0;
+    (projects || []).forEach(function (p) {
+      if (!p) return; var docs2 = [p.cover].concat(p.pages).concat([p.back || {}]), photos = 0;
+      docs2.forEach(function (d) { (d.els || []).forEach(function (e) { if (e.photo) photos++; }); });
+      sec += docs2.length * 4 + photos * 1.5;
+    });
+    if (!sec) return '';
+    var lo = Math.max(1, Math.round(sec / 60)), hi = Math.max(lo + 1, Math.round(sec * 2 / 60));
+    return lo + '–' + hi + ' minutes';
+  }
   /* ---------- checkout page ---------- */
   var DEL = (CFG.delivery || []).filter(function (d) { return d.enabled !== false; });
   function checkout(main) {
@@ -170,7 +187,8 @@
     var q = new URLSearchParams(location.search);
     if (q.get('sent')) return afterPay(main, q.get('sent'));
     main.innerHTML = '<section class="pkco wrap"><div class="crumb"><a data-go href="' + BASE + '">Photo Books</a> <span class="brk">‹</span> Checkout</div><h1>Checkout</h1><div class="pkco__grid"><div class="pkco__main" id="coMain"><p class="pk-empty">Loading your cart…</p></div><aside class="pkco__side" id="coSide"></aside></div></section>';
-    var st = { delivery: (DEL.filter(function (d) { return d.id === 'collect'; })[0] || DEL[0] || {}).id, f: {} };
+    var st = { delivery: (DEL.filter(function (d) { return d.id === 'nairobi'; })[0] || DEL[0] || {}).id, f: {} };
+    try { var ld = localStorage.getItem('pbk_delivery'); if (ld && DEL.some(function (d) { return d.id === ld; })) st.delivery = ld; } catch (e) { }
     try { Object.assign(st.f, JSON.parse(localStorage.getItem('pbk_details') || '{}')); } catch (e) { }
     Promise.all([sync(), caps()]).then(function (r) {
       var rows = r[0], cp = r[1];
@@ -179,8 +197,10 @@
     });
     function draw(rows, cp) {
       var test = rows.some(function (r) { return r.item.pb.test; });
-      var anyPrint = !test && rows.some(function (r) { return r.item.pb.product === 'print'; }), missing = rows.filter(function (r) { return !r.project; });
+      var anyPrint = rows.some(function (r) { return r.item.pb.product === 'print'; }), missing = rows.filter(function (r) { return !r.project; });
       var del = DEL.filter(function (d) { return d.id === st.delivery; })[0] || DEL[0];
+      if (test && del) del = Object.assign({}, del, { price: 0 });
+      var eta = sendEstimate(rows.filter(function (r) { return r.item.pb.product === 'print'; }).map(function (r) { return r.project; }));
       var lines = rows.map(function (r) { return { label: r.item.name + ' · ' + (r.item.pb.product === 'digital' ? 'PDF' : 'Printed') + ' · ' + r.item.pb.pages + ' pages', amount: r.item.price, qty: r.item.qty }; });
       var total = lines.reduce(function (s, l) { return s + l.amount * l.qty; }, 0) + (anyPrint && del ? (del.price || 0) : 0);
       document.getElementById('coMain').innerHTML =
@@ -191,15 +211,16 @@
             (r.project ? '' : '<p class="pkco__warn">This book isn’t saved on this device. Open checkout on the phone or computer you designed it on.</p>') +
             '</div><div class="pkco__end">' + (pr === 'print' && !it.pb.test ? '<div class="pkco__qty"><button data-q="-1" aria-label="One less">−</button><span>' + it.qty + '</span><button data-q="1" aria-label="One more">+</button></div>' : '') + '<b>' + money(it.price * it.qty) + '</b><button class="pkco__rm" data-rm>Remove</button></div></div>';
         }).join('') +
-        (anyPrint ? '<h2 class="pkco__h">Delivery</h2><div class="pkco__del">' + DEL.map(function (d) { return '<label class="pkco__opt' + (d.id === st.delivery ? ' is-on' : '') + '"><input type="radio" name="del" value="' + d.id + '"' + (d.id === st.delivery ? ' checked' : '') + '><span>' + esc(d.name) + '</span><b>' + (d.price ? money(d.price) : 'Free') + '</b></label>'; }).join('') + '</div><p class="pkco__note">Printing and delivery usually take 5–10 working days. We’ll confirm by email and WhatsApp.</p>' : '') +
+        (anyPrint ? '<h2 class="pkco__h">Delivery</h2><div class="pkco__del">' + DEL.map(function (d) { return '<label class="pkco__opt' + (d.id === st.delivery ? ' is-on' : '') + '"><input type="radio" name="del" value="' + d.id + '"' + (d.id === st.delivery ? ' checked' : '') + '><span>' + esc(d.name) + '</span><b>' + (d.price && !test ? money(d.price) : 'Free') + '</b></label>'; }).join('') + '</div><p class="pkco__note">Printing and delivery usually take 5–10 working days. We’ll confirm by email and WhatsApp.</p>' : '') +
         '<h2 class="pkco__h">Is this a gift?</h2><div class="pkco__gift"><label class="pkco__opt' + (!st.gift ? ' is-on' : '') + '"><input type="radio" name="gift" value="0"' + (!st.gift ? ' checked' : '') + '><span>No, it’s for me</span></label><label class="pkco__opt' + (st.gift ? ' is-on' : '') + '"><input type="radio" name="gift" value="1"' + (st.gift ? ' checked' : '') + '><span>Yes, it’s a gift for someone 🎁</span></label></div>' +
         (st.gift ? '<div class="pkco__form pkco__form--gift">' + fld('gto', 'Who is it for?', 'text', 'off', 'Their name') + (anyPrint && del && del.needsAddress ? fld('gphone', 'Their phone (for delivery)', 'tel', 'off', 'Optional') : '') + '<label class="pkco__f pkco__f--full"><span>Gift message (optional)</span><textarea data-f="gnote" rows="3" maxlength="400" placeholder="Write a short message">' + esc(st.f.gnote || '') + '</textarea></label></div>' : '') +
         '<h2 class="pkco__h">Your details</h2><div class="pkco__form">' +
         fld('name', 'Full name', 'text', 'name') + fld('phone', 'M-Pesa phone number', 'tel', 'tel', '0712 345 678') + fld('email', 'Email (for your receipt)', 'email', 'email') +
-        (anyPrint && del && del.needsAddress ? fld('line1', 'Street address or building', 'text', 'address-line1') + fld('area', 'Area / estate', 'text', 'address-line2') + fld('town', 'Town', 'text', 'address-level2') + fld('county', 'County', 'text', 'address-level1') + fld('notes', 'Delivery notes (optional)', 'text', 'off') : '') + '</div>';
+        (anyPrint && del && del.needsAddress ? '</div><h2 class="pkco__h">Delivery address</h2><p class="pkco__note">Where should we bring your book?</p><div class="pkco__form">' + fld('line1', 'Street address or building', 'text', 'address-line1') + fld('area', 'Area / estate', 'text', 'address-line2') + fld('town', 'Town', 'text', 'address-level2') + fld('county', 'County', 'text', 'address-level1') + fld('notes', 'Delivery notes (optional)', 'text', 'off') : '') + '</div>';
       document.getElementById('coSide').innerHTML = '<div class="pkco__sum"><h3>Order summary</h3>' + lines.map(function (l) { return '<div class="pkco__ln"><span>' + esc(l.label) + (l.qty > 1 ? ' × ' + l.qty : '') + '</span><b>' + money(l.amount * l.qty) + '</b></div>'; }).join('') +
         (anyPrint && del ? '<div class="pkco__ln"><span>' + esc(del.name) + '</span><b>' + (del.price ? money(del.price) : 'Free') + '</b></div>' : '') +
         '<div class="pkco__tot"><span>Total</span><b>' + money(total) + '</b></div>' +
+        (eta ? '<div class="pkco__eta"><b>After you pay</b><span>Your book’s pages upload from this device so we can print them: about ' + eta + ' on a good connection. More photos and pages take longer. Keep this page open; if it stops, open <a data-go href="' + BASE + '/my-books">My books</a> on this device and tap <b>Send now</b>.</span></div>' : '') +
         (cp.payments ? '<button class="btn btn--p btn--lg pkco__pay" id="coPay"' + (missing.length ? ' disabled' : '') + '>Pay ' + money(total) + ' with M-Pesa</button><p class="pkco__small">You’ll get a prompt on your phone. Enter your M-Pesa PIN to pay.</p>' : '<p class="pkco__warn">M-Pesa checkout is not available right now. Order on WhatsApp below.</p>') +
         '<div class="pkco__or"><span>or</span></div><a class="btn btn--ghost pkco__wa" id="coWa" target="_blank" rel="noopener">Order on WhatsApp</a><p class="pkco__small">We’ll reply with how to pay and send your book.</p><div id="coStatus"></div></div>';
       var M = document.getElementById('coMain');
@@ -209,7 +230,7 @@
         el.querySelectorAll('[data-q]').forEach(function (b) { b.onclick = function () { var it = CIEL.cart.items().filter(function (x) { return x.id === id; })[0]; CIEL.cart.setQty(id, Math.min(CFG.maxQuantity || 10, it.qty + +b.getAttribute('data-q'))); refresh(); }; });
         var rm = el.querySelector('[data-rm]'); rm.onclick = function () { CIEL.cart.remove(id); refresh(); };
       });
-      M.querySelectorAll('[name=del]').forEach(function (r2) { r2.onchange = function () { keep(); st.delivery = r2.value; draw(rows.map(function (x) { return { item: CIEL.cart.items().filter(function (y) { return y.id === x.item.id; })[0] || x.item, project: x.project }; }), cp); }; });
+      M.querySelectorAll('[name=del]').forEach(function (r2) { r2.onchange = function () { keep(); st.delivery = r2.value; try { localStorage.setItem('pbk_delivery', r2.value); } catch (e) { } draw(rows.map(function (x) { return { item: CIEL.cart.items().filter(function (y) { return y.id === x.item.id; })[0] || x.item, project: x.project }; }), cp); }; });
       M.querySelectorAll('[data-f]').forEach(function (i) { i.addEventListener('input', keep); });
       M.querySelectorAll('[name=gift]').forEach(function (r2) { r2.onchange = function () { keep(); st.gift = r2.value === '1'; draw(rows, cp); }; });
       function waText() {
@@ -265,16 +286,32 @@
           (pu.product === 'print' ? (cp.uploads ? '<div class="pkco__prog"><i style="width:' + (pu.done ? 100 : 0) + '%"></i></div><p class="pkco__small" data-msg>' + (pu.done ? 'Your pages have reached Ciel Africa. We’ll be in touch when it goes to print.' : 'Sending your pages to Ciel Africa. Keep this page open — it takes a few minutes.') + '</p>' + (pu.done ? '' : '<button class="btn btn--p btn--sm" data-send>Send my book now</button>')
             : '<p class="pkco__small">Download your print file and send it to us on WhatsApp (+254 706 549 703) or hello@cielafrica.com, quoting ' + esc(ref) + '.</p><button class="btn btn--p btn--sm" data-pdf="bleed">Download print file</button>')
             : '<button class="btn btn--p btn--sm" data-pdf>Download PDF</button><p class="pkco__small" data-msg></p>') + '</div></div>';
-      }).join('') + '<div class="pkco__acts"><a class="btn btn--ghost" data-go href="' + BASE + '/my-books">My books</a><a class="btn btn--ghost" target="_blank" rel="noopener" href="https://wa.me/' + WA + '?text=' + encodeURIComponent('Hello Ciel Africa, about my photo book order ' + ref) + '">Questions? WhatsApp us</a></div>';
+      }).join('') + '<div class="pkco__acts"><a class="btn btn--dark" data-go href="' + BASE + '/track?ref=' + encodeURIComponent(ref) + '">Track this order</a><a class="btn btn--ghost" data-go href="' + BASE + '/my-books">My books</a><a class="btn btn--ghost" target="_blank" rel="noopener" href="https://wa.me/' + WA + '?text=' + encodeURIComponent('Hello Ciel Africa, about my photo book order ' + ref) + '">Questions? WhatsApp us</a></div>';
       list.forEach(function (pu) {
         var el = box.querySelector('[data-pu="' + pu.id + '"]'), msg = el.querySelector('[data-msg]'), bar = el.querySelector('.pkco__prog i');
         var sb = el.querySelector('[data-send]');
+        var sending = false;
         function send() {
+          if (sending) return; sending = true;
           if (sb) sb.disabled = true;
-          sendPages(pu, function (d, t) { if (bar) bar.style.width = Math.round(d / t * 100) + '%'; if (msg) msg.textContent = d >= t ? 'Done — your pages have reached Ciel Africa.' : 'Sending page ' + Math.min(t, Math.ceil(d / 2) + 1) + ' of ' + Math.ceil(t / 2) + '… keep this page open.'; })
-            .then(function () { if (sb) sb.remove(); })
-            .catch(function (e) { if (msg) msg.textContent = (e.message || 'Sending stopped.') + ' Tap “Send my book now” to continue.'; if (sb) sb.disabled = false; });
+          var t0 = Date.now(), d0 = null;
+          window.addEventListener('beforeunload', warn);
+          sendPages(pu, function (d, t) {
+            if (d0 == null) d0 = d;
+            if (bar) bar.style.width = Math.round(d / t * 100) + '%';
+            if (!msg) return;
+            if (d >= t) { msg.textContent = 'Done — your pages have reached Ciel Africa.'; return; }
+            var left = '', done = d - d0; if (done > 1) { var s2 = (Date.now() - t0) / done * (t - d) / 1000; left = s2 > 90 ? ' About ' + Math.round(s2 / 60) + ' min left.' : ' Less than ' + Math.max(1, Math.ceil(s2 / 60)) + ' min left.'; }
+            msg.textContent = 'Sending page ' + Math.min(Math.ceil(t / 2), Math.ceil(d / 2) + 1) + ' of ' + Math.ceil(t / 2) + '… keep this page open.' + left;
+          })
+            .then(function () { sending = false; window.removeEventListener('beforeunload', warn); if (sb) sb.remove(); })
+            .catch(function (e) {
+              sending = false; window.removeEventListener('beforeunload', warn); if (sb) sb.disabled = false;
+              if (!navigator.onLine) { if (msg) msg.textContent = 'Your connection dropped. Sending continues by itself when you’re back online; everything sent so far is kept.'; window.addEventListener('online', send, { once: true }); return; }
+              if (msg) msg.textContent = (e.message || 'Sending stopped.') + ' Tap “Send my book now” to continue from where it stopped. You can also come back later: My books → Send now, on this device.';
+            });
         }
+        function warn(ev) { ev.preventDefault(); ev.returnValue = 'Your book is still sending. Leave anyway?'; return ev.returnValue; }
         if (sb) { sb.onclick = send; if (!pu.done) send(); }
         var pb = el.querySelector('[data-pdf]');
         if (pb) pb.onclick = function () {

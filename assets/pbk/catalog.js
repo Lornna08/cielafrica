@@ -27,43 +27,45 @@
     ['kenya', 'serengeti', 'Serengeti', 'SERENGETI', 'SAFARI', 'serengeti', [['#fbe3b5', '#3b2314', '#e0601b'], ['#3b2314', '#ffb23d', '#fbe3b5'], ['#f2c7a5', '#8a2f12', '#3b2314']]],
     ['kenya', 'kenya', 'Kenya', 'KENYA', 'KARIBU', 'shield', [['#f3eee2', '#141414', '#c8102e'], ['#0f5c3a', '#ffffff', '#f2c14e'], ['#c8102e', '#ffffff', '#141414']]],
     ['kenya', 'kenya-wild', 'Kenya Wild', 'KENYA', 'WILD', 'lion', [['#f6d58e', '#7a3a10', '#ffffff'], ['#2e3b2a', '#f6c06a', '#ffffff'], ['#fff3dc', '#b5541a', '#2e3b2a']]],
-    ['couple', 'our-story', 'Our Story', 'OUR STORY', 'TOGETHER', 'fl:two-hearts', [['#fbd3dc', '#c8102e', '#ffffff'], ['#c8102e', '#fbd3dc', '#ffffff'], ['#f6efe6', '#a3122a', '#e48aa0']]],
-    ['couple', 'amour', 'Amour', 'AMOUR', 'FOREVER', 'fl:sparkling-heart', [['#f7e9e1', '#c8102e', '#e48aa0'], ['#a8d8f0', '#c8102e', '#ffffff'], ['#1d1d1f', '#ff5a6a', '#ffffff']]],
-    ['couple', 'you-and-me', 'You & Me', 'YOU & ME', 'SWEET LOVE', 'fl:cherries', [['#ffffff', '#c8102e', '#4f7a2a'], ['#fde2e4', '#c8102e', '#4f7a2a'], ['#c8e6c9', '#c8102e', '#ffffff']]],
-    ['event', 'cheers', 'Cheers', 'CHEERS', 'CELEBRATE', 'fl:clinking-glasses', [['#12324a', '#f6d27a', '#ffffff'], ['#e8577e', '#fff3c4', '#ffffff'], ['#2b2b2b', '#f6d27a', '#ff8aa8']]],
-    ['event', 'wedding', 'Wedding', 'WEDDING', 'THE BIG DAY', 'fl:ring', [['#f6f1e7', '#2b2b2b', '#b9831e'], ['#dfe9e1', '#2f4a3a', '#b9831e'], ['#1f2a44', '#f3d27a', '#ffffff']]],
-    ['event', 'party', 'Party', 'PARTY', 'ALL NIGHT', 'fl:mirror-ball', [['#ff4f9a', '#ffffff', '#ffe27a'], ['#1b1b2f', '#ff4f9a', '#5bd1e8'], ['#7c3aed', '#ffe27a', '#ffffff']]],
-    ['event', 'birthday', 'Birthday', 'BIRTHDAY', 'HOORAY', 'fl:birthday-cake', [['#fff1d6', '#e2386a', '#1f8fd1'], ['#cfe8ff', '#1f3c74', '#e2386a'], ['#e2386a', '#ffffff', '#ffd76a']]],
-    ['friends', 'besties', 'Besties', 'BESTIES', 'FOREVER', 'fl:smiling-face-with-sunglasses', [['#ffd25e', '#ff3e8a', '#ffffff'], ['#9fe0f2', '#ff3e8a', '#0c3f66'], ['#ff4f9a', '#ffffff', '#ffe27a']]],
-    ['friends', 'friends', 'Friends', 'FRIENDS', 'SUMMER', 'fl:soft-ice-cream', [['#fff1d6', '#ff6f91', '#2fb39a'], ['#ffb3c7', '#ffffff', '#c8102e'], ['#2fb39a', '#fff1d6', '#ffb3c7']]],
-    ['friends', 'girls-trip', 'Girls Trip', 'GIRLS TRIP', 'CHEERS', 'fl:tropical-drink', [['#2d2a5a', '#ff9ab8', '#5fd0c5'], ['#ffe3ec', '#e2386a', '#2fb39a'], ['#1d7fae', '#ffffff', '#ffd25e']]],
-    ['baby', 'hello-baby', 'Hello Baby', 'HELLO BABY', 'LITTLE ONE', 'fl:teddy-bear', [['#dcefff', '#2f6fa8', '#94602f'], ['#ffe4ec', '#d65a84', '#94602f'], ['#f4ecdf', '#94602f', '#5aaee0']]],
-    ['baby', 'first-year', 'First Year', 'FIRST YEAR', 'OUR BABY', 'fl:baby-bottle', [['#fff6ea', '#f06a91', '#7a5a4a'], ['#e3f1e8', '#3f8a6a', '#f06a91'], ['#cfe8ff', '#2f6fa8', '#f06a91']]],
-    ['baby', 'little-one', 'Little Walks', 'LITTLE ONE', 'NEW ADVENTURES', 'fl:hatching-chick', [['#fff1d6', '#2f80ed', '#e2386a'], ['#ffe4ec', '#3d4a56', '#5fb3dc'], ['#e3f1e8', '#2f6e5a', '#5fb3dc']]],
-    ['pets', 'good-boy', 'Good Boy', 'GOOD BOY', 'DOG DAYS', 'fl:dog-face', [['#86d6e8', '#ffffff', '#c8661f'], ['#fff1d6', '#c8661f', '#2f6e5a'], ['#ffd25e', '#3d2a1e', '#ffffff']]],
-    ['pets', 'meow', 'Meow', 'MEOW', 'CAT LIFE', 'fl:cat-face', [['#f6d34a', '#2d2d33', '#e2386a'], ['#ffb3c7', '#2d2d33', '#ffffff'], ['#e6e1d8', '#2d2d33', '#e2386a']]],
+    ['couple', 'our-story', 'Our Story', 'OUR STORY', 'TOGETHER', 'heart-balloons', [['#fbd3dc', '#c8102e', '#ffffff'], ['#c8102e', '#fbd3dc', '#ffffff'], ['#f6efe6', '#a3122a', '#e48aa0']]],
+    ['couple', 'amour', 'Amour', 'AMOUR', 'FOREVER', 'heart', [['#f7e9e1', '#c8102e', '#e48aa0'], ['#a8d8f0', '#c8102e', '#ffffff'], ['#1d1d1f', '#ff5a6a', '#ffffff']]],
+    ['couple', 'you-and-me', 'You & Me', 'YOU & ME', 'SWEET LOVE', 'cherries', [['#ffffff', '#c8102e', '#4f7a2a'], ['#fde2e4', '#c8102e', '#4f7a2a'], ['#c8e6c9', '#c8102e', '#ffffff']]],
+    ['event', 'cheers', 'Cheers', 'CHEERS', 'CELEBRATE', 'champagne', [['#12324a', '#f6d27a', '#ffffff'], ['#e8577e', '#fff3c4', '#ffffff'], ['#2b2b2b', '#f6d27a', '#ff8aa8']]],
+    ['event', 'wedding', 'Wedding', 'WEDDING', 'THE BIG DAY', 'ph:rings', [['#f6f1e7', '#2b2b2b', '#b9831e'], ['#dfe9e1', '#2f4a3a', '#b9831e'], ['#1f2a44', '#f3d27a', '#ffffff']]],
+    ['event', 'party', 'Party', 'PARTY', 'ALL NIGHT', 'disco', [['#ff4f9a', '#ffffff', '#ffe27a'], ['#1b1b2f', '#ff4f9a', '#5bd1e8'], ['#7c3aed', '#ffe27a', '#ffffff']]],
+    ['event', 'birthday', 'Birthday', 'BIRTHDAY', 'HOORAY', 'balloons', [['#fff1d6', '#e2386a', '#1f8fd1'], ['#cfe8ff', '#1f3c74', '#e2386a'], ['#e2386a', '#ffffff', '#ffd76a']]],
+    ['friends', 'besties', 'Besties', 'BESTIES', 'FOREVER', 'sunglasses', [['#ffd25e', '#ff3e8a', '#ffffff'], ['#9fe0f2', '#ff3e8a', '#0c3f66'], ['#ff4f9a', '#ffffff', '#ffe27a']]],
+    ['friends', 'friends', 'Friends', 'FRIENDS', 'SUMMER', 'icecreams', [['#fff1d6', '#ff6f91', '#2fb39a'], ['#ffb3c7', '#ffffff', '#c8102e'], ['#2fb39a', '#fff1d6', '#ffb3c7']]],
+    ['friends', 'girls-trip', 'Girls Trip', 'GIRLS TRIP', 'CHEERS', 'cocktails', [['#2d2a5a', '#ff9ab8', '#5fd0c5'], ['#ffe3ec', '#e2386a', '#2fb39a'], ['#1d7fae', '#ffffff', '#ffd25e']]],
+    ['baby', 'hello-baby', 'Hello Baby', 'HELLO BABY', 'LITTLE ONE', 'teddy', [['#dcefff', '#2f6fa8', '#94602f'], ['#ffe4ec', '#d65a84', '#94602f'], ['#f4ecdf', '#94602f', '#5aaee0']]],
+    ['baby', 'first-year', 'First Year', 'FIRST YEAR', 'OUR BABY', 'onesie', [['#fff6ea', '#f06a91', '#7a5a4a'], ['#e3f1e8', '#3f8a6a', '#f06a91'], ['#cfe8ff', '#2f6fa8', '#f06a91']]],
+    ['baby', 'little-one', 'Little Walks', 'LITTLE ONE', 'NEW ADVENTURES', 'stroller', [['#fff1d6', '#2f80ed', '#e2386a'], ['#ffe4ec', '#3d4a56', '#5fb3dc'], ['#e3f1e8', '#2f6e5a', '#5fb3dc']]],
+    ['pets', 'good-boy', 'Good Boy', 'GOOD BOY', 'DOG DAYS', 'ph:puppy', [['#86d6e8', '#ffffff', '#c8661f'], ['#fff1d6', '#c8661f', '#2f6e5a'], ['#ffd25e', '#3d2a1e', '#ffffff']]],
+    ['pets', 'meow', 'Meow', 'MEOW', 'CAT LIFE', 'ph:cat', [['#f6d34a', '#2d2d33', '#e2386a'], ['#ffb3c7', '#2d2d33', '#ffffff'], ['#e6e1d8', '#2d2d33', '#e2386a']]],
     ['pets', 'paws', 'Paws', 'PAWS', 'BEST FRIEND', 'paw', [['#fff1d6', '#c8661f', '#3d2a1e'], ['#c9e7d6', '#3d2a1e', '#ffffff'], ['#f2a5b5', '#3d2a1e', '#ffffff']]],
-    ['family', 'home', 'Home', 'FAMILY', 'HOME SWEET HOME', 'fl:house-with-garden', [['#f8e8c8', '#c4512b', '#2f6e5a'], ['#9fd6ef', '#ffffff', '#c4512b'], ['#2f6e5a', '#f8e8c8', '#f3c34c']]],
-    ['family', 'roots', 'Roots', 'OUR FAMILY', 'ROOTS & LOVE', 'fl:deciduous-tree', [['#f4efe4', '#3f7a22', '#e2386a'], ['#fde2e4', '#7a4a26', '#3f7a22'], ['#3f7a22', '#ffffff', '#ffd25e']]],
-    ['year', '365-days', '365 Days', '365 DAYS', 'IN PICTURES', 'fl:spiral-calendar', [['#fff1d6', '#e5383b', '#2f80ed'], ['#e5383b', '#ffffff', '#ffe27a'], ['#cfe8ff', '#1f3c74', '#e5383b']], '2026'],
-    ['year', 'my-year', 'My Year', 'MY YEAR', 'HIGHLIGHTS', 'fl:glowing-star', [['#141a3a', '#ffd25e', '#ff5a8a'], ['#2d1f4a', '#5bd1e8', '#ffffff'], ['#0f3d3e', '#ffd25e', '#ffffff']], '2026'],
-    ['year', 'good-days', 'Good Days', 'THIS YEAR', 'GOOD DAYS', 'fl:sunflower', [['#86d6e8', '#ffffff', '#ff7a2e'], ['#fff1d6', '#ff7a2e', '#2f80ed'], ['#ff7a2e', '#fff1d6', '#ffffff']], '2026'],
-    ['someone', 'for-mum', 'For Mum', 'FOR MUM', 'WITH LOVE', 'fl:bouquet', [['#ffe3ec', '#d23a6a', '#3f8a3a'], ['#fff6d6', '#9d47c2', '#ff5a7a'], ['#2f4a3a', '#ffd8e4', '#ffb21e']]],
-    ['someone', 'for-you', 'For You', 'FOR YOU', 'A LITTLE GIFT', 'fl:wrapped-gift', [['#ffe27a', '#1d63c4', '#e5383b'], ['#e8f1ff', '#2f80ed', '#f0a91c'], ['#e5383b', '#ffffff', '#ffd25e']]],
-    ['someone', 'ciel-test', 'Ciel Test', 'CIEL', 'TEST BOOK', 'fl:camera-with-flash', [['#fff1d6', '#ff5a1f', '#1b1714'], ['#1b1714', '#ff5a1f', '#ffffff'], ['#ff5a1f', '#ffffff', '#1b1714']], null, true],
-    ['someone', 'for-dad', 'For Dad', 'FOR DAD', 'MY HERO', 'fl:trophy', [['#dcefff', '#1f3c74', '#e5383b'], ['#f4ecdf', '#1f3c74', '#b9831e'], ['#1f3c74', '#ffffff', '#9fd6ef']]]
+    ['family', 'home', 'Home', 'FAMILY', 'HOME SWEET HOME', 'house', [['#f8e8c8', '#c4512b', '#2f6e5a'], ['#9fd6ef', '#ffffff', '#c4512b'], ['#2f6e5a', '#f8e8c8', '#f3c34c']]],
+    ['family', 'roots', 'Roots', 'OUR FAMILY', 'ROOTS & LOVE', 'tree', [['#f4efe4', '#3f7a22', '#e2386a'], ['#fde2e4', '#7a4a26', '#3f7a22'], ['#3f7a22', '#ffffff', '#ffd25e']]],
+    ['year', '365-days', '365 Days', '365 DAYS', 'IN PICTURES', 'calendar', [['#fff1d6', '#e5383b', '#2f80ed'], ['#e5383b', '#ffffff', '#ffe27a'], ['#cfe8ff', '#1f3c74', '#e5383b']], '2026'],
+    ['year', 'my-year', 'My Year', 'MY YEAR', 'HIGHLIGHTS', 'firework', [['#141a3a', '#ffd25e', '#ff5a8a'], ['#2d1f4a', '#5bd1e8', '#ffffff'], ['#0f3d3e', '#ffd25e', '#ffffff']], '2026'],
+    ['year', 'good-days', 'Good Days', 'THIS YEAR', 'GOOD DAYS', 'sun', [['#86d6e8', '#ffffff', '#ff7a2e'], ['#fff1d6', '#ff7a2e', '#2f80ed'], ['#ff7a2e', '#fff1d6', '#ffffff']], '2026'],
+    ['someone', 'for-mum', 'For Mum', 'FOR MUM', 'WITH LOVE', 'ph:tulips', [['#ffe3ec', '#d23a6a', '#3f8a3a'], ['#fff6d6', '#9d47c2', '#ff5a7a'], ['#2f4a3a', '#ffd8e4', '#ffb21e']]],
+    ['someone', 'for-you', 'For You', 'FOR YOU', 'A LITTLE GIFT', 'gift', [['#ffe27a', '#1d63c4', '#e5383b'], ['#e8f1ff', '#2f80ed', '#f0a91c'], ['#e5383b', '#ffffff', '#ffd25e']]],
+    ['someone', 'ciel-test', 'Ciel Test', 'CIEL', 'TEST BOOK', 'gift', [['#fff1d6', '#ff5a1f', '#1b1714'], ['#1b1714', '#ff5a1f', '#ffffff'], ['#ff5a1f', '#ffffff', '#1b1714']], null, true],
+    ['someone', 'for-dad', 'For Dad', 'FOR DAD', 'MY HERO', 'tie', [['#dcefff', '#1f3c74', '#e5383b'], ['#f4ecdf', '#1f3c74', '#b9831e'], ['#1f3c74', '#ffffff', '#9fd6ef']]]
   ];
 
   var BLANK = ['#f4efe4', '#fbd3dc', '#86d6e8', '#ffd25e', '#c8e6c9', '#e5383b', '#1f3c74', '#2d2d33', '#c4512b', '#7c3aed'];
 
   var TPL = {};
   var ORDER = [];
-  function isFl(id) { return /^fl:/.test(id || ''); }
-  function flSrc(id) { return '/assets/pbk/fl/' + id.slice(3) + '.svg'; }
+  /* photo artwork cut out from Unsplash photos (assets/pbk/art2, see CREDITS.txt): [width, height] */
+  var PH_ART = { rings: [918, 314], puppy: [991, 1177], cat: [1108, 886], tulips: [904, 1400], dog: [788, 1400] };
+  function isFl(id) { return /^ph:/.test(id || ''); }
+  function flSrc(id) { return '/assets/pbk/art2/' + id.slice(3) + '.webp?v=1'; }
   function artBox(id) {
     var a = root.PBKArt && root.PBKArt.all[id]; var b = a ? a.b.split(' ').map(Number) : [400, 400];
     var maxW = 900, maxH = 900, s = Math.min(maxW / b[0], maxH / b[1]);
-    if (isFl(id)) { b = [1, 1]; s = 820; }
+    if (isFl(id)) { b = PH_ART[id.slice(3)] || [1, 1]; s = Math.min(860 / b[0], 860 / b[1]); }
     var w = b[0] * s, h = b[1] * s;
     return { x: 650 - w / 2, y: 452 + (maxH - h) * 0.6, w: w, h: h };
   }
@@ -157,8 +159,11 @@
       if (e.role === 'year' && cu.year != null) e.text = cu.year;
       if (e.t === 'text' && cu.sh != null) e.shadow = +cu.sh ? 1 : 0;
     });
-    if (cu.stk && (isFl(cu.stk) || (root.PBKArt && root.PBKArt.all[cu.stk])) && !(doc.els || []).some(function (e) { return e.id === 'art'; })) {
-      var ab = artBox(cu.stk); doc.els.push(isFl(cu.stk) ? { id: 'art', t: 'img', src: flSrc(cu.stk), x: ab.x, y: ab.y, w: ab.w, h: ab.h } : { id: 'art', t: 'art', art: cu.stk, x: ab.x, y: ab.y, w: ab.w, h: ab.h });
+    if (cu.stk && isFl(cu.stk) && PH_ART[cu.stk.slice(3)] && !(doc.els || []).some(function (e) { return e.id === 'art'; })) { var pb = artBox(cu.stk); doc.els.push({ id: 'art', t: 'img', src: flSrc(cu.stk), x: pb.x, y: pb.y, w: pb.w, h: pb.h }); }
+    var tr = cu.stk && /^tr:/.test(cu.stk) ? TPL['travel/' + cu.stk.slice(3)] : null;
+    if (tr && tr.layered && !(doc.els || []).some(function (e) { return e.id === 'art'; })) {
+      var k = Math.min(820 / tr.artBox[2], 900 / tr.artBox[3]), aw = tr.artBox[2] * k, ah = tr.artBox[3] * k;
+      doc.els.push({ id: 'art', t: 'img', src: tr.art, x: 650 - aw / 2, y: 452 + (900 - ah) * 0.6, w: aw, h: ah });
     }
     if ((cu.bg || cu.tc) && !doc.ownBrand) {
       var tEl = (doc.els || []).filter(function (e) { return e.role === 'title'; })[0];
@@ -196,6 +201,6 @@
     return doc;
   }
   function visible(t) { return !t.test || !!root.PBK_ADMIN; }
-  var API = { isFl: isFl, flSrc: flSrc, fixCover: fixCover, visible: visible, artBox: artBox, COVER_COLORS: COVER_COLORS, TEXT_COLORS: TEXT_COLORS, canColor: canColor, canText: canText, customDoc: customDoc, words: words, spineFor: spineFor, CATS: CATS, TPL: TPL, ORDER: ORDER, BLANK: BLANK, byCat: byCat, docFor: docFor, vectorDoc: vectorDoc, rasterDoc: rasterDoc, blankDoc: blankDoc, luminance: luminance, cat: function (id) { return CATS.filter(function (c) { return c.id === id; })[0]; } };
+  var API = { PH_ART: PH_ART, isFl: isFl, flSrc: flSrc, fixCover: fixCover, visible: visible, artBox: artBox, COVER_COLORS: COVER_COLORS, TEXT_COLORS: TEXT_COLORS, canColor: canColor, canText: canText, customDoc: customDoc, words: words, spineFor: spineFor, CATS: CATS, TPL: TPL, ORDER: ORDER, BLANK: BLANK, byCat: byCat, docFor: docFor, vectorDoc: vectorDoc, rasterDoc: rasterDoc, blankDoc: blankDoc, luminance: luminance, cat: function (id) { return CATS.filter(function (c) { return c.id === id; })[0]; } };
   if (typeof module === 'object' && module.exports) module.exports = API; else root.PBKCat = API;
 })(typeof self !== 'undefined' ? self : this);
