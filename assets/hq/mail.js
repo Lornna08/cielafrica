@@ -13,7 +13,7 @@
 
   function setupCard() {
     return '<div class="card card__b mx-setup"><h2 style="font-size:1rem">Connect hello@ and lorna@cielafrica.com</h2><p class="muted" style="margin:.4rem 0 .8rem">Ciel Admin reads and sends from the real mailboxes at Truehost App Suite. Add these in Vercel → cielafrica → Settings → Environment Variables, then redeploy:</p>' +
-      '<table class="tbl"><tbody>' + [['MAIL_IMAP_HOST', 'Incoming (IMAP) server, from App Suite → Settings → Mail → Accounts, or Truehost support'], ['MAIL_IMAP_PORT', '993 (usual)'], ['MAIL_SMTP_HOST', 'Outgoing (SMTP) server'], ['MAIL_SMTP_PORT', '465 (usual)'], ['MAIL_HELLO_PASSWORD', 'Password of hello@cielafrica.com'], ['MAIL_LORNA_PASSWORD', 'Password of lorna@cielafrica.com']].map(function (r) { return '<tr><td><code>' + r[0] + '</code></td><td><small style="color:var(--soft)">' + r[1] + '</small></td></tr>'; }).join('') + '</tbody></table>' +
+      '<table class="tbl"><tbody>' + [['MAIL_IMAP_HOST · MAIL_SMTP_HOST', 'Already set: workplace.truehost.cloud (IMAP 993 SSL, SMTP 587 STARTTLS)'], ['MAIL_HELLO_PASSWORD', 'Password of hello@cielafrica.com'], ['MAIL_LORNA_PASSWORD', 'Password of lorna@cielafrica.com']].map(function (r) { return '<tr><td><code>' + r[0] + '</code></td><td><small style="color:var(--soft)">' + r[1] + '</small></td></tr>'; }).join('') + '</tbody></table>' +
       '<p class="faint" style="font-size:.78rem;margin-top:.7rem">Passwords stay on the server and are never shown in Ciel Admin.</p></div>';
   }
 
