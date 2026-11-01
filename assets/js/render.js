@@ -78,7 +78,7 @@ CIEL.galleryCard = function(t, i, kind){
 
 /* ---- Work row (editorial) ---- */
 CIEL.workRow = function(w, i){
-  const media = w.mockup && CIEL.mockups[w.mockup]
+  const media = w.image ? `<img src="${CIEL.esc(w.image)}" alt="${CIEL.esc(w.name)}" loading="lazy">` : w.mockup && CIEL.mockups[w.mockup]
     ? `<div class="wrow__frame"><span class="wrow__frame-bar"><i></i><i></i><i></i></span><div class="wrow__frame-canvas"><svg viewBox="0 0 800 525" preserveAspectRatio="xMidYMid slice">${CIEL.mockups[w.mockup]}</svg></div></div>`
     : (w.image ? `<img src="${CIEL.esc(w.image)}" alt="${CIEL.esc(w.name)}" loading="lazy">` : CIEL.sitePreview(i+30,false));
   const n = String(i+1).padStart(2,'0');
@@ -116,7 +116,7 @@ CIEL.mockupFrame = function(key, url, alt){
 
 /* ---- work gallery card (work.html grid) — shows the real UI ---- */
 CIEL.workCard = function(w, i){
-  const media = w.mockup && CIEL.mockups[w.mockup]
+  const media = w.image ? `<img src="${CIEL.esc(w.image)}" alt="${CIEL.esc(w.name)}" loading="lazy">` : w.mockup && CIEL.mockups[w.mockup]
     ? `<div class="wcard__ui"><span class="wcard__bar"><i></i><i></i><i></i></span><div class="wcard__canvas"><svg viewBox="0 0 800 525" preserveAspectRatio="xMidYMid slice">${CIEL.mockups[w.mockup]}</svg></div></div>`
     : (w.image ? `<img src="${CIEL.esc(w.image)}" alt="${CIEL.esc(w.name)}" loading="lazy">` : CIEL.sitePreview(i+30,false));
   const tags = (w.technologies||[]).slice(0,4).map(t=>`<span class="wtag">${CIEL.esc(t)}</span>`).join('');
