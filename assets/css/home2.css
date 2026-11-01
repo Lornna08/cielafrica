@@ -178,3 +178,23 @@
   .hero__copy .eyebrow{margin-bottom:0}
   .hero__art.hx{margin:1rem auto 1.5rem}
 }
+/* Photo Books band: two rows of books drifting in opposite directions */
+.pbh{position:relative;overflow:hidden;border-radius:24px;background:radial-gradient(ellipse at 12% 0%,#ffd9c2 0,transparent 55%),radial-gradient(ellipse at 100% 100%,#ffe9a8 0,transparent 50%),#fbf3e8;border:1px solid #f0e2cf;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);align-items:center;min-height:520px}
+.pbh__txt{padding:clamp(1.6rem,4vw,3.2rem);position:relative;z-index:2}
+.pbh__k{display:inline-block;font:600 .8rem/1 "Space Grotesk",sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#ff5a1f;margin-bottom:.9rem}
+.pbh__t{font:700 clamp(2rem,4.2vw,3.2rem)/1.04 "Space Grotesk",sans-serif;letter-spacing:-.02em;color:#17130f;max-width:13ch}
+.pbh__p{margin-top:1rem;color:#5c554e;font-size:1.02rem;max-width:42ch}
+.pbh__chips{list-style:none;display:flex;flex-wrap:wrap;gap:.45rem;margin:1.2rem 0 1.5rem;padding:0}
+.pbh__chips li{background:#fff;border:1px solid #efe1cd;border-radius:999px;padding:.38rem .8rem;font-size:.84rem;font-weight:600;color:#3d3833}
+.pbh__go{display:flex;flex-wrap:wrap;gap:.6rem}
+.pbh__stage{position:relative;height:100%;min-height:520px;display:flex;flex-direction:column;justify-content:center;gap:.4rem;-webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent)}
+.pbh__row{overflow:hidden}
+.pbh__trk{display:flex;width:max-content;animation:pbhMove 55s linear infinite}
+.pbh__row--rev .pbh__trk{animation-direction:reverse;animation-duration:62s}
+.pbh__trk img{width:190px;height:auto;flex:none;margin:0 -14px;user-select:none;-webkit-user-drag:none;animation:pbhFloat 5s ease-in-out infinite}
+.pbh__trk img:nth-child(3n+2){animation-delay:-1.6s}.pbh__trk img:nth-child(3n){animation-delay:-3.2s}
+.pbh:hover .pbh__trk{animation-play-state:paused}
+@keyframes pbhMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes pbhFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-8px) rotate(1deg)}}
+@media(max-width:900px){.pbh{grid-template-columns:minmax(0,1fr);min-height:0}.pbh__stage{min-height:0;padding-bottom:1.4rem}.pbh__trk img{width:140px;margin:0 -10px}.pbh__t{max-width:16ch}}
+@media(prefers-reduced-motion:reduce){.pbh__trk,.pbh__trk img{animation:none!important}}

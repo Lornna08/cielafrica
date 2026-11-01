@@ -830,3 +830,17 @@ body.pbk-editing .pk{background:#efeae2}
 .pk-track h3{font:800 1.05rem var(--pk-disp);margin-top:1rem}
 .pk-track__del,.pk-track__help{font-size:.88rem;color:var(--pk-soft);margin-top:.6rem}
 .pk-band__track{margin-top:1rem;font-size:.9rem;opacity:.85}.pk-band__track a{text-decoration:underline;text-underline-offset:3px}
+/* My books: open an ordered book (read-only) */
+.pk-ob{background:#fff;border:1px solid #efe8dc;border-radius:20px;padding:1.1rem 1.2rem;margin:0 0 1.4rem;display:grid;gap:.8rem}
+.pk-ob__h b{display:block;font:800 1.1rem "PBK Spartan",Inter,sans-serif}.pk-ob__h span{color:#6f675e;font-size:.92rem}
+.pk-ob__f{display:grid;grid-template-columns:1fr 1fr auto;gap:.5rem}
+.pk-ob__f input{border:1px solid #e0d7c8;border-radius:12px;padding:.7rem .85rem;font:500 .95rem Inter,sans-serif;min-width:0;background:#fffdf9}
+.pk-ob__res{display:grid;gap:1rem;border-top:1px solid #efe8dc;padding-top:1rem}
+.pk-ob__top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}.pk-ob__top h3{font:800 1.2rem "PBK Spartan",Inter,sans-serif;margin:.2rem 0 0}
+.pk-ob__lock{font-size:.8rem;font-weight:700;background:#f3ede3;border-radius:999px;padding:.35rem .75rem;color:#5c554e}
+.pk-ob__pages{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.6rem;margin-top:.6rem}
+.pk-ob__pages figure{margin:0}.pk-ob__pages img{width:100%;display:block;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,.1);background:#f3ede3;aspect-ratio:3/4;object-fit:cover;-webkit-user-drag:none;user-select:none}
+.pk-ob__pages figcaption{font-size:.72rem;color:#8a8076;margin-top:.25rem;text-align:center}
+.pk-ob__help{font-size:.9rem;color:#5c554e;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+.pk-myb.is-sent canvas{opacity:.92}
+@media(max-width:700px){.pk-ob__f{grid-template-columns:1fr}}

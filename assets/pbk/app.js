@@ -437,10 +437,36 @@
     if (innerWidth > 700) dlg.querySelector('#pkdQ').focus();
   };
 
+  /* ---------------- open an ordered book by its order number (read-only) ---------------- */
+  function orderBox() {
+    var q = new URLSearchParams(location.search);
+    return '<div class="pk-ob"><div class="pk-ob__h"><b>Ordered a book?</b><span>Enter your order number to see your book as we received it and follow its progress. Sent books can’t be edited.</span></div>' +
+      '<form class="pk-ob__f" id="obF"><input id="obRef" placeholder="Order number: PB-XXXXXXXX" value="' + esc(q.get('order') || '') + '" autocomplete="off" required><input id="obC" placeholder="Phone or email you ordered with" autocomplete="email" required><button class="btn btn--dark">Open my book</button></form><div id="obOut"></div></div>';
+  }
+  function bindOrderBox() {
+    var f = document.getElementById('obF'), out = document.getElementById('obOut'); if (!f) return;
+    f.addEventListener('submit', function (e) {
+      e.preventDefault(); out.innerHTML = '<p class="pk-empty">Looking up your order…</p>';
+      fetch('/api/photobooks?route=pbk-track', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'ciel' }, credentials: 'same-origin', body: JSON.stringify({ ref: document.getElementById('obRef').value, contact: document.getElementById('obC').value }) })
+        .then(function (r) { return r.json(); }).then(function (j) {
+          if (!j.ok) { out.innerHTML = '<p class="pk-track__err">' + esc(j.error || 'We couldn’t find that order.') + '</p>'; return; }
+          var o = j.order, wa = 'https://wa.me/254706549703?text=' + encodeURIComponent('Hello Ciel Africa, I need help with my photo book order ' + o.ref);
+          var books = (j.books || []).map(function (b) {
+            var pages = []; for (var i = 0; i < b.pages; i++) pages.push('<figure><img loading="lazy" draggable="false" src="/api/photobooks?route=pbk-view&t=' + encodeURIComponent(b.v) + '&i=' + i + '" alt="Page ' + (i + 1) + '"><figcaption>' + (i === 0 ? 'Front cover' : i === b.pages - 1 ? 'Back cover' : 'Page ' + i) + '</figcaption></figure>');
+            return '<div class="pk-ob__book"><b>' + esc(b.name) + '</b><div class="pk-ob__pages">' + pages.join('') + '</div></div>';
+          }).join('');
+          out.innerHTML = '<div class="pk-ob__res"><div class="pk-ob__top"><div><span class="pk-track__ref">' + esc(o.ref) + (o.test ? ' · TEST' : '') + '</span><h3>' + esc(o.label) + '</h3></div><span class="pk-ob__lock">🔒 Sent: view only</span></div>' +
+            (books || '<p class="pk-empty">Your book’s pages haven’t reached us yet. Open this page on the phone or computer you made the book on and tap <b>Send now</b>.</p>') +
+            '<p class="pk-ob__help">Printed books are dispatched for delivery 24–48 hours after the pages reach us. Need a change or have a question? <a class="btn btn--p btn--sm" target="_blank" rel="noopener" href="' + wa + '">WhatsApp support</a> <a class="btn btn--ghost btn--sm" data-go href="' + BASE + '/track?ref=' + encodeURIComponent(o.ref) + '">Full tracking</a></p></div>';
+        }, function () { out.innerHTML = '<p class="pk-track__err">Can’t reach Ciel Africa right now. Check your connection and try again.</p>'; });
+    });
+  }
+
   /* ---------------- my books ---------------- */
   function myBooks() {
     document.title = 'My photo books — Ciel Africa';
-    main.innerHTML = catStrip() + '<section class="pk-my wrap"><div class="pk-head"><span class="eyebrow"><span class="brk">‹</span> Saved on this device</span><h2>My books</h2><p>Books are saved in this browser. Use the same phone or computer to continue.</p></div><div class="pk-my__grid" id="pkMy"><p class="pk-empty">Loading…</p></div></section>';
+    main.innerHTML = catStrip() + '<section class="pk-my wrap"><div class="pk-head"><span class="eyebrow"><span class="brk">‹</span> Saved on this device</span><h2>My books</h2><p>Books are saved in this browser. Use the same phone or computer to continue.</p></div>' + orderBox() + '<div class="pk-my__grid" id="pkMy"><p class="pk-empty">Loading…</p></div></section>';
+    bindOrderBox();
     var box = document.getElementById('pkMy');
     if (!window.PBStore) { box.innerHTML = '<p class="pk-empty">Storage is not available in this browser.</p>'; return; }
     PBStore.projects().then(function (list) {
@@ -459,6 +485,14 @@
           var info = document.createElement('div'); info.className = 'pk-myb__paid' + (pu.product === 'print' && !pu.done ? ' is-todo' : '');
           info.innerHTML = pu.product === 'print' ? (pu.done ? '✓ Order ' + esc(pu.ref) + ': pages sent to Ciel Africa. <a data-go href="' + BASE + '/track?ref=' + encodeURIComponent(pu.ref) + '">Track order</a>' : 'Order ' + esc(pu.ref) + ' is paid, but its pages haven’t finished sending. <a class="btn btn--p btn--sm" data-go href="' + BASE + '/checkout?sent=' + encodeURIComponent(pu.ref) + '">Send now</a>') : '✓ PDF paid (' + esc(pu.ref) + ')';
           card.querySelector('div').appendChild(info);
+          if (pu.product === 'print' && (pu.done || (pu.sent && pu.sent.print && pu.sent.print.length))) {
+            card.classList.add('is-sent');
+            var view = BASE + '/my-books?order=' + encodeURIComponent(pu.ref);
+            card.querySelectorAll('a[href*="/design?p="]').forEach(function (a2) { a2.setAttribute('href', view); if (a2.classList.contains('btn')) a2.textContent = 'View'; });
+            var acts = card.querySelector('.pk-myb__a'); if (acts) acts.insertAdjacentHTML('beforeend', '<a class="btn btn--sm btn--ghost" target="_blank" rel="noopener" href="https://wa.me/254706549703?text=' + encodeURIComponent('Hello Ciel Africa, I need help with my photo book order ' + pu.ref) + '">Support</a>');
+            var del = card.querySelector('[data-del]'); if (del) del.remove();
+            info.insertAdjacentHTML('beforeend', '<br><small>Sent books can’t be edited. Need a change? WhatsApp us.</small>');
+          }
         });
       });
       box.querySelectorAll('[data-del]').forEach(function (b) {

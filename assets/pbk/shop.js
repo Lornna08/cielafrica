@@ -220,6 +220,7 @@
       document.getElementById('coSide').innerHTML = '<div class="pkco__sum"><h3>Order summary</h3>' + lines.map(function (l) { return '<div class="pkco__ln"><span>' + esc(l.label) + (l.qty > 1 ? ' × ' + l.qty : '') + '</span><b>' + money(l.amount * l.qty) + '</b></div>'; }).join('') +
         (anyPrint && del ? '<div class="pkco__ln"><span>' + esc(del.name) + '</span><b>' + (del.id === 'uber' ? 'On arrival' : del.price ? money(del.price) : 'Free') + '</b></div>' : '') +
         '<div class="pkco__tot"><span>Total</span><b>' + money(total) + '</b></div>' +
+        (anyPrint ? '<div class="pkco__eta"><b>Dispatch in 24–48 hours</b><span>Printed books leave our studio for delivery 24–48 hours after all your pages reach us. Delivery time depends on where you are.</span></div>' : '') +
         (eta ? '<div class="pkco__eta"><b>After you pay</b><span>Your book’s pages upload from this device so we can print them: about ' + eta + ' on a good connection. More photos and pages take longer. Keep this page open; if it stops, open <a data-go href="' + BASE + '/my-books">My books</a> on this device and tap <b>Send now</b>.</span></div>' : '') +
         (cp.payments ? '<button class="btn btn--p btn--lg pkco__pay" id="coPay"' + (missing.length ? ' disabled' : '') + '>Pay ' + money(total) + ' with M-Pesa</button><p class="pkco__small">You’ll get a prompt on your phone. Enter your M-Pesa PIN to pay.</p>' : '<p class="pkco__warn">M-Pesa checkout is not available right now. Order on WhatsApp below.</p>') +
         '<div class="pkco__or"><span>or</span></div><a class="btn btn--ghost pkco__wa" id="coWa" target="_blank" rel="noopener">Order on WhatsApp</a><p class="pkco__small">We’ll reply with how to pay and send your book.</p><div id="coStatus"></div></div>';
@@ -277,7 +278,7 @@
   }
   /* after payment: thank-you, send printed books, download PDFs */
   function afterPay(main, ref) {
-    main.innerHTML = '<section class="pkco wrap pkco--done"><div class="pkco__ok">✓</div><h1>Thank you!</h1><p class="pkco__lead">Payment received for order <b>' + esc(ref) + '</b>. A receipt is on its way to your email.</p><div id="coDone"><p class="pk-empty">Loading…</p></div></section>';
+    main.innerHTML = '<section class="pkco wrap pkco--done"><div class="pkco__ok">✓</div><h1>Thank you!</h1><p class="pkco__lead">Payment received for order <b>' + esc(ref) + '</b>. A receipt is on its way to your email. Printed books are dispatched for delivery 24–48 hours after your pages reach us.</p><div id="coDone"><p class="pk-empty">Loading…</p></div></section>';
     Promise.all([purchases(), caps()]).then(function (r) {
       var list = r[0].filter(function (x) { return x.ref === ref; }), cp = r[1], box = document.getElementById('coDone');
       if (!list.length) { box.innerHTML = '<p>This order isn’t saved on this device.</p>'; return; }

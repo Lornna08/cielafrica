@@ -131,6 +131,12 @@
         var p = newProject(t, +q.get('c') || 0, +q.get('n') || 0, cu);
         return ST.saveProject(p).then(function () { history.replaceState({}, '', BASE + '/design?p=' + p.id); return p; });
       });
+    /* a printed book whose pages were sent can't be changed any more */
+    var sentP = pid && window.PBKShop ? PBKShop.purchases().then(function (l) { return l.filter(function (pu) { return pu.projectId === pid && pu.product === 'print' && (pu.done || (pu.sent && pu.sent.print && pu.sent.print.length)); })[0] || null; }, function () { return null; }) : Promise.resolve(null);
+    ready = Promise.all([ready, sentP]).then(function (r) {
+      if (r[1]) { var pu = r[1]; main.innerHTML = '<div class="pe-err wrap pe-sentlock"><h2>This book has been sent to print</h2><p>Order <b>' + esc(pu.ref) + '</b> is with Ciel Africa, so it can’t be edited any more. Need a change? Talk to us on WhatsApp and we’ll help.</p><p><a class="btn btn--p" target="_blank" rel="noopener" href="https://wa.me/254706549703?text=' + encodeURIComponent('Hello Ciel Africa, I need help with my photo book order ' + pu.ref) + '">WhatsApp support</a> <a class="btn btn--ghost" data-go href="' + BASE + '/my-books?order=' + encodeURIComponent(pu.ref) + '">View my book</a></p></div>'; throw new Error('sent'); }
+      return r[0];
+    });
     ready.then(function (p) {
       C.fixCover(p.cover, p.tpl);
       S = { p: p, cur: -1, sel: null, undo: [], redo: [], last: null, photos: {}, order: [], stickers: [], panel: null, crop: false };
@@ -144,6 +150,7 @@
       build(main);
       ST.persist();
     }).catch(function (e) {
+      if (e && e.message === 'sent') return;
       main.innerHTML = '<div class="pe-err wrap"><h2>We couldn’t open that book</h2><p>' + (e && e.message === 'missing' ? 'It isn’t saved in this browser. Books are stored on the device where they were made.' : esc(e && e.message || 'Something went wrong.')) + '</p><a class="btn btn--p" data-go href="' + BASE + '">Back to Photo Books</a></div>';
     });
   }
