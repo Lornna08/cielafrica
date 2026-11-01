@@ -27,62 +27,67 @@
     ['kenya', 'serengeti', 'Serengeti', 'SERENGETI', 'SAFARI', 'serengeti', [['#fbe3b5', '#3b2314', '#e0601b'], ['#3b2314', '#ffb23d', '#fbe3b5'], ['#f2c7a5', '#8a2f12', '#3b2314']]],
     ['kenya', 'kenya', 'Kenya', 'KENYA', 'KARIBU', 'shield', [['#f3eee2', '#141414', '#c8102e'], ['#0f5c3a', '#ffffff', '#f2c14e'], ['#c8102e', '#ffffff', '#141414']]],
     ['kenya', 'kenya-wild', 'Kenya Wild', 'KENYA', 'WILD', 'lion', [['#f6d58e', '#7a3a10', '#ffffff'], ['#2e3b2a', '#f6c06a', '#ffffff'], ['#fff3dc', '#b5541a', '#2e3b2a']]],
-    ['couple', 'our-story', 'Our Story', 'OUR STORY', 'TOGETHER', 'heart-balloons', [['#fbd3dc', '#c8102e', '#ffffff'], ['#c8102e', '#fbd3dc', '#ffffff'], ['#f6efe6', '#a3122a', '#e48aa0']]],
-    ['couple', 'amour', 'Amour', 'AMOUR', 'FOREVER', 'heart', [['#f7e9e1', '#c8102e', '#e48aa0'], ['#a8d8f0', '#c8102e', '#ffffff'], ['#1d1d1f', '#ff5a6a', '#ffffff']]],
-    ['couple', 'you-and-me', 'You & Me', 'YOU & ME', 'SWEET LOVE', 'cherries', [['#ffffff', '#c8102e', '#4f7a2a'], ['#fde2e4', '#c8102e', '#4f7a2a'], ['#c8e6c9', '#c8102e', '#ffffff']]],
-    ['event', 'cheers', 'Cheers', 'CHEERS', 'CELEBRATE', 'champagne', [['#12324a', '#f6d27a', '#ffffff'], ['#e8577e', '#fff3c4', '#ffffff'], ['#2b2b2b', '#f6d27a', '#ff8aa8']]],
-    ['event', 'wedding', 'Wedding', 'WEDDING', 'THE BIG DAY', 'rings', [['#f6f1e7', '#2b2b2b', '#b9831e'], ['#dfe9e1', '#2f4a3a', '#b9831e'], ['#1f2a44', '#f3d27a', '#ffffff']]],
-    ['event', 'party', 'Party', 'PARTY', 'ALL NIGHT', 'disco', [['#ff4f9a', '#ffffff', '#ffe27a'], ['#1b1b2f', '#ff4f9a', '#5bd1e8'], ['#7c3aed', '#ffe27a', '#ffffff']]],
-    ['event', 'birthday', 'Birthday', 'BIRTHDAY', 'HOORAY', 'balloons', [['#fff1d6', '#e2386a', '#1f8fd1'], ['#cfe8ff', '#1f3c74', '#e2386a'], ['#e2386a', '#ffffff', '#ffd76a']]],
-    ['friends', 'besties', 'Besties', 'BESTIES', 'FOREVER', 'sunglasses', [['#ffd25e', '#ff3e8a', '#ffffff'], ['#9fe0f2', '#ff3e8a', '#0c3f66'], ['#ff4f9a', '#ffffff', '#ffe27a']]],
-    ['friends', 'friends', 'Friends', 'FRIENDS', 'SUMMER', 'icecreams', [['#fff1d6', '#ff6f91', '#2fb39a'], ['#ffb3c7', '#ffffff', '#c8102e'], ['#2fb39a', '#fff1d6', '#ffb3c7']]],
-    ['friends', 'girls-trip', 'Girls Trip', 'GIRLS TRIP', 'CHEERS', 'cocktails', [['#2d2a5a', '#ff9ab8', '#5fd0c5'], ['#ffe3ec', '#e2386a', '#2fb39a'], ['#1d7fae', '#ffffff', '#ffd25e']]],
-    ['baby', 'hello-baby', 'Hello Baby', 'HELLO BABY', 'LITTLE ONE', 'teddy', [['#dcefff', '#2f6fa8', '#94602f'], ['#ffe4ec', '#d65a84', '#94602f'], ['#f4ecdf', '#94602f', '#5aaee0']]],
-    ['baby', 'first-year', 'First Year', 'FIRST YEAR', 'OUR BABY', 'onesie', [['#fff6ea', '#f06a91', '#7a5a4a'], ['#e3f1e8', '#3f8a6a', '#f06a91'], ['#cfe8ff', '#2f6fa8', '#f06a91']]],
-    ['baby', 'little-one', 'Little Walks', 'LITTLE ONE', 'NEW ADVENTURES', 'stroller', [['#fff1d6', '#2f80ed', '#e2386a'], ['#ffe4ec', '#3d4a56', '#5fb3dc'], ['#e3f1e8', '#2f6e5a', '#5fb3dc']]],
-    ['pets', 'good-boy', 'Good Boy', 'GOOD BOY', 'DOG DAYS', 'dog', [['#86d6e8', '#ffffff', '#c8661f'], ['#fff1d6', '#c8661f', '#2f6e5a'], ['#ffd25e', '#3d2a1e', '#ffffff']]],
-    ['pets', 'meow', 'Meow', 'MEOW', 'CAT LIFE', 'cat', [['#f6d34a', '#2d2d33', '#e2386a'], ['#ffb3c7', '#2d2d33', '#ffffff'], ['#e6e1d8', '#2d2d33', '#e2386a']]],
+    ['couple', 'our-story', 'Our Story', 'OUR STORY', 'TOGETHER', 'fl:two-hearts', [['#fbd3dc', '#c8102e', '#ffffff'], ['#c8102e', '#fbd3dc', '#ffffff'], ['#f6efe6', '#a3122a', '#e48aa0']]],
+    ['couple', 'amour', 'Amour', 'AMOUR', 'FOREVER', 'fl:sparkling-heart', [['#f7e9e1', '#c8102e', '#e48aa0'], ['#a8d8f0', '#c8102e', '#ffffff'], ['#1d1d1f', '#ff5a6a', '#ffffff']]],
+    ['couple', 'you-and-me', 'You & Me', 'YOU & ME', 'SWEET LOVE', 'fl:cherries', [['#ffffff', '#c8102e', '#4f7a2a'], ['#fde2e4', '#c8102e', '#4f7a2a'], ['#c8e6c9', '#c8102e', '#ffffff']]],
+    ['event', 'cheers', 'Cheers', 'CHEERS', 'CELEBRATE', 'fl:clinking-glasses', [['#12324a', '#f6d27a', '#ffffff'], ['#e8577e', '#fff3c4', '#ffffff'], ['#2b2b2b', '#f6d27a', '#ff8aa8']]],
+    ['event', 'wedding', 'Wedding', 'WEDDING', 'THE BIG DAY', 'fl:ring', [['#f6f1e7', '#2b2b2b', '#b9831e'], ['#dfe9e1', '#2f4a3a', '#b9831e'], ['#1f2a44', '#f3d27a', '#ffffff']]],
+    ['event', 'party', 'Party', 'PARTY', 'ALL NIGHT', 'fl:mirror-ball', [['#ff4f9a', '#ffffff', '#ffe27a'], ['#1b1b2f', '#ff4f9a', '#5bd1e8'], ['#7c3aed', '#ffe27a', '#ffffff']]],
+    ['event', 'birthday', 'Birthday', 'BIRTHDAY', 'HOORAY', 'fl:birthday-cake', [['#fff1d6', '#e2386a', '#1f8fd1'], ['#cfe8ff', '#1f3c74', '#e2386a'], ['#e2386a', '#ffffff', '#ffd76a']]],
+    ['friends', 'besties', 'Besties', 'BESTIES', 'FOREVER', 'fl:smiling-face-with-sunglasses', [['#ffd25e', '#ff3e8a', '#ffffff'], ['#9fe0f2', '#ff3e8a', '#0c3f66'], ['#ff4f9a', '#ffffff', '#ffe27a']]],
+    ['friends', 'friends', 'Friends', 'FRIENDS', 'SUMMER', 'fl:soft-ice-cream', [['#fff1d6', '#ff6f91', '#2fb39a'], ['#ffb3c7', '#ffffff', '#c8102e'], ['#2fb39a', '#fff1d6', '#ffb3c7']]],
+    ['friends', 'girls-trip', 'Girls Trip', 'GIRLS TRIP', 'CHEERS', 'fl:tropical-drink', [['#2d2a5a', '#ff9ab8', '#5fd0c5'], ['#ffe3ec', '#e2386a', '#2fb39a'], ['#1d7fae', '#ffffff', '#ffd25e']]],
+    ['baby', 'hello-baby', 'Hello Baby', 'HELLO BABY', 'LITTLE ONE', 'fl:teddy-bear', [['#dcefff', '#2f6fa8', '#94602f'], ['#ffe4ec', '#d65a84', '#94602f'], ['#f4ecdf', '#94602f', '#5aaee0']]],
+    ['baby', 'first-year', 'First Year', 'FIRST YEAR', 'OUR BABY', 'fl:baby-bottle', [['#fff6ea', '#f06a91', '#7a5a4a'], ['#e3f1e8', '#3f8a6a', '#f06a91'], ['#cfe8ff', '#2f6fa8', '#f06a91']]],
+    ['baby', 'little-one', 'Little Walks', 'LITTLE ONE', 'NEW ADVENTURES', 'fl:hatching-chick', [['#fff1d6', '#2f80ed', '#e2386a'], ['#ffe4ec', '#3d4a56', '#5fb3dc'], ['#e3f1e8', '#2f6e5a', '#5fb3dc']]],
+    ['pets', 'good-boy', 'Good Boy', 'GOOD BOY', 'DOG DAYS', 'fl:dog-face', [['#86d6e8', '#ffffff', '#c8661f'], ['#fff1d6', '#c8661f', '#2f6e5a'], ['#ffd25e', '#3d2a1e', '#ffffff']]],
+    ['pets', 'meow', 'Meow', 'MEOW', 'CAT LIFE', 'fl:cat-face', [['#f6d34a', '#2d2d33', '#e2386a'], ['#ffb3c7', '#2d2d33', '#ffffff'], ['#e6e1d8', '#2d2d33', '#e2386a']]],
     ['pets', 'paws', 'Paws', 'PAWS', 'BEST FRIEND', 'paw', [['#fff1d6', '#c8661f', '#3d2a1e'], ['#c9e7d6', '#3d2a1e', '#ffffff'], ['#f2a5b5', '#3d2a1e', '#ffffff']]],
-    ['family', 'home', 'Home', 'FAMILY', 'HOME SWEET HOME', 'house', [['#f8e8c8', '#c4512b', '#2f6e5a'], ['#9fd6ef', '#ffffff', '#c4512b'], ['#2f6e5a', '#f8e8c8', '#f3c34c']]],
-    ['family', 'roots', 'Roots', 'OUR FAMILY', 'ROOTS & LOVE', 'tree', [['#f4efe4', '#3f7a22', '#e2386a'], ['#fde2e4', '#7a4a26', '#3f7a22'], ['#3f7a22', '#ffffff', '#ffd25e']]],
-    ['year', '365-days', '365 Days', '365 DAYS', 'IN PICTURES', 'calendar', [['#fff1d6', '#e5383b', '#2f80ed'], ['#e5383b', '#ffffff', '#ffe27a'], ['#cfe8ff', '#1f3c74', '#e5383b']]],
-    ['year', 'my-year', 'My Year', 'MY YEAR', 'HIGHLIGHTS', 'firework', [['#141a3a', '#ffd25e', '#ff5a8a'], ['#2d1f4a', '#5bd1e8', '#ffffff'], ['#0f3d3e', '#ffd25e', '#ffffff']]],
-    ['year', 'good-days', 'Good Days', 'THIS YEAR', 'GOOD DAYS', 'sun', [['#86d6e8', '#ffffff', '#ff7a2e'], ['#fff1d6', '#ff7a2e', '#2f80ed'], ['#ff7a2e', '#fff1d6', '#ffffff']]],
-    ['someone', 'for-mum', 'For Mum', 'FOR MUM', 'WITH LOVE', 'tulips', [['#ffe3ec', '#d23a6a', '#3f8a3a'], ['#fff6d6', '#9d47c2', '#ff5a7a'], ['#2f4a3a', '#ffd8e4', '#ffb21e']]],
-    ['someone', 'for-you', 'For You', 'FOR YOU', 'A LITTLE GIFT', 'gift', [['#ffe27a', '#1d63c4', '#e5383b'], ['#e8f1ff', '#2f80ed', '#f0a91c'], ['#e5383b', '#ffffff', '#ffd25e']]],
-    ['someone', 'for-dad', 'For Dad', 'FOR DAD', 'MY HERO', 'tie', [['#dcefff', '#1f3c74', '#e5383b'], ['#f4ecdf', '#1f3c74', '#b9831e'], ['#1f3c74', '#ffffff', '#9fd6ef']]]
+    ['family', 'home', 'Home', 'FAMILY', 'HOME SWEET HOME', 'fl:house-with-garden', [['#f8e8c8', '#c4512b', '#2f6e5a'], ['#9fd6ef', '#ffffff', '#c4512b'], ['#2f6e5a', '#f8e8c8', '#f3c34c']]],
+    ['family', 'roots', 'Roots', 'OUR FAMILY', 'ROOTS & LOVE', 'fl:deciduous-tree', [['#f4efe4', '#3f7a22', '#e2386a'], ['#fde2e4', '#7a4a26', '#3f7a22'], ['#3f7a22', '#ffffff', '#ffd25e']]],
+    ['year', '365-days', '365 Days', '365 DAYS', 'IN PICTURES', 'fl:spiral-calendar', [['#fff1d6', '#e5383b', '#2f80ed'], ['#e5383b', '#ffffff', '#ffe27a'], ['#cfe8ff', '#1f3c74', '#e5383b']], '2026'],
+    ['year', 'my-year', 'My Year', 'MY YEAR', 'HIGHLIGHTS', 'fl:glowing-star', [['#141a3a', '#ffd25e', '#ff5a8a'], ['#2d1f4a', '#5bd1e8', '#ffffff'], ['#0f3d3e', '#ffd25e', '#ffffff']], '2026'],
+    ['year', 'good-days', 'Good Days', 'THIS YEAR', 'GOOD DAYS', 'fl:sunflower', [['#86d6e8', '#ffffff', '#ff7a2e'], ['#fff1d6', '#ff7a2e', '#2f80ed'], ['#ff7a2e', '#fff1d6', '#ffffff']], '2026'],
+    ['someone', 'for-mum', 'For Mum', 'FOR MUM', 'WITH LOVE', 'fl:bouquet', [['#ffe3ec', '#d23a6a', '#3f8a3a'], ['#fff6d6', '#9d47c2', '#ff5a7a'], ['#2f4a3a', '#ffd8e4', '#ffb21e']]],
+    ['someone', 'for-you', 'For You', 'FOR YOU', 'A LITTLE GIFT', 'fl:wrapped-gift', [['#ffe27a', '#1d63c4', '#e5383b'], ['#e8f1ff', '#2f80ed', '#f0a91c'], ['#e5383b', '#ffffff', '#ffd25e']]],
+    ['someone', 'ciel-test', 'Ciel Test', 'CIEL', 'TEST BOOK', 'fl:camera-with-flash', [['#fff1d6', '#ff5a1f', '#1b1714'], ['#1b1714', '#ff5a1f', '#ffffff'], ['#ff5a1f', '#ffffff', '#1b1714']], null, true],
+    ['someone', 'for-dad', 'For Dad', 'FOR DAD', 'MY HERO', 'fl:trophy', [['#dcefff', '#1f3c74', '#e5383b'], ['#f4ecdf', '#1f3c74', '#b9831e'], ['#1f3c74', '#ffffff', '#9fd6ef']]]
   ];
 
   var BLANK = ['#f4efe4', '#fbd3dc', '#86d6e8', '#ffd25e', '#c8e6c9', '#e5383b', '#1f3c74', '#2d2d33', '#c4512b', '#7c3aed'];
 
   var TPL = {};
   var ORDER = [];
+  function isFl(id) { return /^fl:/.test(id || ''); }
+  function flSrc(id) { return '/assets/pbk/fl/' + id.slice(3) + '.svg'; }
   function artBox(id) {
     var a = root.PBKArt && root.PBKArt.all[id]; var b = a ? a.b.split(' ').map(Number) : [400, 400];
     var maxW = 900, maxH = 900, s = Math.min(maxW / b[0], maxH / b[1]);
+    if (isFl(id)) { b = [1, 1]; s = 820; }
     var w = b[0] * s, h = b[1] * s;
     return { x: 650 - w / 2, y: 452 + (maxH - h) * 0.6, w: w, h: h };
   }
   function vectorDoc(t, pi) {
     var p = t.palettes[pi || 0] || t.palettes[0], ab = artBox(t.art);
     var els = [
-      { id: 'title', t: 'text', role: 'title', text: t.title, x: 140, y: 86, w: 1020, h: 190, cap: 178, align: 'fill', font: 'spartan', color: p[1], shadow: 1 },
-      { id: 'sub', t: 'text', role: 'sub', text: t.sub, x: 140, y: 300, w: 1020, h: 76, cap: 70, align: 'right', font: 'spartan', color: p[2], shadow: 1 },
-      { id: 'art', t: 'art', art: t.art, x: ab.x, y: ab.y, w: ab.w, h: ab.h }
+      { id: 'title', t: 'text', role: 'title', text: t.title, x: 140, y: 86, w: 1020, h: 190, cap: 178, align: 'fill', font: 'spartan', color: p[1], shadow: 0 },
+      { id: 'sub', t: 'text', role: 'sub', text: t.sub, x: 140, y: 300, w: 1020, h: 76, cap: 70, align: 'right', font: 'spartan', color: p[2], shadow: 0 },
+      isFl(t.art) ? { id: 'art', t: 'img', src: flSrc(t.art), x: ab.x, y: ab.y, w: ab.w, h: ab.h } : { id: 'art', t: 'art', art: t.art, x: ab.x, y: ab.y, w: ab.w, h: ab.h }
     ];
+    if (t.yr) els.splice(2, 0, { id: 'year', t: 'text', role: 'year', text: t.yr, x: 140, y: 300, w: 300, h: 76, cap: 70, align: 'left', font: 'spartan', color: p[1], shadow: 0 });
     return { kind: 'cover', bg: p[0], brand: p[3] || p[1], els: els };
   }
   V.forEach(function (v) {
-    var t = { id: v[0] + '/' + v[1], cat: v[0], slug: v[1], name: v[2], title: v[3], sub: v[4], art: v[5], palettes: v[6], kind: 'vector' };
+    var t = { id: v[0] + '/' + v[1], cat: v[0], slug: v[1], name: v[2], title: v[3], sub: v[4], art: v[5], palettes: v[6], yr: v[7] || null, test: !!v[8], kind: 'vector' };
     t.mock = function (pi) { return '/assets/pbk/c/m/' + v[0] + '-' + v[1] + '-' + (pi || 0) + '.webp?v=' + VER; };
     TPL[t.id] = t; ORDER.push(t.id);
   });
-  var VER = '1';
+  var VER = '2';
 
   /* Raster travel covers (from covers.js) */
   var COVERS = (root.PBK_COVERS || []);
   COVERS.forEach(function (c) {
-    var t = { id: 'travel/' + c.id, cat: 'travel', slug: c.id, name: c.name, kind: 'raster', lines: c.lines || [], editable: !!c.plate, bg: c.bg, tc: c.tc, bc: c.bc || c.tc, st: c.st, layered: !!c.art, artBox: c.art || null,
+    var t = { id: 'travel/' + c.id, cat: 'travel', slug: c.id, name: c.name, kind: 'raster', lines: c.lines || [], editable: !!c.plate, bg: c.bg, tc: c.tc, bc: c.bc || c.tc, st: c.st, layered: !!c.art, artBox: c.art || null, sh: c.sh ? 1 : 0, yr: !!c.yr,
       art: c.art ? '/assets/pbk/c/a/' + c.id + '.webp?v=' + VER : null, artThumb: c.art ? '/assets/pbk/c/a/s/' + c.id + '.webp?v=' + VER : null,
       flat: '/assets/pbk/c/f/' + c.id + '.webp?v=' + VER, plate: c.plate ? '/assets/pbk/c/p/' + c.id + '.webp?v=' + VER : null };
     t.mock = function () { return '/assets/pbk/c/m/travel-' + c.id + '.webp?v=' + VER; };
@@ -90,35 +95,37 @@
   });
   /* Kenya covers also show under Travel */
   function byCat(cat) {
-    var l = ORDER.map(function (id) { return TPL[id]; }).filter(function (t) { return t.cat === cat || (cat === 'travel' && t.cat === 'kenya'); });
+    var l = ORDER.map(function (id) { return TPL[id]; }).filter(function (t) { return (t.cat === cat || (cat === 'travel' && t.cat === 'kenya')) && visible(t); });
     if (cat === 'travel') l.sort(function (a, b) { return (a.cat === 'kenya') - (b.cat === 'kenya'); });
     return l;
   }
 
+  function lineEl(t, l, i) {
+    var role = l.role || (i === 0 ? 'title' : 'sub');
+    return { id: role === 'year' ? 'year' : i === 0 ? 'title' : 'sub' + i, t: 'text', role: role, text: l.text, x: l.x, y: l.y, w: l.w, h: l.cap, cap: l.cap, align: l.align, font: 'spartan', color: l.color, shadow: t.sh || 0 };
+  }
   function rasterDoc(t, edit) {
-    var doc = { kind: 'cover', bg: t.bg || '#ffffff', ownBrand: true, img: t.flat, els: [], from: t.id };
+    var doc = { kind: 'cover', bg: t.bg || '#ffffff', brand: t.bc, img: t.flat, els: [], from: t.id };
+    /* covers with a year: the year is live text on the artwork, so it can be changed */
+    if (!edit) t.lines.forEach(function (l, i) { if (l.role === 'year') doc.els.push(lineEl(t, l, i)); });
     if (edit && t.layered) {
       /* fully layered: plain background, the artwork as a movable layer, live text, CIEL AFRICA drawn */
       doc = { kind: 'cover', bg: t.bg, brand: t.bc, els: [], from: t.id, edited: true, layered: true };
       doc.els.push({ id: 'art', t: 'img', src: t.art, x: t.artBox[0], y: t.artBox[1], w: t.artBox[2], h: t.artBox[3] });
-      t.lines.forEach(function (l, i) {
-        doc.els.push({ id: i === 0 ? 'title' : 'sub' + i, t: 'text', role: i === 0 ? 'title' : 'sub', text: l.text, x: l.x, y: l.y, w: l.w, h: l.cap, cap: l.cap, align: l.align, font: 'spartan', color: l.color, shadow: 1 });
-      });
+      t.lines.forEach(function (l, i) { doc.els.push(lineEl(t, l, i)); });
       return doc;
     }
     if (edit && t.plate) {
-      doc.img = t.plate; doc.edited = true;
-      t.lines.forEach(function (l, i) {
-        doc.els.push({ id: i === 0 ? 'title' : 'sub' + i, t: 'text', role: i === 0 ? 'title' : 'sub', text: l.text, x: l.x, y: l.y, w: l.w, h: l.cap, cap: l.cap, align: l.align, font: 'spartan', color: l.color, shadow: 1 });
-      });
+      doc.img = t.plate; doc.edited = true; doc.els = [];
+      t.lines.forEach(function (l, i) { doc.els.push(lineEl(t, l, i)); });
     }
     return doc;
   }
   function blankDoc(color) {
     var dark = luminance(color) < 0.45;
     return { kind: 'cover', bg: color, brand: dark ? '#ffffff' : '#1d1d1f', els: [
-      { id: 'title', t: 'text', role: 'title', text: 'YOUR TITLE', x: 140, y: 86, w: 1020, h: 190, cap: 160, align: 'fill', font: 'spartan', color: dark ? '#ffffff' : '#1d1d1f', shadow: 1 },
-      { id: 'sub', t: 'text', role: 'sub', text: 'SUBTITLE', x: 140, y: 290, w: 1020, h: 70, cap: 64, align: 'right', font: 'spartan', color: dark ? '#ffd25e' : '#e5383b', shadow: 1 }
+      { id: 'title', t: 'text', role: 'title', text: 'YOUR TITLE', x: 140, y: 86, w: 1020, h: 190, cap: 160, align: 'fill', font: 'spartan', color: dark ? '#ffffff' : '#1d1d1f', shadow: 0 },
+      { id: 'sub', t: 'text', role: 'sub', text: 'SUBTITLE', x: 140, y: 290, w: 1020, h: 70, cap: 64, align: 'right', font: 'spartan', color: dark ? '#ffd25e' : '#e5383b', shadow: 0 }
     ] };
   }
   function luminance(hex) {
@@ -140,14 +147,19 @@
   /** Cover document with the customer's changes: cu = { title, sub, bg, tc } */
   function customDoc(id, pi, cu) {
     cu = cu || {};
-    var t = TPL[id], any = cu.title != null || cu.sub != null || cu.bg || cu.tc || cu.sc;
+    var t = TPL[id], any = cu.title != null || cu.sub != null || cu.bg || cu.tc || cu.sc || cu.sh != null;
     var doc = t && t.kind === 'raster' ? rasterDoc(t, !!any && t.editable) : docFor(id, pi);
     if (!doc) return null;
     if (cu.bg && !doc.img) doc.bg = cu.bg;
     (doc.els || []).forEach(function (e) {
       if (e.role === 'title') { if (cu.title != null) e.text = cu.title; if (cu.tc) e.color = cu.tc; }
       if (e.role === 'sub') { if (cu.sub != null) e.text = cu.sub; if (cu.sc) e.color = cu.sc; }
+      if (e.role === 'year' && cu.year != null) e.text = cu.year;
+      if (e.t === 'text' && cu.sh != null) e.shadow = +cu.sh ? 1 : 0;
     });
+    if (cu.stk && (isFl(cu.stk) || (root.PBKArt && root.PBKArt.all[cu.stk])) && !(doc.els || []).some(function (e) { return e.id === 'art'; })) {
+      var ab = artBox(cu.stk); doc.els.push(isFl(cu.stk) ? { id: 'art', t: 'img', src: flSrc(cu.stk), x: ab.x, y: ab.y, w: ab.w, h: ab.h } : { id: 'art', t: 'art', art: cu.stk, x: ab.x, y: ab.y, w: ab.w, h: ab.h });
+    }
     if ((cu.bg || cu.tc) && !doc.ownBrand) {
       var tEl = (doc.els || []).filter(function (e) { return e.role === 'title'; })[0];
       doc.brand = tEl && tEl.color && Math.abs(luminance(tEl.color) - luminance(doc.bg)) > 0.3 ? tEl.color : (luminance(doc.bg) < 0.5 ? '#ffffff' : '#141414');
@@ -157,9 +169,12 @@
   /** Default title / subtitle words of a template. */
   function words(id, pi) {
     var d = id === 'blank' ? blankDoc(BLANK[pi || 0]) : null, t = TPL[id];
-    if (t && t.kind === 'vector') return { title: t.title, sub: t.sub };
-    if (t && t.kind === 'raster') return { title: (t.lines[0] || {}).text || t.name.toUpperCase(), sub: (t.lines[1] || {}).text || '' };
-    return { title: 'YOUR TITLE', sub: 'SUBTITLE' };
+    if (t && t.kind === 'vector') return { title: t.title, sub: t.sub, year: t.yr || null, sh: 0 };
+    if (t && t.kind === 'raster') {
+      var subL = t.lines.filter(function (l, i) { return i > 0 && l.role !== 'year'; })[0], yrL = t.lines.filter(function (l) { return l.role === 'year'; })[0];
+      return { title: (t.lines[0] || {}).text || t.name.toUpperCase(), sub: subL ? subL.text : '', year: yrL ? yrL.text : null, sh: t.sh || 0 };
+    }
+    return { title: 'YOUR TITLE', sub: 'SUBTITLE', year: null, sh: 0 };
   }
 
   /** What goes on the spine of the 3D book for a document. */
@@ -168,11 +183,19 @@
     var o = { bg: doc.bg, title: tEl ? tEl.text : '', tc: tEl ? tEl.color : null, bc: doc.brand || (tEl && tEl.color) };
     if (t && t.kind === 'raster' && !doc.edited) { o.bg = t.bg; o.title = t.st || t.name; o.tc = t.tc; o.bc = t.bc || t.tc; if (t.artThumb) o.artImg = t.artThumb; }
     if (doc.layered) { var ai = (doc.els || []).filter(function (e) { return e.id === 'art' && e.t === 'img'; })[0]; if (ai) o.artImg = ai.src; }
-    if (t && t.kind === 'vector') { var art = (doc.els || []).filter(function (e) { return e.id === 'art' && e.t === 'art'; })[0]; if (art) o.art = art.art; }
+    if (!t || t.kind === 'vector') { var art = (doc.els || []).filter(function (e) { return e.id === 'art'; })[0]; if (art && art.t === 'art') o.art = art.art; else if (art && art.t === 'img' && art.src) o.artImg = art.src; }
     if (!o.tc) o.tc = luminance(o.bg || '#ffffff') < 0.5 ? '#ffffff' : '#141414';
     if (!o.bc) o.bc = o.tc;
     return o;
   }
-  var API = { COVER_COLORS: COVER_COLORS, TEXT_COLORS: TEXT_COLORS, canColor: canColor, canText: canText, customDoc: customDoc, words: words, spineFor: spineFor, CATS: CATS, TPL: TPL, ORDER: ORDER, BLANK: BLANK, byCat: byCat, docFor: docFor, vectorDoc: vectorDoc, rasterDoc: rasterDoc, blankDoc: blankDoc, luminance: luminance, cat: function (id) { return CATS.filter(function (c) { return c.id === id; })[0]; } };
+  /** Brings a saved cover up to date: CIEL AFRICA is now drawn (not part of the artwork), years are live text. */
+  function fixCover(doc, tplId) {
+    var t = TPL[tplId]; if (!doc || doc.kind !== 'cover') return doc;
+    if (doc.ownBrand) { delete doc.ownBrand; doc.brand = doc.brand || (t && t.bc) || '#ffffff'; }
+    if (t && t.kind === 'raster' && t.yr && !doc.edited && !(doc.els || []).some(function (e) { return e.role === 'year'; })) t.lines.forEach(function (l, i) { if (l.role === 'year') doc.els.push(lineEl(t, l, i)); });
+    return doc;
+  }
+  function visible(t) { return !t.test || !!root.PBK_ADMIN; }
+  var API = { isFl: isFl, flSrc: flSrc, fixCover: fixCover, visible: visible, artBox: artBox, COVER_COLORS: COVER_COLORS, TEXT_COLORS: TEXT_COLORS, canColor: canColor, canText: canText, customDoc: customDoc, words: words, spineFor: spineFor, CATS: CATS, TPL: TPL, ORDER: ORDER, BLANK: BLANK, byCat: byCat, docFor: docFor, vectorDoc: vectorDoc, rasterDoc: rasterDoc, blankDoc: blankDoc, luminance: luminance, cat: function (id) { return CATS.filter(function (c) { return c.id === id; })[0]; } };
   if (typeof module === 'object' && module.exports) module.exports = API; else root.PBKCat = API;
 })(typeof self !== 'undefined' ? self : this);

@@ -11,3 +11,11 @@
 - `covers.py <scratch> <repo>`: travel covers → `assets/pbk/c/{f,p,a}` and `assets/pbk/covers.js`
   (f = flat cover, p = cover with the title removed, a = artwork cut out on a transparent background).
 - `preview.html`: renders covers and 3D books in the browser for checking.
+- `clean-covers.py` (run from a scratch folder holding the original `f/`, `p/`, `a/` and `covers.js`):
+  removes the baked-in CIEL AFRICA mark (now drawn live, smaller and lower), the old years (now live,
+  editable text, 2026 by default) and the title ghosts left on plates; detects which titles had a shadow.
+  Detection data is in `clean/`.
+- `maps.js <repo>`: back-cover map stickers (`assets/pbk/maps/*.svg`) from Natural Earth (world-atlas, public domain):
+  the country with a pin on the place, cut out like a sticker, coloured to match each cover.
+- `fluent.js`: copies the Fluent Emoji illustrations (Microsoft, MIT) used as stickers and cover art into
+  `assets/pbk/fl/` with 112 px thumbnails (`fl/t/`) and the sticker index (`fl/index.js`).

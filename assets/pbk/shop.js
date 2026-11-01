@@ -31,17 +31,20 @@
   function thumb(p) {
     return R.toCanvas(p.cover, 160, { photo: function () { return null; } }).then(function (c) { return c.toDataURL('image/jpeg', 0.7); }).catch(function () { return ''; });
   }
+  function isTest(p) { var t = C.TPL[p.tpl]; return !!(t && t.test); }
   function add(p, product, opts) {
-    var n = p.pages.length, price = unit(product, n);
+    var n = p.pages.length, test = isTest(p), price = test ? (BOOK.testPrice || 5) : unit(product, n);
+    if (test) product = 'print';
     return thumb(p).then(function (t) {
-      CIEL.cart.addItem({ id: 'pbk:' + p.id + ':' + product, name: (p.name || 'Photo book'), price: price || 0, qty: 1, thumb: t, pb: { p: p.id, product: product, pages: n } }, opts && opts.silent);
+      if (test) CIEL.cart.pbItems().forEach(function (i) { CIEL.cart.remove(i.id); });
+      CIEL.cart.addItem({ id: 'pbk:' + p.id + ':' + (test ? 'test' : product), name: (p.name || 'Photo book'), price: price || 0, qty: 1, thumb: t, pb: { p: p.id, product: product, pages: n, test: test || undefined } }, opts && opts.silent);
     });
   }
   /** refresh pages and prices of photo-book items from the books saved on this device */
   function sync() {
     var items = CIEL.cart.pbItems();
     return Promise.all(items.map(function (i) { return ST.project(i.pb.p).then(function (p) { return { i: i, p: p }; }).catch(function () { return { i: i, p: null }; }); })).then(function (rows) {
-      rows.forEach(function (r) { if (!r.p) return; var n = r.p.pages.length; if (n !== r.i.pb.pages || r.p.name !== r.i.name) CIEL.cart.update(r.i.id, { name: r.p.name, price: unit(r.i.pb.product, n) || 0, pb: Object.assign({}, r.i.pb, { pages: n }) }); });
+      rows.forEach(function (r) { if (!r.p) return; var n = r.p.pages.length; if (n !== r.i.pb.pages || r.p.name !== r.i.name) CIEL.cart.update(r.i.id, { name: r.p.name, price: r.i.pb.test ? (BOOK.testPrice || 5) : unit(r.i.pb.product, n) || 0, pb: Object.assign({}, r.i.pb, { pages: n }) }); });
       return rows.map(function (r) { return { item: CIEL.cart.items().filter(function (x) { return x.id === r.i.id; })[0] || r.i, project: r.p }; });
     });
   }
@@ -58,13 +61,27 @@
       done: function () { Object.keys(urls).forEach(function (id) { R.forget(urls[id]); URL.revokeObjectURL(urls[id]); }); urls = {}; }
     };
   }
+  /* back cover: the cover colour, a small sticker (a map of the place for travel and Kenya covers,
+     otherwise the cover's own artwork) and cielafrica.com / hello@cielafrica.com bottom right */
   function backDoc(p) {
     var t = C.TPL[p.tpl], c = p.cover;
-    var bg = c.img && t ? t.bg : c.bg, brand = c.ownBrand && t ? (t.bc || t.tc) : (c.brand || '#ffffff');
-    return { kind: 'cover', bg: bg || '#ffffff', brand: brand, els: [] };
+    var bg = c.img && t ? t.bg : c.bg, brand = c.brand || (t && (t.bc || t.tc)) || '#ffffff';
+    var doc = { kind: 'back', bg: bg || '#ffffff', brand: brand, els: [] };
+    var map = null;
+    if (t && t.kind === 'raster' && t.slug !== 'asia') map = '/assets/pbk/maps/' + t.slug + '.svg';
+    else if (t && t.cat === 'kenya') map = '/assets/pbk/maps/kenya-' + t.slug + '-' + (p.pal || 0) + '.svg';
+    if (map) { doc.els.push({ id: 'map', t: 'img', src: map, x: 330, y: 540, w: 440, h: 440 }); return doc; }
+    var art = (c.els || []).filter(function (e) { return e.id === 'art' && (e.t === 'art' || (e.t === 'img' && e.src)); })[0];
+    if (!art && t && t.layered) art = { t: 'img', src: t.art, w: t.artBox[2], h: t.artBox[3] };
+    if (art) {
+      var k = Math.min(400 / art.w, 400 / art.h), w = art.w * k, h = art.h * k;
+      var e = { id: 'art', t: art.t, x: 550 - w / 2, y: 760 - h / 2, w: w, h: h }; if (art.t === 'art') e.art = art.art; else e.src = art.src;
+      doc.els.push(e);
+    }
+    return doc;
   }
   /** docs in print order: front cover, pages…, back cover */
-  function docs(p) { return [p.cover].concat(p.pages).concat([backDoc(p)]); }
+  function docs(p) { C.fixCover(p.cover, p.tpl); return [p.cover].concat(p.pages).concat([backDoc(p)]); }
   /** a page at trim size (px wide), optionally with bleed (mirrored edges) */
   function renderPage(doc, src, px, bleedPx) {
     return src.load(doc).then(function () { return R.toCanvas(doc, px, { photo: src.url, empty: 'none' }); }).then(function (c) {
@@ -161,7 +178,8 @@
       draw(rows, cp);
     });
     function draw(rows, cp) {
-      var anyPrint = rows.some(function (r) { return r.item.pb.product === 'print'; }), missing = rows.filter(function (r) { return !r.project; });
+      var test = rows.some(function (r) { return r.item.pb.test; });
+      var anyPrint = !test && rows.some(function (r) { return r.item.pb.product === 'print'; }), missing = rows.filter(function (r) { return !r.project; });
       var del = DEL.filter(function (d) { return d.id === st.delivery; })[0] || DEL[0];
       var lines = rows.map(function (r) { return { label: r.item.name + ' · ' + (r.item.pb.product === 'digital' ? 'PDF' : 'Printed') + ' · ' + r.item.pb.pages + ' pages', amount: r.item.price, qty: r.item.qty }; });
       var total = lines.reduce(function (s, l) { return s + l.amount * l.qty; }, 0) + (anyPrint && del ? (del.price || 0) : 0);
@@ -169,9 +187,9 @@
         '<h2 class="pkco__h">Your books</h2>' + rows.map(function (r) {
           var it = r.item, pr = it.pb.product;
           return '<div class="pkco__item" data-id="' + esc(it.id) + '"><img src="' + esc(it.thumb || '') + '" alt="" draggable="false"><div class="pkco__it"><b>' + esc(it.name) + '</b><span>' + it.pb.pages + ' pages · ' + esc(BOOK.size || '21 × 28 cm') + '</span>' +
-            '<div class="pkco__seg"><button data-prod="print"' + (pr === 'print' ? ' class="is-on"' : '') + '>Printed hardcover<small>' + money(unit('print', it.pb.pages)) + '</small></button><button data-prod="digital"' + (pr === 'digital' ? ' class="is-on"' : '') + '>Print-ready PDF<small>' + money(unit('digital', it.pb.pages)) + '</small></button></div>' +
+            (it.pb.test ? '<p class="pkco__test"><b>TEST order</b> · only for Ciel Africa (you must be signed in to Photo Book orders on this browser). Not printed; deleted after 24 hours.</p>' : '<div class="pkco__seg"><button data-prod="print"' + (pr === 'print' ? ' class="is-on"' : '') + '>Printed hardcover<small>' + money(unit('print', it.pb.pages)) + '</small></button><button data-prod="digital"' + (pr === 'digital' ? ' class="is-on"' : '') + '>Print-ready PDF<small>' + money(unit('digital', it.pb.pages)) + '</small></button></div>') +
             (r.project ? '' : '<p class="pkco__warn">This book isn’t saved on this device. Open checkout on the phone or computer you designed it on.</p>') +
-            '</div><div class="pkco__end">' + (pr === 'print' ? '<div class="pkco__qty"><button data-q="-1" aria-label="One less">−</button><span>' + it.qty + '</span><button data-q="1" aria-label="One more">+</button></div>' : '') + '<b>' + money(it.price * it.qty) + '</b><button class="pkco__rm" data-rm>Remove</button></div></div>';
+            '</div><div class="pkco__end">' + (pr === 'print' && !it.pb.test ? '<div class="pkco__qty"><button data-q="-1" aria-label="One less">−</button><span>' + it.qty + '</span><button data-q="1" aria-label="One more">+</button></div>' : '') + '<b>' + money(it.price * it.qty) + '</b><button class="pkco__rm" data-rm>Remove</button></div></div>';
         }).join('') +
         (anyPrint ? '<h2 class="pkco__h">Delivery</h2><div class="pkco__del">' + DEL.map(function (d) { return '<label class="pkco__opt' + (d.id === st.delivery ? ' is-on' : '') + '"><input type="radio" name="del" value="' + d.id + '"' + (d.id === st.delivery ? ' checked' : '') + '><span>' + esc(d.name) + '</span><b>' + (d.price ? money(d.price) : 'Free') + '</b></label>'; }).join('') + '</div><p class="pkco__note">Printing and delivery usually take 5–10 working days. We’ll confirm by email and WhatsApp.</p>' : '') +
         '<h2 class="pkco__h">Is this a gift?</h2><div class="pkco__gift"><label class="pkco__opt' + (!st.gift ? ' is-on' : '') + '"><input type="radio" name="gift" value="0"' + (!st.gift ? ' checked' : '') + '><span>No, it’s for me</span></label><label class="pkco__opt' + (st.gift ? ' is-on' : '') + '"><input type="radio" name="gift" value="1"' + (st.gift ? ' checked' : '') + '><span>Yes, it’s a gift for someone 🎁</span></label></div>' +
@@ -208,7 +226,7 @@
     function status(h, cls) { var s = document.getElementById('coStatus'); if (s) s.innerHTML = '<div class="pkco__st ' + (cls || '') + '">' + h + '</div>'; }
     function startPay(rows, del, total) {
       var f = st.f, btn = document.getElementById('coPay');
-      var body = { items: rows.map(function (r) { return { projectId: r.item.pb.p, name: r.item.name, product: r.item.pb.product, pages: r.item.pb.pages, qty: r.item.qty }; }), delivery: del ? del.id : null, name: f.name, phone: f.phone, email: f.email, address: { line1: f.line1, area: f.area, town: f.town, county: f.county, notes: f.notes }, gift: st.gift ? { is: true, to: f.gto, phone: f.gphone, note: f.gnote } : null };
+      var body = { items: rows.map(function (r) { return { projectId: r.item.pb.p, name: r.item.name, product: r.item.pb.product, pages: r.item.pb.pages, qty: r.item.qty, test: r.item.pb.test || undefined }; }), delivery: del ? del.id : null, name: f.name, phone: f.phone, email: f.email, address: { line1: f.line1, area: f.area, town: f.town, county: f.county, notes: f.notes }, gift: st.gift ? { is: true, to: f.gto, phone: f.gphone, note: f.gnote } : null };
       btn.disabled = true; status('<span class="pkco__spin"></span> Sending the payment request…');
       api('pbk-pay', body).then(function (r) {
         status('<span class="pkco__spin"></span> <b>Check your phone.</b> Enter your M-Pesa PIN to pay ' + money(r.amount) + '. Order ' + esc(r.ref) + '.');
@@ -269,5 +287,5 @@
     });
   }
 
-  window.PBKShop = { add: add, unit: unit, checkout: checkout, purchases: purchases, pdf: pdf, sendPages: sendPages, resumeBanner: resumeBanner, caps: caps, docs: docs, renderPage: renderPage, photoSource: photoSource };
+  window.PBKShop = { isTest: isTest, backDoc: backDoc, add: add, unit: unit, checkout: checkout, purchases: purchases, pdf: pdf, sendPages: sendPages, resumeBanner: resumeBanner, caps: caps, docs: docs, renderPage: renderPage, photoSource: photoSource };
 })();

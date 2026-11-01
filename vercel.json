@@ -357,5 +357,11 @@
       "destination": "/wanja/rates",
       "permanent": false
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/photobooks?route=pbk-cron",
+      "schedule": "17 3 * * *"
+    }
   ]
 }

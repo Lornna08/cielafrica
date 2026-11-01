@@ -30,7 +30,8 @@
       pages: { min: 24, max: 100, step: 2, default: 24 },
       maxPhotosPerPage: 2,
       price: { base: 4500, includedPages: 24, perExtraPage: 100 },   /* printed hardcover (KES): starter prices, change any time */
-      digital: { base: 1500, includedPages: 24, perExtraPage: 25 },  /* print-ready PDF (KES) */
+      digital: { base: 1600, includedPages: 24, perExtraPage: 25 },  /* print-ready PDF (KES) */
+      testPrice: 5,  /* KES: the admin-only "Ciel Test" book (Someone), for trying real payments; deleted after 24 h */
       ordering: true /* M-Pesa checkout at /photobooks/checkout */
     },
 

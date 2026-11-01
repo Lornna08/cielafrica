@@ -10,7 +10,7 @@
   var R = window.PBKR, C = window.PBKCat, A = window.PBKArt, ST = window.PBStore, PH = window.PBPhotos;
   var PBK = window.PBK, esc = PBK.esc, BOOK = PBK.BOOK, BASE = PBK.BASE;
   var CFG = (window.CIEL && CIEL.photobooks) || {};
-  var W = R.W, H = R.H, BRAND_TOP = 1440, MAXPH = BOOK.maxPhotosPerPage || 2;
+  var W = R.W, H = R.H, BRAND_TOP = 1500, MAXPH = BOOK.maxPhotosPerPage || 2;
 
   var LAYOUTS = {
     one: { n: 'One photo', f: [[90, 90, 1020, 1330]] },
@@ -55,7 +55,10 @@
     left: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
     right: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>',
     x: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
-    lock: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>'
+    lock: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+    lockb: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+    unlock: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 7.5-2"/></svg>',
+    reset: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>'
   };
 
   /* ---------------- project ---------------- */
@@ -121,11 +124,12 @@
     var ready = pid ? ST.project(pid).then(function (p) { if (!p || p.app !== 'pbk') throw new Error('missing'); return p; }) :
       Promise.resolve().then(function () {
         var t = q.get('t') || 'blank'; if (t !== 'blank' && !C.TPL[t]) t = 'blank';
-        var cu = {}; ['title', 'sub', 'bg', 'tc', 'sc'].forEach(function (k) { var v = q.get(k); if (v) cu[k] = k === 'bg' || k === 'tc' || k === 'sc' ? (/^#[0-9a-f]{6}$/i.test(v) ? v : null) : v.slice(0, 40); });
+        var cu = {}; ['title', 'sub', 'bg', 'tc', 'sc', 'year', 'sh', 'stk'].forEach(function (k) { var v = q.get(k); if (v) cu[k] = k === 'bg' || k === 'tc' || k === 'sc' ? (/^#[0-9a-f]{6}$/i.test(v) ? v : null) : k === 'stk' ? (/^fl:[a-z0-9-]{1,60}$/.test(v) ? v : null) : v.slice(0, 40); });
         var p = newProject(t, +q.get('c') || 0, +q.get('n') || 0, cu);
         return ST.saveProject(p).then(function () { history.replaceState({}, '', BASE + '/design?p=' + p.id); return p; });
       });
     ready.then(function (p) {
+      C.fixCover(p.cover, p.tpl);
       S = { p: p, cur: -1, sel: null, undo: [], redo: [], last: null, photos: {}, order: [], stickers: [], panel: null, crop: false };
       S.last = snap(); S.go = q.get('go');
       return ST.photos(p.id).then(function (list) {
@@ -165,7 +169,7 @@
       '<input type="file" id="peFile" accept="' + (PH.accept || 'image/*') + '" multiple hidden><input type="file" id="peSFile" accept="image/png,image/webp,image/jpeg" hidden>';
     el$ = { pe: pe, canvas: $('#peCanvas', pe), wrap: $('#peWrap', pe), sel: $('#peSel', pe), ctx: $('#peCtx', pe), panel: $('#pePanel', pe), strip: $('#peStrip', pe), toast: $('#peToast', pe), saved: $('#peSaved', pe), undo: $('#peUndo', pe), redo: $('#peRedo', pe), mock: $('#peMockC', pe), mockBox: $('#peMock', pe), stage: $('#peStage', pe), file: $('#peFile', pe), sfile: $('#peSFile', pe), hint: $('#peHint', pe) };
     el$.g = el$.canvas.getContext('2d');
-    bindTop(); bindRail(); bindCanvas(); bindStrip();
+    bindTop(); bindRail(); bindCanvas(); bindStrip(); bindPhotoDrag(el$.panel);
     R.loadFonts().then(function () { renderAll(); });
     renderAll();
     window.addEventListener('resize', fit);
@@ -189,7 +193,7 @@
     var tag = (e.target.tagName || '').toLowerCase(); if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); }
     else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); }
-    else if ((e.key === 'Delete' || e.key === 'Backspace') && S.sel) { e.preventDefault(); removeSel(); }
+    else if ((e.key === 'Delete' || e.key === 'Backspace') && S.sel) { e.preventDefault(); if (selEl() && selEl().lock) toast('Unlock it first to delete it.'); else removeSel(); }
     else if (e.key === 'Escape') { S.crop = false; select(null); }
     else if (e.key === 'ArrowRight' && !S.sel) go(S.cur + 1);
     else if (e.key === 'ArrowLeft' && !S.sel) go(S.cur - 1);
@@ -212,6 +216,7 @@
   function draw() {
     cancelAnimationFrame(rafId);
     rafId = requestAnimationFrame(function () {
+      if (!el$.canvas || !el$.canvas.isConnected || !S.p) return;
       var d = doc(), g = el$.g;
       R.load(d, { photo: photoUrl }).then(function () {
         g.setTransform(1, 0, 0, 1, 0, 0);
@@ -233,6 +238,7 @@
   function mockSoon() {
     clearTimeout(mockT);
     mockT = setTimeout(function () {
+      if (!S.p || !el$.mock || !el$.mock.isConnected) return;
       book3d(S.p.cover, 900).then(function (m) {
         [el$.mock, document.getElementById('peMockP')].forEach(function (cv) { if (!cv) return; cv.width = m.width; cv.height = m.height; var x = cv.getContext('2d'); x.clearRect(0, 0, cv.width, cv.height); x.drawImage(m, 0, 0); });
       }).catch(function () {});
@@ -251,7 +257,7 @@
     var b = bounds(e), k = S.k;
     s.hidden = false;
     s.style.left = b.x * k + 'px'; s.style.top = b.y * k + 'px'; s.style.width = b.w * k + 'px'; s.style.height = b.h * k + 'px';
-    s.className = 'pe-sel' + (S.crop ? ' is-crop' : '') + (e.t === 'text' ? ' is-text' : '');
+    s.className = 'pe-sel' + (S.crop ? ' is-crop' : '') + (e.t === 'text' ? ' is-text' : '') + (e.lock ? ' is-locked' : '');
     s.style.transform = e.rot ? 'rotate(' + e.rot + 'deg)' : '';
     ctxPos();
   }
@@ -281,15 +287,15 @@
       var p = pt(ev), h = ev.target.getAttribute && ev.target.getAttribute('data-h');
       var e = selEl();
       if (S.cur < 0 && !S.p.cover.edited) { var tt = C.TPL[S.p.tpl]; if (tt && tt.kind === 'raster' && tt.editable) { ensureEditable(); draw(); } }
-      if (h && e) { drag = { mode: 'resize', h: h, e: e, p: p, o: clone(e), b: bounds(e) }; }
+      if (h && e && !e.lock) { drag = { mode: 'resize', h: h, e: e, p: p, o: clone(e), b: bounds(e) }; }
       else {
         var t = hit(p.x, p.y);
         if (S.crop && e && e.t === 'photo' && t === e) { drag = { mode: 'pan', e: e, p: p, o: clone(e) }; }
         else if (t) {
           var was = S.sel === t.id;
           if (!was) { S.crop = false; select(t.id); }
-          if (t.t === 'photo' && !t.photo) { drag = null; askPhoto(t.id); return; }
-          drag = { mode: 'move', e: t, p: p, o: clone(t), moved: false, wasSel: was };
+          if (t.lock) { drag = null; if (was) toast('This is locked. Tap Unlock to move it.'); return; }
+          drag = { mode: 'move', e: t, p: p, o: clone(t), moved: false, wasSel: was, empty: t.t === 'photo' && !t.photo };
         } else { select(null); return; }
       }
       wrap.setPointerCapture(ev.pointerId); ev.preventDefault();
@@ -300,6 +306,7 @@
       if (drag.mode === 'move') {
         if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 6) return;
         drag.moved = true;
+        if (e.t === 'photo' && e.photo) { var pg = stripTarget(ev.clientX, ev.clientY); drag.toPage = pg; }
         e.x = o.x + dx; e.y = o.y + dy;
         // gentle snapping to the page centre and margins
         var b = bounds(e), cx = b.x + b.w / 2;
@@ -332,9 +339,17 @@
       if (!drag) return;
       var d = drag; drag = null;
       if (d.mode === 'move' && !d.moved) {
-        // a tap: text opens the text editor; a filled photo opens crop on a second tap
+        // a tap: text opens the text editor; an empty frame asks for a photo
         if (d.e.t === 'text' && d.wasSel) openPanel('text');
+        if (d.empty) askPhoto(d.e.id);
         return;
+      }
+      stripTarget(null);
+      if (d.mode === 'move' && d.toPage != null && d.toPage !== S.cur) {
+        // dropped on another page in the strip: the photo moves there
+        Object.assign(d.e, { x: d.o.x, y: d.o.y }); var ph = d.e.photo; d.e.photo = null;
+        if (dropOnPage(ph, d.toPage)) { toast('Photo moved to ' + (d.toPage < 0 ? 'the cover' : 'page ' + (d.toPage + 1)) + '.'); return; }
+        d.e.photo = ph; draw(); return;
       }
       commit(); drawThumb(S.cur); ctxBar();
     }
@@ -356,20 +371,30 @@
     var bar = el$.ctx, e = selEl();
     if (!e) { bar.hidden = true; return; }
     var h = '';
+    if (e.lock) {
+      bar.innerHTML = '<span class="pe-lockmsg">' + I.lockb + ' Locked</span><button data-a="unlock" class="pe-hl">' + I.unlock + '<span>Unlock</span></button>'; bar.hidden = false; ctxPos();
+      bar.onclick = function (ev) { if (ev.target.closest('[data-a="unlock"]')) { var x = selEl(); if (x) { delete x.lock; commit(); placeSel(); ctxBar(); } } };
+      return;
+    }
+    var edited = (e.t === 'photo' || e.t === 'img') && (e.fx || e.mask || e.rect), hist = (S.phist && S.phist[e.id] || []).length;
+    var fixes = (hist ? '<button data-a="phundo">' + I.undo + '<span>Undo edit</span></button>' : '') + (edited ? '<button data-a="phreset">' + I.reset + '<span>Original</span></button>' : '');
     if (e.t === 'photo') {
       if (S.crop) h = '<label class="pe-zoom">Zoom <input type="range" id="peZoom" min="1" max="4" step="0.01" value="' + ((e.crop && e.crop.z) || 1) + '"></label><button data-a="done" class="pe-done">Done</button>';
-      else h = (e.photo ? '<button data-a="edit-photo" class="pe-hl">' + I.wand + '<span>Edit photo</span></button><button data-a="crop">' + I.crop + '<span>Move &amp; zoom</span></button><button data-a="replace">' + I.swap + '<span>Replace</span></button>' : '<button data-a="replace" class="pe-hl">' + I.photo + '<span>Add photo</span></button>') +
-        (e.photo ? '<button data-a="clear">' + I.x + '<span>Remove photo</span></button>' : '') + '<button data-a="front">' + I.up + '<span>To front</span></button><button data-a="del" class="pe-del">' + I.trash + '<span>Delete frame</span></button>';
+      else h = (e.photo ? '<button data-a="edit-photo" class="pe-hl">' + I.wand + '<span>Edit photo</span></button>' + fixes + '<button data-a="crop">' + I.crop + '<span>Move &amp; zoom</span></button><button data-a="replace">' + I.swap + '<span>Replace</span></button>' : '<button data-a="replace" class="pe-hl">' + I.photo + '<span>Add photo</span></button>') +
+        (e.photo ? '<button data-a="clear">' + I.x + '<span>Remove photo</span></button>' : '') + '<button data-a="front">' + I.up + '<span>To front</span></button><button data-a="lock">' + I.lockb + '<span>Lock</span></button><button data-a="del" class="pe-del">' + I.trash + '<span>Delete frame</span></button>';
     } else if (e.t === 'text') {
-      h = '<button data-a="edit">' + I.edit + '<span>Edit text</span></button><button data-a="dup">' + I.dup + '<span>Duplicate</span></button><button data-a="front">' + I.up + '<span>To front</span></button><button data-a="del" class="pe-del">' + I.trash + '<span>Delete</span></button>';
+      h = '<button data-a="edit">' + I.edit + '<span>Edit text</span></button><button data-a="dup">' + I.dup + '<span>Duplicate</span></button><button data-a="front">' + I.up + '<span>To front</span></button><button data-a="lock">' + I.lockb + '<span>Lock</span></button><button data-a="del" class="pe-del">' + I.trash + '<span>Delete</span></button>';
     } else {
-      h = (e.t === 'img' && e.photo ? '<button data-a="edit-photo" class="pe-hl">' + I.wand + '<span>Erase / edit</span></button>' : '') + '<button data-a="swap">' + I.swap + '<span>Replace</span></button><button data-a="flip">' + I.flip + '<span>Flip</span></button><button data-a="dup">' + I.dup + '<span>Duplicate</span></button><button data-a="front">' + I.up + '<span>To front</span></button><button data-a="del" class="pe-del">' + I.trash + '<span>Delete</span></button>';
+      h = (e.t === 'img' && e.photo ? '<button data-a="edit-photo" class="pe-hl">' + I.wand + '<span>Crop &amp; edit</span></button>' + fixes : '') + '<button data-a="swap">' + I.swap + '<span>Replace</span></button><button data-a="flip">' + I.flip + '<span>Flip</span></button><button data-a="dup">' + I.dup + '<span>Duplicate</span></button><button data-a="front">' + I.up + '<span>To front</span></button><button data-a="lock">' + I.lockb + '<span>Lock</span></button><button data-a="del" class="pe-del">' + I.trash + '<span>Delete</span></button>';
     }
     bar.innerHTML = h; bar.hidden = false; ctxPos();
     bar.onclick = function (ev) {
       var b = ev.target.closest('[data-a]'); if (!b) return; var a = b.getAttribute('data-a'), e = selEl(); if (!e) return;
       if (a === 'crop') { S.crop = true; placeSel(); ctxBar(); hint('Drag the photo to move it inside the frame. Use the slider to zoom.'); }
       else if (a === 'edit-photo') editPhoto(e);
+      else if (a === 'lock') { e.lock = true; S.crop = false; commit(); placeSel(); ctxBar(); toast('Locked: it won’t move until you unlock it.'); }
+      else if (a === 'phundo') { var st2 = S.phist[e.id], prev = st2 && st2.pop(); if (prev) { Object.assign(e, prev); ['fx', 'mask', 'rect'].forEach(function (k) { if (prev[k] == null) delete e[k]; }); R.load(doc(), { photo: photoUrl }).then(function () { commit(); draw(); drawThumb(S.cur); placeSel(); ctxBar(); }); } }
+      else if (a === 'phreset') { pushPh(e); var m0 = S.photos[e.photo]; delete e.fx; delete e.mask; delete e.rect; e.crop = { z: 1, cx: 0.5, cy: 0.5 }; if (e.t === 'img' && m0 && m0.w) { var cy0 = e.y + e.h / 2; e.h = e.w * m0.h / m0.w; e.y = cy0 - e.h / 2; } commit(); draw(); drawThumb(S.cur); placeSel(); ctxBar(); toast('Back to the original photo. Tap Undo edit to go back.'); }
       else if (a === 'done') { S.crop = false; placeSel(); ctxBar(); }
       else if (a === 'replace') askPhoto(e.id, true);
       else if (a === 'swap') { S.replaceArt = e.id; openPanel('stickers'); hint('Pick a sticker, emoji or artwork to put in its place.'); }
@@ -399,6 +424,7 @@
     var d = doc();
     window.PBKPhotoEdit.open({ src: src, fx: e.fx, rect: e.rect, maskSrc: e.mask ? photoUrl(e.mask) : null, frameAr: e.w / e.h, sticker: e.t === 'img' }).then(function (r) {
       if (!r) return;
+      pushPh(e);
       var next = Promise.resolve();
       if (r.mask === null) e.mask = null;
       else if (r.mask) {
@@ -412,10 +438,89 @@
           var ar = r.ar, cx = e.x + e.w / 2, cy = e.y + e.h / 2, area = e.w * e.h, w = Math.sqrt(area * ar), h = w / ar;
           var maxW = S.cur < 0 ? 1060 : 1140, maxH = S.cur < 0 ? 1300 : 1540, k = Math.min(1, maxW / w, maxH / h); w *= k; h *= k;
           e.w = w; e.h = h; e.x = Math.max(S.cur < 0 ? 110 : 30, Math.min((S.cur < 0 ? 1170 : 1170) - w, cx - w / 2)); e.y = Math.max(30, Math.min((S.cur < 0 ? BRAND_TOP : 1570) - h, cy - h / 2));
-        } else if (r.rect) { /* stickers keep their box; crop is not offered */ }
+        } else {
+          /* stickers: keep the width, take the crop's shape */
+          var m1 = S.photos[e.photo], ar1 = r.rect ? r.ar : (m1 && m1.w ? m1.w / m1.h : e.w / e.h), cy1 = e.y + e.h / 2;
+          if (r.rect) e.rect = r.rect; else delete e.rect;
+          e.h = e.w / ar1; e.y = cy1 - e.h / 2; clampEl(e);
+        }
         return R.load(d, { photo: photoUrl });
       }).then(function () { commit(); draw(); drawThumb(S.cur); placeSel(); ctxBar(); });
     });
+  }
+  /** remembers a photo's state so its last edit can be undone on its own */
+  function pushPh(e) { S.phist = S.phist || {}; var l = S.phist[e.id] = S.phist[e.id] || []; l.push({ fx: e.fx ? clone(e.fx) : null, mask: e.mask || null, rect: e.rect ? clone(e.rect) : null, crop: e.crop ? clone(e.crop) : null, x: e.x, y: e.y, w: e.w, h: e.h }); if (l.length > 20) l.shift(); }
+  /* ---------- dragging photos onto pages ---------- */
+  var dropOn = null;
+  /** highlights the strip page under the pointer; returns its index (−1 = cover) or null */
+  function stripTarget(x, y) {
+    var b = x == null ? null : document.elementFromPoint(x, y), pg = b && b.closest && b.closest('#peStrip [data-pg]');
+    if (dropOn && dropOn !== pg) dropOn.classList.remove('is-drop');
+    dropOn = pg || null; if (pg) pg.classList.add('is-drop');
+    return pg ? +pg.getAttribute('data-pg') : null;
+  }
+  /** puts a photo on page i: an empty frame, a second frame, or in place of the last photo */
+  function dropOnPage(id, i) {
+    var d = i < 0 ? S.p.cover : S.p.pages[i]; if (!d || !id) return false;
+    var fr = d.els.filter(function (x) { return x.t === 'photo'; }), e = fr.filter(function (x) { return !x.photo; })[0], replaced = false;
+    if (!e) {
+      if (fr.length >= MAXPH) { e = fr[fr.length - 1]; replaced = true; }
+      else if (i < 0) { e = { id: uid('ph'), t: 'photo', x: 330, y: 500, w: 640, h: 800, photo: null, crop: { z: 1, cx: .5, cy: .5 }, border: 14, borderColor: '#ffffff' }; d.els.push(e); }
+      else { var keep = fr.map(function (x) { return x.photo; }); applyLayout(d, 'twov'); var nf = d.els.filter(function (x) { return x.t === 'photo'; }); keep.forEach(function (ph, k) { if (nf[k]) nf[k].photo = ph; }); e = nf.filter(function (x) { return !x.photo; })[0]; }
+    }
+    if (!e) return false;
+    e.photo = id; e.crop = { z: 1, cx: 0.5, cy: 0.5 }; delete e.rect; delete e.fx; delete e.mask;
+    commit(); drawThumb(i);
+    if (i !== S.cur) go(i);
+    select(e.id); draw(); if (S.panel === 'photos') openPanel('photos', true);
+    if (replaced) toast('That page was full, so its last photo was swapped. Tap ↶ to undo.');
+    return true;
+  }
+  /** drag a photo from the library (mouse: drag; touch: press and hold, then drag) */
+  function bindPhotoDrag(P) {
+    var dr = null;
+    function begin(btn, x, y) {
+      var im = btn.querySelector('img'), gh = document.createElement('div'); gh.className = 'pe-ghost';
+      gh.innerHTML = '<img alt="" src="' + (im && im.src || '') + '">'; document.body.appendChild(gh);
+      dr.on = true; dr.gh = gh; btn.classList.add('is-drag'); el$.pe.classList.add('is-dragging'); move(x, y);
+      if (navigator.vibrate) try { navigator.vibrate(12); } catch (e) { }
+      hint('Drop it on a photo frame, or on a page in the strip below.');
+    }
+    function move(x, y) {
+      if (!dr || !dr.on) return;
+      dr.gh.style.transform = 'translate(' + (x - 36) + 'px,' + (y - 36) + 'px)';
+      var r = el$.wrap.getBoundingClientRect(), over = x >= r.left && x <= r.right && y >= r.top && y <= r.bottom && !(document.elementFromPoint(x, y) || document.body).closest('.pe-panel');
+      el$.wrap.classList.toggle('is-drop', over); dr.canvas = over;
+      dr.page = over ? null : stripTarget(x, y); if (over) stripTarget(null);
+    }
+    function end(x, y) {
+      if (!dr) return; var d = dr; dr = null; clearTimeout(d.t);
+      if (!d.on) return;
+      d.btn.classList.remove('is-drag'); el$.pe.classList.remove('is-dragging'); d.gh.remove(); el$.wrap.classList.remove('is-drop'); stripTarget(null);
+      P._noClick = Date.now();
+      if (d.canvas) { var r = el$.canvas.getBoundingClientRect(), t = hit((x - r.left) / S.k, (y - r.top) / S.k); placePhoto(d.id, t && t.t === 'photo' ? t.id : null); }
+      else if (d.page != null) dropOnPage(d.id, d.page);
+    }
+    P.addEventListener('pointerdown', function (ev) {
+      if (ev.pointerType === 'touch') return;
+      var b = ev.target.closest('[data-ph]'); if (!b) return;
+      dr = { id: b.getAttribute('data-ph'), btn: b, x: ev.clientX, y: ev.clientY, on: false };
+    });
+    window.addEventListener('pointermove', function (ev) { if (!dr || ev.pointerType === 'touch') return; if (!dr.on && Math.hypot(ev.clientX - dr.x, ev.clientY - dr.y) > 6) begin(dr.btn, ev.clientX, ev.clientY); move(ev.clientX, ev.clientY); });
+    window.addEventListener('pointerup', function (ev) { if (ev.pointerType !== 'touch') end(ev.clientX, ev.clientY); });
+    P.addEventListener('touchstart', function (ev) {
+      var b = ev.target.closest('[data-ph]'); if (!b || ev.touches.length > 1) return;
+      var t0 = ev.touches[0]; dr = { id: b.getAttribute('data-ph'), btn: b, x: t0.clientX, y: t0.clientY, on: false, lx: t0.clientX, ly: t0.clientY };
+      dr.t = setTimeout(function () { if (dr && !dr.on) begin(b, dr.lx, dr.ly); }, 320);
+    }, { passive: true });
+    P.addEventListener('touchmove', function (ev) {
+      if (!dr) return; var t0 = ev.touches[0]; dr.lx = t0.clientX; dr.ly = t0.clientY;
+      if (!dr.on) { if (Math.hypot(t0.clientX - dr.x, t0.clientY - dr.y) > 10) { clearTimeout(dr.t); dr = null; } return; }
+      ev.preventDefault(); move(t0.clientX, t0.clientY);
+    }, { passive: false });
+    P.addEventListener('touchend', function () { if (dr) end(dr.lx, dr.ly); });
+    P.addEventListener('touchcancel', function () { if (dr) { var d = dr; end(-1, -1); if (d.gh) d.gh.remove(); } });
+    P.addEventListener('contextmenu', function (ev) { if (ev.target.closest('[data-ph]')) ev.preventDefault(); });
   }
   /** Adds an empty photo frame (pages hold up to two). */
   function addFrame() {
@@ -580,9 +685,9 @@
     var h = '';
     if (name === 'photos') {
       var used = usedMap();
-      h = head('Photos', S.target ? 'Choose a photo for the selected frame.' : 'Tap a photo to place it on this page' + (innerWidth > 900 ? ', or drag it onto a frame.' : '.')) +
+      h = head('Photos', S.target ? 'Choose a photo for the selected frame.' : 'Tap a photo to place it on this page, or ' + (innerWidth > 900 ? 'drag it' : 'press, hold and drag it') + ' onto a frame or a page below.') +
         '<div class="pe-row"><button class="btn btn--p btn--sm" data-act="add">' + I.plus + ' Add photos</button>' + (S.order.length ? '<button class="btn btn--ghost btn--sm" data-act="auto">Arrange for me</button>' : '') + '<button class="btn btn--ghost btn--sm" data-act="frame">' + I.frame + ' Add a photo frame</button></div>' + (S.order.length > 1 ? '<button class="pe-linkbtn" data-act="autoall">Rearrange the whole book</button>' : '<p class="pe-note">Select as many photos as you like: we’ll lay them out, two landscapes to a page, portraits on their own.</p>') + '<p class="pe-prog" id="peProg"></p>' +
-        (S.order.length ? '<div class="pe-photos">' + S.order.map(function (id) { var m = S.photos[id]; return '<button class="pe-thumb" draggable="true" data-ph="' + id + '" title="' + esc(m.name) + '"><img alt="" data-src="' + id + '">' + (used[id] ? '<span class="pe-used">' + used[id] + '</span>' : '') + (m.low ? '<span class="pe-low" title="Small photo: it may look soft in print">Low res</span>' : '') + '</button>'; }).join('') + '</div>' :
+        (S.order.length ? '<div class="pe-photos">' + S.order.map(function (id) { var m = S.photos[id]; return '<button class="pe-thumb" data-ph="' + id + '" title="' + esc(m.name) + '"><img alt="" data-src="' + id + '">' + (used[id] ? '<span class="pe-used">' + used[id] + '</span>' : '') + (m.low ? '<span class="pe-low" title="Small photo: it may look soft in print">Low res</span>' : '') + '</button>'; }).join('') + '</div>' :
           '<div class="pe-emptyp">' + I.photo + '<p>Your photos stay on this device while you design. JPEG, PNG or WebP.</p></div>');
     } else if (name === 'layouts') {
       if (S.cur < 0) h = head('Layouts', 'Layouts are for the inside pages. Choose a page below the cover.') + '<div class="pe-row"><button class="btn btn--dark btn--sm" data-act="page1">Go to page 1</button></div>';
@@ -594,21 +699,23 @@
       var e = selEl(), isText = e && e.t === 'text';
       h = head(isText ? 'Edit text' : 'Text', isText ? '' : 'Add a heading or a caption, then drag it into place.');
       if (isText) {
+        R.loadAllFonts().then(function () { draw(); });
         h += '<textarea class="pe-ta" id="peTa" rows="' + (e.role === 'title' ? 1 : 3) + '">' + esc(e.text) + '</textarea>' +
           '<div class="pe-sub"><h4>Font</h4><div class="pe-fonts">' + Object.keys(R.FONTS).map(function (k) { var f = R.FONTS[k]; return '<button data-font="' + k + '" class="' + (e.font === k ? 'is-on' : '') + '" style="font-family:' + esc(f.css) + ';font-weight:' + f.w + (f.italic ? ';font-style:italic' : '') + '">' + esc(f.name) + '</button>'; }).join('') + '</div></div>' +
           '<div class="pe-sub"><h4>Colour</h4>' + swatches('tcolor', e.color) + '</div>' +
           '<div class="pe-sub"><h4>Size</h4><input type="range" id="peTs" min="18" max="320" value="' + Math.round(e.cap ? e.cap : (e.size || 80) * 0.7) + '"></div>' +
           '<div class="pe-sub"><h4>Alignment</h4><div class="pe-seg">' + [['left', 'Left'], ['center', 'Centre'], ['right', 'Right'], ['fill', 'Fill width']].map(function (a) { return '<button data-align="' + a[0] + '"' + ((e.align || 'left') === a[0] ? ' class="is-on"' : '') + '>' + a[1] + '</button>'; }).join('') + '</div></div>' +
-          '<div class="pe-row"><button class="btn btn--ghost btn--sm" data-act="shadow">' + (e.shadow ? 'Remove shadow' : 'Add shadow') + '</button><button class="btn btn--ghost btn--sm" data-act="deltext">' + I.trash + ' Delete</button></div>';
+          '<label class="pe-check"><input type="checkbox" data-act="shadow"' + (e.shadow ? ' checked' : '') + '><span>Shadow behind the words</span></label>' +
+          '<div class="pe-row"><button class="btn btn--ghost btn--sm" data-act="deltext">' + I.trash + ' Delete</button></div>';
       } else {
         h += '<div class="pe-addtext"><button data-add="h"><b style="font-family:' + R.FONTS.spartan.css + ';font-weight:800;font-size:1.5rem">ADD A HEADING</b></button><button data-add="s"><b style="font-family:' + R.FONTS.serif.css + ';font-size:1.25rem">Add a subheading</b></button><button data-add="c"><span style="font-family:' + R.FONTS.sans.css + '">Add a caption</span></button><button data-add="q"><span style="font-family:' + R.FONTS.script.css + ';font-size:1.4rem">Add a handwritten note</span></button></div>';
         if (S.cur < 0) { var t = C.TPL[S.p.tpl]; if (t && t.kind === 'raster') h += rasterNote(t); }
       }
     } else if (name === 'stickers') {
-      var tab = S.stab || 'stickers';
+      var tab = S.stab || 'stickers'; flLoad();
       h = head(S.replaceArt ? 'Replace artwork' : 'Stickers', S.replaceArt ? 'Choose what goes in its place.' : 'Tap to add, then drag and resize.') +
         '<label class="pe-q"><input type="search" id="peSq" placeholder="Search: heart, safari, beach, cake…"></label>' +
-        '<div class="pe-tabs">' + [['stickers', 'Stickers'], ['emoji', 'Emoji'], ['words', 'Words'], ['travel', 'Travel art'], ['mine', 'Mine']].map(function (x) { return '<button data-stab="' + x[0] + '"' + (tab === x[0] ? ' class="is-on"' : '') + '>' + x[1] + '</button>'; }).join('') + '</div>' +
+        '<div class="pe-tabs">' + [['stickers', 'Stickers'], ['travel', 'Travel'], ['emoji', 'Emoji'], ['words', 'Words'], ['classic', 'Classic'], ['mine', 'My uploads']].map(function (x) { return '<button data-stab="' + x[0] + '"' + (tab === x[0] ? ' class="is-on"' : '') + '>' + x[1] + '</button>'; }).join('') + '</div>' +
         '<div id="peStk">' + stickerGrid('', tab) + '</div>';
     } else if (name === 'colors') {
       var d = doc(), isCov = S.cur < 0, tt = isCov && C.TPL[S.p.tpl];
@@ -631,9 +738,12 @@
       if (S.p.tpl === 'blank') h += '<div class="pe-sub"><h4>Colour</h4><div class="pe-sw pe-sw--big">' + C.BLANK.map(function (c, i) { return '<button style="--c:' + c + '" data-blank="' + i + '"' + (cov.bg === c ? ' class="is-on"' : '') + '></button>'; }).join('') + '</div></div>';
       if (t2 && t2.kind === 'raster') h += rasterNote(t2);
       var tE = cov.els.filter(function (x) { return x.role === 'title'; })[0], sE = cov.els.filter(function (x) { return x.role === 'sub'; })[0];
-      var tw = t2 && t2.kind === 'raster' && t2.editable && !cov.edited ? { title: (t2.lines[0] || {}).text, sub: (t2.lines[1] || {}).text } : null;
+      var tw = t2 && t2.kind === 'raster' && t2.editable && !cov.edited ? { title: (t2.lines[0] || {}).text, sub: (t2.lines.filter(function (l, i) { return i > 0 && l.role !== 'year'; })[0] || {}).text } : null;
       if (tE || (tw && tw.title)) h += '<div class="pe-sub"><h4>Title</h4><input class="pe-in" data-role="title" value="' + esc(tE ? tE.text : tw.title) + '" maxlength="40"></div>';
       if (sE || (tw && tw.sub)) h += '<div class="pe-sub"><h4>Subtitle</h4><input class="pe-in" data-role="sub" value="' + esc(sE ? sE.text : tw.sub) + '" maxlength="40"></div>';
+      var yE = cov.els.filter(function (x) { return x.role === 'year'; })[0];
+      if (yE) h += '<div class="pe-sub"><h4>Year</h4><input class="pe-in" data-role="year" value="' + esc(yE.text) + '" maxlength="9" inputmode="numeric"></div>';
+      if (tE || yE || (tw && tw.title)) h += '<label class="pe-check"><input type="checkbox" data-act="covshadow"' + ((tE || yE || {}).shadow ? ' checked' : '') + '><span>Shadow behind the words</span></label>';
       if (t2 && t2.layered) h += '<div class="pe-sub"><h4>Cover colour</h4>' + swatches('bg', cov.img ? t2.bg : cov.bg, C.COVER_COLORS) + '</div>';
       if (t2 && t2.kind === 'raster' && t2.editable) { var tc = tE ? tE.color : t2.tc; h += '<div class="pe-sub"><h4>Title colour</h4>' + swatches('title', tc, C.TEXT_COLORS) + '</div>'; }
       h += '<div class="pe-sub"><h4>Add to the cover</h4><div class="pe-row"><button class="btn btn--ghost btn--sm" data-act="covphoto">' + I.photo + ' A photo</button><button class="btn btn--ghost btn--sm" data-go-panel="stickers">' + I.sticker + ' Stickers</button><button class="btn btn--ghost btn--sm" data-go-panel="text">' + I.text + ' Text</button></div></div>' +
@@ -663,7 +773,14 @@
     ['Best day ever', 'script', '#ff4f9a'], ['Adventure awaits', 'spartan', '#1f3c74'], ['Good times', 'round', '#ff7a2e'], ['Happy birthday!', 'script', '#e5383b'], ['Just married', 'serifi', '#141414'], ['Love you', 'script', '#e5383b'],
     ['Wish you were here', 'serif', '#1f3c74'], ['Summer vibes', 'round', '#ff4f9a', '#ffe27a'], ['Squad', 'block', '#ffffff', '#141414'], ['Family', 'serif', '#3b2314'], ['Hello, world', 'script', '#2f80ed'], ['Our story', 'serifi', '#c4512b'],
     ['Road trip', 'block', '#141414', '#ffd25e'], ['Bon voyage', 'script', '#1f3c74'], ['Making memories', 'serif', '#0f5c3a'], ['Celebrate', 'spartan', '#ff4f9a'], ['Cheers!', 'script', '#b9831e'], ['Little one', 'round', '#5aaee0'],
-    ['Good boy', 'round', '#c8661f'], ['Then & now', 'serif', '#141414'], ['The best is yet to come', 'serifi', '#c4512b'], ['2026', 'block', '#e5383b'], ['Wanderlust', 'script', '#0f5c3a'], ['Home sweet home', 'serif', '#c4512b']];
+    ['Good boy', 'round', '#c8661f'], ['Then & now', 'serif', '#141414'], ['The best is yet to come', 'serifi', '#c4512b'], ['2026', 'block', '#e5383b'], ['Wanderlust', 'script', '#0f5c3a'], ['Home sweet home', 'serif', '#c4512b'],
+    ['Jambo!', 'shrikhand', '#ff7a2e'], ['Tukutane', 'pacifico', '#1f3c74'], ['Nakupenda', 'greatvibes', '#e5383b'], ['Sherehe', 'righteous', '#ff4f9a'], ['Mambo vipi?', 'marker', '#141414'], ['Kenya, my home', 'playfairi', '#0f5c3a'],
+    ['Mr & Mrs', 'greatvibes', '#b9831e'], ['Forever & always', 'cormorant', '#141414'], ['Save the date', 'playfair', '#1f3c74'], ['Happily ever after', 'dancing', '#c4512b'], ['The beginning', 'playfairi', '#3b2314'], ['I do', 'greatvibes', '#e5383b'],
+    ['Happy anniversary', 'dancing', '#e5383b'], ['Class of 2026', 'bebas', '#1f3c74'], ['Graduated!', 'shrikhand', '#7c3aed'], ['Welcome to the world', 'fredoka', '#5aaee0'], ['Oh baby', 'pacifico', '#ff4f9a'], ['First steps', 'amatic', '#2f80ed'],
+    ['Beach days', 'pacifico', '#1d7fae', '#ffe27a'], ['Sun, sea & sand', 'satisfy', '#ff7a2e'], ['Passport ready', 'bebas', '#141414', '#ffd25e'], ['Out of office', 'oswald', '#ffffff', '#1f3c74'], ['Postcard from…', 'kaushan', '#c4512b'], ['Weekend getaway', 'lobster', '#0f5c3a'],
+    ['Girls trip', 'lobster', '#ff4f9a'], ['Boys trip', 'bebas', '#1f3c74'], ['Best friends', 'pacifico', '#7c3aed'], ['Good vibes only', 'righteous', '#ff7a2e', '#141414'], ['Chapter one', 'abril', '#141414'], ['Making it count', 'josefin', '#0f5c3a'],
+    ['Merry Christmas', 'lobster', '#e5383b'], ['Happy new year', 'shrikhand', '#ffd25e', '#141414'], ['Eid Mubarak', 'playfairi', '#0f5c3a'], ['Happy Mother’s Day', 'dancing', '#d23a6a'], ['Happy Father’s Day', 'oswald', '#1f3c74'], ['Thank you', 'greatvibes', '#3b2314'],
+    ['Pawsome', 'fredoka', '#c8661f'], ['Fur baby', 'pacifico', '#c8661f'], ['Cutie', 'shrikhand', '#ff4f9a'], ['Grandma & me', 'dancing', '#7c3aed'], ['Sunday lunch', 'cormorant', '#3b2314'], ['Our happy place', 'satisfy', '#1d7fae']];
   function addWord(i) {
     var w = WORDS[i], d = doc();
     var e = { id: uid('tx'), t: 'text', text: w[0], font: w[1], color: w[2], size: w[1] === 'script' ? 110 : 84, align: 'center', x: 150, w: 900, y: S.cur < 0 ? 760 : 700, rot: (Math.random() * 8 - 4) | 0 };
@@ -672,13 +789,33 @@
   }
   function emojiSrc(code) { return '/assets/pbk/emoji/' + code + '.svg'; }
   function travelArt() { return C.ORDER.map(function (id) { return C.TPL[id]; }).filter(function (t) { return t.layered; }); }
+  function travelGrid(q) {
+    var tl = travelArt().filter(function (t) { return !q || (t.name + ' travel').toLowerCase().indexOf(q) >= 0; });
+    return tl.length ? '<h4 class="pe-gh">Travel art <small>' + tl.length + '</small></h4><div class="pe-stk">' + tl.map(function (t) { return '<button data-img="' + t.art + '" data-ar="' + (t.artBox[2] / t.artBox[3]).toFixed(4) + '" title="' + esc(t.name) + '"><img alt="' + esc(t.name) + '" loading="lazy" src="' + t.artThumb + '"></button>'; }).join('') + '</div>' : '';
+  }
+  var flP = null;
+  function flLoad() {
+    if (window.PBK_FL || flP) return;
+    flP = new Promise(function (ok) { var sc = document.createElement('script'); sc.src = '/assets/pbk/fl/index.js?v=1'; sc.onload = ok; sc.onerror = ok; document.head.appendChild(sc); }).then(function () { if (S.panel === 'stickers') openPanel('stickers', true); });
+  }
   function stickerGrid(q, tab) {
     q = (q || '').toLowerCase().trim();
     var h = '';
     if (q) tab = 'all';
-    if (tab === 'stickers' || tab === 'all') {
+    if (tab === 'stickers' || tab === 'all' || tab === 'travel') {
+      var FL = window.PBK_FL || [];
+      if (!FL.length) h += '<p class="pe-note">Loading stickers…</p>';
+      FL.forEach(function (g, gi) {
+        if (tab === 'travel' && gi > 0) return;
+        var l = g[1].filter(function (n) { return !q || (n.replace(/-/g, ' ') + ' ' + g[0]).toLowerCase().indexOf(q) >= 0; });
+        if (l.length) h += '<h4 class="pe-gh">' + esc(g[0]) + ' <small>' + l.length + '</small></h4><div class="pe-stk pe-stk--fl">' + l.map(function (n) { return '<button data-img="/assets/pbk/fl/' + n + '.svg" data-ar="1" title="' + esc(n.replace(/-/g, ' ')) + '"><img alt="' + esc(n.replace(/-/g, ' ')) + '" loading="lazy" width="56" height="56" src="/assets/pbk/fl/t/' + n + '.webp"></button>'; }).join('') + '</div>';
+        if (gi === 0 && tab !== 'all') h += travelGrid(q);
+      });
+      if (tab !== 'travel' && FL.length) h += '<p class="pe-note pe-credit">Illustrations: Fluent Emoji by Microsoft, MIT licence.</p>';
+    }
+    if (tab === 'classic' || tab === 'all') {
       var l = A.list().filter(function (a) { return !q || (a.n + ' ' + a.k).toLowerCase().indexOf(q) >= 0; });
-      if (l.length) h += (tab === 'all' ? '<h4 class="pe-gh">Stickers</h4>' : '') + '<div class="pe-stk">' + l.map(function (a) { return '<button data-art="' + a.id + '" title="' + esc(a.n) + '"><img alt="' + esc(a.n) + '" loading="lazy" src="' + R.artSrc(a.id) + '"></button>'; }).join('') + '</div>';
+      if (l.length) h += '<h4 class="pe-gh">Classic stickers</h4><div class="pe-stk">' + l.map(function (a) { return '<button data-art="' + a.id + '" title="' + esc(a.n) + '"><img alt="' + esc(a.n) + '" loading="lazy" src="' + R.artSrc(a.id) + '"></button>'; }).join('') + '</div>';
     }
     if (tab === 'emoji' || tab === 'all') {
       var E = EMO(); Object.keys(E).forEach(function (g) {
@@ -687,11 +824,9 @@
       });
       if (tab === 'emoji') h += '<p class="pe-note pe-credit">Emoji: Twemoji, CC-BY 4.0.</p>';
     }
-    if (tab === 'travel' || tab === 'all') {
-      var tl = travelArt().filter(function (t) { return !q || (t.name + ' travel').toLowerCase().indexOf(q) >= 0; });
-      if (tl.length) h += (tab === 'all' ? '<h4 class="pe-gh">Travel art</h4>' : '') + '<div class="pe-stk">' + tl.map(function (t) { return '<button data-img="' + t.art + '" data-ar="' + (t.artBox[2] / t.artBox[3]).toFixed(4) + '" title="' + esc(t.name) + '"><img alt="' + esc(t.name) + '" loading="lazy" src="' + t.artThumb + '"></button>'; }).join('') + '</div>';
-    }
+    if (tab === 'all') h += travelGrid(q);
     if (tab === 'words' || (tab === 'all' && q)) {
+      R.loadAllFonts();
       var wl = WORDS.filter(function (w) { return !q || w[0].toLowerCase().indexOf(q) >= 0; });
       if (wl.length) h += (tab === 'all' ? '<h4 class="pe-gh">Words</h4>' : '<p class="pe-note">Tap to add, then drag, resize and edit the words.</p>') + '<div class="pe-words">' + wl.map(function (w, i) { var f = R.FONTS[w[1]]; return '<button data-word="' + WORDS.indexOf(w) + '" style="font-family:' + esc(f.css) + ';font-weight:' + f.w + (f.italic ? ';font-style:italic' : '') + ';color:' + w[2] + (w[3] ? ';background:' + w[3] : '') + '">' + esc(w[0]) + '</button>'; }).join('') + '</div>';
     }
@@ -707,8 +842,8 @@
       var t = ev.target;
       if (t.closest('[data-close]')) { openPanel(null); return; }
       var gp = t.closest('[data-go-panel]'); if (gp) { openPanel(gp.getAttribute('data-go-panel')); return; }
-      var act = t.closest('[data-act]'); if (act) return doAct(act.getAttribute('data-act'));
-      var ph = t.closest('[data-ph]'); if (ph) return placePhoto(ph.getAttribute('data-ph'), S.target || (selEl() && selEl().t === 'photo' ? S.sel : null));
+      var act = t.closest('[data-act]'); if (act) { if (act.type === 'checkbox') return; return doAct(act.getAttribute('data-act')); }
+      var ph = t.closest('[data-ph]'); if (ph && P._noClick && Date.now() - P._noClick < 400) return; if (ph) return placePhoto(ph.getAttribute('data-ph'), S.target || (selEl() && selEl().t === 'photo' ? S.sel : null));
       var lay = t.closest('[data-lay]'); if (lay) { var lost = applyLayout(doc(), lay.getAttribute('data-lay')); select(null); commit(); draw(); drawThumb(S.cur); openPanel('layouts', true); if (lost) toast('One photo was taken off this page. It is still in your photos.'); return; }
       var art = t.closest('[data-art]'); if (art) return addArt(art.getAttribute('data-art'));
       var im = t.closest('[data-img]'); if (im) return addImg({ src: im.getAttribute('data-img') }, +im.getAttribute('data-ar') || 1);
@@ -722,8 +857,9 @@
       var pal = t.closest('[data-pal]'); if (pal) return setPalette(+pal.getAttribute('data-pal'));
       var bl = t.closest('[data-blank]'); if (bl) { var c = C.BLANK[+bl.getAttribute('data-blank')]; S.p.cover.bg = c; var dark = C.luminance(c) < 0.45; S.p.cover.brand = dark ? '#ffffff' : '#1d1d1f'; S.p.cover.els.forEach(function (x) { if (x.role === 'title') x.color = dark ? '#ffffff' : '#1d1d1f'; if (x.role === 'sub') x.color = dark ? '#ffd25e' : '#e5383b'; }); commit(); renderAll(); return; }
     };
+    P.querySelectorAll('input[type=checkbox][data-act]').forEach(function (cb) { cb.addEventListener('change', function () { doAct(cb.getAttribute('data-act')); }); });
     P.querySelectorAll('input[type=color][data-k]').forEach(function (inp) { inp.addEventListener('input', function () { setColor(inp.getAttribute('data-k'), inp.value, true); }); inp.addEventListener('change', function () { commit(); openPanel(S.panel, true); }); });
-    P.querySelectorAll('[data-ph]').forEach(function (b) { b.addEventListener('dragstart', function (ev) { ev.dataTransfer.setData('text/pbk-photo', b.getAttribute('data-ph')); ev.dataTransfer.effectAllowed = 'copy'; }); });
+
     var ta = $('#peTa', P);
     if (ta) {
       ta.addEventListener('input', function () { var e = selEl(); if (!e) return; e.text = e.role === 'title' || e.role === 'sub' ? ta.value.replace(/\n/g, ' ') : ta.value; draw(); });
@@ -736,7 +872,7 @@
     if (name === 'stickers') loadMine();
     P.querySelectorAll('.pe-in[data-role]').forEach(function (inp) {
       inp.addEventListener('focus', function () { ensureEditable(); });
-      inp.addEventListener('input', function () { ensureEditable(); var e = S.p.cover.els.filter(function (x) { return x.role === inp.getAttribute('data-role'); })[0]; if (e) { e.text = inp.value.toUpperCase(); if (S.cur !== -1) go(-1); draw(); } });
+      inp.addEventListener('input', function () { if (inp.getAttribute('data-role') !== 'year') ensureEditable(); var e = S.p.cover.els.filter(function (x) { return x.role === inp.getAttribute('data-role'); })[0]; if (e) { e.text = inp.value.toUpperCase(); if (S.cur !== -1) go(-1); draw(); mockSoon(); } });
       inp.addEventListener('change', function () { commit(); drawThumb(-1); });
     });
   }
@@ -744,8 +880,9 @@
   function ensureEditable() {
     var t = C.TPL[S.p.tpl], cov = S.p.cover;
     if (!t || t.kind !== 'raster' || cov.edited || !t.editable) return;
-    var nd = C.rasterDoc(t, true);
-    nd.els = nd.els.concat(cov.els.filter(function (x) { return x.role !== 'title' && x.role !== 'sub'; }));
+    var nd = C.rasterDoc(t, true), oy = cov.els.filter(function (x) { return x.role === 'year'; })[0];
+    if (oy) nd.els.forEach(function (x) { if (x.role === 'year') { x.text = oy.text; x.shadow = oy.shadow; } });
+    nd.els = nd.els.concat(cov.els.filter(function (x) { return x.role !== 'title' && x.role !== 'sub' && x.role !== 'year'; }));
     S.p.cover = nd; commit();
   }
   function doAct(a) {
@@ -761,11 +898,12 @@
     else if (a === 'delpage') delPage();
     else if (a === 'mvl' || a === 'mvr') movePage(a === 'mvl' ? -1 : 1);
     else if (a === 'deltext') removeSel();
-    else if (a === 'shadow') { var e = selEl(); if (e) { e.shadow = e.shadow ? 0 : 1; commit(); draw(); openPanel('text', true); } }
+    else if (a === 'shadow') { var e = selEl(); if (e) { e.shadow = e.shadow ? 0 : 1; commit(); draw(); drawThumb(S.cur); } }
+    else if (a === 'covshadow') { ensureEditable(); var on = !(S.p.cover.els.filter(function (x) { return x.role === 'title' || x.role === 'year'; })[0] || {}).shadow; S.p.cover.els.forEach(function (x) { if (x.t === 'text' && (x.role === 'title' || x.role === 'sub' || x.role === 'year')) x.shadow = on ? 1 : 0; }); if (S.cur !== -1) go(-1); commit(); draw(); drawThumb(-1); mockSoon(); }
     else if (a === 'bgall') { var c = doc().bg; S.p.pages.forEach(function (p) { p.bg = c; }); commit(); renderAll(); toast('Every page now uses this colour.'); }
     else if (a === 'change') PBK.pick(C.TPL[S.p.tpl] ? C.TPL[S.p.tpl].cat : 'all', changeCover);
     else if (a === 'edittitle') { ensureEditable(); go(-1); var te = S.p.cover.els.filter(function (x) { return x.role === 'title'; })[0]; if (te) select(te.id); openPanel('text'); }
-    else if (a === 'orig') { var t = C.TPL[S.p.tpl]; var nd = C.rasterDoc(t, false); nd.els = S.p.cover.els.filter(function (x) { return x.role !== 'title' && x.role !== 'sub' && x.id !== 'art'; }); S.p.cover = nd; select(null); commit(); renderAll(); }
+    else if (a === 'orig') { var t = C.TPL[S.p.tpl]; var nd = C.rasterDoc(t, false); nd.els = nd.els.concat(S.p.cover.els.filter(function (x) { return x.role !== 'title' && x.role !== 'sub' && x.role !== 'year' && x.id !== 'art'; })); S.p.cover = nd; select(null); commit(); renderAll(); }
     else if (a === 'covphoto') { go(-1); var d = S.p.cover; var has = d.els.filter(function (x) { return x.t === 'photo'; }).length; if (has >= MAXPH) { toast('The cover holds up to ' + MAXPH + ' photos.'); return; } var e2 = { id: uid('ph'), t: 'photo', x: 330, y: 500, w: 640, h: 800, photo: null, crop: { z: 1, cx: .5, cy: .5 }, border: 14, borderColor: '#ffffff' }; d.els.push(e2); commit(); select(e2.id); S.target = e2.id; draw(); openPanel('photos'); }
   }
   function replaceWith(props, ar) {
@@ -957,8 +1095,9 @@
     odlg.innerHTML = '<div class="pe-or__in"><header><h3>Order your book</h3><button class="pe-ib" data-x aria-label="Close">' + I.x + '</button></header>' +
       '<div class="pe-or__body"><canvas width="440" height="550" id="orCov"></canvas><div>' +
       '<p class="pe-or__name"><b>' + esc(S.p.name) + '</b><span>' + n + ' pages · ' + esc(BOOK.size || '21 × 28 cm') + ' portrait</span></p>' +
+      (Sh.isTest(S.p) ? '<div class="pe-or__opts"><label class="pe-or__opt is-on"><input type="radio" name="prod" value="print" checked><span><b>Test order</b><small>A real M-Pesa payment that goes through the whole order flow. Only works while you’re signed in to Photo Book orders. Not printed; deleted after 24 hours.</small></span><em>' + PBK.money(BOOK.testPrice || 5) + '</em></label></div>' :
       '<div class="pe-or__opts"><label class="pe-or__opt is-on"><input type="radio" name="prod" value="print" checked><span><b>Printed hardcover</b><small>Printed in Kenya and delivered or collected</small></span><em>' + PBK.money(pPrint) + '</em></label>' +
-      '<label class="pe-or__opt"><input type="radio" name="prod" value="digital"><span><b>Print-ready PDF</b><small>Download the finished book after paying</small></span><em>' + PBK.money(pPdf) + '</em></label></div>' +
+      '<label class="pe-or__opt"><input type="radio" name="prod" value="digital"><span><b>Print-ready PDF</b><small>Download the finished book after paying</small></span><em>' + PBK.money(pPdf) + '</em></label></div>') +
       ((c.emptyPages || c.low) ? '<div class="pe-or__warn"><b>Before you order</b><ul>' + (c.emptyPages ? '<li>' + c.emptyPages + ' page' + (c.emptyPages === 1 ? ' is' : 's are') + ' still empty — they print blank.</li>' : '') + (c.low ? '<li>' + c.low + ' small photo' + (c.low === 1 ? '' : 's') + ' may look soft in print.</li>' : '') + '</ul></div>' : '') +
       '<div class="pe-or__acts"><button class="btn btn--p" data-buy>Checkout</button><button class="btn btn--ghost" data-cart>Add to cart</button></div>' +
       '<a class="pe-or__wa" target="_blank" rel="noopener" href="https://wa.me/254706549703?text=' + encodeURIComponent(msg) + '">Or order on WhatsApp</a><div id="orPaid"></div></div></div></div>';

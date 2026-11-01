@@ -9,6 +9,7 @@
   var main = document.getElementById('pbk');
   var PBK = window.PBK = window.PBK || {};
   var BASE = '/photobooks';
+  try { window.PBK_ADMIN = localStorage.getItem('pbk_admin') === '1'; } catch (e) { }
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function money(n) { return (CFG.currency || 'KES') + ' ' + String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
@@ -34,7 +35,7 @@
   PBK.ICON = ICON;
   var ICON_EDIT = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>';
 
-  var V3 = '3';
+  var V3 = '4';
   function bookName(t, pi) { return t === 'blank' ? 'blank-' + (pi || 0) : t.kind === 'vector' ? t.cat + '-' + t.slug + '-' + (pi || 0) : 'travel-' + t.slug; }
   /** 3D book thumbnail (440×550) for a cover template. */
   function mockSrc(t, pi) { return '/assets/pbk/c/3/' + bookName(t, pi) + '.webp?v=' + V3; }
@@ -72,12 +73,66 @@
   window.addEventListener('popstate', route);
 
   /* ---------------- shared bits ---------------- */
+  var TINT = { travel: '#ffe1cf', kenya: '#fde4bf', event: '#dbe6ff', couple: '#ffdbe5', friends: '#fff0b3', baby: '#d9eeff', pets: '#ddf2da', family: '#f6e3cf', year: '#e6defe', someone: '#ffe0ef', blank: '#ece5da' };
+  PBK.TINT = TINT;
+  function seen() { try { return JSON.parse(localStorage.getItem('pbk_seen') || '{}'); } catch (e) { return {}; } }
+  /* category circles, like stories: tap to flip through that category's covers */
   function catStrip(active) {
+    var sn = seen();
     return '<nav class="pk-cats" aria-label="Photo book categories"><div class="pk-cats__in">' + C.CATS.map(function (c) {
       var t = catHero(c.id);
-      return '<a data-go href="' + BASE + '/' + c.id + '" class="pk-cat' + (active === c.id ? ' is-on' : '') + '"><span class="pk-cat__img"><img src="' + mockSrc(t, 0) + '" alt="" loading="lazy"' + IMGWH + '></span><span>' + esc(c.name) + '</span></a>';
+      return '<button type="button" data-story="' + c.id + '" class="pk-cat' + (active === c.id ? ' is-on' : '') + (sn[c.id] ? ' is-seen' : '') + '" aria-label="' + esc(c.name) + ' covers"><span class="pk-cat__ring"><span class="pk-cat__img" style="--tint:' + TINT[c.id] + '"><img src="' + mockSrc(t, 0) + '" alt="" loading="lazy"' + IMGWH + '></span></span><span class="pk-cat__n">' + esc(c.name) + '</span></button>';
     }).join('') + '</div></nav>';
   }
+  /* ---------------- stories: a category's covers, one after another ---------------- */
+  var sdlg;
+  function stories(catId) {
+    var cats = C.CATS.map(function (c) { return c.id; }), ci = Math.max(0, cats.indexOf(catId)), i = 0, timer = null, paused = false, t0 = 0, left = 0, DUR = 3600;
+    if (!sdlg) { sdlg = document.createElement('dialog'); sdlg.className = 'pk-st'; document.body.appendChild(sdlg); }
+    function list() { var l = C.byCat(cats[ci]); return l.slice(0, 24); }
+    function draw() {
+      var cat = C.cat(cats[ci]), l = list(), t = l[i], all = C.byCat(cats[ci]).length;
+      var sn = seen(); sn[cat.id] = 1; try { localStorage.setItem('pbk_seen', JSON.stringify(sn)); } catch (e) { }
+      document.querySelectorAll('.pk-cat[data-story="' + cat.id + '"]').forEach(function (b) { b.classList.add('is-seen'); });
+      sdlg.style.setProperty('--tint', TINT[cat.id]);
+      sdlg.innerHTML = '<div class="pk-st__in"><div class="pk-st__bars">' + l.map(function (_, k) { return '<i' + (k < i ? ' class="is-done"' : '') + '>' + (k === i ? '<b id="pkStBar"></b>' : '') + '</i>'; }).join('') + '</div>' +
+        '<header class="pk-st__h"><span class="pk-st__av" style="--tint:' + TINT[cat.id] + '"><img src="' + mockSrc(catHero(cat.id), 0) + '" alt=""></span><div><b>' + esc(cat.name) + '</b><small>' + (i + 1) + ' of ' + l.length + (all > l.length ? ' · ' + all + ' covers' : '') + '</small></div><button class="pk-st__x" data-x aria-label="Close">' + ICON.x + '</button></header>' +
+        '<div class="pk-st__stage"><button class="pk-st__tap pk-st__tap--l" data-prev aria-label="Previous"></button><img class="pk-st__book" src="' + (XL.indexOf(bookName(t, 0)) >= 0 ? bigSrc(t, 0) : mockSrc(t, 0)) + '" alt="' + esc(t.name) + ' photo book"><button class="pk-st__tap pk-st__tap--r" data-next aria-label="Next"></button></div>' +
+        '<footer class="pk-st__f"><b class="pk-st__name">' + esc(t.name) + '</b>' + (customisable(t) ? '<span class="pk-st__tag">✎ Customisable</span>' : '') +
+        '<a class="btn btn--p btn--lg pk-st__go" data-go href="' + coverLink(t.id, 0) + '">Use this cover ' + ICON.arrow + '</a><a class="pk-st__all" data-go href="' + BASE + '/' + cat.id + '">See all ' + all + ' ' + esc(cat.name.toLowerCase()) + ' covers</a></footer></div>';
+      var nx = l[i + 1]; if (nx) { var im = new Image(); im.src = mockSrc(nx, 0); }
+      start(DUR);
+    }
+    function start(d) { clearTimeout(timer); left = d; t0 = Date.now(); var bar = sdlg.querySelector('#pkStBar'); if (bar) { bar.style.transition = 'none'; bar.style.width = (100 - left / DUR * 100) + '%'; void bar.offsetWidth; bar.style.transition = 'width ' + left + 'ms linear'; bar.style.width = '100%'; } timer = setTimeout(next, left); }
+    function pause() { if (paused) return; paused = true; clearTimeout(timer); left = Math.max(300, left - (Date.now() - t0)); var bar = sdlg.querySelector('#pkStBar'); if (bar) { var w = getComputedStyle(bar).width; bar.style.transition = 'none'; bar.style.width = w; } }
+    function resume() { if (!paused) return; paused = false; start(left); }
+    function next() { var l = list(); if (i < l.length - 1) { i++; draw(); } else if (ci < cats.length - 1) { ci++; i = 0; draw(); } else close(); }
+    function prev() { if (i > 0) { i--; draw(); } else if (ci > 0) { ci--; i = 0; draw(); } else draw(); }
+    function close() { clearTimeout(timer); if (sdlg.open) sdlg.close(); }
+    var sx = null, sy = null, moved = false, downAt = 0;
+    sdlg.onpointerdown = function (e) { if (e.target.closest('a,[data-x]')) return; sx = e.clientX; sy = e.clientY; moved = false; downAt = Date.now(); pause(); };
+    sdlg.onpointerup = function (e) {
+      if (sx == null) return; var dx = e.clientX - sx, dy = e.clientY - sy; sx = null;
+      if (dy > 90 && Math.abs(dy) > Math.abs(dx)) return close();
+      if (Math.abs(dx) > 60) { moved = true; if (dx < 0 && ci < cats.length - 1) { ci++; i = 0; draw(); } else if (dx > 0 && ci > 0) { ci--; i = 0; draw(); } else resume(); return; }
+      if (Date.now() - downAt > 350) { moved = true; resume(); return; }
+      resume();
+    };
+    sdlg.onclick = function (e) {
+      if (e.target.closest('[data-x]')) return close();
+      if (e.target.closest('a[data-go]')) { close(); return; }
+      if (moved) return;
+      if (e.target.closest('[data-prev]')) prev(); else if (e.target.closest('[data-next]')) next();
+      else if (e.target.closest('.pk-st__book')) { close(); PBK.go(coverLink(list()[i].id, 0)); }
+    };
+    sdlg.oncancel = function (e) { e.preventDefault(); close(); };
+    sdlg.onkeydown = function (e) { if (e.key === 'ArrowRight') next(); if (e.key === 'ArrowLeft') prev(); };
+    sdlg.onclose = function () { clearTimeout(timer); };
+    document.addEventListener('visibilitychange', function () { if (!sdlg.open) return; if (document.hidden) pause(); else resume(); });
+    draw(); sdlg.showModal();
+  }
+  PBK.stories = stories;
+  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-story]'); if (b) { e.preventDefault(); stories(b.getAttribute('data-story')); } });
   function steps() {
     var c1 = ['travel/lisbon', 'kenya/mombasa', 'couple/amour'].map(function (id) { return '<img src="' + mockSrc(C.TPL[id], id === 'couple/amour' ? 0 : 0) + '" alt="" loading="lazy">'; }).join('');
     return '<section class="pk-steps wrap" id="how"><div class="pk-head"><span class="eyebrow"><span class="brk">‹</span> How it works</span><h2>Your photo book in <span class="pk-hl">3 steps</span></h2><p>About ten minutes on your phone. No design skills needed.</p></div>' +
@@ -113,15 +168,16 @@
     var rowB = ['travel/greece', 'couple/amour', 'travel/south-africa', 'kenya/mombasa', 'travel/sicily', 'year/my-year', 'travel/london', 'family/home', 'travel/morocco', 'someone/for-mum', 'travel/bali', 'event/wedding'];
     function row(ids, pal) { var h = ids.filter(function (i) { return C.TPL[i]; }).map(function (id, i) { var t = C.TPL[id]; return '<a data-go href="' + coverLink(id, t.kind === 'vector' ? (i + pal) % t.palettes.length : 0) + '" class="pk-mq__item" aria-label="' + esc(t.name) + '"><img src="' + mockSrc(t, t.kind === 'vector' ? (i + pal) % t.palettes.length : 0) + '" alt="' + esc(t.name) + ' cover" loading="lazy"' + IMGWH + '></a>'; }).join(''); return h + h; }
     main.innerHTML = catStrip() +
-      '<section class="pk-hero wrap"><div class="pk-hero__copy"><span class="eyebrow"><span class="brk">‹</span> Photo Books</span>' +
+      '<section class="pk-hero wrap"><span class="eyebrow pk-hero__eye"><span class="brk">‹</span> Photo Books</span><div class="pk-hero__copy">' +
       '<h1>Your memories deserve more than a <span class="pk-hl">camera roll.</span></h1>' +
-      '<p class="pk-lead">Pick a cover, add your photos and make every page yours. A portrait hardcover book, ' + esc(BOOK.size || '21 × 28 cm') + ', designed in minutes on your phone.</p>' +
-      '<div class="pk-cta"><button class="btn btn--p btn--lg" data-pick>Create my photo book ' + ICON.arrow + '</button><a data-go href="' + BASE + '/travel" class="btn btn--ghost btn--lg">Browse travel covers</a></div>' +
-      '<p class="pk-note">' + C.ORDER.length + ' covers · Kenya, travel, couples, family and more · <a data-go href="' + BASE + '/my-books">My books</a></p></div>' +
+      '<div class="pk-cta"><button class="btn btn--p btn--lg" data-pick>Create my photo book ' + ICON.arrow + '</button><a data-go href="' + BASE + '/travel" class="btn btn--ghost btn--lg">Browse travel covers</a></div></div>' +
       '<div class="pk-flow" id="pkFlow" aria-label="Cover designs">' + flow.map(function (id, i) { var t = C.TPL[id]; return '<a href="#collections" class="pk-flow__b" data-i="' + i + '" aria-label="' + esc(t.name) + '"><img src="' + bigSrc(t, 0) + '" alt="' + esc(t.name) + ' photo book" width="720" height="900"' + (i < 3 || i >= flow.length - 2 ? (i < 2 ? ' fetchpriority="high"' : '') : ' loading="lazy"') + '></a>'; }).join('') + '<div class="pk-flow__name" id="pkFlowName"></div></div></section>' +
       '<section class="pk-grid wrap" id="collections"><div class="pk-head"><span class="eyebrow"><span class="brk">‹</span> Collections</span><h2>A book for every story</h2></div><div class="pk-tiles">' +
-      C.CATS.map(function (c) { var t = catHero(c.id); var n = C.byCat(c.id).length; return '<a data-go href="' + BASE + '/' + c.id + '" class="pk-tile pk-tile--' + c.id + '"><span class="pk-tile__img"><img src="' + mockSrc(t, 0) + '" alt="" loading="lazy"' + IMGWH + '></span><span class="pk-tile__t">' + esc(c.name) + '</span><span class="pk-tile__n">' + n + ' cover' + (n === 1 ? '' : 's') + '</span></a>'; }).join('') +
-      '<button class="pk-tile pk-tile--blank" data-blank><span class="pk-tile__img"><img src="' + mockSrc('blank', 4) + '" alt="" loading="lazy"' + IMGWH + '></span><span class="pk-tile__t">Blank cover</span><span class="pk-tile__n">Design your own</span></button>' +
+      C.CATS.map(function (c) {
+        var l = C.byCat(c.id), t = catHero(c.id), t2 = l.filter(function (x) { return x !== t; })[c.id === 'travel' ? 3 : 0] || t, n = l.length;
+        return '<a data-go href="' + BASE + '/' + c.id + '" class="pk-tile pk-tile--' + c.id + '" style="--tint:' + TINT[c.id] + '"><span class="pk-tile__books"><img class="pk-tile__b2" src="' + mockSrc(t2, t2.kind === 'vector' ? 1 % t2.palettes.length : 0) + '" alt="" loading="lazy"' + IMGWH + '><img class="pk-tile__b1" src="' + mockSrc(t, 0) + '" alt="" loading="lazy"' + IMGWH + '></span><span class="pk-tile__txt"><span class="pk-tile__t">' + esc(c.name) + '</span><span class="pk-tile__n">' + n + ' cover' + (n === 1 ? '' : 's') + '</span></span><span class="pk-tile__go">' + ICON.arrow + '</span></a>';
+      }).join('') +
+      '<button class="pk-tile pk-tile--blank" data-blank style="--tint:' + TINT.blank + '"><span class="pk-tile__books"><img class="pk-tile__b2" src="' + mockSrc('blank', 2) + '" alt="" loading="lazy"' + IMGWH + '><img class="pk-tile__b1" src="' + mockSrc('blank', 4) + '" alt="" loading="lazy"' + IMGWH + '></span><span class="pk-tile__txt"><span class="pk-tile__t">Blank cover</span><span class="pk-tile__n">Design your own</span></span><span class="pk-tile__go">' + ICON.arrow + '</span></button>' +
       '</div></section>' +
       steps() +
       '<section class="pk-mq" aria-label="Cover designs"><div class="pk-mq__row"><div class="pk-mq__track">' + row(rowA, 0) + '</div></div><div class="pk-mq__row pk-mq__row--b"><div class="pk-mq__track">' + row(rowB, 1) + '</div></div></section>' +
@@ -181,7 +237,7 @@
     var list = catId === 'blank' ? [] : C.byCat(catId);
     var st = { t: list[0] ? list[0].id : 'blank', c: 0, pages: BOOK.pages.default, q: '', cu: {} };
     var params = new URLSearchParams(location.search);
-    st.collapsed = !!params.get('t');
+    st.collapsed = !!params.get('t') || catId === 'blank';
     if (params.get('t') && (C.TPL[params.get('t')] || params.get('t') === 'blank')) st.t = params.get('t');
     if (params.get('c')) st.c = +params.get('c') || 0;
     var PAGES = [24, 36, 48, 60, 80, 100].filter(function (n) { return n >= BOOK.pages.min && n <= BOOK.pages.max; });
@@ -218,6 +274,9 @@
       var canT = C.canText(st.t), canC = C.canColor(st.t);
       if (canT) h += '<label class="pk-fld"><span>Title</span><input id="pkTi" maxlength="24" value="' + esc(st.cu.title != null ? st.cu.title : w.title) + '" autocomplete="off"></label>' +
         (w.sub || !t || t.kind === 'vector' ? '<label class="pk-fld"><span>Subtitle</span><input id="pkSu" maxlength="30" value="' + esc(st.cu.sub != null ? st.cu.sub : w.sub) + '" autocomplete="off"></label>' : '');
+      if (w.year != null) h += '<label class="pk-fld pk-fld--yr"><span>Year</span><input id="pkYr" maxlength="9" inputmode="numeric" value="' + esc(st.cu.year != null ? st.cu.year : w.year) + '" autocomplete="off"></label>';
+      if (canT || w.year != null) h += '<label class="pk-check"><input type="checkbox" id="pkSh"' + ((st.cu.sh != null ? +st.cu.sh : w.sh) ? ' checked' : '') + '><span>Shadow behind the words</span></label>';
+      if (!t) h += '<div class="pk-fld"><span>Sticker</span><div class="pk-stks" id="pkStks">' + ['', 'fl:two-hearts', 'fl:camera-with-flash', 'fl:airplane', 'fl:desert-island', 'fl:beach-with-umbrella', 'fl:sunflower', 'fl:bouquet', 'fl:birthday-cake', 'fl:balloon', 'fl:party-popper', 'fl:ring', 'fl:teddy-bear', 'fl:dog-face', 'fl:cat-face', 'fl:glowing-star', 'fl:rainbow', 'fl:red-heart', 'fl:lion', 'fl:giraffe', 'fl:elephant', 'fl:palm-tree', 'fl:camping', 'fl:house-with-garden', 'fl:wrapped-gift', 'fl:crown', 'fl:butterfly', 'fl:hibiscus', 'fl:clinking-glasses', 'fl:soft-ice-cream'].map(function (k) { return '<button type="button" data-stk="' + k + '"' + ((st.cu.stk || '') === k ? ' class="is-on"' : '') + ' aria-label="' + (k ? k.slice(3).replace(/-/g, ' ') : 'No sticker') + '">' + (k ? '<img src="/assets/pbk/fl/t/' + k.slice(3) + '.webp" alt="" loading="lazy" width="56" height="56">' : '<i>None</i>') + '</button>'; }).join('') + '</div><small class="pk-opt__note">More stickers, emoji and words in the editor.</small></div>';
       if (t && t.kind === 'vector') h += '<div class="pk-fld"><span>Colours</span>' + sw('pal', t.palettes, st.c, true) + '</div>';
       else if (canC) {
         var base = t ? t.bg : C.BLANK[st.c] || C.BLANK[0];
@@ -235,8 +294,13 @@
       var ti = document.getElementById('pkTi'), su = document.getElementById('pkSu');
       if (ti) ti.addEventListener('input', function () { st.cu.title = ti.value.toUpperCase(); soon(); document.getElementById('pkReset').hidden = false; });
       if (su) su.addEventListener('input', function () { st.cu.sub = su.value.toUpperCase(); soon(); document.getElementById('pkReset').hidden = false; });
+      var yr = document.getElementById('pkYr'), sh = document.getElementById('pkSh');
+      if (yr) yr.addEventListener('input', function () { st.cu.year = yr.value.toUpperCase(); soon(); document.getElementById('pkReset').hidden = false; });
+      if (sh) sh.addEventListener('change', function () { st.cu.sh = sh.checked ? 1 : 0; render(); document.getElementById('pkReset').hidden = false; });
     }
     make.addEventListener('click', function (e) {
+      var sk = e.target.closest('[data-stk]');
+      if (sk) { st.cu.stk = sk.getAttribute('data-stk') || null; sk.parentNode.querySelectorAll('button').forEach(function (x) { x.classList.toggle('is-on', x === sk); }); document.getElementById('pkReset').hidden = !dirty(); render(); return; }
       var b = e.target.closest('[data-k]'); if (!b) return;
       var k = b.getAttribute('data-k'), v = b.getAttribute('data-v');
       if (k === 'pal') st.c = +v; else st.cu[k] = v;
@@ -267,6 +331,7 @@
     }
     function collapse(on) {
       st.collapsed = on; var t = sel(), ch = document.getElementById('pkChosen');
+      var pr = main.querySelector('.pk-prod'); if (pr) pr.classList.toggle('is-chosen', !!on);
       ch.hidden = !on; document.getElementById('pkPick').hidden = on;
       if (on) { ch.querySelector('img').src = mockSrc(t || 'blank', st.c); ch.querySelector('b').textContent = t ? t.name : 'Blank cover'; }
     }
@@ -281,7 +346,7 @@
       var b = e.target.closest('[data-t]'); if (!b) return;
       if (b.getAttribute('data-t') !== st.t) { st.t = b.getAttribute('data-t'); st.c = 0; st.cu = {}; }
       st.collapsed = true; drawSel();
-      var mk = document.querySelector('.pk-make'); if (mk) setTimeout(function () { var y = mk.getBoundingClientRect().top + scrollY - (innerWidth < 900 ? 90 : 110); window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' }); }, 60);
+      var mk = document.querySelector(innerWidth < 900 ? '.pk-prod' : '.pk-make'); if (mk) setTimeout(function () { var nav = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 70; var y = mk.getBoundingClientRect().top + scrollY - (innerWidth < 900 ? nav : 110); window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' }); }, 60);
     });
     document.getElementById('pkChange').addEventListener('click', function () { collapse(false); var on = covers.querySelector('.is-on'); if (on) covers.scrollTop = Math.max(0, on.offsetTop - 8); });
     document.getElementById('pkAlt').addEventListener('click', function (e) { var b = e.target.closest('[data-alt]'); if (!b) return; var id = b.getAttribute('data-alt'); if (id !== st.t) st.cu = {}; st.t = id; st.c = +b.getAttribute('data-ac'); drawSel(); });
@@ -294,7 +359,7 @@
     var q = document.getElementById('pkQ'); if (q) q.addEventListener('input', function () { st.q = q.value; drawCovers(); });
     function start(go) {
       var u = BASE + '/design?t=' + encodeURIComponent(st.t) + '&c=' + st.c + '&n=' + st.pages + '&go=' + go;
-      ['title', 'sub', 'bg', 'tc', 'sc'].forEach(function (k) { if (st.cu[k] != null && st.cu[k] !== '') u += '&' + k + '=' + encodeURIComponent(st.cu[k]); });
+      ['title', 'sub', 'bg', 'tc', 'sc', 'year', 'sh', 'stk'].forEach(function (k) { if (st.cu[k] != null && st.cu[k] !== '') u += '&' + k + '=' + encodeURIComponent(st.cu[k]); });
       PBK.go(u);
     }
     document.getElementById('pkStart').addEventListener('click', function () { start('photos'); });
@@ -321,7 +386,7 @@
     function draw() {
       var q = st.q.toLowerCase().trim(), items = [];
       if (st.cat === 'all' || st.cat === 'blank') items.push({ blank: true });
-      if (st.cat !== 'blank') C.ORDER.forEach(function (id) { var t = C.TPL[id]; if (st.cat !== 'all' && t.cat !== st.cat && !(st.cat === 'travel' && t.cat === 'kenya')) return; if (q && (t.name + ' ' + (t.title || '') + ' ' + (t.sub || '') + ' ' + t.cat + (t.cat === 'kenya' ? ' travel africa' : '')).toLowerCase().indexOf(q) < 0) return; items.push(t); });
+      if (st.cat !== 'blank') C.ORDER.forEach(function (id) { var t = C.TPL[id]; if (!C.visible(t)) return; if (st.cat !== 'all' && t.cat !== st.cat && !(st.cat === 'travel' && t.cat === 'kenya')) return; if (q && (t.name + ' ' + (t.title || '') + ' ' + (t.sub || '') + ' ' + t.cat + (t.cat === 'kenya' ? ' travel africa' : '')).toLowerCase().indexOf(q) < 0) return; items.push(t); });
       if (st.cat === 'blank') C.BLANK.forEach(function (_, i) { if (i) items.push({ blank: true, c: i }); });
       if (q) items = items.filter(function (x) { return !x.blank || 'blank'.indexOf(q) >= 0; });
       grid.innerHTML = items.map(function (t) {
@@ -356,7 +421,7 @@
         return '<div class="pk-myb"><a data-go href="' + BASE + '/design?p=' + esc(p.id) + '"><canvas width="275" height="355" data-p="' + esc(p.id) + '"></canvas></a><div><b>' + esc(p.name || 'My photo book') + '</b><span>' + (p.pages || []).length + ' pages · edited ' + new Date(p.updatedAt || Date.now()).toLocaleDateString() + '</span><div class="pk-myb__a"><a data-go class="btn btn--sm btn--dark" href="' + BASE + '/design?p=' + esc(p.id) + '">Open</a><button class="btn btn--sm btn--ghost" data-del="' + esc(p.id) + '">Delete</button></div></div></div>';
       }).join('');
       list.forEach(function (p) {
-        var cv = box.querySelector('canvas[data-p="' + p.id + '"]'); if (!cv || !p.cover) return;
+        var cv = box.querySelector('canvas[data-p="' + p.id + '"]'); if (!cv || !p.cover) return; C.fixCover(p.cover, p.tpl);
         R.renderBook(p.cover, C.spineFor(p.cover, p.tpl, p.pal), { pages: (p.pages || []).length, photo: function () { return null; } }).then(function (m) { cv.width = m.width; cv.height = m.height; cv.getContext('2d').drawImage(m, 0, 0); }).catch(function () {});
       });
       box.querySelectorAll('[data-del]').forEach(function (b) {

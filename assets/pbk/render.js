@@ -8,7 +8,7 @@
   'use strict';
   var W = 1200, H = 1600, HINGE = 100;
   /* The CIEL AFRICA mark: fixed position, size and tracking on every cover. */
-  var BRAND = { text: 'CIEL AFRICA', size: 27, track: 0.24, y: 1496, x: 600, font: '500 {s}px "PBK Mont", "Montserrat", sans-serif' };
+  var BRAND = { text: 'CIEL AFRICA', size: 19, track: 0.3, y: 1556, x: 650, font: '500 {s}px "PBK Mont", "Montserrat", sans-serif' };
 
   var FONTS = {
     spartan: { css: '"PBK Spartan", "League Spartan", sans-serif', w: 800, name: 'Bold Sans' },
@@ -17,7 +17,26 @@
     serifi: { css: '"PBK Serif I", Georgia, serif', w: 400, name: 'Serif Italic', italic: true },
     script: { css: '"PBK Script", cursive', w: 600, name: 'Handwritten' },
     round: { css: '"PBK Round", sans-serif', w: 400, name: 'Rounded' },
-    block: { css: '"PBK Block", sans-serif', w: 400, name: 'Heavy' }
+    block: { css: '"PBK Block", sans-serif', w: 400, name: 'Heavy' },
+    playfair: { css: '"PBK Playfair Display", serif', w: 800, name: 'Elegant serif' },
+    playfairi: { css: '"PBK Playfair Display Italic", serif', w: 700, name: 'Elegant italic', italic: true },
+    cormorant: { css: '"PBK Cormorant Garamond Italic", serif', w: 600, name: 'Classic italic', italic: true },
+    abril: { css: '"PBK Abril Fatface", serif', w: 400, name: 'Fashion' },
+    bebas: { css: '"PBK Bebas Neue", sans-serif', w: 400, name: 'Tall caps' },
+    oswald: { css: '"PBK Oswald", sans-serif', w: 600, name: 'Condensed' },
+    poppins: { css: '"PBK Poppins", sans-serif', w: 600, name: 'Modern' },
+    josefin: { css: '"PBK Josefin Sans", sans-serif', w: 700, name: 'Geometric' },
+    righteous: { css: '"PBK Righteous", sans-serif', w: 400, name: 'Retro' },
+    shrikhand: { css: '"PBK Shrikhand", sans-serif', w: 400, name: 'Bold retro' },
+    fredoka: { css: '"PBK Fredoka", sans-serif', w: 600, name: 'Playful' },
+    pacifico: { css: '"PBK Pacifico", cursive', w: 400, name: 'Surf script' },
+    lobster: { css: '"PBK Lobster", cursive', w: 400, name: 'Lobster' },
+    dancing: { css: '"PBK Dancing Script", cursive', w: 700, name: 'Dancing script' },
+    greatvibes: { css: '"PBK Great Vibes", cursive', w: 400, name: 'Wedding script' },
+    satisfy: { css: '"PBK Satisfy", cursive', w: 400, name: 'Brush script' },
+    kaushan: { css: '"PBK Kaushan Script", cursive', w: 400, name: 'Bold brush' },
+    marker: { css: '"PBK Permanent Marker", cursive', w: 400, name: 'Marker' },
+    amatic: { css: '"PBK Amatic SC", cursive', w: 700, name: 'Hand-drawn' }
   };
   var FONT_FILES = [
     ['PBK Spartan', '/assets/fonts/pbk/spartan.woff2', { weight: '100 900' }],
@@ -27,18 +46,42 @@
     ['PBK Serif I', '/assets/fonts/pb/pb-dmserif-i.ttf', {}],
     ['PBK Script', '/assets/fonts/pb/pb-caveat.ttf', { weight: '400 700' }],
     ['PBK Round', '/assets/fonts/pb/pb-lilita.ttf', {}],
-    ['PBK Block', '/assets/fonts/pb/pb-archivo.ttf', {}]
+    ['PBK Block', '/assets/fonts/pb/pb-archivo.ttf', {}],
+    ['PBK Playfair Display', '/assets/fonts/pbk/playfair.woff2', { weight: '800' }],
+    ['PBK Playfair Display Italic', '/assets/fonts/pbk/playfair-i.woff2', { weight: '700', style: 'italic' }],
+    ['PBK Cormorant Garamond Italic', '/assets/fonts/pbk/cormorant-i.woff2', { weight: '600', style: 'italic' }],
+    ['PBK Abril Fatface', '/assets/fonts/pbk/abril.woff2', { weight: '400' }],
+    ['PBK Bebas Neue', '/assets/fonts/pbk/bebas.woff2', { weight: '400' }],
+    ['PBK Oswald', '/assets/fonts/pbk/oswald.woff2', { weight: '600' }],
+    ['PBK Poppins', '/assets/fonts/pbk/poppins.woff2', { weight: '600' }],
+    ['PBK Josefin Sans', '/assets/fonts/pbk/josefin.woff2', { weight: '700' }],
+    ['PBK Righteous', '/assets/fonts/pbk/righteous.woff2', { weight: '400' }],
+    ['PBK Shrikhand', '/assets/fonts/pbk/shrikhand.woff2', { weight: '400' }],
+    ['PBK Fredoka', '/assets/fonts/pbk/fredoka.woff2', { weight: '600' }],
+    ['PBK Pacifico', '/assets/fonts/pbk/pacifico.woff2', { weight: '400' }],
+    ['PBK Lobster', '/assets/fonts/pbk/lobster.woff2', { weight: '400' }],
+    ['PBK Dancing Script', '/assets/fonts/pbk/dancing.woff2', { weight: '700' }],
+    ['PBK Great Vibes', '/assets/fonts/pbk/greatvibes.woff2', { weight: '400' }],
+    ['PBK Satisfy', '/assets/fonts/pbk/satisfy.woff2', { weight: '400' }],
+    ['PBK Kaushan Script', '/assets/fonts/pbk/kaushan.woff2', { weight: '400' }],
+    ['PBK Permanent Marker', '/assets/fonts/pbk/marker.woff2', { weight: '400' }],
+    ['PBK Amatic SC', '/assets/fonts/pbk/amatic.woff2', { weight: '700' }]
   ];
-  var fontsP = null;
-  function loadFonts() {
-    if (fontsP) return fontsP;
-    if (!root.FontFace || !root.document) return (fontsP = Promise.resolve());
-    fontsP = Promise.all(FONT_FILES.map(function (f) {
+  /* fonts load on demand: the two cover fonts first, the others when a page uses them */
+  var famP = {};
+  function loadFam(fam) {
+    if (!fam) return Promise.resolve();
+    if (famP[fam]) return famP[fam];
+    if (!root.FontFace || !root.document) return (famP[fam] = Promise.resolve());
+    famP[fam] = Promise.all(FONT_FILES.filter(function (f) { return f[0] === fam; }).map(function (f) {
       var ff = new FontFace(f[0], 'url(' + f[1] + ')', f[2]);
       return ff.load().then(function (x) { document.fonts.add(x); }).catch(function () {});
     }));
-    return fontsP;
+    return famP[fam];
   }
+  function famOf(key) { var f = FONTS[key] || FONTS.spartan, m = f.css.match(/"([^"]+)"/); return m && m[1]; }
+  function loadFonts() { return Promise.all(['PBK Spartan', 'PBK Mont'].map(loadFam)); }
+  function loadAllFonts() { return Promise.all(Object.keys(FONTS).map(function (k) { return loadFam(famOf(k)); })); }
 
   /* ---------- image cache ---------- */
   var cache = {};
@@ -199,7 +242,8 @@
         if (iim) {
           if (el.flip) { ctx.translate(el.x * 2 + el.w, 0); ctx.scale(-1, 1); }
           ctx.globalAlpha = el.op == null ? 1 : el.op;
-          ctx.drawImage(iim, el.x, el.y, el.w, el.h);
+          if (el.rect && el.rect.w > 0) { var RW = iim.naturalWidth || iim.width, RH = iim.naturalHeight || iim.height; ctx.drawImage(iim, el.rect.x * RW, el.rect.y * RH, el.rect.w * RW, el.rect.h * RH, el.x, el.y, el.w, el.h); }
+          else ctx.drawImage(iim, el.x, el.y, el.w, el.h);
         }
       } else if (el.t === 'text') {
         var L = layoutText(ctx, el);
@@ -208,7 +252,7 @@
           var pad = L.cap * 0.45; ctx.fillStyle = el.bgc; rr(ctx, bx0 - pad, el.y - pad * 0.9, bx1 - bx0 + pad * 2, L.h + pad * 1.9 + L.cap * 0.1, pad * 0.6); ctx.fill();
         }
         ctx.font = L.font; ctx.fillStyle = el.color || '#111'; ctx.textBaseline = 'alphabetic';
-        if (el.shadow) { ctx.shadowColor = 'rgba(0,0,0,.2)'; ctx.shadowBlur = Math.max(2, L.cap * 0.06 * s); ctx.shadowOffsetX = L.cap * 0.02 * s; ctx.shadowOffsetY = L.cap * 0.035 * s; }
+        if (el.shadow) { ctx.shadowColor = 'rgba(0,0,0,.42)'; ctx.shadowBlur = Math.max(1.5, L.cap * 0.09 * s); ctx.shadowOffsetX = Math.max(1, L.cap * 0.035 * s); ctx.shadowOffsetY = Math.max(1, L.cap * 0.06 * s); }
         L.lines.forEach(function (l) { drawTracked(ctx, l.t, l.x, l.y, L.ls); });
       } else if (el.t === 'shape') {
         ctx.fillStyle = el.color || '#111';
@@ -218,6 +262,14 @@
       ctx.restore();
     });
     if (doc.kind === 'cover' && !doc.ownBrand) drawBrand(ctx, doc.brand || '#ffffff');
+    if (doc.kind === 'back') drawContact(ctx, doc.brand || '#ffffff');
+    ctx.restore();
+  }
+  /* back cover: the website and email, small, bottom right (clear of the spine on the right) */
+  function drawContact(ctx, color) {
+    ctx.save(); ctx.fillStyle = color; ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'right';
+    ctx.font = '600 25px "PBK Mont", "Montserrat", sans-serif'; ctx.fillText('cielafrica.com', 1040, 1508);
+    ctx.font = '500 21px "PBK Mont", "Montserrat", sans-serif'; ctx.globalAlpha = 0.85; ctx.fillText('hello@cielafrica.com', 1040, 1542);
     ctx.restore();
   }
   function drawBrand(ctx, color) {
@@ -235,6 +287,7 @@
     var list = [loadFonts(), img(doc.img)];
     (doc.els || []).forEach(function (el) {
       if (el.t === 'art') list.push(img(artSrc(el.art)));
+      if (el.t === 'text' && el.font) list.push(loadFam(famOf(el.font)));
       if (el.t === 'photo' && el.photo && opt.photo) list.push(img(opt.photo(el.photo)));
       if (el.t === 'img') list.push(img(el.src || (el.photo && opt.photo ? opt.photo(el.photo) : null)));
       if (el.mask && opt.photo) list.push(img(opt.photo(el.mask)));
@@ -418,6 +471,6 @@
     return c;
   }
 
-  var API = { forget: forget, applyFx: applyFx, processed: processed, hasFx: hasFx, cover: cover, BOOKS: BOOKS, bookKind: bookKind, bookMap: bookMap, renderBook: renderBook, book3dMap: book3dMap, book3d: book3d, spine: spine, GEO: GEO, mockMap: mockMap, mock: mock, W: W, H: H, HINGE: HINGE, BRAND: BRAND, FONTS: FONTS, loadFonts: loadFonts, img: img, ready: ready, artSrc: artSrc, draw: draw, load: load, toCanvas: toCanvas, layoutText: layoutText, mockup: mockup, drawBrand: drawBrand, rr: rr };
+  var API = { forget: forget, applyFx: applyFx, processed: processed, hasFx: hasFx, cover: cover, BOOKS: BOOKS, bookKind: bookKind, bookMap: bookMap, renderBook: renderBook, book3dMap: book3dMap, book3d: book3d, spine: spine, GEO: GEO, mockMap: mockMap, mock: mock, W: W, H: H, HINGE: HINGE, BRAND: BRAND, FONTS: FONTS, loadFonts: loadFonts, loadAllFonts: loadAllFonts, loadFam: loadFam, famOf: famOf, img: img, ready: ready, artSrc: artSrc, draw: draw, load: load, toCanvas: toCanvas, layoutText: layoutText, mockup: mockup, drawBrand: drawBrand, rr: rr };
   if (typeof module === 'object' && module.exports) module.exports = API; else root.PBKR = API;
 })(typeof self !== 'undefined' ? self : this);

@@ -82,11 +82,11 @@
     function curAr() { return st.ratio === 'frame' ? frameAr : st.ratio === 'orig' ? iar : st.ratio === 'free' ? null : +st.ratio; }
 
     if (!dlg) { dlg = document.createElement('dialog'); dlg.className = 'pfx'; document.body.appendChild(dlg); }
-    dlg.innerHTML = '<div class="pfx__in"><header class="pfx__h"><h3>Edit photo</h3><div class="pfx__tabs">' +
-      (o.sticker ? '' : '<button data-tab="crop">Crop</button>') + '<button data-tab="adj">Adjust</button><button data-tab="bg">Background</button></div><button class="pfx__x" data-x aria-label="Close">' + X + '</button></header>' +
+    dlg.innerHTML = '<div class="pfx__in"><header class="pfx__h"><h3>' + (o.sticker ? 'Edit sticker' : 'Edit photo') + '</h3><div class="pfx__tabs">' +
+      '<button data-tab="crop">Crop</button><button data-tab="adj">Adjust</button><button data-tab="bg">Background</button></div><button class="pfx__x" data-x aria-label="Close">' + X + '</button></header>' +
       '<div class="pfx__body"><div class="pfx__stage" id="pfxStage"><canvas id="pfxC"></canvas><div class="pfx__crop" id="pfxCrop" hidden><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i><b></b></div><div class="pfx__busy" id="pfxBusy" hidden><span></span><p>Finding the subject… the first time takes a few seconds.</p></div></div>' +
       '<aside class="pfx__side" id="pfxSide"></aside></div>' +
-      '<footer class="pfx__f"><button class="btn btn--ghost" data-x>Cancel</button><button class="btn btn--p" data-ok>Apply</button></footer></div>';
+      '<footer class="pfx__f"><button class="pfx__link pfx__reset" data-resetall>Start over</button><button class="btn btn--ghost" data-x>Cancel</button><button class="btn btn--p" data-ok>Apply</button></footer></div>';
     var cv = dlg.querySelector('#pfxC'), g = cv.getContext('2d'), stage = dlg.querySelector('#pfxStage'), side = dlg.querySelector('#pfxSide'), box = dlg.querySelector('#pfxCrop');
     var view = { k: 1, ox: 0, oy: 0, w: 0, h: 0 };
     // preview source (max 1400 px) for fast filtering
@@ -223,6 +223,7 @@
     function finish(res) { window.removeEventListener('resize', layout); dlg.close(); resolve(res); }
     dlg.onclick = function (e) {
       if (e.target.closest('[data-x]')) return finish(null);
+      if (e.target.closest('[data-resetall]')) { st.fx = {}; st.ratio = o.sticker ? 'orig' : 'frame'; st.rect = o.sticker ? { x: 0, y: 0, w: 1, h: 1 } : fitRect(o.frameAr || iar); if (mask) { undo.push(mask.getContext('2d').getImageData(0, 0, MW, MH)); mask = null; st.maskChanged = true; } sideUI(); return; }
       if (e.target.closest('[data-ok]')) {
         var r = st.rect, ar = (r.w * IW) / (r.h * IH), res = { rect: (r.x || r.y || r.w < 1 || r.h < 1) ? r : null, ar: ar, fx: R.hasFx(st.fx) ? st.fx : null };
         if (!st.maskChanged) return finish(res);

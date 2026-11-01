@@ -111,3 +111,23 @@ The landing page examples use licensed Unsplash photos already in this repo; cre
 - Sample photos are never printable: `PBE.validate()` returns a `sample` error while any remain, which blocks preview approval, PDF export and ordering.
 - The old describe-first flow is still available at `#/new/story`.
 - Landing links can open a design directly: `/photobooks/studio#/new?t=<template>&go=1` (optional `&f=<format>`).
+
+## November 2026 additions
+
+- **Covers.** The CIEL AFRICA mark is drawn by the renderer on every front cover (small, near the bottom edge);
+  it was removed from the travel artwork. Years are live text (2026 by default) and can be changed on the
+  category page and in the editor; Year covers carry a year too. "Shadow behind the words" is a real,
+  visible drop shadow and can be switched on or off. Illustrated covers use Fluent Emoji artwork (MIT,
+  `assets/pbk/fl/LICENSE.txt`).
+- **Back cover** (`PBKShop.backDoc`): cover colour, a map sticker of the place for travel and Kenya covers
+  (`assets/pbk/maps/`), the cover's own artwork for the others, and cielafrica.com / hello@cielafrica.com
+  bottom right.
+- **Editor.** Illustrated, travel, emoji, word and classic sticker sets; 26 fonts (loaded on demand); lock;
+  movable empty frames; photos dragged from the library onto frames or onto pages in the strip (press and
+  hold on phones); uploaded stickers can be cropped, adjusted and cut out; "Undo edit" and "Original" per photo.
+- **Preview.** Always an open book (two pages), also on phones; no page shake; no pinch zoom.
+- **Prices.** Print-ready PDF from KES 1,600 (`data/photobooks.js → book.digital`).
+- **Test order.** The "Ciel Test" book (category Someone) is only listed in a browser that is signed in to
+  `/photobooks/orders`, and the server only accepts its KES 5 price (`book.testPrice`) with the admin session.
+  Test orders are marked TEST and are deleted with their files after 24 hours (when the inbox loads, and by the
+  daily cron `/api/photobooks?route=pbk-cron`; set `CRON_SECRET` in Vercel to lock that route to Vercel's cron).
