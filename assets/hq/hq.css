@@ -636,3 +636,6 @@ html[data-theme="dark"] .mx2-it:hover{background:#18181c}html[data-theme="dark"]
   .hq-ph+.hq-body{padding-top:.9rem}
   .hq-ph #topx .b{height:36px}
 }
+.hq-top .b svg,.hq-burger svg{width:18px;height:18px}
+.hq-srch svg{width:16px;height:16px}
+.hq-nav a svg{width:18px;height:18px;stroke-width:1.75}
