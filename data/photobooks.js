@@ -1,6 +1,6 @@
 /* ============================================================
    CIEL AFRICA — Photo Books configuration
-   Edited from /photo-books/admin (or by hand). The browser and the
+   Edited from /photobooks/admin (or by hand). The browser and the
    payment server both read this file, so prices charged at checkout
    always come from here, never from the page.
 

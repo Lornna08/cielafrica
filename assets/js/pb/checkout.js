@@ -156,7 +156,7 @@
         el.innerHTML = '<div class="buys"><h3>Your orders for this book</h3>' + list.map(function (b) {
           var acts = b.status === 'pending' ? '<button type="button" class="btn btn--sm btn--dark" data-chk="' + b.id + '">Check payment</button>' :
             b.product === 'digital' ? '<button type="button" class="btn btn--sm btn--p" data-dl="' + b.id + '" data-k="book">' + I('download') + 'Download PDF</button><button type="button" class="btn btn--sm btn--ghost" data-dl="' + b.id + '" data-k="printer">Printer files</button>' :
-              (b.filesSent ? '' : '<button type="button" class="btn btn--sm btn--p" data-send="' + b.id + '">Send print files</button>') + (b.orderToken ? '<a class="btn btn--sm btn--ghost" href="/photo-books/order?t=' + encodeURIComponent(b.orderToken) + '">Order status</a>' : '');
+              (b.filesSent ? '' : '<button type="button" class="btn btn--sm btn--p" data-send="' + b.id + '">Send print files</button>') + (b.orderToken ? '<a class="btn btn--sm btn--ghost" href="/photobooks/order?t=' + encodeURIComponent(b.orderToken) + '">Order status</a>' : '');
           return '<div class="buy"><div><b>' + esc(b.ref) + '</b><span>' + (b.product === 'print' ? 'Printed book' : 'Digital PDF') + ' · ' + A.fmtMoney(b.amount || 0) + ' · ' + (b.status === 'paid' ? 'Paid' : b.status === 'pending' ? 'Awaiting confirmation' : esc(b.status)) + ' · ' + A.when(b.createdAt) + '</span></div><div class="buy__a">' + acts + '</div><div class="buy__p" id="bp-' + b.id + '">' + (notes[b.id] || '') + '</div></div>';
         }).join('') + '</div>';
         el.onclick = function (e) {

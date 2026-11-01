@@ -1,21 +1,21 @@
 # Photo Books
 
-Customers create a personalised photo book at **/photo-books**, design it in the studio at **/photo-books/studio**, and buy a print-ready PDF or a printed book delivered in Kenya.
+Customers create a personalised photo book at **/photobooks**, design it in the studio at **/photobooks/studio**, and buy a print-ready PDF or a printed book delivered in Kenya.
 
 ## How it works
 
 | Piece | Where |
 |---|---|
-| Landing page (hero, designs, examples, pricing, FAQ) | `photo-books/index.html`, `assets/js/pb/landing.js`, `assets/css/pb-landing.css` |
-| Studio: My books, new book, photos, editor, preview, order | `photo-books/studio.html`, `assets/js/pb/studio.js`, `editor.js`, `checkout.js` |
+| Landing page (hero, designs, examples, pricing, FAQ) | `photobooks/index.html`, `assets/js/pb/landing.js`, `assets/css/pb-landing.css` |
+| Studio: My books, new book, photos, editor, preview, order | `photobooks/studio.html`, `assets/js/pb/studio.js`, `editor.js`, `checkout.js` |
 | Design engine: layouts, auto-layout, covers, text, validation, pricing | `assets/js/pb/engine.js` (runs in the browser and on the server) |
 | Cover illustrations (original vector art) | `assets/js/pb/art.js` |
 | Print-ready PDF renderer (pdf-lib + fontkit) | `assets/js/pb/pdf.js`, `assets/vendor/` |
 | Curated fonts (OFL) and their metrics | `assets/fonts/pb/`, `assets/js/pb/metrics.js` (`tools/pb-metrics.py`) |
 | Device storage (IndexedDB) | `assets/js/pb/store.js`, `photos.js` |
 | Server: prices, M-Pesa, receipts, orders, print files, admin | `api/photobooks.js` → `lib/photobooks/handler.js` |
-| Admin | `/photo-books/admin` (`assets/js/pb/admin.js`) |
-| Customer order status | `/photo-books/order?t=…` |
+| Admin | `/photobooks/admin` (`assets/js/pb/admin.js`) |
+| Customer order status | `/photobooks/order?t=…` |
 | Configuration (formats, prices, delivery, templates) | `data/photobooks.js` |
 
 The editor preview (SVG) and the PDF are drawn from the **same draw lists** produced by `engine.js` from the saved project, using the same font files and the same text measurements.
@@ -40,7 +40,7 @@ Limitation: because photos never leave the device, the final PDF is assembled in
 | Variable | Needed for |
 |---|---|
 | `MPESA_*` (already set) | Taking payment |
-| `ADMIN_PASSWORD` | `/photo-books/admin` sign-in and publishing prices |
+| `ADMIN_PASSWORD` | `/photobooks/admin` sign-in and publishing prices |
 | `GITHUB_TOKEN` | "Publish" in the admin (writes `data/photobooks.js`, like the main admin) |
 | `KV_REST_API_URL`, `KV_REST_API_TOKEN` (Vercel → Storage → Upstash Redis, free tier) | Order records, the orders list, **printed orders** and print files |
 | `RESEND_API_KEY`, `MAIL_FROM`, `MAIL_TO` (already set) | Order emails |
@@ -49,7 +49,7 @@ Limitation: because photos never leave the device, the final PDF is assembled in
 
 ## Prices
 
-Every price in `data/photobooks.js` starts as `null` ("not set"); a product can't be bought until it is priced. Set prices in **/photo-books/admin → Formats & pricing → Publish**, or edit the file.
+Every price in `data/photobooks.js` starts as `null` ("not set"); a product can't be bought until it is priced. Set prices in **/photobooks/admin → Formats & pricing → Publish**, or edit the file.
 
 - Digital: `base + max(0, pages − includedPages) × perExtraPage` per format.
 - Printed (per copy): binding `base + extra pages × perExtraPage` + `paper.perPage × pages`, × quantity, + delivery.
@@ -65,8 +65,8 @@ The landing page examples use licensed Unsplash photos already in this repo; cre
 
 ## Sample-filled books (v2)
 
-- New books start from **Choose a design** (`/photo-books/studio#/new`). Each design opens as a finished book filled with sample photos from `data/pb-samples.js` (Unsplash, hotlinked with photographer credit; a few licensed copies live in `assets/img/pb-demo/`).
+- New books start from **Choose a design** (`/photobooks/studio#/new`). Each design opens as a finished book filled with sample photos from `data/pb-samples.js` (Unsplash, hotlinked with photographer credit; a few licensed copies live in `assets/img/pb-demo/`).
 - Customers add photos from the editor's guide bar; `PBApp.fillSamples()` puts them into sample frames in reading order (cover first). Tapping a photo shows **Replace / Adjust / Remove**.
 - Sample photos are never printable: `PBE.validate()` returns a `sample` error while any remain, which blocks preview approval, PDF export and ordering.
 - The old describe-first flow is still available at `#/new/story`.
-- Landing links can open a design directly: `/photo-books/studio#/new?t=<template>&go=1` (optional `&f=<format>`).
+- Landing links can open a design directly: `/photobooks/studio#/new?t=<template>&go=1` (optional `&f=<format>`).

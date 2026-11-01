@@ -1,5 +1,5 @@
 /* ============================================================
-   CIEL PHOTO BOOKS — landing page (/photo-books)
+   CIEL PHOTO BOOKS — landing page (/photobooks)
    Every cover and spread is drawn live by the same engine the
    studio uses, filled with sample photos (Unsplash, credited on the
    page). Customer photos are never shown here.
@@ -9,7 +9,7 @@
   var E = window.PBE, SV = window.PBS, SM = window.PBSamples, C = (window.CIEL && CIEL.photobooks) || {};
   if (!E || !SV || !SM) return;
   SV.injectFonts();
-  var STUDIO = '/photo-books/studio';
+  var STUDIO = '/photobooks/studio';
   var used = {};
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function tpl(id) { return (C.templates || []).filter(function (t) { return t.id === id; })[0] || { id: id, name: id }; }

@@ -1,6 +1,6 @@
 # Photo Books — example photos
 
-Used only in the clearly labelled example books on /photo-books. They are not customer photos.
+Used only in the clearly labelled example books on /photobooks. They are not customer photos.
 All from [Unsplash](https://unsplash.com/?utm_source=ciel_africa&utm_medium=referral), used under the Unsplash License
 (already licensed for the ORBIT and NJIA templates on this site).
 

@@ -142,7 +142,7 @@
   }
   function publishBar() { return '<div class="ad-bar"><span class="muted" id="dirty" style="align-self:center;margin-right:auto"></span><button class="btn btn--ghost" id="dlc">Download photobooks.js</button><button class="btn btn--p" id="pub">Publish to the website</button></div>'; }
   function fileText() {
-    var head = '/* ============================================================\n   CIEL AFRICA — Photo Books configuration (published from /photo-books/admin)\n   Prices: null = not set (that product cannot be bought).\n   Turn print on for a format only after your printer confirms the spec.\n   ============================================================ */\n';
+    var head = '/* ============================================================\n   CIEL AFRICA — Photo Books configuration (published from /photobooks/admin)\n   Prices: null = not set (that product cannot be bought).\n   Turn print on for a format only after your printer confirms the spec.\n   ============================================================ */\n';
     return head + '(function (root) {\n  var PB = ' + JSON.stringify(CFG, null, 2).replace(/\n/g, '\n  ') + ';\n  if (typeof module === \'object\' && module.exports) module.exports = PB;\n  else { root.CIEL = root.CIEL || {}; root.CIEL.photobooks = PB; }\n})(typeof self !== \'undefined\' ? self : this);\n';
   }
   function publish() {
