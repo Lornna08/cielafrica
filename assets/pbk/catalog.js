@@ -82,7 +82,8 @@
   /* Raster travel covers (from covers.js) */
   var COVERS = (root.PBK_COVERS || []);
   COVERS.forEach(function (c) {
-    var t = { id: 'travel/' + c.id, cat: 'travel', slug: c.id, name: c.name, kind: 'raster', lines: c.lines || [], editable: !!c.plate, bg: c.bg,
+    var t = { id: 'travel/' + c.id, cat: 'travel', slug: c.id, name: c.name, kind: 'raster', lines: c.lines || [], editable: !!c.plate, bg: c.bg, tc: c.tc, bc: c.bc || c.tc, st: c.st, layered: !!c.art, artBox: c.art || null,
+      art: c.art ? '/assets/pbk/c/a/' + c.id + '.webp?v=' + VER : null, artThumb: c.art ? '/assets/pbk/c/a/s/' + c.id + '.webp?v=' + VER : null,
       flat: '/assets/pbk/c/f/' + c.id + '.webp?v=' + VER, plate: c.plate ? '/assets/pbk/c/p/' + c.id + '.webp?v=' + VER : null };
     t.mock = function () { return '/assets/pbk/c/m/travel-' + c.id + '.webp?v=' + VER; };
     TPL[t.id] = t; ORDER.push(t.id);
@@ -96,6 +97,15 @@
 
   function rasterDoc(t, edit) {
     var doc = { kind: 'cover', bg: t.bg || '#ffffff', ownBrand: true, img: t.flat, els: [], from: t.id };
+    if (edit && t.layered) {
+      /* fully layered: plain background, the artwork as a movable layer, live text, CIEL AFRICA drawn */
+      doc = { kind: 'cover', bg: t.bg, brand: t.bc, els: [], from: t.id, edited: true, layered: true };
+      doc.els.push({ id: 'art', t: 'img', src: t.art, x: t.artBox[0], y: t.artBox[1], w: t.artBox[2], h: t.artBox[3] });
+      t.lines.forEach(function (l, i) {
+        doc.els.push({ id: i === 0 ? 'title' : 'sub' + i, t: 'text', role: i === 0 ? 'title' : 'sub', text: l.text, x: l.x, y: l.y, w: l.w, h: l.cap, cap: l.cap, align: l.align, font: 'spartan', color: l.color, shadow: 1 });
+      });
+      return doc;
+    }
     if (edit && t.plate) {
       doc.img = t.plate; doc.edited = true;
       t.lines.forEach(function (l, i) {
@@ -121,6 +131,17 @@
     return t.kind === 'vector' ? vectorDoc(t, pi) : rasterDoc(t, edit);
   }
 
-  var API = { CATS: CATS, TPL: TPL, ORDER: ORDER, BLANK: BLANK, byCat: byCat, docFor: docFor, vectorDoc: vectorDoc, rasterDoc: rasterDoc, blankDoc: blankDoc, luminance: luminance, cat: function (id) { return CATS.filter(function (c) { return c.id === id; })[0]; } };
+  /** What goes on the spine of the 3D book for a document. */
+  function spineFor(doc, tplId, pal) {
+    var t = TPL[tplId], tEl = (doc.els || []).filter(function (e) { return e.role === 'title'; })[0];
+    var o = { bg: doc.bg, title: tEl ? tEl.text : '', tc: tEl ? tEl.color : null, bc: doc.brand || (tEl && tEl.color) };
+    if (t && t.kind === 'raster' && !doc.edited) { o.bg = t.bg; o.title = t.st || t.name; o.tc = t.tc; o.bc = t.bc || t.tc; if (t.artThumb) o.artImg = t.artThumb; }
+    if (doc.layered) { var ai = (doc.els || []).filter(function (e) { return e.id === 'art' && e.t === 'img'; })[0]; if (ai) o.artImg = ai.src; }
+    if (t && t.kind === 'vector') { var art = (doc.els || []).filter(function (e) { return e.id === 'art' && e.t === 'art'; })[0]; if (art) o.art = art.art; }
+    if (!o.tc) o.tc = luminance(o.bg || '#ffffff') < 0.5 ? '#ffffff' : '#141414';
+    if (!o.bc) o.bc = o.tc;
+    return o;
+  }
+  var API = { spineFor: spineFor, CATS: CATS, TPL: TPL, ORDER: ORDER, BLANK: BLANK, byCat: byCat, docFor: docFor, vectorDoc: vectorDoc, rasterDoc: rasterDoc, blankDoc: blankDoc, luminance: luminance, cat: function (id) { return CATS.filter(function (c) { return c.id === id; })[0]; } };
   if (typeof module === 'object' && module.exports) module.exports = API; else root.PBKCat = API;
 })(typeof self !== 'undefined' ? self : this);

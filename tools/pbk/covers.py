@@ -9,15 +9,28 @@ src, repo = sys.argv[1], sys.argv[2]
 out = os.path.join(repo, 'assets/pbk/c')
 for d in 'fpm': os.makedirs(os.path.join(out, d), exist_ok=True)
 plates = json.load(open(os.path.join(src, 's/plates.json')))
+cuts = json.load(open(os.path.join(src, 's/cutouts.json'))) if os.path.exists(os.path.join(src, 's/cutouts.json')) else {}
+os.makedirs(os.path.join(out, 'a', 's'), exist_ok=True)
+def lum(h):
+    h = h.lstrip('#'); r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16); return (0.299 * r + 0.587 * g + 0.114 * b) / 255
 content = json.load(open(os.path.join(src, 's/content.json')))
 NOT_EDITABLE = {'aruba', 'china-blossom', 'ibiza', 'japan-lantern'}
 covers = []
 for slug in sorted(content):
     info = content[slug]; meta = plates.get(slug, {})
-    Image.open(os.path.join(src, 's/flat', slug + '.png')).convert('RGB').save(os.path.join(out, 'f', slug + '.webp'), quality=88, method=6)
-    m = Image.open(os.path.join(src, 's/mock', slug + '.png')).convert('RGBA')
-    m.resize((550, 710), Image.LANCZOS).save(os.path.join(out, 'm', 'travel-' + slug + '.webp'), quality=84, method=6)
-    rec = {'id': slug, 'name': info['place'], 'bg': meta.get('bg', '#ffffff'), 'title': ' '.join(info['lines'])}
+    fo = os.path.join(out, 'f', slug + '.webp')
+    if not os.path.exists(fo): Image.open(os.path.join(src, 's/flat', slug + '.png')).convert('RGB').save(fo, quality=88, method=6)
+    rec = {'id': slug, 'name': info['place'], 'bg': meta.get('bg', '#ffffff'), 'title': ' '.join(info['lines']), 'st': info['lines'][0]}
+    det = meta.get('lines') or []
+    rec['tc'] = det[0]['color'] if det else ('#ffffff' if lum(rec['bg']) < 0.5 else '#141414')
+    cut = cuts.get(slug)
+    if cut and cut.get('ok'):
+        ao = os.path.join(out, 'a', slug + '.webp')
+        im = Image.open(os.path.join(src, 's/art', slug + '.png')).convert('RGBA')
+        im.save(ao, quality=86, method=6)
+        sm = im.copy(); sm.thumbnail((220, 220), Image.LANCZOS); sm.save(os.path.join(out, 'a', 's', slug + '.webp'), quality=82, method=6)
+        rec['art'] = [cut['x'], cut['y'], cut['w'], cut['h']]
+        rec['bc'] = cut.get('brand') or rec['tc']
     if meta.get('editable') and slug not in NOT_EDITABLE and os.path.exists(os.path.join(src, 's/plate', slug + '.png')):
         Image.open(os.path.join(src, 's/plate', slug + '.png')).convert('RGB').save(os.path.join(out, 'p', slug + '.webp'), quality=88, method=6)
         rec['plate'] = 1

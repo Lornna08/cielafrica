@@ -15,3 +15,24 @@ window.build = async function (ids, w, mode) {
   return true;
 };
 </script>
+<script>
+window.spineFor = function (id, pi, doc) {
+  const C = PBKCat, t = C.TPL[id];
+  if (!t) return { bg: doc.bg, title: (doc.els.find(e => e.role === 'title') || {}).text || '', tc: (doc.els.find(e => e.role === 'title') || {}).color, bc: doc.brand };
+  if (t.kind === 'vector') { const p = t.palettes[pi || 0]; return { bg: p[0], title: t.title, tc: p[1], bc: p[3] || p[1], art: t.art }; }
+  return { bg: t.bg, title: t.spineTitle || t.name, tc: t.tc, bc: t.tc };
+};
+window.build3d = async function (ids, w, mapSrc) {
+  const R = PBKR, C = PBKCat, out = document.getElementById('out'); out.innerHTML = '';
+  const map = await R.book3dMap(mapSrc || '/tools/pbk/book3d-720.png');
+  for (const [id, pi] of ids) {
+    const doc = C.docFor(id, pi);
+    await R.load(doc); const flat = await R.toCanvas(doc, 900);
+    const so = spineFor(id, pi, doc); if (so.art) await R.img(R.artSrc(so.art));
+    const sp = R.spine(so);
+    const m = R.book3d(flat, sp, map);
+    const d = document.createElement('div'); d.style.width = w + 'px'; m.style.width = '100%'; d.appendChild(m); out.appendChild(d);
+  }
+  return true;
+};
+</script>

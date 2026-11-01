@@ -91,9 +91,12 @@
     el$.saved.textContent = 'Saving…';
     clearTimeout(saveT);
     saveT = setTimeout(function () {
-      ST.saveProject(S.p).then(function () { el$.saved.textContent = 'Saved on this device'; }, function (e) { el$.saved.textContent = 'Not saved'; toast(e.message || 'Could not save'); });
+      ST.saveProject(S.p).then(function () { var t = new Date(); el$.saved.textContent = 'Saved ' + t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); el$.saved.classList.add('is-ok'); }, function (e) { el$.saved.textContent = 'Not saved'; toast(e.message || 'Could not save'); });
     }, 500);
   }
+  function flush() { if (!S.p) return; clearTimeout(saveT); ST.saveProject(S.p).catch(function () {}); }
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden' && document.body.classList.contains('pbk-editing')) flush(); });
+  window.addEventListener('pagehide', function () { if (document.body.classList.contains('pbk-editing')) flush(); });
   function snap() { return JSON.stringify({ cover: S.p.cover, pages: S.p.pages }); }
   function commit() { S.undo.push(S.last); if (S.undo.length > 60) S.undo.shift(); S.redo = []; S.last = snap(); save(); updUndo(); }
   function restore(js) { var o = JSON.parse(js); S.p.cover = o.cover; S.p.pages = o.pages; S.last = js; if (S.cur >= S.p.pages.length) S.cur = S.p.pages.length - 1; S.sel = null; save(); updUndo(); renderAll(); }
@@ -119,11 +122,11 @@
         return ST.saveProject(p).then(function () { history.replaceState({}, '', BASE + '/design?p=' + p.id); return p; });
       });
     ready.then(function (p) {
-      S = { p: p, cur: -1, sel: null, undo: [], redo: [], last: null, photos: {}, order: [], panel: null, crop: false };
-      S.last = snap();
+      S = { p: p, cur: -1, sel: null, undo: [], redo: [], last: null, photos: {}, order: [], stickers: [], panel: null, crop: false };
+      S.last = snap(); S.go = q.get('go');
       return ST.photos(p.id).then(function (list) {
         list.sort(function (a, b) { return (a.taken || '').localeCompare(b.taken || '') || a.added - b.added; });
-        list.forEach(function (m) { S.photos[m.id] = m; S.order.push(m.id); });
+        list.forEach(function (m) { S.photos[m.id] = m; if (m.sticker) S.stickers.push(m.id); else S.order.push(m.id); });
         return loadPhotoUrls(list);
       });
     }).then(function () {
@@ -155,16 +158,17 @@
       '</div>' +
       '<footer class="pe-strip"><div class="pe-strip__nav"><button class="pe-ib" id="pePgPrev" aria-label="Previous page">' + I.left + '</button><span id="pePgLbl"></span><button class="pe-ib" id="pePgNext" aria-label="Next page">' + I.right + '</button></div><div class="pe-strip__list" id="peStrip"></div><div class="pe-strip__info"><span id="pePages"></span><b id="pePrice"></b></div></footer>' +
       '<div class="pe-toast" id="peToast" role="status"></div>' +
-      '<input type="file" id="peFile" accept="' + (PH.accept || 'image/*') + '" multiple hidden>';
-    el$ = { pe: pe, canvas: $('#peCanvas', pe), wrap: $('#peWrap', pe), sel: $('#peSel', pe), ctx: $('#peCtx', pe), panel: $('#pePanel', pe), strip: $('#peStrip', pe), toast: $('#peToast', pe), saved: $('#peSaved', pe), undo: $('#peUndo', pe), redo: $('#peRedo', pe), mock: $('#peMockC', pe), mockBox: $('#peMock', pe), stage: $('#peStage', pe), file: $('#peFile', pe), hint: $('#peHint', pe) };
+      '<input type="file" id="peFile" accept="' + (PH.accept || 'image/*') + '" multiple hidden><input type="file" id="peSFile" accept="image/png,image/webp,image/jpeg" hidden>';
+    el$ = { pe: pe, canvas: $('#peCanvas', pe), wrap: $('#peWrap', pe), sel: $('#peSel', pe), ctx: $('#peCtx', pe), panel: $('#pePanel', pe), strip: $('#peStrip', pe), toast: $('#peToast', pe), saved: $('#peSaved', pe), undo: $('#peUndo', pe), redo: $('#peRedo', pe), mock: $('#peMockC', pe), mockBox: $('#peMock', pe), stage: $('#peStage', pe), file: $('#peFile', pe), sfile: $('#peSFile', pe), hint: $('#peHint', pe) };
     el$.g = el$.canvas.getContext('2d');
     bindTop(); bindRail(); bindCanvas(); bindStrip();
     R.loadFonts().then(function () { renderAll(); });
     renderAll();
     window.addEventListener('resize', fit);
     document.addEventListener('keydown', keys);
-    openPanel(innerWidth > 900 ? 'cover' : null);
-    if (!S.order.length) setTimeout(function () { hint('Start by adding your photos: tap Photos, then Add photos.'); }, 900);
+    openPanel(S.go === 'photos' ? 'photos' : S.go === 'cover' ? 'cover' : innerWidth > 900 ? 'cover' : null);
+    if (S.go === 'cover') setTimeout(function () { hint('Tap anything on the cover to change it: words, colours, artwork. CIEL AFRICA stays.'); }, 700);
+    else if (!S.order.length) setTimeout(function () { hint('Add as many photos as you like: we’ll arrange them for you.'); }, 900);
   }
   function hint(t) { var h = el$.hint; if (!h) return; h.textContent = t; h.classList.add('is-on'); clearTimeout(h._t); h._t = setTimeout(function () { h.classList.remove('is-on'); }, 6000); }
 
@@ -217,12 +221,18 @@
     });
   }
   var mockT;
+  /** The cover as a standing 3D book (canvas). */
+  function book3d(cover, px) {
+    var so = C.spineFor(cover, S.p.tpl, S.p.pal);
+    return Promise.all([R.book3dMap(), R.toCanvas(cover, px || 900, { photo: photoUrl }), so.artImg ? R.img(so.artImg) : so.art ? R.img(R.artSrc(so.art)) : null]).then(function (r) {
+      return R.book3d(r[1], R.spine(so), r[0]);
+    });
+  }
   function mockSoon() {
     clearTimeout(mockT);
     mockT = setTimeout(function () {
-      Promise.all([R.mockMap(), R.toCanvas(S.p.cover, 600, { photo: photoUrl })]).then(function (r) {
-        var m = R.mock(r[1], r[0]);
-        [el$.mock, document.getElementById('peMockP')].forEach(function (cv) { if (!cv) return; var x = cv.getContext('2d'); x.clearRect(0, 0, 550, 710); x.drawImage(m, 0, 0); });
+      book3d(S.p.cover, 900).then(function (m) {
+        [el$.mock, document.getElementById('peMockP')].forEach(function (cv) { if (!cv) return; cv.width = m.width; cv.height = m.height; var x = cv.getContext('2d'); x.clearRect(0, 0, cv.width, cv.height); x.drawImage(m, 0, 0); });
       }).catch(function () {});
     }, 180);
   }
@@ -268,6 +278,7 @@
       if (ev.button > 0) return;
       var p = pt(ev), h = ev.target.getAttribute && ev.target.getAttribute('data-h');
       var e = selEl();
+      if (S.cur < 0 && !S.p.cover.edited) { var tt = C.TPL[S.p.tpl]; if (tt && tt.kind === 'raster' && tt.editable) { ensureEditable(); draw(); } }
       if (h && e) { drag = { mode: 'resize', h: h, e: e, p: p, o: clone(e), b: bounds(e) }; }
       else {
         var t = hit(p.x, p.y);
@@ -275,7 +286,7 @@
         else if (t) {
           var was = S.sel === t.id;
           if (!was) { S.crop = false; select(t.id); }
-          if (t.t === 'photo' && !t.photo) { drag = null; S.target = t.id; openPanel('photos'); return; }
+          if (t.t === 'photo' && !t.photo) { drag = null; askPhoto(t.id); return; }
           drag = { mode: 'move', e: t, p: p, o: clone(t), moved: false, wasSel: was };
         } else { select(null); return; }
       }
@@ -350,14 +361,15 @@
     } else if (e.t === 'text') {
       h = '<button data-a="edit">' + I.edit + '<span>Edit text</span></button><button data-a="dup">' + I.dup + '<span>Duplicate</span></button><button data-a="front">' + I.up + '<span>To front</span></button><button data-a="del" class="pe-del">' + I.trash + '<span>Delete</span></button>';
     } else {
-      h = '<button data-a="flip">' + I.flip + '<span>Flip</span></button><button data-a="dup">' + I.dup + '<span>Duplicate</span></button><button data-a="front">' + I.up + '<span>To front</span></button><button data-a="del" class="pe-del">' + I.trash + '<span>Delete</span></button>';
+      h = '<button data-a="swap">' + I.swap + '<span>Replace</span></button><button data-a="flip">' + I.flip + '<span>Flip</span></button><button data-a="dup">' + I.dup + '<span>Duplicate</span></button><button data-a="front">' + I.up + '<span>To front</span></button><button data-a="del" class="pe-del">' + I.trash + '<span>Delete</span></button>';
     }
     bar.innerHTML = h; bar.hidden = false; ctxPos();
     bar.onclick = function (ev) {
       var b = ev.target.closest('[data-a]'); if (!b) return; var a = b.getAttribute('data-a'), e = selEl(); if (!e) return;
       if (a === 'crop') { S.crop = true; placeSel(); ctxBar(); hint('Drag the photo to move it inside the frame. Use the slider to zoom.'); }
       else if (a === 'done') { S.crop = false; placeSel(); ctxBar(); }
-      else if (a === 'replace') { S.target = e.id; openPanel('photos'); }
+      else if (a === 'replace') askPhoto(e.id, true);
+      else if (a === 'swap') { S.replaceArt = e.id; openPanel('stickers'); hint('Pick a sticker, emoji or artwork to put in its place.'); }
       else if (a === 'clear') { e.photo = null; e.crop = { z: 1, cx: .5, cy: .5 }; commit(); draw(); drawThumb(S.cur); ctxBar(); if (S.panel === 'photos') openPanel('photos', true); }
       else if (a === 'del') removeSel();
       else if (a === 'front') { var d = doc(); d.els.splice(d.els.indexOf(e), 1); d.els.push(e); commit(); draw(); }
@@ -411,8 +423,16 @@
     d.els = frames.concat(others); d.layout = key;
     return lost;
   }
+  /** Empty frame tapped: no photos yet → open the file picker; otherwise show the library. */
+  function askPhoto(frameId, replace) {
+    S.target = frameId;
+    if (!S.order.length) { S.importTarget = frameId; el$.file.click(); return; }
+    openPanel('photos');
+    if (replace) hint('Tap a photo to put it in this frame, or Upload more.');
+  }
   function importFiles(files) {
     files = Array.prototype.slice.call(files || []); if (!files.length) return;
+    var target = S.importTarget; S.importTarget = null;
     var lim = CFG.limits || { maxPhotosPerProject: 300, maxFileMB: 40, minPhotoPx: 800 };
     var room = (lim.maxPhotosPerProject || 300) - S.order.length;
     if (room <= 0) { toast('This book already has the maximum number of photos.'); return; }
@@ -423,8 +443,10 @@
     function next(i) {
       if (i >= files.length) {
         if (prog) prog.textContent = '';
-        if (added.length) toast(added.length + ' photo' + (added.length === 1 ? '' : 's') + ' added' + (bad.length ? '. ' + bad.length + ' skipped.' : '. Tap a photo to place it, or use Auto-fill.'));
-        else if (bad.length) toast(bad[0]);
+        if (added.length && target) { placePhoto(added[0], target); added = added.slice(1); }
+        if (added.length > 1) arrangeAsk(added.length);
+        else if (added.length) toast('Photo added. Tap it to place it, or drag it onto a frame.');
+        if (bad.length) toast(bad.length + ' file' + (bad.length === 1 ? '' : 's') + ' skipped: ' + bad[0]);
         if (S.panel === 'photos') openPanel('photos', true);
         return;
       }
@@ -438,7 +460,53 @@
     }
     next(0);
   }
-  function autofill() {
+  function arrangeAsk(n) {
+    var d = document.createElement('dialog'); d.className = 'pe-ask';
+    d.innerHTML = '<div class="pe-ask__in"><h3>' + n + ' photos added</h3><p>Shall we lay them out for you? Landscape photos are paired two to a page, portraits get a page of their own, with a few full-page and collage pages for variety. You can change any page afterwards.</p>' +
+      '<div class="pe-ask__acts"><button class="btn btn--p" data-a="empty">Arrange them for me</button><button class="btn btn--ghost" data-a="all">Rearrange the whole book</button><button class="btn btn--ghost" data-a="no">I’ll place them myself</button></div></div>';
+    document.body.appendChild(d); d.showModal();
+    d.addEventListener('click', function (e) { var b = e.target.closest('[data-a]'); if (!b && e.target !== d) return; var a = b ? b.getAttribute('data-a') : 'no'; d.close(); d.remove(); if (a === 'empty') arrange(false); else if (a === 'all') arrange(true); });
+  }
+  /** Lays photos out across pages. all = rebuild every page from every photo; otherwise fill empty pages and frames. */
+  function arrange(all) {
+    var used = all ? {} : usedMap();
+    var free = S.order.filter(function (id) { return !used[id]; });
+    if (!free.length) { toast(S.order.length ? 'All your photos are already in the book.' : 'Add some photos first.'); return; }
+    var shape = function (id) { var m = S.photos[id]; if (!m) return 'p'; var r = m.w / m.h; return r > 1.15 ? 'l' : r < 0.87 ? 'p' : 's'; };
+    // plan pages
+    var plan = [], q = free.slice(), k = 0;
+    while (q.length) {
+      var a = shape(q[0]), b = q[1] ? shape(q[1]) : null, n = plan.length;
+      if (a === 'l' && b === 'l') plan.push(['twov', q.splice(0, 2)]);
+      else if (a === 'p' && b === 'p' && n % 3 === 1) plan.push(['twoh', q.splice(0, 2)]);
+      else if (a !== b && b && n % 4 === 3) plan.push([a === 'l' ? 'bigsmall' : 'collage', q.splice(0, 2)]);
+      else if (a === 'l') plan.push([n % 5 === 4 ? 'full' : 'land', q.splice(0, 1)]);
+      else if (a === 's') plan.push(['square', q.splice(0, 1)]);
+      else plan.push([n % 4 === 2 ? 'full' : 'one', q.splice(0, 1)]);
+      k++;
+    }
+    var pages = S.p.pages, slots = [];
+    if (all) { for (var i = 0; i < pages.length; i++) slots.push(i); }
+    else pages.forEach(function (d, i) { var fr = d.els.filter(function (e) { return e.t === 'photo'; }); if (!d.els.some(function (e) { return e.t !== 'photo'; }) && !fr.some(function (f) { return f.photo; })) slots.push(i); });
+    var need = plan.length - slots.length, added = 0;
+    while (need > 0 && pages.length < BOOK.pages.max) { pages.push(pageDoc('one')); slots.push(pages.length - 1); need--; added++; }
+    if (pages.length % 2) { if (pages.length < BOOK.pages.max) { pages.push(pageDoc('one')); added++; } }
+    var placed = 0;
+    plan.forEach(function (pl, j) {
+      if (j >= slots.length) return;
+      var d = pages[slots[j]];
+      if (all) { d.els = d.els.filter(function (e) { return e.t !== 'photo'; }); }
+      applyLayout(d, pl[0]);
+      var fr = d.els.filter(function (e) { return e.t === 'photo'; });
+      pl[1].forEach(function (id, x) { if (fr[x]) { fr[x].photo = id; fr[x].crop = { z: 1, cx: 0.5, cy: 0.5 }; placed++; } });
+    });
+    if (all) for (var r = plan.length; r < slots.length; r++) { var d2 = pages[slots[r]]; if (!d2.els.some(function (e) { return e.t !== 'photo'; })) { var L = pageDoc('one'); d2.els = L.els; d2.layout = 'one'; } }
+    commit(); S.cur = Math.max(0, slots[0] || 0); if (innerWidth < 900) S.panel = null; renderAll(); if (innerWidth < 900) openPanel(null);
+    var left = free.length - placed;
+    toast(placed + ' photo' + (placed === 1 ? '' : 's') + ' arranged' + (added ? ', ' + added + ' page' + (added === 1 ? '' : 's') + ' added' : '') + (left > 0 ? '. ' + left + ' didn’t fit: the book is at ' + BOOK.pages.max + ' pages.' : '.'));
+  }
+  function autofill() { arrange(false); }
+  function autofillOld() {
     var used = usedMap(), free = S.order.filter(function (id) { return !used[id]; });
     if (!free.length) { toast(S.order.length ? 'All your photos are already in the book.' : 'Add some photos first.'); return; }
     var n = 0;
@@ -463,6 +531,7 @@
   function bindRail() {
     $('#peRail').addEventListener('click', function (ev) { var b = ev.target.closest('[data-panel]'); if (!b) return; var p = b.getAttribute('data-panel'); openPanel(S.panel === p && innerWidth < 900 ? null : p); });
     el$.file.addEventListener('change', function () { importFiles(this.files); this.value = ''; });
+    el$.sfile.addEventListener('change', function () { importSticker(this.files && this.files[0]); this.value = ''; });
   }
   function openPanel(name, keepScroll) {
     var P = el$.panel, sc = P.scrollTop;
@@ -475,7 +544,7 @@
     if (name === 'photos') {
       var used = usedMap();
       h = head('Photos', S.target ? 'Choose a photo for the selected frame.' : 'Tap a photo to place it on this page' + (innerWidth > 900 ? ', or drag it onto a frame.' : '.')) +
-        '<div class="pe-row"><button class="btn btn--p btn--sm" data-act="add">' + I.plus + ' Add photos</button>' + (S.order.length ? '<button class="btn btn--ghost btn--sm" data-act="auto">Auto-fill pages</button>' : '') + '</div><p class="pe-prog" id="peProg"></p>' +
+        '<div class="pe-row"><button class="btn btn--p btn--sm" data-act="add">' + I.plus + ' Add photos</button>' + (S.order.length ? '<button class="btn btn--ghost btn--sm" data-act="auto">Arrange for me</button>' : '') + '</div>' + (S.order.length > 1 ? '<button class="pe-linkbtn" data-act="autoall">Rearrange the whole book</button>' : '<p class="pe-note">Select as many photos as you like: we’ll lay them out, two landscapes to a page, portraits on their own.</p>') + '<p class="pe-prog" id="peProg"></p>' +
         (S.order.length ? '<div class="pe-photos">' + S.order.map(function (id) { var m = S.photos[id]; return '<button class="pe-thumb" draggable="true" data-ph="' + id + '" title="' + esc(m.name) + '"><img alt="" data-src="' + id + '">' + (used[id] ? '<span class="pe-used">' + used[id] + '</span>' : '') + (m.low ? '<span class="pe-low" title="Small photo: it may look soft in print">Low res</span>' : '') + '</button>'; }).join('') + '</div>' :
           '<div class="pe-emptyp">' + I.photo + '<p>Your photos stay on this device while you design. JPEG, PNG or WebP.</p></div>');
     } else if (name === 'layouts') {
@@ -499,7 +568,11 @@
         if (S.cur < 0) { var t = C.TPL[S.p.tpl]; if (t && t.kind === 'raster') h += rasterNote(t); }
       }
     } else if (name === 'stickers') {
-      h = head('Stickers', 'Tap to add, then drag and resize.') + '<label class="pe-q"><input type="search" id="peSq" placeholder="Search stickers: heart, safari, beach…"></label><div class="pe-stk" id="peStk">' + stickerGrid('') + '</div>';
+      var tab = S.stab || 'stickers';
+      h = head(S.replaceArt ? 'Replace artwork' : 'Stickers', S.replaceArt ? 'Choose what goes in its place.' : 'Tap to add, then drag and resize.') +
+        '<label class="pe-q"><input type="search" id="peSq" placeholder="Search: heart, safari, beach, cake…"></label>' +
+        '<div class="pe-tabs">' + [['stickers', 'Stickers'], ['emoji', 'Emoji'], ['travel', 'Travel art'], ['mine', 'Mine']].map(function (x) { return '<button data-stab="' + x[0] + '"' + (tab === x[0] ? ' class="is-on"' : '') + '>' + x[1] + '</button>'; }).join('') + '</div>' +
+        '<div id="peStk">' + stickerGrid('', tab) + '</div>';
     } else if (name === 'colors') {
       var d = doc(), isCov = S.cur < 0, tt = isCov && C.TPL[S.p.tpl];
       h = head(isCov ? 'Cover colours' : 'Page colour');
@@ -533,8 +606,8 @@
     if (name === 'photos') P.querySelectorAll('img[data-src]').forEach(function (im) { thumbUrl(im.getAttribute('data-src')).then(function (u) { if (u) im.src = u; }); });
   }
   function rasterNote(t) {
-    if (S.p.cover.edited) return '<p class="pe-note">Type a new title or subtitle below. The artwork and the CIEL AFRICA mark stay as they are.</p><div class="pe-row"><button class="btn btn--ghost btn--sm" data-act="orig">Back to the original lettering</button></div>';
-    if (t.editable) return '<div class="pe-sub"><h4>Words on the cover</h4><p class="pe-note">Change the place name or add a year. The artwork stays the same.</p><button class="btn btn--dark btn--sm" data-act="edittitle">' + I.edit + ' Edit the title</button></div>';
+    if (S.p.cover.edited) return '<p class="pe-note">' + (S.p.cover.layered ? 'Type a new title below. Tap the artwork on the cover to move, resize or replace it.' : 'Type a new title or subtitle below. The artwork stays as it is.') + '</p><div class="pe-row"><button class="btn btn--ghost btn--sm" data-act="orig">Back to the original</button></div>';
+    if (t.editable) return '<div class="pe-sub"><h4>Customise this cover</h4><p class="pe-note">' + (t.layered ? 'Change the place name, add a year, move or replace the artwork, change the colour.' : 'Change the place name or add a year.') + '</p><button class="btn btn--dark btn--sm" data-act="edittitle">' + I.edit + ' Customise</button></div>';
     return '<p class="pe-note">This cover’s lettering is part of its artwork and can’t be changed. You can still add stickers, text or a photo.</p>';
   }
   function uniq(a) { var o = []; a.forEach(function (x) { if (x && o.indexOf(x) < 0) o.push(x); }); return o; }
@@ -542,9 +615,33 @@
     var list = uniq([cur].concat(COLORS));
     return '<div class="pe-sw">' + list.map(function (c) { return '<button style="--c:' + c + '" data-k="' + k + '" data-c="' + c + '"' + (String(c).toLowerCase() === String(cur).toLowerCase() ? ' class="is-on"' : '') + ' aria-label="' + c + '"></button>'; }).join('') + '<label class="pe-sw__more" title="More colours"><input type="color" data-k="' + k + '" value="' + (/^#[0-9a-f]{6}$/i.test(cur) ? cur : '#ffffff') + '">+</label></div>';
   }
-  function stickerGrid(q) {
+  var EMO = window.PBK_EMOJI || {};
+  function emojiSrc(code) { return '/assets/pbk/emoji/' + code + '.svg'; }
+  function travelArt() { return C.ORDER.map(function (id) { return C.TPL[id]; }).filter(function (t) { return t.layered; }); }
+  function stickerGrid(q, tab) {
     q = (q || '').toLowerCase().trim();
-    return A.list().filter(function (a) { return !q || (a.n + ' ' + a.k).toLowerCase().indexOf(q) >= 0; }).map(function (a) { return '<button data-art="' + a.id + '" title="' + esc(a.n) + '"><img alt="' + esc(a.n) + '" loading="lazy" src="' + R.artSrc(a.id) + '"></button>'; }).join('') || '<p class="pe-note">No sticker matches. Try “heart”, “sun” or “Kenya”.</p>';
+    var h = '';
+    if (q) tab = 'all';
+    if (tab === 'stickers' || tab === 'all') {
+      var l = A.list().filter(function (a) { return !q || (a.n + ' ' + a.k).toLowerCase().indexOf(q) >= 0; });
+      if (l.length) h += (tab === 'all' ? '<h4 class="pe-gh">Stickers</h4>' : '') + '<div class="pe-stk">' + l.map(function (a) { return '<button data-art="' + a.id + '" title="' + esc(a.n) + '"><img alt="' + esc(a.n) + '" loading="lazy" src="' + R.artSrc(a.id) + '"></button>'; }).join('') + '</div>';
+    }
+    if (tab === 'emoji' || tab === 'all') {
+      Object.keys(EMO).forEach(function (g) {
+        var l = EMO[g].filter(function (e) { return !q || (g + ' ' + e[1]).toLowerCase().indexOf(q) >= 0 || g.toLowerCase().indexOf(q) >= 0; });
+        if (l.length) h += '<h4 class="pe-gh">' + esc(g) + '</h4><div class="pe-stk pe-stk--emo">' + l.map(function (e) { return '<button data-img="' + emojiSrc(e[0]) + '" data-ar="1" title="' + esc(e[1]) + '"><img alt="' + esc(e[1]) + '" loading="lazy" src="' + emojiSrc(e[0]) + '"></button>'; }).join('') + '</div>';
+      });
+      if (tab === 'emoji') h += '<p class="pe-note pe-credit">Emoji: Twemoji, CC-BY 4.0.</p>';
+    }
+    if (tab === 'travel' || tab === 'all') {
+      var tl = travelArt().filter(function (t) { return !q || (t.name + ' travel').toLowerCase().indexOf(q) >= 0; });
+      if (tl.length) h += (tab === 'all' ? '<h4 class="pe-gh">Travel art</h4>' : '') + '<div class="pe-stk">' + tl.map(function (t) { return '<button data-img="' + t.art + '" data-ar="' + (t.artBox[2] / t.artBox[3]).toFixed(4) + '" title="' + esc(t.name) + '"><img alt="' + esc(t.name) + '" loading="lazy" src="' + t.artThumb + '"></button>'; }).join('') + '</div>';
+    }
+    if (tab === 'mine') {
+      h += '<div class="pe-row"><button class="btn btn--p btn--sm" data-act="upsticker">' + I.plus + ' Upload a sticker</button></div><p class="pe-note">PNG with a transparent background works best. It stays on this device.</p>';
+      if (S.stickers.length) h += '<div class="pe-stk">' + S.stickers.map(function (id) { var m = S.photos[id]; return '<button data-mine="' + id + '" data-ar="' + (m.w / m.h).toFixed(4) + '" title="' + esc(m.name) + '"><img alt="" data-src="' + id + '"></button>'; }).join('') + '</div>';
+    }
+    return h || '<p class="pe-note">Nothing matches. Try “heart”, “sun”, “lion” or “Kenya”.</p>';
   }
   function bindPanel(name) {
     var P = el$.panel;
@@ -556,6 +653,9 @@
       var ph = t.closest('[data-ph]'); if (ph) return placePhoto(ph.getAttribute('data-ph'), S.target || (selEl() && selEl().t === 'photo' ? S.sel : null));
       var lay = t.closest('[data-lay]'); if (lay) { var lost = applyLayout(doc(), lay.getAttribute('data-lay')); select(null); commit(); draw(); drawThumb(S.cur); openPanel('layouts', true); if (lost) toast('One photo was taken off this page. It is still in your photos.'); return; }
       var art = t.closest('[data-art]'); if (art) return addArt(art.getAttribute('data-art'));
+      var im = t.closest('[data-img]'); if (im) return addImg({ src: im.getAttribute('data-img') }, +im.getAttribute('data-ar') || 1);
+      var mn = t.closest('[data-mine]'); if (mn) return addImg({ photo: mn.getAttribute('data-mine') }, +mn.getAttribute('data-ar') || 1);
+      var tb = t.closest('[data-stab]'); if (tb) { S.stab = tb.getAttribute('data-stab'); openPanel('stickers'); return; }
       var add = t.closest('[data-add]'); if (add) return addText(add.getAttribute('data-add'));
       var f = t.closest('[data-font]'); if (f) { var e = selEl(); if (e) { e.font = f.getAttribute('data-font'); delete e.weight; commit(); draw(); drawThumb(S.cur); openPanel('text', true); } return; }
       var al = t.closest('[data-align]'); if (al) { var e2 = selEl(); if (e2) { e2.align = al.getAttribute('data-align'); commit(); draw(); openPanel('text', true); } return; }
@@ -573,7 +673,8 @@
     }
     var ts = $('#peTs', P);
     if (ts) { ts.addEventListener('input', function () { var e = selEl(); if (!e) return; var v = +ts.value; if (e.cap) e.cap = v; else e.size = v / 0.7; if (e.align === 'fill' && e.cap) e.w = Math.max(e.w, 200); clampEl(e); draw(); }); ts.addEventListener('change', function () { commit(); drawThumb(S.cur); }); }
-    var sq = $('#peSq', P); if (sq) sq.addEventListener('input', function () { $('#peStk').innerHTML = stickerGrid(sq.value); });
+    var sq = $('#peSq', P); if (sq) sq.addEventListener('input', function () { $('#peStk').innerHTML = stickerGrid(sq.value, S.stab || 'stickers'); loadMine(); });
+    if (name === 'stickers') loadMine();
     P.querySelectorAll('.pe-in[data-role]').forEach(function (inp) {
       inp.addEventListener('focus', function () { ensureEditable(); });
       inp.addEventListener('input', function () { ensureEditable(); var e = S.p.cover.els.filter(function (x) { return x.role === inp.getAttribute('data-role'); })[0]; if (e) { e.text = inp.value.toUpperCase(); if (S.cur !== -1) go(-1); draw(); } });
@@ -589,8 +690,10 @@
     S.p.cover = nd; commit();
   }
   function doAct(a) {
-    if (a === 'add') el$.file.click();
-    else if (a === 'auto') autofill();
+    if (a === 'add') { S.importTarget = S.target || null; el$.file.click(); }
+    else if (a === 'auto') arrange(false);
+    else if (a === 'autoall') { if (confirm('Rearrange every page using all your photos? Text and stickers on the pages stay.')) arrange(true); }
+    else if (a === 'upsticker') el$.sfile.click();
     else if (a === 'page1') go(0);
     else if (a === 'gocover') go(-1);
     else if (a === 'addpages') addPages();
@@ -601,8 +704,17 @@
     else if (a === 'bgall') { var c = doc().bg; S.p.pages.forEach(function (p) { p.bg = c; }); commit(); renderAll(); toast('Every page now uses this colour.'); }
     else if (a === 'change') PBK.pick(C.TPL[S.p.tpl] ? C.TPL[S.p.tpl].cat : 'all', changeCover);
     else if (a === 'edittitle') { ensureEditable(); go(-1); var te = S.p.cover.els.filter(function (x) { return x.role === 'title'; })[0]; if (te) select(te.id); openPanel('text'); }
-    else if (a === 'orig') { var t = C.TPL[S.p.tpl]; var nd = C.rasterDoc(t, false); nd.els = S.p.cover.els.filter(function (x) { return x.role !== 'title' && x.role !== 'sub'; }); S.p.cover = nd; select(null); commit(); renderAll(); }
+    else if (a === 'orig') { var t = C.TPL[S.p.tpl]; var nd = C.rasterDoc(t, false); nd.els = S.p.cover.els.filter(function (x) { return x.role !== 'title' && x.role !== 'sub' && x.id !== 'art'; }); S.p.cover = nd; select(null); commit(); renderAll(); }
     else if (a === 'covphoto') { go(-1); var d = S.p.cover; var has = d.els.filter(function (x) { return x.t === 'photo'; }).length; if (has >= MAXPH) { toast('The cover holds up to ' + MAXPH + ' photos.'); return; } var e2 = { id: uid('ph'), t: 'photo', x: 330, y: 500, w: 640, h: 800, photo: null, crop: { z: 1, cx: .5, cy: .5 }, border: 14, borderColor: '#ffffff' }; d.els.push(e2); commit(); select(e2.id); S.target = e2.id; draw(); openPanel('photos'); }
+  }
+  function replaceWith(props, ar) {
+    var d = doc(), old = d.els.filter(function (x) { return x.id === S.replaceArt; })[0]; S.replaceArt = null;
+    if (!old) return;
+    var w = old.w, h = w / ar; if (h > old.h) { h = old.h; w = h * ar; }
+    var e = Object.assign({ id: old.id, x: old.x + (old.w - w) / 2, y: old.y + (old.h - h) / 2, w: w, h: h }, props);
+    d.els[d.els.indexOf(old)] = e;
+    R.load(d, { photo: photoUrl }).then(function () { draw(); });
+    commit(); select(e.id); draw(); drawThumb(S.cur); if (innerWidth < 900) openPanel(null); else openPanel('stickers', true);
   }
   function changeCover(id, c) {
     var keep = S.p.cover.els.filter(function (x) { return x.t === 'photo' && x.photo; });
@@ -627,7 +739,35 @@
     if (live) { draw(); return; }
     commit(); draw(); drawThumb(S.cur); openPanel(S.panel, true);
   }
+  function loadMine() { el$.panel.querySelectorAll('[data-mine] img[data-src]').forEach(function (im) { thumbUrl(im.getAttribute('data-src')).then(function (u) { if (u) im.src = u; }); }); }
+  /** Put a sticker/emoji/uploaded image on the page, or in place of the element being replaced. */
+  function addImg(o, ar) {
+    var d = doc(), size = 380, w = ar >= 1 ? size : size * ar, h = ar >= 1 ? size / ar : size;
+    var e = { id: uid('im'), t: 'img', src: o.src || null, photo: o.photo || null, w: w, h: h };
+    var old = S.replaceArt && d.els.filter(function (x) { return x.id === S.replaceArt; })[0];
+    if (old) {
+      var s = Math.min(old.w / w, old.h / h); e.w = w * s; e.h = h * s; e.x = old.x + (old.w - e.w) / 2; e.y = old.y + (old.h - e.h) / 2; e.id = old.id;
+      d.els[d.els.indexOf(old)] = e; S.replaceArt = null;
+    } else { e.x = (S.cur < 0 ? 650 : 600) - w / 2; e.y = (S.cur < 0 ? 900 : 800) - h / 2; clampEl(e); d.els.push(e); }
+    R.load(d, { photo: photoUrl }).then(function () { draw(); drawThumb(S.cur); });
+    commit(); select(e.id); draw(); drawThumb(S.cur);
+    if (innerWidth < 900) openPanel(null); else if (S.panel === 'stickers') openPanel('stickers', true);
+  }
+  function importSticker(file) {
+    if (!file) return;
+    var lim = { maxFileMB: 15, minPhotoPx: 1 };
+    PH.importFile(file, { limits: lim, hashes: {}, projectId: S.p.id, uid: uid }).then(function (r) {
+      r.meta.sticker = true;
+      return ST.savePhoto(r.meta, r.blobs).then(function () {
+        S.photos[r.meta.id] = r.meta; S.stickers.push(r.meta.id);
+        urls[r.meta.id] = URL.createObjectURL(r.blobs.prev); thumbs[r.meta.id] = URL.createObjectURL(r.blobs.thumb);
+        addImg({ photo: r.meta.id }, r.meta.w / r.meta.h);
+        toast('Sticker added. Drag the corners to resize it.');
+      });
+    }).catch(function (e) { toast(e.message || 'That file could not be used.'); });
+  }
   function addArt(id) {
+    if (S.replaceArt) { var a0 = A.all[id], b0 = a0.b.split(' ').map(Number); return replaceWith({ t: 'art', art: id }, b0[0] / b0[1]); }
     var a = A.all[id], b = a.b.split(' ').map(Number), s = 380 / Math.max(b[0], b[1]);
     var d = doc(), e = { id: uid('art'), t: 'art', art: id, w: b[0] * s, h: b[1] * s };
     e.x = (S.cur < 0 ? 650 : 600) - e.w / 2; e.y = (S.cur < 0 ? 900 : 800) - e.h / 2;
@@ -709,38 +849,68 @@
 
   /* ---------------- preview (flip through) ---------------- */
   var pdlg;
+  /** Flip-through preview: the closed 3D book, then the pages as an open book. */
   function preview() {
     select(null);
-    if (!pdlg) { pdlg = document.createElement('dialog'); pdlg.className = 'pe-pv'; document.body.appendChild(pdlg); pdlg.addEventListener('click', function (e) { if (e.target === pdlg) pdlg.close(); }); }
-    var spreads = [['cover']], n = S.p.pages.length;
-    var mobile = innerWidth < 760;
-    if (mobile) for (var i = 0; i < n; i++) spreads.push([i]);
-    else { spreads.push([null, 0]); for (var j = 1; j < n; j += 2) spreads.push(j + 1 < n ? [j, j + 1] : [j, null]); }
-    var at = 0;
-    pdlg.innerHTML = '<div class="pe-pv__in"><header><h3>' + esc(S.p.name) + '</h3><span id="pvLbl"></span><button class="pe-ib" data-x aria-label="Close preview">' + I.x + '</button></header><div class="pe-pv__stage" id="pvStage"></div><footer><button class="pe-ib" data-p aria-label="Previous">' + I.left + '</button><input type="range" id="pvR" min="0" max="' + (spreads.length - 1) + '" value="0" aria-label="Page"><button class="pe-ib" data-n aria-label="Next">' + I.right + '</button></footer></div>';
-    var stage = $('#pvStage', pdlg);
-    function show() {
+    if (!pdlg) { pdlg = document.createElement('dialog'); pdlg.className = 'pe-pv'; document.body.appendChild(pdlg); }
+    var n = S.p.pages.length, spreads = ['cover', [null, 0]];
+    for (var j = 1; j < n; j += 2) spreads.push([j, j + 1 < n ? j + 1 : null]);
+    var at = 0, busy = false, cache = {}, board = S.p.cover.bg || '#d9cdb8';
+    pdlg.innerHTML = '<div class="pv"><header class="pv-h"><b>' + esc(S.p.name) + '</b><button class="pv-x" data-x aria-label="Close preview">' + I.x + '<span>Close</span></button></header>' +
+      '<div class="pv-stage" id="pvStage"><canvas class="pv-cover" id="pvCover"></canvas>' +
+      '<div class="pv-book" id="pvBook" style="--board:' + board + '"><div class="pv-pg pv-l"><canvas width="600" height="800"></canvas></div><div class="pv-pg pv-r"><canvas width="600" height="800"></canvas></div>' +
+      '<div class="pv-leaf" id="pvLeaf"><div class="pv-face pv-front"><canvas width="600" height="800"></canvas></div><div class="pv-face pv-back"><canvas width="600" height="800"></canvas></div></div><button class="pv-tap pv-tap--l" data-p aria-label="Previous page"></button><button class="pv-tap pv-tap--r" data-n aria-label="Next page"></button></div></div>' +
+      '<footer class="pv-f"><button class="pv-btn" data-p aria-label="Previous">' + I.left + '<span>Back</span></button><span class="pv-lbl" id="pvLbl"></span><button class="pv-btn pv-btn--n" data-n aria-label="Next"><span>Next</span>' + I.right + '</button></footer>' +
+      '<p class="pv-tip" id="pvTip">Tap the right side to turn the page. Swipe works too.</p></div>';
+    var stage = $('#pvStage', pdlg), book = $('#pvBook', pdlg), leaf = $('#pvLeaf', pdlg), cov = $('#pvCover', pdlg);
+    var L = book.querySelector('.pv-l canvas'), Rr = book.querySelector('.pv-r canvas'), LF = leaf.querySelector('.pv-front canvas'), LB = leaf.querySelector('.pv-back canvas');
+    function page(i) {
+      if (i == null) return Promise.resolve(null);
+      if (cache[i]) return cache[i];
+      return (cache[i] = R.toCanvas(S.p.pages[i], 600, { photo: photoUrl, empty: 'soft' }));
+    }
+    function paint(cv, src) { var g = cv.getContext('2d'); g.clearRect(0, 0, 600, 800); if (src) g.drawImage(src, 0, 0); else { g.fillStyle = '#f6f1e7'; g.fillRect(0, 0, 600, 800); } }
+    function size() {
+      var w = stage.clientWidth - 16, h = stage.clientHeight - 16, ar = 1.5 * 1.0;
+      var bw = Math.min(w, h * ar * 1.03), bh = bw / ar / 1.03;
+      book.style.width = bw + 'px'; book.style.height = bh * 1.03 + 'px';
+      var ch = Math.min(h, w * 1.25 * 0.9); cov.style.height = ch + 'px';
+    }
+    function label() {
       var s = spreads[at];
-      $('#pvLbl', pdlg).textContent = s[0] === 'cover' ? 'Cover' : s.filter(function (x) { return x != null; }).map(function (x) { return x + 1; }).join(' – ') + ' of ' + n;
-      $('#pvR', pdlg).value = at;
-      stage.innerHTML = '';
-      if (s[0] === 'cover') {
-        var c = document.createElement('canvas'); c.className = 'pv-cover'; c.width = 550; c.height = 710; stage.appendChild(c);
-        Promise.all([R.mockMap(), R.toCanvas(S.p.cover, 900, { photo: photoUrl })]).then(function (r) { c.getContext('2d').drawImage(R.mock(r[1], r[0]), 0, 0); });
-        return;
-      }
-      var sp = document.createElement('div'); sp.className = 'pv-spread' + (s.length === 1 ? ' is-single' : ''); stage.appendChild(sp);
-      s.forEach(function (pi) {
-        var c = document.createElement('canvas'); c.width = 600; c.height = 800; c.className = 'pv-page' + (pi == null ? ' is-blank' : ''); sp.appendChild(c);
-        if (pi == null) { var g = c.getContext('2d'); g.fillStyle = '#f3efe7'; g.fillRect(0, 0, 600, 800); return; }
-        R.toCanvas(S.p.pages[pi], 600, { photo: photoUrl, empty: 'soft' }).then(function (cv) { c.getContext('2d').drawImage(cv, 0, 0); });
+      $('#pvLbl', pdlg).textContent = s === 'cover' ? 'Cover' : s.filter(function (x) { return x != null; }).map(function (x) { return x + 1; }).join('–') + ' of ' + n;
+      pdlg.querySelectorAll('[data-p]').forEach(function (b) { b.disabled = at === 0; });
+      pdlg.querySelectorAll('[data-n]').forEach(function (b) { b.disabled = at === spreads.length - 1; });
+    }
+    function show() {
+      var s = spreads[at]; label();
+      stage.classList.toggle('is-cover', s === 'cover');
+      if (s === 'cover') { book3d(S.p.cover, 900).then(function (m) { cov.width = m.width; cov.height = m.height; cov.getContext('2d').drawImage(m, 0, 0); }); return; }
+      Promise.all([page(s[0]), page(s[1])]).then(function (r) { paint(L, r[0]); paint(Rr, r[1]); });
+      [1, 2].forEach(function (k) { var nx = spreads[at + k]; if (nx && nx !== 'cover') { page(nx[0]); page(nx[1]); } });
+    }
+    function go(dir) {
+      if (busy) return; var to = at + dir; if (to < 0 || to >= spreads.length) return;
+      var cur = spreads[at], nxt = spreads[to];
+      if (cur === 'cover' || nxt === 'cover' || matchMedia('(prefers-reduced-motion: reduce)').matches) { at = to; show(); return; }
+      busy = true;
+      Promise.all([page(cur[0]), page(cur[1]), page(nxt[0]), page(nxt[1])]).then(function (r) {
+        leaf.className = 'pv-leaf ' + (dir > 0 ? 'is-r' : 'is-l');
+        if (dir > 0) { paint(LF, r[1]); paint(LB, r[2]); paint(Rr, r[3]); }
+        else { paint(LF, r[0]); paint(LB, r[3]); paint(L, r[2]); }
+        leaf.style.transition = 'none'; leaf.style.transform = 'rotateY(0deg)'; leaf.hidden = false;
+        void leaf.offsetWidth;
+        leaf.style.transition = ''; leaf.style.transform = 'rotateY(' + (dir > 0 ? -180 : 180) + 'deg)';
+        setTimeout(function () { if (dir > 0) paint(L, r[2]); else paint(Rr, r[3]); leaf.hidden = true; at = to; label(); busy = false; [1, 2].forEach(function (k) { var nx = spreads[at + dir * k]; if (nx && nx !== 'cover') { page(nx[0]); page(nx[1]); } }); }, 620);
       });
     }
-    pdlg.onclick = function (e) { if (e.target.closest('[data-x]')) pdlg.close(); if (e.target.closest('[data-p]')) { at = Math.max(0, at - 1); show(); } if (e.target.closest('[data-n]')) { at = Math.min(spreads.length - 1, at + 1); show(); } };
-    $('#pvR', pdlg).oninput = function () { at = +this.value; show(); };
-    pdlg.onkeydown = function (e) { if (e.key === 'ArrowRight') { at = Math.min(spreads.length - 1, at + 1); show(); } if (e.key === 'ArrowLeft') { at = Math.max(0, at - 1); show(); } };
-    var sx = null; stage.addEventListener('pointerdown', function (e) { sx = e.clientX; }); stage.addEventListener('pointerup', function (e) { if (sx == null) return; var dx = e.clientX - sx; sx = null; if (Math.abs(dx) > 40) { at = Math.max(0, Math.min(spreads.length - 1, at + (dx < 0 ? 1 : -1))); show(); } });
-    show(); pdlg.showModal();
+    pdlg.onclick = function (e) { if (e.target.closest('[data-x]')) { pdlg.close(); return; } if (e.target.closest('[data-p]')) go(-1); else if (e.target.closest('[data-n]')) go(1); else if (e.target === cov) go(1); };
+    pdlg.onkeydown = function (e) { if (e.key === 'ArrowRight') go(1); if (e.key === 'ArrowLeft') go(-1); };
+    var sx = null; stage.addEventListener('pointerdown', function (e) { sx = e.clientX; }); stage.addEventListener('pointerup', function (e) { if (sx == null) return; var dx = e.clientX - sx; sx = null; if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1); });
+    window.addEventListener('resize', size);
+    leaf.hidden = true;
+    pdlg.showModal(); size(); show();
+    setTimeout(function () { var t = $('#pvTip', pdlg); if (t) t.classList.add('is-off'); }, 5000);
   }
 
   /* ---------------- order / finish ---------------- */
@@ -762,7 +932,7 @@
       (BOOK.ordering && pr != null ? '' : '<p class="pe-note">Online ordering and payment aren’t open yet' + (pr == null ? ' and prices are being finalised' : '') + '. Your book is saved on this device. Send us a message to order it, and we’ll tell you how to send the print file.</p>') +
       '<div class="pe-or__acts"><a class="btn btn--p" target="_blank" rel="noopener" href="https://wa.me/254706549703?text=' + encodeURIComponent(msg) + '">Ask to order on WhatsApp</a><button class="btn btn--ghost" data-pdf>Download print PDF</button></div><p class="pe-prog" id="orProg"></p></div></div></div>';
     odlg.onclick = function (e) { if (e.target.closest('[data-x]')) odlg.close(); if (e.target.closest('[data-pdf]')) exportPdf(); };
-    Promise.all([R.mockMap(), R.toCanvas(S.p.cover, 900, { photo: photoUrl })]).then(function (r) { $('#orCov', odlg).getContext('2d').drawImage(R.mock(r[1], r[0]), 0, 0); });
+    book3d(S.p.cover, 900).then(function (m) { var cv = $('#orCov', odlg); cv.width = m.width; cv.height = m.height; cv.getContext('2d').drawImage(m, 0, 0); });
     odlg.showModal();
   }
   function js(src) { return new Promise(function (ok, no) { if (document.querySelector('script[src="' + src + '"]')) return ok(); var s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = function () { no(new Error('Could not load the PDF tool. Check your connection.')); }; document.head.appendChild(s); }); }

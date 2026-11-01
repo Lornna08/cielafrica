@@ -156,6 +156,13 @@
           ctx.globalAlpha = el.op == null ? 1 : el.op;
           ctx.drawImage(a, el.x, el.y, el.w, el.h);
         }
+      } else if (el.t === 'img') {
+        var isrc = el.src || (el.photo && opt.photo ? opt.photo(el.photo) : null), iim = isrc && ready(isrc);
+        if (iim) {
+          if (el.flip) { ctx.translate(el.x * 2 + el.w, 0); ctx.scale(-1, 1); }
+          ctx.globalAlpha = el.op == null ? 1 : el.op;
+          ctx.drawImage(iim, el.x, el.y, el.w, el.h);
+        }
       } else if (el.t === 'text') {
         var L = layoutText(ctx, el);
         ctx.font = L.font; ctx.fillStyle = el.color || '#111'; ctx.textBaseline = 'alphabetic';
@@ -187,6 +194,7 @@
     (doc.els || []).forEach(function (el) {
       if (el.t === 'art') list.push(img(artSrc(el.art)));
       if (el.t === 'photo' && el.photo && opt.photo) list.push(img(opt.photo(el.photo)));
+      if (el.t === 'img') list.push(img(el.src || (el.photo && opt.photo ? opt.photo(el.photo) : null)));
     });
     return Promise.all(list);
   }
@@ -269,6 +277,90 @@
     return c;
   }
 
-  var API = { GEO: GEO, mockMap: mockMap, mock: mock, W: W, H: H, HINGE: HINGE, BRAND: BRAND, FONTS: FONTS, loadFonts: loadFonts, img: img, ready: ready, artSrc: artSrc, draw: draw, load: load, toCanvas: toCanvas, layoutText: layoutText, mockup: mockup, drawBrand: drawBrand, rr: rr };
+  /* ---------- 3D book (standing, spine on the left) ----------
+     book3d-*.png stacks three tiles rendered in Blender (tools/pbk/rig.py):
+     1) R,G = u (16 bit), B = v high byte; 2) R = v low byte, G = surface (60 front, 120 spine, 180 edge),
+     B = diffuse light ×1.4; 3) R = gloss, G = book alpha, B = shadow alpha. */
+  var maps3 = {};
+  function book3dMap(src) {
+    src = src || '/assets/pbk/book3d-440.png?v=1';
+    if (maps3[src]) return maps3[src];
+    maps3[src] = img(src).then(function (im) {
+      if (!im) throw new Error('3D map missing');
+      var w = im.naturalWidth, h = im.naturalHeight / 3, c = document.createElement('canvas'); c.width = w; c.height = h * 3;
+      var x = c.getContext('2d'); x.drawImage(im, 0, 0);
+      var d = x.getImageData(0, 0, w, h * 3).data, n = w * h;
+      var m = { w: w, h: h, u: new Float32Array(n), v: new Float32Array(n), reg: new Uint8Array(n), D: new Float32Array(n), S: new Float32Array(n), A: new Float32Array(n), Sh: new Float32Array(n) };
+      for (var i = 0; i < n; i++) {
+        var a = i * 4, b = (i + n) * 4, c2 = (i + 2 * n) * 4;
+        m.u[i] = (d[a] * 256 + d[a + 1]) / 65535; m.v[i] = (d[a + 2] * 256 + d[b]) / 65535;
+        m.reg[i] = Math.round(d[b + 1] / 60); m.D[i] = d[b + 2] / 255 * 1.4;
+        m.S[i] = d[c2] / 255; m.A[i] = d[c2 + 1] / 255; m.Sh[i] = d[c2 + 2] / 255;
+      }
+      return m;
+    });
+    return maps3[src];
+  }
+  function pixels(src, w, h) {
+    var c = document.createElement('canvas'); c.width = w; c.height = h;
+    var x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(src, 0, 0, w, h);
+    return { w: w, h: h, d: x.getImageData(0, 0, w, h).data };
+  }
+  function sample(t, u, v, o) {
+    var fx = Math.max(0, Math.min(t.w - 1.001, u * (t.w - 1))), fy = Math.max(0, Math.min(t.h - 1.001, (1 - v) * (t.h - 1)));
+    var x0 = fx | 0, y0 = fy | 0, ax = fx - x0, ay = fy - y0, d = t.d, w = t.w;
+    var i00 = (y0 * w + x0) * 4, i10 = i00 + 4, i01 = i00 + w * 4, i11 = i01 + 4;
+    for (var k = 0; k < 3; k++) o[k] = (d[i00 + k] * (1 - ax) + d[i10 + k] * ax) * (1 - ay) + (d[i01 + k] * (1 - ax) + d[i11 + k] * ax) * ay;
+  }
+  /** The spine: background, the title running down, a small artwork and CIEL AFRICA. */
+  function spine(o) {
+    var w = 160, h = 1320, c = document.createElement('canvas'); c.width = w; c.height = h;
+    var x = c.getContext('2d');
+    x.fillStyle = o.bg || '#ffffff'; x.fillRect(0, 0, w, h);
+    x.save(); x.translate(w, 0); x.rotate(Math.PI / 2); /* text runs top to bottom */
+    var title = String(o.title || '').toUpperCase().slice(0, 28);
+    if (title) {
+      var fs = 74; x.font = '800 ' + fs + 'px ' + FONTS.spartan.css;
+      var tw = x.measureText(title).width, maxW = h * 0.56;
+      if (tw > maxW) { fs = fs * maxW / tw; x.font = '800 ' + fs + 'px ' + FONTS.spartan.css; }
+      x.fillStyle = o.tc || '#111111'; x.textBaseline = 'middle';
+      x.fillText(title, h * 0.06, w / 2 + fs * 0.04);
+    }
+    var bs = 27; x.font = '500 ' + bs + 'px ' + FONTS.sans.css.replace('600', '500');
+    x.fillStyle = o.bc || o.tc || '#111111';
+    var ls = bs * 0.24, bw = tracked(x, BRAND.text, ls);
+    drawTracked(x, BRAND.text, h * 0.94 - bw, w / 2 + bs * 0.36, ls);
+    x.restore();
+    if (o.art || o.artImg) { var a = ready(o.artImg || artSrc(o.art)); if (a) { var r = a.naturalWidth / a.naturalHeight, aw = w * 0.74, ah = aw / r; if (ah > w * 1.1) { ah = w * 1.1; aw = ah * r; } x.drawImage(a, (w - aw) / 2, h * 0.68 - ah / 2, aw, ah); } }
+    return c;
+  }
+  /** Composes the 3D book: front = flat cover canvas/image (3:4), sp = spine canvas. */
+  function book3d(front, sp, map, opt) {
+    opt = opt || {};
+    var F = pixels(front, opt.fw || Math.min(900, (front.naturalWidth || front.width)), Math.round((opt.fw || Math.min(900, (front.naturalWidth || front.width))) * 4 / 3));
+    var P = pixels(sp, sp.width, sp.height);
+    var edge = opt.edge || [80, 80, 80];
+    var c = document.createElement('canvas'); c.width = map.w; c.height = map.h;
+    var x = c.getContext('2d'), id = x.createImageData(map.w, map.h), p = id.data, col = [0, 0, 0];
+    for (var i = 0, n = map.w * map.h; i < n; i++) {
+      var A = map.A[i], Sh = map.Sh[i], o = i * 4;
+      if (A < 0.004 && Sh < 0.004) continue;
+      var r = 0, g = 0, b = 0;
+      if (A > 0) {
+        var reg = map.reg[i];
+        if (reg === 1) sample(F, map.u[i], map.v[i], col);
+        else if (reg === 2) sample(P, map.u[i], map.v[i], col);
+        else { col[0] = edge[0]; col[1] = edge[1]; col[2] = edge[2]; }
+        var D = map.D[i], S = map.S[i] * 255 * (opt.gloss == null ? 0.7 : opt.gloss);
+        r = col[0] * D + S; g = col[1] * D + S; b = col[2] * D + S;
+      }
+      var ao = A + Sh * 0.55 * (1 - A);
+      p[o] = Math.min(255, r * A / ao); p[o + 1] = Math.min(255, g * A / ao); p[o + 2] = Math.min(255, b * A / ao); p[o + 3] = ao * 255;
+    }
+    x.putImageData(id, 0, 0);
+    return c;
+  }
+
+  var API = { book3dMap: book3dMap, book3d: book3d, spine: spine, GEO: GEO, mockMap: mockMap, mock: mock, W: W, H: H, HINGE: HINGE, BRAND: BRAND, FONTS: FONTS, loadFonts: loadFonts, img: img, ready: ready, artSrc: artSrc, draw: draw, load: load, toCanvas: toCanvas, layoutText: layoutText, mockup: mockup, drawBrand: drawBrand, rr: rr };
   if (typeof module === 'object' && module.exports) module.exports = API; else root.PBKR = API;
 })(typeof self !== 'undefined' ? self : this);
