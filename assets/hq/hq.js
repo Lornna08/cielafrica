@@ -552,7 +552,7 @@
       [s.storage, 'Private file storage', 'Vercel Blob (cielafrica-photobooks): orders, print files, tasks and calendar.'],
       [s.payments, 'M-Pesa payments', 'Daraja keys in Vercel. Mode: ' + esc(s.mpesaEnv || 'sandbox') + '.'],
       [s.email, 'Automatic emails', 'RESEND_API_KEY in Vercel: receipts, order updates and reminders to customers, alerts to you.'],
-      [!!(s.mail && s.mail.every(function (a) { return a.configured; })), 'Mailboxes in Ciel Admin', (s.mail || []).map(function (a) { return a.email + (a.configured ? ' ✓ connected' : ' · not connected'); }).join(' · ') + '. Add MAIL_IMAP_HOST, MAIL_SMTP_HOST, MAIL_HELLO_PASSWORD and MAIL_LORNA_PASSWORD in Vercel (Inbox → Email shows the full list).'],
+      [!!(s.mail && s.mail.every(function (a) { return a.configured; })), 'Email in Ciel Admin', (s.mail || []).map(function (a) { return a.email + (a.alias ? ' (alias)' : '') + (a.configured ? ' ✓' : ' · not connected'); }).join(' · ') + '. lorna@ is the mailbox (MAIL_LORNA_PASSWORD in Vercel); hello@ is an alias that arrives in it and can be chosen as the sender.'],
       [s.publish, 'Website publishing', 'GITHUB_TOKEN in Vercel lets the Website editor publish to cielafrica.com. Create it on GitHub: Settings → Developer settings → Fine-grained tokens → Generate. Repository access: only Lornna08/cielafrica. Permissions: Contents → Read and write. Copy the token, add it in Vercel as GITHUB_TOKEN, then redeploy.'],
       [s.domainsDb, 'Orders database', 'Ciel Domains and shop orders are kept in the private Blob store (or Upstash Redis if you add it later).']
     ];
