@@ -49,7 +49,7 @@
     wa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c.3 2 2.5 4.3 4.6 4.6l1.2-1.1 1.7.8"/></svg>',
     globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/></svg>'
   };
-  var NAV = [['overview', 'Overview', I.home, 'Main'], ['orders', 'Orders', I.orders, 'Commerce'], ['payments', 'Payments', I.book], ['products', 'Products', I.pen], ['templates', 'Website templates', I.web], ['inbox', 'Inbox', I.mail, 'Customers & sales'], ['leads', 'Leads', I.orders], ['customers', 'Customers', I.people], ['projects', 'Projects', I.tasks], ['website', 'Website editor', I.web, 'Website'], ['content', 'Content library', I.pen], ['calendar', 'Calendar', I.cal, 'Operations'], ['tasks', 'Tasks', I.tasks], ['activity', 'Activity log', I.book, 'System'], ['settings', 'Setup', I.gear]];
+  var NAV = [['overview', 'Overview', I.home, 'Main'], ['analytics', 'Analytics', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>'], ['orders', 'Orders', I.orders, 'Commerce'], ['payments', 'Payments', I.book], ['products', 'Products', I.pen], ['templates', 'Website templates', I.web], ['inbox', 'Inbox', I.mail, 'Customers & sales'], ['leads', 'Leads', I.orders], ['customers', 'Customers', I.people], ['projects', 'Projects', I.tasks], ['website', 'Website editor', I.web, 'Website'], ['content', 'Content library', I.pen], ['calendar', 'Calendar', I.cal, 'Operations'], ['tasks', 'Tasks', I.tasks], ['activity', 'Activity log', I.book, 'System'], ['settings', 'Setup', I.gear]];
 
   /* ---------- order sources, normalised ---------- */
   var KIND = { photobook: ['Photo book', '#ff5a1f'], shop: ['Shop', '#1f4fb5'], domain: ['Domain', '#5b3fd1'], whatsapp: ['WhatsApp', '#1fa855'] };
@@ -102,7 +102,7 @@
     try { localStorage.setItem('pbk_admin', '1'); } catch (e) { }
     root.className = 'hq';
     root.innerHTML = '<aside class="hq-side"><div class="hq-side__brand"><img src="/assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa"><span class="hq-side__tag">Admin</span></div><nav class="hq-nav" id="nav"></nav><div class="hq-side__foot"><a href="/" target="_blank" rel="noopener">cielafrica.com ↗</a><button id="lo">Sign out</button></div></aside>' +
-      '<div class="hq-main"><header class="hq-top"><button class="hq-burger" id="burger" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span>Menu</span></button><h1 id="ttl"></h1><span class="hq-live" id="lv" title="Live">Live</span><button class="b b--sm" id="inst" hidden>Install app</button><button class="b b--sm" id="thm" title="Light or dark"></button><button class="b b--sm" id="nb" title="Phone notifications">' + I.bell + '</button><button class="b b--sm" id="rf" title="Refresh">' + I.ref + '<span>Refresh</span></button><div id="topx"></div></header><main class="hq-body" id="body"><p class="muted">Loading…</p></main></div><nav class="hq-mnav" id="mnav"></nav>';
+      '<div class="hq-main"><header class="hq-top"><button class="hq-burger" id="burger" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span>Menu</span></button><h1 id="ttl"></h1><span class="hq-live" id="lv" title="Live">Live</span><button class="b b--sm" id="inst" hidden>Install app</button><button class="b b--sm" id="thm" title="Light or dark"></button><button class="b b--sm hq-srch" id="sk" title="Search (Ctrl+K)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span>Search</span><kbd>Ctrl K</kbd></button><button class="b b--sm hq-bell" id="nb" title="Notifications">' + I.bell + '<i id="nbc" hidden></i></button><button class="b b--sm" id="rf" title="Refresh">' + I.ref + '<span>Refresh</span></button><div id="topx"></div></header><main class="hq-body" id="body"><p class="muted">Loading…</p></main></div><nav class="hq-mnav" id="mnav"></nav>';
     document.getElementById('lo').onclick = function () { api('/api/hq?route=logout', {}).then(function () { try { localStorage.removeItem('pbk_admin'); } catch (e) { } login(S.setup || {}); }); };
     document.getElementById('rf').onclick = function () { refresh(true); };
     /* phone & tablet: the sidebar slides in from the left */
@@ -121,8 +121,8 @@
     paintTh(); th.onclick = function () { var d = !dark(); if (d) document.documentElement.setAttribute('data-theme', 'dark'); else document.documentElement.removeAttribute('data-theme'); try { localStorage.setItem('ca_theme', d ? 'dark' : 'light'); } catch (e) { } paintTh(); var m = document.querySelector('meta[name=theme-color]'); if (m) m.content = d ? '#0c0c0e' : '#ffffff'; };
     document.getElementById('inst').onclick = install; if (installEv) document.getElementById('inst').hidden = false;
     var nb = document.getElementById('nb');
-    pushState().then(function (st) { nb.classList.toggle('is-on', st === 'on'); });
-    nb.onclick = function () { pushState().then(function (st) { return st === 'on' ? (confirm('Turn off notifications on this device?') ? disablePush() : null) : enablePush(); }).then(function () { return pushState(); }).then(function (st) { nb.classList.toggle('is-on', st === 'on'); }); };
+    nb.onclick = function () { if (window.HQTools) HQTools.notifs(nb); };
+    document.getElementById('sk').onclick = function () { if (window.HQTools) HQTools.palette(); };
     window.addEventListener('hashchange', route);
     refresh(false);
     live();
@@ -142,6 +142,7 @@
       if (document.hidden) return;
       api('/api/hq?route=pulse').then(function (p) {
         var lv = document.getElementById('lv'); if (lv) lv.classList.remove('is-off');
+        S.pitems = p.items || []; if (window.HQTools) HQTools.bell();
         if (S.pulse === null) { S.pulse = p.v; return; }
         if (p.v !== S.pulse) {
           var fresh = (p.items || []).slice(0, Math.min(5, p.v - S.pulse));
@@ -206,7 +207,7 @@
     if (!NAV.some(function (n) { return n[0] === v; })) v = 'overview';
     document.querySelectorAll('.drawer,.modal').forEach(function (x) { x.remove(); });
     S.view = v; navs();
-    var titles = { overview: 'Good ' + (new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening') + ', Lorna', orders: 'Orders', calendar: 'Calendar', tasks: 'Tasks', customers: 'Customers', website: 'Website', settings: 'Setup', inbox: 'Inbox', content: 'Content library', activity: 'Activity log', payments: 'Payments', products: 'Products', templates: 'Website templates', leads: 'Leads', projects: 'Projects' };
+    var titles = { overview: 'Good ' + (new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening') + ', Lorna', orders: 'Orders', calendar: 'Calendar', tasks: 'Tasks', customers: 'Customers', website: 'Website', settings: 'Setup', inbox: 'Inbox', content: 'Content library', activity: 'Activity log', payments: 'Payments', products: 'Products', templates: 'Website templates', leads: 'Leads', projects: 'Projects', analytics: 'Analytics' };
     document.getElementById('ttl').innerHTML = esc(titles[v]) + '<small>' + new Date().toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + '</small>';
     document.getElementById('topx').innerHTML = v === 'calendar' ? '<button class="b b--p b--sm" data-newev>' + I.plus + '<span>Event</span></button>' : v === 'tasks' ? '<button class="b b--p b--sm" data-newtk>' + I.plus + '<span>Task</span></button>' : '';
     var tb = document.querySelector('[data-newev]'); if (tb) tb.onclick = function () { eventModal({ date: today() }); };
@@ -216,6 +217,7 @@
     else if (v === 'leads' && window.HQCrm) HQCrm.leads();
     else if (v === 'projects' && window.HQCrm) HQCrm.projects(h[1]);
     else if (v === 'customers' && window.HQCrm) HQCrm.customers();
+    else if (v === 'analytics' && window.HQAnalytics) HQAnalytics.render();
     else ({ overview: overview, orders: orders, inbox: inbox, calendar: calendar, tasks: tasks, customers: customers, content: content, activity: activity, payments: payments, settings: settings })[v]();
     if (v === 'orders' && h[1]) { var o = S.orders.filter(function (x) { return x.ref === h[1]; })[0]; if (o) orderDrawer(o); }
     if (v === 'inbox' && h[1]) { S.itab = 'web'; inbox(); var m = S.inbox.filter(function (x) { return x.id === h[1]; })[0]; if (m) msgDrawer(m); }
@@ -565,9 +567,11 @@
     var si = b.querySelector('#spi'); if (si) si.onclick = install;
   }
 
-  window.HQ = { api: api, toast: toast, esc: esc, dt: dt, d2: d2, money: money, today: today, body: body, modal: modal, drawer: drawer, S: S, navs: navs, route: route, saveItem: saveItem, delItem: delItem, taskModal: taskModal, eventModal: eventModal };
+  window.HQ = { pushState: pushState, enablePush: enablePush, disablePush: disablePush, I: I, NAV: NAV, KIND: KIND, orderDrawer: orderDrawer, api: api, toast: toast, esc: esc, dt: dt, d2: d2, money: money, today: today, body: body, modal: modal, drawer: drawer, S: S, navs: navs, route: route, saveItem: saveItem, delItem: delItem, taskModal: taskModal, eventModal: eventModal };
   if (window.HQCrm) HQCrm.init(window.HQ);
   if (window.HQSite) HQSite.init(window.HQ);
   if (window.HQMail) HQMail.init(window.HQ);
+  if (window.HQAnalytics) HQAnalytics.init(window.HQ);
+  if (window.HQTools) HQTools.init(window.HQ);
   start();
 })();
