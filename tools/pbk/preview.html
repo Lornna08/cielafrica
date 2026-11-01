@@ -1,0 +1,17 @@
+<!doctype html><meta charset="utf-8"><body style="margin:0;background:#efe9df;font:12px sans-serif">
+<div id="out" style="display:flex;flex-wrap:wrap;gap:10px;padding:10px"></div>
+<script src="/assets/pbk/art.js"></script><script src="/assets/pbk/render.js"></script><script src="/assets/pbk/covers.js"></script><script src="/assets/pbk/catalog.js"></script>
+<script>
+window.build = async function (ids, w, mode) {
+  const R = PBKR, C = PBKCat, out = document.getElementById('out'); out.innerHTML = '';
+  const map = await R.mockMap(mode === 'full' ? '/tools/pbk/mockmap.png' : null);
+  for (const [id, pi] of ids) {
+    const doc = C.docFor(id, pi, mode === 'edit');
+    const flat = await R.toCanvas(doc, 600);
+    const m = R.mock(flat, map);
+    const d = document.createElement('div'); d.style.width = w + 'px';
+    m.style.width = '100%'; d.appendChild(m); d.appendChild(document.createTextNode(id + ' ' + (pi||0))); out.appendChild(d);
+  }
+  return true;
+};
+</script>

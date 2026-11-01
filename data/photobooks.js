@@ -22,6 +22,17 @@
     currency: 'KES',
     usdRate: 130,
 
+    /* The /photobooks book (portrait hardcover). The price depends on the number of pages:
+       price = base + (pages − includedPages) × perExtraPage. null = not set yet, so the page
+       shows "price coming soon" and nothing can be charged. Set real prices before ordering opens. */
+    book: {
+      name: 'Portrait photo book', size: '21 × 28 cm', trimW: 210, trimH: 280, binding: 'Hardcover',
+      pages: { min: 24, max: 100, step: 2, default: 24 },
+      maxPhotosPerPage: 2,
+      price: { base: null, includedPages: 24, perExtraPage: null },
+      ordering: false /* true once online ordering and payment are live */
+    },
+
     /* Free tier limits while designing (photos stay on the customer's device). */
     limits: { maxPhotosPerProject: 300, maxFileMB: 40, minPhotoPx: 800 },
 

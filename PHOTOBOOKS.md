@@ -1,5 +1,38 @@
 # Photo Books
 
+## /photobooks (current)
+
+The customer-facing Photo Books site is a single page app at **/photobooks** (`photobooks/index.html`):
+
+| Route | What |
+|---|---|
+| `/photobooks` | Landing: category strip, cover carousel, 3 steps, collections, Kenya, price by pages, FAQ |
+| `/photobooks/travel`, `/kenya`, `/event`, `/couple`, `/friends`, `/baby`, `/pets`, `/family`, `/year`, `/someone`, `/blank` | Category page: cover gallery, cover and colour picker, pages, "Start my … book" |
+| `/photobooks/design?t=<template>&c=<colour>&n=<pages>` | Editor (creates a book and continues at `?p=<id>`) |
+| `/photobooks/my-books` | Books saved in this browser |
+
+| Piece | File |
+|---|---|
+| Router, landing, category pages, template chooser, my books | `assets/pbk/app.js` |
+| Editor: cover designer with live book preview, pages (1–2 photos, move, resize, crop), text, stickers, colours, layouts, preview, order, print PDF | `assets/pbk/editor.js` |
+| Renderer for covers and pages (canvas), book mockup | `assets/pbk/render.js`, `assets/pbk/mockmap-sm.png` |
+| Illustrated covers and categories | `assets/pbk/catalog.js` |
+| Sticker and illustration library (original vector art) | `assets/pbk/art.js` |
+| Travel covers (generated list) | `assets/pbk/covers.js`, images in `assets/pbk/c/` (`f` flat cover, `p` cover with the title removed, `m` mockup) |
+| Book size, pages and price by pages | `data/photobooks.js` → `book` |
+| Styles | `assets/pbk/pbk.css` |
+| Asset tools | `tools/pbk/` (see its README) |
+
+Every book is portrait, 21 × 28 cm (a 1200 × 1600 design space). The left 100 units are the spine side. The CIEL AFRICA mark is drawn by the renderer at a fixed size and position (`BRAND` in `render.js`), or is part of the artwork on the travel covers, and nothing can be placed over it.
+
+**Prices:** `book.price` starts as `null` ("Price coming soon"). Price = `base + (pages − includedPages) × perExtraPage`. `book.ordering` stays `false` until online ordering and payment are connected; until then the Order step offers a WhatsApp order request and a print PDF (cover + pages, 200 dpi, no bleed).
+
+Photos stay in the customer's browser (IndexedDB, `assets/js/pb/store.js` + `photos.js`). Nothing is uploaded.
+
+---
+
+## Earlier studio (not linked)
+
 Customers create a personalised photo book at **/photobooks**, design it in the studio at **/photobooks/studio**, and buy a print-ready PDF or a printed book delivered in Kenya.
 
 ## How it works

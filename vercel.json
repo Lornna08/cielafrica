@@ -231,6 +231,10 @@
   ],
   "rewrites": [
     {
+      "source": "/photobooks/:page(travel|kenya|event|couple|friends|baby|pets|family|year|someone|blank|design|my-books)",
+      "destination": "/photobooks"
+    },
+    {
       "source": "/api/domains/:path*",
       "destination": "/api/domains?route=:path*"
     },
