@@ -56,6 +56,7 @@ module.exports = async function handler(req, res){
       const amount  = get('Amount');
       const receipt = get('MpesaReceiptNumber');
       const phone   = get('PhoneNumber');
+      try { await require('../lib/hq/shop').paid(cb.CheckoutRequestID, { phone }, { receipt, amount }); } catch (e) { console.error('callback record error', e && e.message); }
       await notify(
         `✅ M-Pesa payment received — KES ${esc(amount)}`,
         `<div style="font-family:Arial,sans-serif;color:#141414">
@@ -70,6 +71,7 @@ module.exports = async function handler(req, res){
       );
     } else {
       // non-zero = cancelled / failed / timeout
+      try { await require('../lib/hq/shop').failed(cb.CheckoutRequestID, desc); } catch (e) { }
       await notify(
         `M-Pesa payment not completed (code ${esc(code)})`,
         `<div style="font-family:Arial,sans-serif;color:#141414">

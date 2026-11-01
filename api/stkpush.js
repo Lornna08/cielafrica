@@ -89,6 +89,7 @@ module.exports = async function handler(req, res){
     });
     const data = await stk.json();
     if (data.ResponseCode === '0') {
+      try { await require('../lib/hq/shop').started(data.CheckoutRequestID, Object.assign({}, body, { phone }), amount); } catch (e) { console.error('stkpush record error', e && e.message); }
       return res.status(200).json({ ok:true, checkoutRequestID: data.CheckoutRequestID, message:'STK push sent — check your phone.' });
     }
     return res.status(400).json({ ok:false, error: data.errorMessage || data.ResponseDescription || 'STK push failed' });

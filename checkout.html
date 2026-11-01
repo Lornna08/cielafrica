@@ -139,10 +139,11 @@
         }
         function demo(){ setTimeout(function(){ success('&#10003; <b>Payment received (demo).</b> M-Pesa isn\'t fully configured yet. Once live, this confirms the real payment and emails your download link.'); },3000); }
 
-        var meta={phone:phone, customerName:cname, customerEmail:cemail, order:orderList, total:'KES '+fmt(amount)};
+
 
         /* 1) Send the STK push */
-        fetch('/api/stkpush',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:phone,amount:amount,reference:ref})})
+        var meta={phone:phone, customerName:cname, customerEmail:cemail, order:orderList, total:'KES '+fmt(amount)};
+        fetch('/api/stkpush',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({amount:amount,reference:ref},meta))})
           .then(function(r){return r.json().catch(function(){return {demo:true};});})
           .then(function(res){
             if(res&&res.demo){ demo(); return; }

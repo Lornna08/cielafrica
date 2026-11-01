@@ -84,20 +84,8 @@ module.exports = async function handler(req, res){
            </div>`
         );
       }
-      // keep a record for the /admin dashboard (private Blob store), once per payment
-      try {
-        const BS = require('../lib/photobooks/blobstore');
-        if (BS.on()) {
-          const id = String(checkoutRequestID).replace(/[^A-Za-z0-9_-]/g, '').slice(0, 80), path = 'shop/orders/' + id + '.json';
-          if (id && !(await BS.getJSON(path).catch(() => null))) {
-            const at = Date.now(), cut = (v, n) => String(v == null ? '' : v).slice(0, n);
-            await BS.putJSON(path, { id, kind: 'shop', ref: 'SH-' + id.slice(-8).toUpperCase(), status: 'paid', createdAt: at, history: [{ status: 'paid', at, note: 'Confirmed by M-Pesa' }],
-              customer: { name: cut(body.customerName, 80), email: cut(body.customerEmail, 190), phone: cut(body.phone, 20) }, order: cut(body.order, 1500), totalText: cut(body.total, 40),
-              total: Number(String(body.total || '').replace(/[^\d.]/g, '')) || null, note: 'Items and total as sent by the checkout page; the payment itself is confirmed by M-Pesa.' });
-            await require('../lib/hq/notify').event({ kind: 'order', title: 'New shop order · ' + cut(body.total, 40), body: (cut(body.customerName, 80) || 'A customer') + ': ' + cut(body.order, 100), url: '/admin#orders' });
-          }
-        }
-      } catch (e) { console.error('stkquery record error', e && e.message); }
+      // keep a record for Ciel HQ (/admin), once per payment
+      try { await require('../lib/hq/shop').paid(checkoutRequestID, body); } catch (e) { console.error('stkquery record error', e && e.message); }
       return res.status(200).json({ ok:true, status:'paid', desc: data.ResultDesc });
     }
 
@@ -113,6 +101,7 @@ module.exports = async function handler(req, res){
     const desc = (data.ResultDesc || data.errorMessage || '').toString();
 
     if (rc && terminalFail.indexOf(rc) !== -1) {
+      try { await require('../lib/hq/shop').failed(checkoutRequestID, desc); } catch (e) { }
       return res.status(200).json({ ok:true, status:'failed', desc });
     }
     // everything else = still waiting

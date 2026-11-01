@@ -35,7 +35,7 @@
   PBK.ICON = ICON;
   var ICON_EDIT = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>';
 
-  var V3 = '6';
+  var V3 = '7';
   function bookName(t, pi) { return t === 'blank' ? 'blank-' + (pi || 0) : t.kind === 'vector' ? t.cat + '-' + t.slug + '-' + (pi || 0) : 'travel-' + t.slug; }
   /** 3D book thumbnail (440×550) for a cover template. */
   function mockSrc(t, pi) { return '/assets/pbk/c/3/' + bookName(t, pi) + '.webp?v=' + V3; }
