@@ -7,7 +7,7 @@
   'use strict';
   var root = document.getElementById('hq');
   var CFG = (window.CIEL && CIEL.photobooks) || {};
-  var S = { view: 'overview', orders: [], inbox: [], sources: {}, tasks: [], events: [], notes: [], loaded: false, pulse: null, filt: { kind: 'all', q: '', st: 'open' }, cal: null };
+  var S = { view: 'overview', orders: [], inbox: [], sources: {}, tasks: [], events: [], notes: [], projects: [], loaded: false, pulse: null, filt: { kind: 'all', q: '', st: 'open' }, cal: null };
 
   /* ---------- helpers ---------- */
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -49,7 +49,7 @@
     wa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c.3 2 2.5 4.3 4.6 4.6l1.2-1.1 1.7.8"/></svg>',
     globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/></svg>'
   };
-  var NAV = [['overview', 'Overview', I.home, 'Main'], ['orders', 'Orders', I.orders, 'Commerce'], ['payments', 'Payments', I.book], ['products', 'Products', I.pen], ['templates', 'Website templates', I.web], ['inbox', 'Inbox', I.mail, 'Customers & sales'], ['customers', 'Customers', I.people], ['website', 'Website editor', I.web, 'Website'], ['content', 'Content library', I.pen], ['calendar', 'Calendar', I.cal, 'Operations'], ['tasks', 'Tasks', I.tasks], ['activity', 'Activity log', I.book, 'System'], ['settings', 'Setup', I.gear]];
+  var NAV = [['overview', 'Overview', I.home, 'Main'], ['orders', 'Orders', I.orders, 'Commerce'], ['payments', 'Payments', I.book], ['products', 'Products', I.pen], ['templates', 'Website templates', I.web], ['inbox', 'Inbox', I.mail, 'Customers & sales'], ['leads', 'Leads', I.orders], ['customers', 'Customers', I.people], ['projects', 'Projects', I.tasks], ['website', 'Website editor', I.web, 'Website'], ['content', 'Content library', I.pen], ['calendar', 'Calendar', I.cal, 'Operations'], ['tasks', 'Tasks', I.tasks], ['activity', 'Activity log', I.book, 'System'], ['settings', 'Setup', I.gear]];
 
   /* ---------- order sources, normalised ---------- */
   var KIND = { photobook: ['Photo book', '#ff5a1f'], shop: ['Shop', '#1f4fb5'], domain: ['Domain', '#5b3fd1'], whatsapp: ['WhatsApp', '#1fa855'] };
@@ -79,7 +79,7 @@
     S.orders = (S.base || []).concat(S.inbox.filter(function (x) { return x.kind === 'whatsapp'; }).map(fromWA)).sort(function (a, b) { return (b.at || 0) - (a.at || 0); });
   }
   function loadLists() {
-    return Promise.all(['tasks', 'events', 'notes'].map(function (c) { return api('/api/hq?route=list&c=' + c).then(function (r) { S[c] = r.items || []; }, function (e) { S[c] = []; S.listErr = e.message; }); }));
+    return Promise.all(['tasks', 'events', 'notes', 'projects'].map(function (c) { return api('/api/hq?route=list&c=' + c).then(function (r) { S[c] = r.items || []; }, function (e) { S[c] = []; S.listErr = e.message; }); }));
   }
   function saveItem(c, item) { return api('/api/hq?route=save', { c: c, item: item }).then(function (r) { var l = S[c], i = l.findIndex(function (x) { return x.id === r.item.id; }); if (i >= 0) l[i] = r.item; else l.push(r.item); return r.item; }); }
   function delItem(c, id) { return api('/api/hq?route=save', { c: c, op: 'delete', id: id }).then(function () { S[c] = S[c].filter(function (x) { return x.id !== id; }); }); }
@@ -206,20 +206,23 @@
     if (!NAV.some(function (n) { return n[0] === v; })) v = 'overview';
     document.querySelectorAll('.drawer,.modal').forEach(function (x) { x.remove(); });
     S.view = v; navs();
-    var titles = { overview: 'Good ' + (new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening') + ', Lorna', orders: 'Orders', calendar: 'Calendar', tasks: 'Tasks', customers: 'Customers', website: 'Website', settings: 'Setup', inbox: 'Inbox', content: 'Content library', activity: 'Activity log', payments: 'Payments', products: 'Products', templates: 'Website templates' };
+    var titles = { overview: 'Good ' + (new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening') + ', Lorna', orders: 'Orders', calendar: 'Calendar', tasks: 'Tasks', customers: 'Customers', website: 'Website', settings: 'Setup', inbox: 'Inbox', content: 'Content library', activity: 'Activity log', payments: 'Payments', products: 'Products', templates: 'Website templates', leads: 'Leads', projects: 'Projects' };
     document.getElementById('ttl').innerHTML = esc(titles[v]) + '<small>' + new Date().toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + '</small>';
     document.getElementById('topx').innerHTML = v === 'calendar' ? '<button class="b b--p b--sm" data-newev>' + I.plus + '<span>Event</span></button>' : v === 'tasks' ? '<button class="b b--p b--sm" data-newtk>' + I.plus + '<span>Task</span></button>' : '';
     var tb = document.querySelector('[data-newev]'); if (tb) tb.onclick = function () { eventModal({ date: today() }); };
     var tt = document.querySelector('[data-newtk]'); if (tt) tt.onclick = function () { taskModal({ status: 'todo' }); };
     if (v === 'website') { if (window.HQSite) HQSite.render(h[1] || 'home'); }
     else if (v === 'products' || v === 'templates') { if (window.HQSite) HQSite.renderCatalog(v); }
+    else if (v === 'leads' && window.HQCrm) HQCrm.leads();
+    else if (v === 'projects' && window.HQCrm) HQCrm.projects(h[1]);
+    else if (v === 'customers' && window.HQCrm) HQCrm.customers();
     else ({ overview: overview, orders: orders, inbox: inbox, calendar: calendar, tasks: tasks, customers: customers, content: content, activity: activity, payments: payments, settings: settings })[v]();
     if (v === 'orders' && h[1]) { var o = S.orders.filter(function (x) { return x.ref === h[1]; })[0]; if (o) orderDrawer(o); }
     if (v === 'inbox' && h[1]) { S.itab = 'web'; inbox(); var m = S.inbox.filter(function (x) { return x.id === h[1]; })[0]; if (m) msgDrawer(m); }
     window.scrollTo(0, keep === true ? sy : 0);
   }
   function counts() {
-    return { inbox: S.inbox.filter(function (m) { return m.kind !== 'whatsapp' && m.status === 'new'; }).length + (window.HQMail ? HQMail.unseen() : 0), orders: S.orders.filter(function (o) { return (o.paid || o.kind === 'whatsapp') && !CLOSED.test(o.status); }).length, tasks: S.tasks.filter(function (t) { return t.status !== 'done'; }).length, calendar: S.events.filter(function (e) { return e.date === today(); }).length };
+    return { leads: S.inbox.filter(function (m) { return m.kind !== 'whatsapp' && (m.stage || (m.status === 'new' ? 'new' : '')) === 'new'; }).length, inbox: S.inbox.filter(function (m) { return m.kind !== 'whatsapp' && m.status === 'new'; }).length + (window.HQMail ? HQMail.unseen() : 0), orders: S.orders.filter(function (o) { return (o.paid || o.kind === 'whatsapp') && !CLOSED.test(o.status); }).length, tasks: S.tasks.filter(function (t) { return t.status !== 'done'; }).length, calendar: S.events.filter(function (e) { return e.date === today(); }).length };
   }
   function navs() {
     var c = counts();
@@ -256,6 +259,7 @@
       if (o.kind === 'shop' && o.status === 'paid') attention.push(['b', o.ref + ': new shop order', o.summary.slice(0, 80), '#orders/' + o.ref]);
       if (o.kind === 'domain' && o.status === 'pending_registration') attention.push(['b', o.ref + ': register ' + (o.raw.domain || ''), 'Paid, waiting for registration', '#orders/' + o.ref]);
     });
+    S.inbox.forEach(function (m) { if (m.followUp && m.followUp <= today() && !/completed|declined|archived/.test(m.stage || '')) attention.push(['y', 'Follow up: ' + (m.customer.name || m.customer.email || 'lead'), (m.subject || '').slice(0, 80), '#leads']); });
     newMsgs.forEach(function (m) { attention.push(['p', 'Message from ' + (m.customer.name || m.customer.email || 'a visitor'), (m.subject || '').slice(0, 80), '#inbox/' + m.id]); });
     overdue.forEach(function (t) { attention.push(['r', 'Overdue: ' + t.title, 'Was due ' + d2(t.due + 'T12:00'), '#tasks']); });
     var b = body(
@@ -561,7 +565,8 @@
     var si = b.querySelector('#spi'); if (si) si.onclick = install;
   }
 
-  window.HQ = { api: api, toast: toast, esc: esc, dt: dt, body: body, modal: modal };
+  window.HQ = { api: api, toast: toast, esc: esc, dt: dt, d2: d2, money: money, today: today, body: body, modal: modal, drawer: drawer, S: S, navs: navs, route: route, saveItem: saveItem, delItem: delItem, taskModal: taskModal, eventModal: eventModal };
+  if (window.HQCrm) HQCrm.init(window.HQ);
   if (window.HQSite) HQSite.init(window.HQ);
   if (window.HQMail) HQMail.init(window.HQ);
   start();
