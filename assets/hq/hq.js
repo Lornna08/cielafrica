@@ -43,7 +43,7 @@
     wa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c.3 2 2.5 4.3 4.6 4.6l1.2-1.1 1.7.8"/></svg>',
     globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/></svg>'
   };
-  var NAV = [['overview', 'Overview', I.home], ['orders', 'Orders', I.orders], ['inbox', 'Inbox', I.mail], ['calendar', 'Calendar', I.cal], ['tasks', 'Tasks', I.tasks], ['customers', 'Customers', I.people], ['website', 'Website', I.web], ['settings', 'Setup', I.gear]];
+  var NAV = [['overview', 'Overview', I.home, 'Main'], ['orders', 'Orders', I.orders, 'Commerce'], ['inbox', 'Inbox', I.mail, 'Customers & sales'], ['customers', 'Customers', I.people], ['website', 'Website editor', I.web, 'Website'], ['content', 'Content library', I.pen], ['calendar', 'Calendar', I.cal, 'Operations'], ['tasks', 'Tasks', I.tasks], ['activity', 'Activity log', I.book, 'System'], ['settings', 'Setup', I.gear]];
 
   /* ---------- order sources, normalised ---------- */
   var KIND = { photobook: ['Photo book', '#ff5a1f'], shop: ['Shop', '#1f4fb5'], domain: ['Domain', '#5b3fd1'], whatsapp: ['WhatsApp', '#1fa855'] };
@@ -184,12 +184,13 @@
     if (!NAV.some(function (n) { return n[0] === v; })) v = 'overview';
     document.querySelectorAll('.drawer,.modal').forEach(function (x) { x.remove(); });
     S.view = v; navs();
-    var titles = { overview: 'Good ' + (new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening') + ', Lorna', orders: 'Orders', calendar: 'Calendar', tasks: 'Tasks', customers: 'Customers', website: 'Website', settings: 'Setup', inbox: 'Inbox' };
+    var titles = { overview: 'Good ' + (new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening') + ', Lorna', orders: 'Orders', calendar: 'Calendar', tasks: 'Tasks', customers: 'Customers', website: 'Website', settings: 'Setup', inbox: 'Inbox', content: 'Content library', activity: 'Activity log' };
     document.getElementById('ttl').innerHTML = esc(titles[v]) + '<small>' + new Date().toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + '</small>';
     document.getElementById('topx').innerHTML = v === 'calendar' ? '<button class="b b--p b--sm" data-newev>' + I.plus + '<span>Event</span></button>' : v === 'tasks' ? '<button class="b b--p b--sm" data-newtk>' + I.plus + '<span>Task</span></button>' : '';
     var tb = document.querySelector('[data-newev]'); if (tb) tb.onclick = function () { eventModal({ date: today() }); };
     var tt = document.querySelector('[data-newtk]'); if (tt) tt.onclick = function () { taskModal({ status: 'todo' }); };
-    ({ overview: overview, orders: orders, inbox: inbox, calendar: calendar, tasks: tasks, customers: customers, website: website, settings: settings })[v]();
+    if (v === 'website') { if (window.HQSite) HQSite.render(h[1] || 'home'); }
+    else ({ overview: overview, orders: orders, inbox: inbox, calendar: calendar, tasks: tasks, customers: customers, content: content, activity: activity, settings: settings })[v]();
     if (v === 'orders' && h[1]) { var o = S.orders.filter(function (x) { return x.ref === h[1]; })[0]; if (o) orderDrawer(o); }
     if (v === 'inbox' && h[1]) { var m = S.inbox.filter(function (x) { return x.id === h[1]; })[0]; if (m) msgDrawer(m); }
     window.scrollTo(0, keep === true ? sy : 0);
@@ -199,8 +200,8 @@
   }
   function navs() {
     var c = counts();
-    document.getElementById('nav').innerHTML = NAV.map(function (n, i) { return (i === 6 ? '<div class="hq-nav__h">Business</div>' : '') + '<a href="#' + n[0] + '" class="' + (S.view === n[0] ? 'is-on' : '') + '">' + n[2] + '<span>' + n[1] + '</span>' + (c[n[0]] ? '<i>' + c[n[0]] + '</i>' : '') + '</a>'; }).join('');
-    document.getElementById('mnav').innerHTML = NAV.slice(0, 5).map(function (n) { return '<a href="#' + n[0] + '" class="' + (S.view === n[0] ? 'is-on' : '') + '">' + n[2] + '<span>' + n[1] + '</span>' + (c[n[0]] ? '<i>' + c[n[0]] + '</i>' : '') + '</a>'; }).join('');
+    document.getElementById('nav').innerHTML = NAV.map(function (n, i) { return (n[3] ? '<div class="hq-nav__h">' + n[3] + '</div>' : '') + '<a href="#' + n[0] + '" class="' + (S.view === n[0] ? 'is-on' : '') + '">' + n[2] + '<span>' + n[1] + '</span>' + (c[n[0]] ? '<i>' + c[n[0]] + '</i>' : '') + '</a>'; }).join('');
+    document.getElementById('mnav').innerHTML = NAV.filter(function (n) { return /^(overview|orders|inbox|website|tasks)$/.test(n[0]); }).map(function (n) { return '<a href="#' + n[0] + '" class="' + (S.view === n[0] ? 'is-on' : '') + '">' + n[2] + '<span>' + n[1] + '</span>' + (c[n[0]] ? '<i>' + c[n[0]] + '</i>' : '') + '</a>'; }).join('');
   }
   function body(h) { document.getElementById('body').innerHTML = h; return document.getElementById('body'); }
 
@@ -461,6 +462,16 @@
   }
 
   /* ---------- website & setup ---------- */
+  function content() {
+    var tabs = [['/admin/content?embed=1', 'Products, templates, work & team'], ['/domains/admin?embed=1', 'Ciel Domains'], ['/photobooks/orders?embed=1', 'Photo Book files']];
+    var cur = S.ctab || 0;
+    var b = body('<div class="tabs" id="ct" style="margin-bottom:12px">' + tabs.map(function (t, i) { return '<button data-i="' + i + '"' + (i === cur ? ' class="is-on"' : '') + '>' + t[1] + '</button>'; }).join('') + '</div><iframe class="hq-embed" src="' + tabs[cur][0] + '" title="' + tabs[cur][1] + '"></iframe>');
+    b.querySelectorAll('#ct [data-i]').forEach(function (x) { x.onclick = function () { S.ctab = +x.getAttribute('data-i'); content(); }; });
+  }
+  function activity() {
+    var b = body('<div class="card"><div class="card__h"><h2>Activity log</h2><span class="muted" style="font-size:.8rem">Sign-ins and website publishing</span></div><div id="al"><p class="empty">Loading…</p></div></div>');
+    api('/api/hq?route=activity').then(function (r) { b.querySelector('#al').innerHTML = r.items.length ? '<table class="tbl"><thead><tr><th>When</th><th>What</th><th>Details</th></tr></thead><tbody>' + r.items.map(function (x) { return '<tr><td>' + dt(x.at) + '</td><td><b>' + esc(x.action) + '</b></td><td><small>' + esc(x.detail || '') + '</small></td></tr>'; }).join('') + '</tbody></table>' : '<p class="empty">Nothing recorded yet.</p>'; }, function (e) { b.querySelector('#al').innerHTML = '<p class="empty">' + esc(e.message) + '</p>'; });
+  }
   function website() {
     var tiles = [
       [I.pen, 'Website content', 'Edit products, templates, work and team on cielafrica.com.', '/admin/content'],
@@ -480,7 +491,7 @@
       [s.storage, 'Private file storage', 'Vercel Blob (cielafrica-photobooks): orders, print files, tasks and calendar.'],
       [s.payments, 'M-Pesa payments', 'Daraja keys in Vercel. Mode: ' + esc(s.mpesaEnv || 'sandbox') + '.'],
       [s.email, 'Email', 'RESEND_API_KEY in Vercel: receipts, order updates and reminders to customers, alerts to you.'],
-      [s.publish ? true : 'opt', 'One-click publishing (optional)', 'GITHUB_TOKEN in Vercel lets website content changes go live in one click. Without it, content changes download as a file instead.'],
+      [s.publish, 'Website publishing', 'GITHUB_TOKEN in Vercel lets the Website editor publish to cielafrica.com. Create it on GitHub: Settings → Developer settings → Fine-grained tokens → Generate. Repository access: only Lornna08/cielafrica. Permissions: Contents → Read and write. Copy the token, add it in Vercel as GITHUB_TOKEN, then redeploy.'],
       [s.domainsDb, 'Orders database', 'Ciel Domains and shop orders are kept in the private Blob store (or Upstash Redis if you add it later).']
     ];
     var b = body('<div class="card"><div class="card__h"><h2>This device</h2></div><ul class="list setup"><li><span class="st" id="sp">…</span><div><b>Phone notifications</b><p id="spt">New orders, WhatsApp orders, pages received and website messages, even when Ciel HQ is closed.</p></div><button class="b b--sm b--p" id="spb">Turn on</button></li>' +
@@ -492,5 +503,7 @@
     var si = b.querySelector('#spi'); if (si) si.onclick = install;
   }
 
+  window.HQ = { api: api, toast: toast, esc: esc, dt: dt, body: body, modal: modal };
+  if (window.HQSite) HQSite.init(window.HQ);
   start();
 })();

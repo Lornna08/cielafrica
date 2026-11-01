@@ -402,5 +402,10 @@
       "path": "/api/photobooks?route=pbk-cron",
       "schedule": "17 3 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "api/hq.js": {
+      "maxDuration": 60
+    }
+  }
 }

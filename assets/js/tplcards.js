@@ -72,6 +72,6 @@ window.CIEL = window.CIEL || {};
   /* every template we've actually built (has a live demo): homepage ones first, then the rest */
   CIEL.builtTemplates=function(){
     var T=CIEL.templates||[],H=CIEL.homeTemplates().filter(function(t){return t.demo;});
-    return H.concat(T.filter(function(t){return t.demo&&H.indexOf(t)<0;}));
+    return H.concat(T.filter(function(t){return t.demo&&H.indexOf(t)<0;})).filter(function(t){return !t.hidden;});
   };
 })();
