@@ -1,5 +1,5 @@
 /* ============================================================
-   CIEL HQ — the Ciel Africa back office (/admin)
+   CIEL HQ — the   (/admin)
    Overview · Orders (photo books, shop, domains) · Calendar · Tasks ·
    Customers · Website. Sign-in is checked on the server.
    ============================================================ */
@@ -84,7 +84,7 @@
   }
   function login(setup) {
     root.className = '';
-    root.innerHTML = '<div class="hq-login"><div class="hq-login__art"><img src="/assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa"><div><h1>Run all of Ciel Africa from one place.</h1><p>Orders from the shop, Photo Books and Ciel Domains, your calendar, tasks and customers.</p><ul><li>Orders</li><li>Calendar</li><li>Tasks</li><li>Customers</li><li>Website</li></ul></div><small style="color:#8a8076">Ciel HQ</small></div>' +
+    root.innerHTML = '<div class="hq-login"><div class="hq-login__art"><img src="/assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa"><div><h1>Run all of Ciel Africa from one place.</h1><p>Orders from the shop, Photo Books and Ciel Domains, your calendar, tasks and customers.</p><ul><li>Orders</li><li>Calendar</li><li>Tasks</li><li>Customers</li><li>Website</li></ul></div><small style="color:#8a8076">Ciel Admin</small></div>' +
       '<div class="hq-login__f"><form id="lf"><h2>Sign in</h2><p>Use your admin password.</p>' + (setup && setup.adminPassword === false ? '<div class="hq-setup"><b>Set your admin password first.</b><br>In Vercel open the cielafrica project → Settings → Environment Variables → add <b>ADMIN_PASSWORD</b> with a strong password → Save → Deployments → Redeploy. Then sign in here with it.</div>' : '') +
       '<input class="hq-in" type="password" id="pw" placeholder="Admin password" autocomplete="current-password" required><button class="b b--p" style="justify-content:center;padding:.8rem">Sign in</button><p class="hq-err" id="le"></p></form></div></div>';
     document.getElementById('lf').onsubmit = function (e) {
@@ -95,7 +95,7 @@
   function boot() {
     try { localStorage.setItem('pbk_admin', '1'); } catch (e) { }
     root.className = 'hq';
-    root.innerHTML = '<aside class="hq-side"><div class="hq-side__brand"><img src="/assets/img/logo-dark.png?v=20261021i" alt=""><div><b>Ciel HQ</b><span>Ciel Africa back office</span></div></div><nav class="hq-nav" id="nav"></nav><div class="hq-side__foot"><a href="/" target="_blank" rel="noopener" style="color:#cfc5b8">cielafrica.com ↗</a><button id="lo">Sign out</button></div></aside>' +
+    root.innerHTML = '<aside class="hq-side"><div class="hq-side__brand"><img src="/assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa"><span class="hq-side__tag">Admin</span></div><nav class="hq-nav" id="nav"></nav><div class="hq-side__foot"><a href="/" target="_blank" rel="noopener">cielafrica.com ↗</a><button id="lo">Sign out</button></div></aside>' +
       '<div class="hq-main"><header class="hq-top"><h1 id="ttl"></h1><span class="hq-live" id="lv" title="Live">Live</span><button class="b b--sm" id="inst" hidden>Install app</button><button class="b b--sm" id="nb" title="Phone notifications">' + I.bell + '</button><button class="b b--sm" id="rf" title="Refresh">' + I.ref + '<span>Refresh</span></button><div id="topx"></div></header><main class="hq-body" id="body"><p class="muted">Loading…</p></main></div><nav class="hq-mnav" id="mnav"></nav>';
     document.getElementById('lo').onclick = function () { api('/api/hq?route=logout', {}).then(function () { try { localStorage.removeItem('pbk_admin'); } catch (e) { } login(S.setup || {}); }); };
     document.getElementById('rf').onclick = function () { refresh(true); };
@@ -132,6 +132,8 @@
       }, function (e) { var lv = document.getElementById('lv'); if (lv) lv.classList.add('is-off'); if (e.status === 401) login(S.setup || {}); });
     }
     tick(); setInterval(tick, 30000);
+    var mailOn = S.setup && S.setup.mail && S.setup.mail.some(function (a) { return a.configured; });
+    if (mailOn && window.HQMail) { var mp = function () { if (!document.hidden) HQMail.poll(function () { navs(); }); }; mp(); setInterval(mp, 120000); }
     document.addEventListener('visibilitychange', function () { if (!document.hidden) tick(); });
     if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', function (e) { if (e.data && e.data.type === 'hq-push') tick(); });
   }
@@ -150,7 +152,7 @@
     return navigator.serviceWorker.ready.then(function (r) { return r.pushManager.getSubscription(); }).then(function (sub) { S.pushOn = !!sub; return sub ? 'on' : 'off'; });
   }
   function enablePush() {
-    if (isIOS() && !standalone()) { toast('On iPhone: tap Share → Add to Home Screen, open Ciel HQ from there, then turn notifications on.'); return Promise.resolve(); }
+    if (isIOS() && !standalone()) { toast('On iPhone: tap Share → Add to Home Screen, open Ciel Admin from there, then turn notifications on.'); return Promise.resolve(); }
     if (!('PushManager' in window)) { toast('This browser can’t receive notifications.'); return Promise.resolve(); }
     return Notification.requestPermission().then(function (perm) {
       if (perm !== 'granted') throw new Error('Notifications are blocked. Allow them in the browser settings for cielafrica.com.');
@@ -169,7 +171,7 @@
     toast(isIOS() ? 'On iPhone: tap Share → Add to Home Screen.' : 'Use your browser menu → Install app (or Add to Home screen).');
   }
 
-  /* ---------- in-app windows (no new tabs: everything stays inside Ciel HQ) ---------- */
+  /* ---------- in-app windows (no new tabs: everything stays inside Ciel Admin) ---------- */
   function frame(title, url) {
     var d = document.createElement('div'); d.className = 'hq-frame';
     d.innerHTML = '<div class="hq-frame__h"><button class="b b--sm" data-x>' + I.l + '<span>Back</span></button><b>' + esc(title) + '</b><button class="b b--sm b--ghost" data-rl title="Reload">' + I.ref + '</button></div><iframe src="' + esc(url) + '" title="' + esc(title) + '"></iframe>';
@@ -192,11 +194,11 @@
     if (v === 'website') { if (window.HQSite) HQSite.render(h[1] || 'home'); }
     else ({ overview: overview, orders: orders, inbox: inbox, calendar: calendar, tasks: tasks, customers: customers, content: content, activity: activity, settings: settings })[v]();
     if (v === 'orders' && h[1]) { var o = S.orders.filter(function (x) { return x.ref === h[1]; })[0]; if (o) orderDrawer(o); }
-    if (v === 'inbox' && h[1]) { var m = S.inbox.filter(function (x) { return x.id === h[1]; })[0]; if (m) msgDrawer(m); }
+    if (v === 'inbox' && h[1]) { S.itab = 'web'; inbox(); var m = S.inbox.filter(function (x) { return x.id === h[1]; })[0]; if (m) msgDrawer(m); }
     window.scrollTo(0, keep === true ? sy : 0);
   }
   function counts() {
-    return { inbox: S.inbox.filter(function (m) { return m.kind !== 'whatsapp' && m.status === 'new'; }).length, orders: S.orders.filter(function (o) { return (o.paid || o.kind === 'whatsapp') && !CLOSED.test(o.status); }).length, tasks: S.tasks.filter(function (t) { return t.status !== 'done'; }).length, calendar: S.events.filter(function (e) { return e.date === today(); }).length };
+    return { inbox: S.inbox.filter(function (m) { return m.kind !== 'whatsapp' && m.status === 'new'; }).length + (window.HQMail ? HQMail.unseen() : 0), orders: S.orders.filter(function (o) { return (o.paid || o.kind === 'whatsapp') && !CLOSED.test(o.status); }).length, tasks: S.tasks.filter(function (t) { return t.status !== 'done'; }).length, calendar: S.events.filter(function (e) { return e.date === today(); }).length };
   }
   function navs() {
     var c = counts();
@@ -240,12 +242,13 @@
       '<div class="card kpi"><span>Orders to handle</span><b>' + todo.length + '</b><small>' + todo.filter(function (o) { return o.kind === 'photobook'; }).length + ' photo books · ' + todo.filter(function (o) { return o.kind === 'shop'; }).length + ' shop · ' + todo.filter(function (o) { return o.kind === 'domain'; }).length + ' domains</small></div>' +
       '<div class="card kpi"><span>Pending orders</span><b>' + pending.length + '</b><small>' + pending.filter(function (o) { return o.kind === 'whatsapp'; }).length + ' WhatsApp · ' + pending.filter(function (o) { return o.kind !== 'whatsapp'; }).length + ' not paid yet</small></div>' +
       '<div class="card kpi"><span>New messages</span><b>' + newMsgs.length + '</b><small>' + open.length + ' open task' + (open.length === 1 ? '' : 's') + (overdue.length ? ' · ' + overdue.length + ' overdue' : '') + ' · ' + week.length + ' event' + (week.length === 1 ? '' : 's') + ' this week</small></div></div>' +
-      '<div class="grid2"><div class="card"><div class="card__h"><h2>Revenue, last 30 days</h2><span class="muted">' + money(days.reduce(function (s, x) { return s + x.v; }, 0)) + '</span></div><div class="card__b"><svg class="chart" viewBox="0 0 600 170" preserveAspectRatio="none">' + bars + '<line x1="0" y1="160.5" x2="600" y2="160.5" stroke="#ebe4d8"/></svg><div class="row muted" style="justify-content:space-between;font-size:.76rem"><span>' + d2(days[0].d) + '</span><span>Today</span></div></div></div>' +
-      '<div class="card"><div class="card__h"><h2>Needs attention</h2><span class="chip' + (attention.length ? ' chip--o' : ' chip--g') + '">' + attention.length + '</span></div><ul class="list">' + (attention.length ? attention.slice(0, 7).map(function (a) { return '<li><span class="dot" style="background:var(--' + a[0] + ')"></span><div><b>' + esc(a[1]) + '</b><small>' + esc(a[2]) + '</small></div><a class="b b--sm" href="' + a[3] + '">Open</a></li>'; }).join('') : '<li class="empty">All clear. Nothing waiting on you.</li>') + '</ul></div></div>' +
-      '<div class="grid2"><div class="card"><div class="card__h"><h2>Recent orders</h2><a class="b b--sm" href="#orders">All orders</a></div>' + orderTable(S.orders.slice(0, 6), true) +
+      '<div class="ov"><div class="ov__main"><div class="card"><div class="card__h"><h2>Revenue, last 30 days</h2><span class="muted">' + money(days.reduce(function (s, x) { return s + x.v; }, 0)) + '</span></div><div class="card__b"><svg class="chart" viewBox="0 0 600 170" preserveAspectRatio="none">' + bars + '<line x1="0" y1="160.5" x2="600" y2="160.5" stroke="#ebe4d8"/></svg><div class="row muted" style="justify-content:space-between;font-size:.76rem"><span>' + d2(days[0].d) + '</span><span>Today</span></div></div></div>' +
+      '<div class="card"><div class="card__h"><h2>Recent orders</h2><a class="b b--sm" href="#orders">All orders</a></div>' + orderTable(S.orders.slice(0, 6), true) +
       '<div class="card__h" style="border-top:1px solid var(--line)"><h2>Pending orders</h2><span class="muted" style="font-size:.8rem">WhatsApp and unpaid</span></div>' + orderTable(pending.slice(0, 6), true) + '</div>' +
+      '</div><div class="ov__rail">' +
+      '<div class="card"><div class="card__h"><h2>Needs attention</h2><span class="chip' + (attention.length ? ' chip--o' : ' chip--g') + '">' + attention.length + '</span></div><ul class="list">' + (attention.length ? attention.slice(0, 7).map(function (a) { return '<li><span class="dot" style="background:var(--' + a[0] + ')"></span><div><b>' + esc(a[1]) + '</b><small>' + esc(a[2]) + '</small></div><a class="b b--sm" href="' + a[3] + '">Open</a></li>'; }).join('') : '<li class="empty">All clear. Nothing waiting on you.</li>') + '</ul></div>' +
       '<div class="card"><div class="card__h"><h2>Coming up</h2><a class="b b--sm" href="#calendar">Calendar</a></div><ul class="list">' + (up.length ? up.slice(0, 6).map(evRow).join('') : '<li class="empty">No upcoming events. <a href="#calendar">Plan one</a>.</li>') + '</ul>' +
-      '<div class="card__h" style="border-top:1px solid var(--line)"><h2>Tasks due soon</h2><a class="b b--sm" href="#tasks">Board</a></div><ul class="list">' + (open.length ? open.slice().sort(function (a, c) { return (a.due || '9').localeCompare(c.due || '9'); }).slice(0, 5).map(function (t) { return '<li><span class="dot" style="background:' + ({ high: 'var(--r)', med: 'var(--o)', low: 'var(--g)' }[t.priority] || 'var(--faint)') + '"></span><div><b>' + esc(t.title) + '</b><small>' + (t.due ? 'Due ' + d2(t.due + 'T12:00') : 'No due date') + (t.status === 'doing' ? ' · in progress' : '') + '</small></div></li>'; }).join('') : '<li class="empty">No open tasks.</li>') + '</ul></div></div>'
+      '<div class="card__h" style="border-top:1px solid var(--line)"><h2>Tasks due soon</h2><a class="b b--sm" href="#tasks">Board</a></div><ul class="list">' + (open.length ? open.slice().sort(function (a, c) { return (a.due || '9').localeCompare(c.due || '9'); }).slice(0, 5).map(function (t) { return '<li><span class="dot" style="background:' + ({ high: 'var(--r)', med: 'var(--o)', low: 'var(--g)' }[t.priority] || 'var(--faint)') + '"></span><div><b>' + esc(t.title) + '</b><small>' + (t.due ? 'Due ' + d2(t.due + 'T12:00') : 'No due date') + (t.status === 'doing' ? ' · in progress' : '') + '</small></div></li>'; }).join('') : '<li class="empty">No open tasks.</li>') + '</ul></div></div></div></div>'
     );
     bindOrderRows(b);
   }
@@ -436,12 +439,16 @@
 
   /* ---------- inbox: website messages, project briefs and WhatsApp orders ---------- */
   var MK = { message: ['Message', 'b'], brief: ['Project brief', 'p'], whatsapp: ['WhatsApp order', 'g'] };
+  function itabs() { return '<div class="tabs" id="itb" style="margin-bottom:2px">' + [['email', 'Email'], ['web', 'Website messages & WhatsApp']].map(function (t) { return '<button data-t="' + t[0] + '"' + ((S.itab || 'email') === t[0] ? ' class="is-on"' : '') + '>' + t[1] + '</button>'; }).join('') + '</div>'; }
+  function bindItabs(b) { b.querySelectorAll('#itb [data-t]').forEach(function (x) { x.onclick = function () { S.itab = x.getAttribute('data-t'); inbox(); }; }); }
   function inbox() {
+    if ((S.itab || 'email') === 'email' && window.HQMail) { var bb = body(itabs() + '<div id="mxBox"></div>'); bindItabs(bb); HQMail.render(bb.querySelector('#mxBox')); return; }
     var f = S.ifilt || (S.ifilt = 'all'), list = S.inbox.filter(function (m) { return f === 'all' || (f === 'new' ? m.status === 'new' || (m.kind === 'whatsapp' && m.status === 'pending') : m.kind === f); });
-    var b = body('<div class="card"><div class="card__h" style="flex-wrap:wrap;gap:.7rem"><div class="tabs" id="ik">' + [['all', 'All'], ['new', 'New'], ['message', 'Messages'], ['brief', 'Briefs'], ['whatsapp', 'WhatsApp']].map(function (k) { return '<button data-k="' + k[0] + '"' + (f === k[0] ? ' class="is-on"' : '') + '>' + k[1] + '</button>'; }).join('') + '</div></div>' +
+    var b = body(itabs() + '<div class="card"><div class="card__h" style="flex-wrap:wrap;gap:.7rem"><div class="tabs" id="ik">' + [['all', 'All'], ['new', 'New'], ['message', 'Messages'], ['brief', 'Briefs'], ['whatsapp', 'WhatsApp']].map(function (k) { return '<button data-k="' + k[0] + '"' + (f === k[0] ? ' class="is-on"' : '') + '>' + k[1] + '</button>'; }).join('') + '</div></div>' +
       (S.sources.inbox && S.sources.inbox !== 'ok' ? '<p class="muted card__b">' + esc(S.sources.inbox) + '</p>' : '') +
       (list.length ? '<ul class="list inbox">' + list.map(function (m) { var k = MK[m.kind] || MK.message, unread = m.status === 'new' || (m.kind === 'whatsapp' && m.status === 'pending'); return '<li data-m="' + esc(m.id) + '" class="' + (unread ? 'is-new' : '') + '"><span class="dot" style="background:var(--' + (unread ? 'o' : 'line') + ')"></span><div><b>' + esc(m.customer && (m.customer.name || m.customer.email || m.customer.phone) || (m.kind === 'whatsapp' ? 'WhatsApp visitor' : 'Visitor')) + '</b><small>' + esc((m.kind === 'whatsapp' ? (m.text || m.page) : m.subject || '').replace(/\s+/g, ' ').slice(0, 120)) + '</small></div><span class="chip chip--' + k[1] + '">' + k[0] + '</span><small class="muted hide-m" style="white-space:nowrap">' + dt(m.createdAt) + '</small></li>'; }).join('') + '</ul>' : '<p class="empty">Messages from the website forms and WhatsApp order taps appear here, live.</p>') + '</div>' +
-      '<div class="card card__b"><b>Emails to hello@ and lorna@cielafrica.com</b><p class="muted" style="font-size:.86rem;margin-top:.3rem">Those mailboxes live with your email provider, so Ciel HQ can’t read them yet. Website form messages are already here. Showing the mailboxes too needs a connection to the mail provider that hosts cielafrica.com email (IMAP or its API).</p></div>');
+      '<div class="card card__b"><b>Emails to hello@ and lorna@cielafrica.com</b><p class="muted" style="font-size:.86rem;margin-top:.3rem">Those mailboxes live with your email provider, so Ciel Admin can’t read them yet. Website form messages are already here. Showing the mailboxes too needs a connection to the mail provider that hosts cielafrica.com email (IMAP or its API).</p></div>');
+    bindItabs(b);
     b.querySelectorAll('#ik [data-k]').forEach(function (x) { x.onclick = function () { S.ifilt = x.getAttribute('data-k'); inbox(); }; });
     b.querySelectorAll('[data-m]').forEach(function (li) { li.onclick = function () { location.hash = '#inbox/' + li.getAttribute('data-m'); }; });
   }
@@ -487,17 +494,18 @@
   function settings() {
     var s = S.setup || {};
     var rows = [
-      [s.adminPassword, 'Admin password', 'ADMIN_PASSWORD in Vercel. One password for Ciel HQ, Photo Book orders, Domains and website content.'],
+      [s.adminPassword, 'Admin password', 'ADMIN_PASSWORD in Vercel. One password for Ciel Admin, Photo Book orders, Domains and website content.'],
       [s.storage, 'Private file storage', 'Vercel Blob (cielafrica-photobooks): orders, print files, tasks and calendar.'],
       [s.payments, 'M-Pesa payments', 'Daraja keys in Vercel. Mode: ' + esc(s.mpesaEnv || 'sandbox') + '.'],
-      [s.email, 'Email', 'RESEND_API_KEY in Vercel: receipts, order updates and reminders to customers, alerts to you.'],
+      [s.email, 'Automatic emails', 'RESEND_API_KEY in Vercel: receipts, order updates and reminders to customers, alerts to you.'],
+      [!!(s.mail && s.mail.every(function (a) { return a.configured; })), 'Mailboxes in Ciel Admin', (s.mail || []).map(function (a) { return a.email + (a.configured ? ' ✓ connected' : ' · not connected'); }).join(' · ') + '. Add MAIL_IMAP_HOST, MAIL_SMTP_HOST, MAIL_HELLO_PASSWORD and MAIL_LORNA_PASSWORD in Vercel (Inbox → Email shows the full list).'],
       [s.publish, 'Website publishing', 'GITHUB_TOKEN in Vercel lets the Website editor publish to cielafrica.com. Create it on GitHub: Settings → Developer settings → Fine-grained tokens → Generate. Repository access: only Lornna08/cielafrica. Permissions: Contents → Read and write. Copy the token, add it in Vercel as GITHUB_TOKEN, then redeploy.'],
       [s.domainsDb, 'Orders database', 'Ciel Domains and shop orders are kept in the private Blob store (or Upstash Redis if you add it later).']
     ];
-    var b = body('<div class="card"><div class="card__h"><h2>This device</h2></div><ul class="list setup"><li><span class="st" id="sp">…</span><div><b>Phone notifications</b><p id="spt">New orders, WhatsApp orders, pages received and website messages, even when Ciel HQ is closed.</p></div><button class="b b--sm b--p" id="spb">Turn on</button></li>' +
-      '<li><span class="st' + (standalone() ? '' : ' no') + '">' + (standalone() ? '✓' : '') + '</span><div><b>Ciel HQ app</b><p>' + (standalone() ? 'Installed and running as an app.' : isIOS() ? 'On iPhone: open cielafrica.com/admin in Safari → Share → Add to Home Screen. Notifications on iPhone work only from the installed app.' : 'Install it on this phone or computer: it opens like an app and stays signed in.') + '</p></div>' + (standalone() ? '' : '<button class="b b--sm" id="spi">Install</button>') + '</li></ul></div>' +
+    var b = body('<div class="card"><div class="card__h"><h2>This device</h2></div><ul class="list setup"><li><span class="st" id="sp">…</span><div><b>Phone notifications</b><p id="spt">New orders, WhatsApp orders, pages received and website messages, even when Ciel Admin is closed.</p></div><button class="b b--sm b--p" id="spb">Turn on</button></li>' +
+      '<li><span class="st' + (standalone() ? '' : ' no') + '">' + (standalone() ? '✓' : '') + '</span><div><b>Ciel Admin app</b><p>' + (standalone() ? 'Installed and running as an app.' : isIOS() ? 'On iPhone: open cielafrica.com/admin in Safari → Share → Add to Home Screen. Notifications on iPhone work only from the installed app.' : 'Install it on this phone or computer: it opens like an app and stays signed in.') + '</p></div>' + (standalone() ? '' : '<button class="b b--sm" id="spi">Install</button>') + '</li></ul></div>' +
       '<div class="card"><div class="card__h"><h2>Setup checklist</h2></div><ul class="list setup">' + rows.map(function (r) { return '<li><span class="st' + (r[0] === 'opt' ? ' opt' : r[0] ? '' : ' no') + '">' + (r[0] === true ? '✓' : r[0] === 'opt' ? '–' : '') + '</span><div><b>' + r[1] + '</b><p>' + r[2] + '</p></div></li>'; }).join('') + '</ul></div><p class="faint" style="font-size:.82rem">Change any of these in Vercel → cielafrica → Settings → Environment Variables, then redeploy.</p>');
-    function upd() { pushState().then(function (st) { var on = st === 'on'; b.querySelector('#sp').className = 'st' + (on ? '' : ' no'); b.querySelector('#sp').textContent = on ? '✓' : ''; var bt = b.querySelector('#spb'); bt.textContent = on ? 'Turn off' : 'Turn on'; bt.className = 'b b--sm' + (on ? '' : ' b--p'); if (st === 'denied') b.querySelector('#spt').textContent = 'Blocked in this browser’s settings. Allow notifications for cielafrica.com, then try again.'; if (st === 'ios') b.querySelector('#spt').textContent = 'On iPhone, install Ciel HQ first (Share → Add to Home Screen), then turn notifications on from the app.'; }); }
+    function upd() { pushState().then(function (st) { var on = st === 'on'; b.querySelector('#sp').className = 'st' + (on ? '' : ' no'); b.querySelector('#sp').textContent = on ? '✓' : ''; var bt = b.querySelector('#spb'); bt.textContent = on ? 'Turn off' : 'Turn on'; bt.className = 'b b--sm' + (on ? '' : ' b--p'); if (st === 'denied') b.querySelector('#spt').textContent = 'Blocked in this browser’s settings. Allow notifications for cielafrica.com, then try again.'; if (st === 'ios') b.querySelector('#spt').textContent = 'On iPhone, install Ciel Admin first (Share → Add to Home Screen), then turn notifications on from the app.'; }); }
     upd();
     b.querySelector('#spb').onclick = function () { pushState().then(function (st) { return st === 'on' ? disablePush() : enablePush(); }).then(upd); };
     var si = b.querySelector('#spi'); if (si) si.onclick = install;
@@ -505,5 +513,6 @@
 
   window.HQ = { api: api, toast: toast, esc: esc, dt: dt, body: body, modal: modal };
   if (window.HQSite) HQSite.init(window.HQ);
+  if (window.HQMail) HQMail.init(window.HQ);
   start();
 })();

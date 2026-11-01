@@ -195,7 +195,7 @@
     f.innerHTML = '<section class="card"><div class="card__h"><h2>Published versions</h2></div><div id="hv"><p class="empty">Loading…</p></div></section>';
     H.api('/api/hq?route=site-versions').then(function (r) {
       var el = document.getElementById('hv');
-      if (!r.items.length) { el.innerHTML = '<p class="empty">Nothing published from Ciel HQ yet. Every publish is listed here and can be loaded back.</p>'; return; }
+      if (!r.items.length) { el.innerHTML = '<p class="empty">Nothing published from Ciel Admin yet. Every publish is listed here and can be loaded back.</p>'; return; }
       el.innerHTML = '<table class="tbl"><thead><tr><th>When</th><th>What changed</th><th></th></tr></thead><tbody>' + r.items.map(function (v) { return '<tr><td>' + H.dt(v.at) + '<small>' + esc(String(v.sha || '').slice(0, 7)) + '</small></td><td>' + esc(v.summary || '') + (v.note ? '<small>' + esc(v.note) + '</small>' : '') + '</td><td><button class="b b--sm" data-v="' + esc(v.id) + '">Load this version</button></td></tr>'; }).join('') + '</tbody></table>';
       el.querySelectorAll('[data-v]').forEach(function (bt) { bt.onclick = function () {
         if (!confirm('Load this version into the editor? Your current draft is replaced. Nothing changes on the live site until you publish.')) return;

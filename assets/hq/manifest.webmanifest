@@ -1,7 +1,7 @@
 {
-  "name": "Ciel HQ",
-  "short_name": "Ciel HQ",
-  "description": "Ciel Africa back office: orders, messages, calendar and tasks.",
+  "name": "Ciel Admin",
+  "short_name": "Ciel Admin",
+  "description": "Ciel Africa admin: orders, messages, calendar and tasks.",
   "id": "/admin",
   "start_url": "/admin#overview",
   "scope": "/admin",

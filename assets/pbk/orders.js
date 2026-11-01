@@ -38,7 +38,7 @@
     document.getElementById('lf').onsubmit = function (e) { e.preventDefault(); api('admin-login', { password: document.getElementById('pw').value }).then(list, function (er) { document.getElementById('lm').textContent = er.message; }); };
   }
   var all = [], filt = { q: '', s: '' };
-  function top(extra) { return '<div class="ao__top"><a href="/admin"><img src="/assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa"></a><h1>Photo Book orders</h1><a class="btn btn--ghost btn--sm" href="/admin">Ciel HQ</a>' + (extra || '') + '<button class="btn btn--ghost btn--sm" id="lo">Sign out</button></div>'; }
+  function top(extra) { return '<div class="ao__top"><a href="/admin"><img src="/assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa"></a><h1>Photo Book orders</h1><a class="btn btn--ghost btn--sm" href="/admin">Ciel Admin</a>' + (extra || '') + '<button class="btn btn--ghost btn--sm" id="lo">Sign out</button></div>'; }
   function admin(on) { try { if (on) localStorage.setItem('pbk_admin', '1'); else localStorage.removeItem('pbk_admin'); } catch (e) { } }
   function wireTop() { var lo = document.getElementById('lo'); if (lo) lo.onclick = function () { admin(false); api('admin-logout', {}).then(login); }; }
   function list() {
