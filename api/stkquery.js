@@ -94,6 +94,7 @@ module.exports = async function handler(req, res){
             await BS.putJSON(path, { id, kind: 'shop', ref: 'SH-' + id.slice(-8).toUpperCase(), status: 'paid', createdAt: at, history: [{ status: 'paid', at, note: 'Confirmed by M-Pesa' }],
               customer: { name: cut(body.customerName, 80), email: cut(body.customerEmail, 190), phone: cut(body.phone, 20) }, order: cut(body.order, 1500), totalText: cut(body.total, 40),
               total: Number(String(body.total || '').replace(/[^\d.]/g, '')) || null, note: 'Items and total as sent by the checkout page; the payment itself is confirmed by M-Pesa.' });
+            await require('../lib/hq/notify').event({ kind: 'order', title: 'New shop order · ' + cut(body.total, 40), body: (cut(body.customerName, 80) || 'A customer') + ': ' + cut(body.order, 100), url: '/admin#orders' });
           }
         }
       } catch (e) { console.error('stkquery record error', e && e.message); }

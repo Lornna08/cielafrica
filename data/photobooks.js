@@ -86,9 +86,10 @@
 
     /* Kenya fulfilment. needsAddress = collect a delivery address. price null = not set. */
     delivery: [
-      { id: 'collect', name: 'Collect from Ciel Africa (Nairobi)', price: 0, needsAddress: false, enabled: true },
-      { id: 'nairobi', name: 'Delivery within Nairobi', price: 350, needsAddress: true, enabled: true },
-      { id: 'kenya', name: 'Courier elsewhere in Kenya', price: 600, needsAddress: true, enabled: true }
+      { id: 'nairobi', name: 'Nairobi · parcel delivery', price: 200, needsAddress: true, enabled: true },
+      { id: 'kenya', name: 'Rest of Kenya · parcel delivery', price: 350, needsAddress: true, enabled: true },
+      { id: 'eastafrica', name: 'Other East African countries', price: 500, needsAddress: true, enabled: true },
+      { id: 'uber', name: 'Uber bike (Nairobi): pay the rider on arrival', price: 0, needsAddress: true, enabled: true, note: 'We’ll tell you the Uber cost before we dispatch.' }
     ],
     maxQuantity: 10,
 

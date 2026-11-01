@@ -296,10 +296,10 @@ body.pbk-editing .pk{background:#efeae2}
 .pe-addtext button{border:1px solid #e6dfd3;border-radius:12px;background:#fbf7f0;padding:.9rem;text-align:left;cursor:pointer;color:#1b1714}
 .pe-addtext button:hover{border-color:#ff5a1f}
 .pe-q input{width:100%;border:1px solid #e0d7c8;border-radius:999px;padding:.6rem 1rem;font:inherit;background:#fbf7f0;margin-bottom:.8rem}
-.pe-stk{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem}
+.pe-stk{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.4rem}
 .pe-stk button{aspect-ratio:1;border:1px solid #efe8dc;border-radius:12px;background:#fbf7f0;padding:.5rem;cursor:pointer;display:grid;place-items:center}
 .pe-stk button:hover{border-color:#ff5a1f;background:#fff}
-.pe-stk img{max-height:100%;object-fit:contain}
+.pe-stk img{max-height:100%;max-width:100%;object-fit:contain}
 .pe-mockp{display:none;width:150px;height:auto;margin:0 auto .8rem}
 @media(max-width:900px){.pe-mockp{display:block}}
 .pe-tabs{display:flex;gap:.3rem;margin-bottom:.8rem;overflow-x:auto;scrollbar-width:none}
@@ -435,7 +435,7 @@ body.pbk-editing .pk{background:#efeae2}
   .pe-mock{display:none!important}
   .pe-ctx button{padding:.45rem .5rem}
   .pe-photos{grid-template-columns:repeat(4,1fr)}
-  .pe-stk{grid-template-columns:repeat(5,1fr)}
+  .pe-stk{grid-template-columns:repeat(5,minmax(0,1fr))}
   .pe-layouts{grid-template-columns:repeat(4,1fr)}
   .pe-lay svg{width:44px;height:58px}.pe-lay span{font-size:.62rem;text-align:center}
   .pe-toast{bottom:auto;top:calc(var(--pe-top) + 10px)}

@@ -100,5 +100,6 @@
       ff.addEventListener('click',function(e){var b=e.target.closest('[data-c]');if(!b)return;state.cat=b.getAttribute('data-c');ff.querySelectorAll('.gfilter').forEach(function(x){x.classList.toggle('on',x===b);});render();});
       document.getElementById('psearch').addEventListener('input',function(e){state.q=e.target.value.toLowerCase().trim();render();});
       render();
-    })();</script></body>
+    })();</script><script src="/assets/js/wa-track.js?v=1" defer></script>
+</body>
 </html>

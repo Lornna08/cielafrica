@@ -35,7 +35,7 @@
   PBK.ICON = ICON;
   var ICON_EDIT = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>';
 
-  var V3 = '5';
+  var V3 = '6';
   function bookName(t, pi) { return t === 'blank' ? 'blank-' + (pi || 0) : t.kind === 'vector' ? t.cat + '-' + t.slug + '-' + (pi || 0) : 'travel-' + t.slug; }
   /** 3D book thumbnail (440×550) for a cover template. */
   function mockSrc(t, pi) { return '/assets/pbk/c/3/' + bookName(t, pi) + '.webp?v=' + V3; }
@@ -82,7 +82,7 @@
     var sn = seen();
     return '<nav class="pk-cats" aria-label="Photo book categories"><div class="pk-cats__in">' + C.CATS.map(function (c) {
       var t = catHero(c.id);
-      return '<button type="button" data-story="' + c.id + '" class="pk-cat' + (active === c.id ? ' is-on' : '') + (sn[c.id] ? ' is-seen' : '') + '" aria-label="' + esc(c.name) + ' covers"><span class="pk-cat__ring"><span class="pk-cat__img" style="--tint:' + TINT[c.id] + '"><img src="' + mockSrc(t, 0) + '" alt="" loading="lazy"' + IMGWH + '></span></span><span class="pk-cat__n">' + esc(c.name) + '</span></button>';
+      return '<a data-go href="' + BASE + '/' + c.id + '" class="pk-cat' + (active === c.id ? ' is-on' : '') + '" aria-label="' + esc(c.name) + ' covers"><span class="pk-cat__ring"><span class="pk-cat__img" style="--tint:' + TINT[c.id] + '"><img src="' + mockSrc(t, 0) + '" alt="" loading="lazy"' + IMGWH + '></span></span><span class="pk-cat__n">' + esc(c.name) + '</span></a>';
     }).join('') + '</div></nav>';
   }
   /* ---------------- stories: a category's covers, one after another ---------------- */
@@ -277,7 +277,7 @@
         (w.sub || !t || t.kind === 'vector' ? '<label class="pk-fld"><span>Subtitle</span><input id="pkSu" maxlength="30" value="' + esc(st.cu.sub != null ? st.cu.sub : w.sub) + '" autocomplete="off"></label>' : '');
       if (w.year != null) h += '<label class="pk-fld pk-fld--yr"><span>Year</span><input id="pkYr" maxlength="9" inputmode="numeric" value="' + esc(st.cu.year != null ? st.cu.year : w.year) + '" autocomplete="off"></label>';
       if (canT || w.year != null) h += '<label class="pk-check"><input type="checkbox" id="pkSh"' + ((st.cu.sh != null ? +st.cu.sh : w.sh) ? ' checked' : '') + '><span>Shadow behind the words</span></label>';
-      if (!t) h += '<div class="pk-fld"><span>Artwork</span><div class="pk-stks" id="pkStks"><button type="button" data-stk=""' + (!st.cu.stk ? ' class="is-on"' : '') + ' aria-label="No artwork"><i>None</i></button>' + Object.keys(C.PH_ART).map(function (k) { var v = 'ph:' + k; return '<button type="button" data-stk="' + v + '"' + (st.cu.stk === v ? ' class="is-on"' : '') + ' aria-label="' + k + '"><img src="/assets/pbk/art2/s/' + k + '.webp" alt="" loading="lazy"></button>'; }).join('') + C.ORDER.map(function (id) { return C.TPL[id]; }).filter(function (x) { return x.layered; }).map(function (x) { var k = 'tr:' + x.slug; return '<button type="button" data-stk="' + k + '"' + (st.cu.stk === k ? ' class="is-on"' : '') + ' aria-label="' + esc(x.name) + '"><img src="' + x.artThumb + '" alt="" loading="lazy"></button>'; }).join('') + '</div><small class="pk-opt__note">More artwork, emoji and words in the editor.</small></div>';
+      if (!t) h += '<div class="pk-fld"><span>Artwork</span><div class="pk-stks" id="pkStks"><button type="button" data-stk=""' + (!st.cu.stk ? ' class="is-on"' : '') + ' aria-label="No artwork"><i>None</i></button>' + C.ORDER.map(function (id) { return C.TPL[id]; }).filter(function (x) { return x.layered; }).map(function (x) { var k = 'tr:' + x.slug; return '<button type="button" data-stk="' + k + '"' + (st.cu.stk === k ? ' class="is-on"' : '') + ' aria-label="' + esc(x.name) + '"><img src="' + x.artThumb + '" alt="" loading="lazy"></button>'; }).join('') + '</div><small class="pk-opt__note">More artwork, emoji and words in the editor.</small></div>';
       if (t && t.kind === 'vector') h += '<div class="pk-fld"><span>Colours</span>' + sw('pal', t.palettes, st.c, true) + '</div>';
       else if (canC) {
         var base = t ? t.bg : C.BLANK[st.c] || C.BLANK[0];

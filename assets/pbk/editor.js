@@ -716,10 +716,10 @@
         if (S.cur < 0) { var t = C.TPL[S.p.tpl]; if (t && t.kind === 'raster') h += rasterNote(t); }
       }
     } else if (name === 'stickers') {
-      var tab = S.stab || 'stickers'; if (['stickers', 'emoji', 'words', 'mine'].indexOf(tab) < 0) tab = S.stab = 'stickers';
+      var tab = S.stab || 'classic'; if (['classic', 'stickers', 'emoji', 'words', 'mine'].indexOf(tab) < 0) tab = S.stab = 'classic';
       h = head(S.replaceArt ? 'Replace artwork' : 'Stickers', S.replaceArt ? 'Choose what goes in its place.' : 'Tap to add, then drag and resize.') +
         '<label class="pe-q"><input type="search" id="peSq" placeholder="Search: Paris, safari, beach, flowers…"></label>' +
-        '<div class="pe-tabs">' + [['stickers', 'Artwork'], ['emoji', 'Emoji'], ['words', 'Words'], ['mine', 'My uploads']].map(function (x) { return '<button data-stab="' + x[0] + '"' + (tab === x[0] ? ' class="is-on"' : '') + '>' + x[1] + '</button>'; }).join('') + '</div>' +
+        '<div class="pe-tabs">' + [['classic', 'Stickers'], ['stickers', 'Travel art'], ['emoji', 'Emoji'], ['words', 'Words'], ['mine', 'My uploads']].map(function (x) { return '<button data-stab="' + x[0] + '"' + (tab === x[0] ? ' class="is-on"' : '') + '>' + x[1] + '</button>'; }).join('') + '</div>' +
         '<div id="peStk">' + stickerGrid('', tab) + '</div>';
     } else if (name === 'colors') {
       var d = doc(), isCov = S.cur < 0, tt = isCov && C.TPL[S.p.tpl];
@@ -797,7 +797,7 @@
   var PH_NAMES = { rings: 'Wedding rings', puppy: 'Puppy', cat: 'Cat', tulips: 'Tulips', dog: 'Dog' };
   function travelGrid(q) {
     var tl = travelArt().filter(function (t) { return !q || (t.name + ' travel').toLowerCase().indexOf(q) >= 0; });
-    var pl = Object.keys(C.PH_ART).filter(function (k) { return !q || (PH_NAMES[k] + ' ' + k + ' love pets family').toLowerCase().indexOf(q) >= 0; });
+    var pl = [];
     var ph = pl.length ? '<h4 class="pe-gh">Love, family &amp; pets <small>' + pl.length + '</small></h4><div class="pe-stk">' + pl.map(function (k) { var d = C.PH_ART[k]; return '<button data-img="' + C.flSrc('ph:' + k) + '" data-ar="' + (d[0] / d[1]).toFixed(4) + '" title="' + esc(PH_NAMES[k]) + '"><img alt="' + esc(PH_NAMES[k]) + '" loading="lazy" src="/assets/pbk/art2/s/' + k + '.webp"></button>'; }).join('') + '</div>' : '';
     return ph + (tl.length ? '<h4 class="pe-gh">Places <small>' + tl.length + '</small></h4><div class="pe-stk">' + tl.map(function (t) { return '<button data-img="' + t.art + '" data-ar="' + (t.artBox[2] / t.artBox[3]).toFixed(4) + '" title="' + esc(t.name) + '"><img alt="' + esc(t.name) + '" loading="lazy" src="' + t.artThumb + '"></button>'; }).join('') + '</div>' : '');
   }
@@ -810,6 +810,10 @@
     q = (q || '').toLowerCase().trim();
     var h = '';
     if (q) tab = 'all';
+    if (tab === 'classic' || tab === 'all') {
+      var al = A.list().filter(function (a) { return !q || (a.n + ' ' + a.k).toLowerCase().indexOf(q) >= 0; });
+      if (al.length) h += '<div class="pe-stk">' + al.map(function (a) { return '<button data-art="' + a.id + '" title="' + esc(a.n) + '"><img alt="' + esc(a.n) + '" loading="lazy" src="' + R.artSrc(a.id) + '"></button>'; }).join('') + '</div>';
+    }
     if (tab === 'stickers' || tab === 'all') h += travelGrid(q);
     if (tab === 'emoji' || tab === 'all') {
       var E = EMO(); Object.keys(E).forEach(function (g) {

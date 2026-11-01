@@ -16,7 +16,7 @@ const XL = ['kenya-nairobi-0', 'kenya-mombasa-0', 'kenya-serengeti-0', 'kenya-ke
     const C = PBKCat, J = [];
     C.ORDER.forEach(id => { const t = C.TPL[id]; if (t.kind === 'vector') t.palettes.forEach((_, i) => J.push([id, i, t.cat + '-' + t.slug + '-' + i])); else J.push([id, 0, 'travel-' + t.slug]); });
     C.BLANK.forEach((_, i) => J.push(['blank', i, 'blank-' + i]));
-    return J.filter(j => !filter || j[2].indexOf(filter) >= 0);
+    return J.filter(j => !filter || new RegExp(filter).test(j[2]));
   }, filter);
   console.log(jobs.length, 'books');
   for (let k = 0; k < jobs.length; k += 8) {

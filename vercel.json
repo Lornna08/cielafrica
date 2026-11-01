@@ -275,6 +275,28 @@
           "value": "no-cache, must-revalidate"
         }
       ]
+    },
+    {
+      "source": "/hq-sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        },
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/admin"
+        }
+      ]
+    },
+    {
+      "source": "/assets/hq/manifest.webmanifest",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json"
+        }
+      ]
     }
   ],
   "rewrites": [

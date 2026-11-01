@@ -27,31 +27,31 @@
     ['kenya', 'serengeti', 'Serengeti', 'SERENGETI', 'SAFARI', 'serengeti', [['#fbe3b5', '#3b2314', '#e0601b'], ['#3b2314', '#ffb23d', '#fbe3b5'], ['#f2c7a5', '#8a2f12', '#3b2314']]],
     ['kenya', 'kenya', 'Kenya', 'KENYA', 'KARIBU', 'shield', [['#f3eee2', '#141414', '#c8102e'], ['#0f5c3a', '#ffffff', '#f2c14e'], ['#c8102e', '#ffffff', '#141414']]],
     ['kenya', 'kenya-wild', 'Kenya Wild', 'KENYA', 'WILD', 'lion', [['#f6d58e', '#7a3a10', '#ffffff'], ['#2e3b2a', '#f6c06a', '#ffffff'], ['#fff3dc', '#b5541a', '#2e3b2a']]],
-    ['couple', 'our-story', 'Our Story', 'OUR STORY', 'TOGETHER', 'heart-balloons', [['#fbd3dc', '#c8102e', '#ffffff'], ['#c8102e', '#fbd3dc', '#ffffff'], ['#f6efe6', '#a3122a', '#e48aa0']]],
-    ['couple', 'amour', 'Amour', 'AMOUR', 'FOREVER', 'heart', [['#f7e9e1', '#c8102e', '#e48aa0'], ['#a8d8f0', '#c8102e', '#ffffff'], ['#1d1d1f', '#ff5a6a', '#ffffff']]],
-    ['couple', 'you-and-me', 'You & Me', 'YOU & ME', 'SWEET LOVE', 'cherries', [['#ffffff', '#c8102e', '#4f7a2a'], ['#fde2e4', '#c8102e', '#4f7a2a'], ['#c8e6c9', '#c8102e', '#ffffff']]],
-    ['event', 'cheers', 'Cheers', 'CHEERS', 'CELEBRATE', 'champagne', [['#12324a', '#f6d27a', '#ffffff'], ['#e8577e', '#fff3c4', '#ffffff'], ['#2b2b2b', '#f6d27a', '#ff8aa8']]],
-    ['event', 'wedding', 'Wedding', 'WEDDING', 'THE BIG DAY', 'ph:rings', [['#f6f1e7', '#2b2b2b', '#b9831e'], ['#dfe9e1', '#2f4a3a', '#b9831e'], ['#1f2a44', '#f3d27a', '#ffffff']]],
-    ['event', 'party', 'Party', 'PARTY', 'ALL NIGHT', 'disco', [['#ff4f9a', '#ffffff', '#ffe27a'], ['#1b1b2f', '#ff4f9a', '#5bd1e8'], ['#7c3aed', '#ffe27a', '#ffffff']]],
-    ['event', 'birthday', 'Birthday', 'BIRTHDAY', 'HOORAY', 'balloons', [['#fff1d6', '#e2386a', '#1f8fd1'], ['#cfe8ff', '#1f3c74', '#e2386a'], ['#e2386a', '#ffffff', '#ffd76a']]],
-    ['friends', 'besties', 'Besties', 'BESTIES', 'FOREVER', 'sunglasses', [['#ffd25e', '#ff3e8a', '#ffffff'], ['#9fe0f2', '#ff3e8a', '#0c3f66'], ['#ff4f9a', '#ffffff', '#ffe27a']]],
-    ['friends', 'friends', 'Friends', 'FRIENDS', 'SUMMER', 'icecreams', [['#fff1d6', '#ff6f91', '#2fb39a'], ['#ffb3c7', '#ffffff', '#c8102e'], ['#2fb39a', '#fff1d6', '#ffb3c7']]],
-    ['friends', 'girls-trip', 'Girls Trip', 'GIRLS TRIP', 'CHEERS', 'cocktails', [['#2d2a5a', '#ff9ab8', '#5fd0c5'], ['#ffe3ec', '#e2386a', '#2fb39a'], ['#1d7fae', '#ffffff', '#ffd25e']]],
-    ['baby', 'hello-baby', 'Hello Baby', 'HELLO BABY', 'LITTLE ONE', 'teddy', [['#dcefff', '#2f6fa8', '#94602f'], ['#ffe4ec', '#d65a84', '#94602f'], ['#f4ecdf', '#94602f', '#5aaee0']]],
-    ['baby', 'first-year', 'First Year', 'FIRST YEAR', 'OUR BABY', 'onesie', [['#fff6ea', '#f06a91', '#7a5a4a'], ['#e3f1e8', '#3f8a6a', '#f06a91'], ['#cfe8ff', '#2f6fa8', '#f06a91']]],
-    ['baby', 'little-one', 'Little Walks', 'LITTLE ONE', 'NEW ADVENTURES', 'stroller', [['#fff1d6', '#2f80ed', '#e2386a'], ['#ffe4ec', '#3d4a56', '#5fb3dc'], ['#e3f1e8', '#2f6e5a', '#5fb3dc']]],
-    ['pets', 'good-boy', 'Good Boy', 'GOOD BOY', 'DOG DAYS', 'ph:puppy', [['#86d6e8', '#ffffff', '#c8661f'], ['#fff1d6', '#c8661f', '#2f6e5a'], ['#ffd25e', '#3d2a1e', '#ffffff']]],
-    ['pets', 'meow', 'Meow', 'MEOW', 'CAT LIFE', 'ph:cat', [['#f6d34a', '#2d2d33', '#e2386a'], ['#ffb3c7', '#2d2d33', '#ffffff'], ['#e6e1d8', '#2d2d33', '#e2386a']]],
-    ['pets', 'paws', 'Paws', 'PAWS', 'BEST FRIEND', 'paw', [['#fff1d6', '#c8661f', '#3d2a1e'], ['#c9e7d6', '#3d2a1e', '#ffffff'], ['#f2a5b5', '#3d2a1e', '#ffffff']]],
-    ['family', 'home', 'Home', 'FAMILY', 'HOME SWEET HOME', 'house', [['#f8e8c8', '#c4512b', '#2f6e5a'], ['#9fd6ef', '#ffffff', '#c4512b'], ['#2f6e5a', '#f8e8c8', '#f3c34c']]],
-    ['family', 'roots', 'Roots', 'OUR FAMILY', 'ROOTS & LOVE', 'tree', [['#f4efe4', '#3f7a22', '#e2386a'], ['#fde2e4', '#7a4a26', '#3f7a22'], ['#3f7a22', '#ffffff', '#ffd25e']]],
-    ['year', '365-days', '365 Days', '365 DAYS', 'IN PICTURES', 'calendar', [['#fff1d6', '#e5383b', '#2f80ed'], ['#e5383b', '#ffffff', '#ffe27a'], ['#cfe8ff', '#1f3c74', '#e5383b']], '2026'],
-    ['year', 'my-year', 'My Year', 'MY YEAR', 'HIGHLIGHTS', 'firework', [['#141a3a', '#ffd25e', '#ff5a8a'], ['#2d1f4a', '#5bd1e8', '#ffffff'], ['#0f3d3e', '#ffd25e', '#ffffff']], '2026'],
-    ['year', 'good-days', 'Good Days', 'THIS YEAR', 'GOOD DAYS', 'sun', [['#86d6e8', '#ffffff', '#ff7a2e'], ['#fff1d6', '#ff7a2e', '#2f80ed'], ['#ff7a2e', '#fff1d6', '#ffffff']], '2026'],
-    ['someone', 'for-mum', 'For Mum', 'FOR MUM', 'WITH LOVE', 'ph:tulips', [['#ffe3ec', '#d23a6a', '#3f8a3a'], ['#fff6d6', '#9d47c2', '#ff5a7a'], ['#2f4a3a', '#ffd8e4', '#ffb21e']]],
-    ['someone', 'for-you', 'For You', 'FOR YOU', 'A LITTLE GIFT', 'gift', [['#ffe27a', '#1d63c4', '#e5383b'], ['#e8f1ff', '#2f80ed', '#f0a91c'], ['#e5383b', '#ffffff', '#ffd25e']]],
-    ['someone', 'ciel-test', 'Ciel Test', 'CIEL', 'TEST BOOK', 'gift', [['#fff1d6', '#ff5a1f', '#1b1714'], ['#1b1714', '#ff5a1f', '#ffffff'], ['#ff5a1f', '#ffffff', '#1b1714']], null, true],
-    ['someone', 'for-dad', 'For Dad', 'FOR DAD', 'MY HERO', 'tie', [['#dcefff', '#1f3c74', '#e5383b'], ['#f4ecdf', '#1f3c74', '#b9831e'], ['#1f3c74', '#ffffff', '#9fd6ef']]]
+    ['couple', 'our-story', 'Our Story', 'OUR STORY', 'TOGETHER', null, [['#fbd3dc', '#c8102e', '#ffffff'], ['#c8102e', '#fbd3dc', '#ffffff'], ['#f6efe6', '#a3122a', '#e48aa0']]],
+    ['couple', 'amour', 'Amour', 'AMOUR', 'FOREVER', null, [['#f7e9e1', '#c8102e', '#e48aa0'], ['#a8d8f0', '#c8102e', '#ffffff'], ['#1d1d1f', '#ff5a6a', '#ffffff']]],
+    ['couple', 'you-and-me', 'You & Me', 'YOU & ME', 'SWEET LOVE', null, [['#ffffff', '#c8102e', '#4f7a2a'], ['#fde2e4', '#c8102e', '#4f7a2a'], ['#c8e6c9', '#c8102e', '#ffffff']]],
+    ['event', 'cheers', 'Cheers', 'CHEERS', 'CELEBRATE', null, [['#12324a', '#f6d27a', '#ffffff'], ['#e8577e', '#fff3c4', '#ffffff'], ['#2b2b2b', '#f6d27a', '#ff8aa8']]],
+    ['event', 'wedding', 'Wedding', 'WEDDING', 'THE BIG DAY', null, [['#f6f1e7', '#2b2b2b', '#b9831e'], ['#dfe9e1', '#2f4a3a', '#b9831e'], ['#1f2a44', '#f3d27a', '#ffffff']]],
+    ['event', 'party', 'Party', 'PARTY', 'ALL NIGHT', null, [['#ff4f9a', '#ffffff', '#ffe27a'], ['#1b1b2f', '#ff4f9a', '#5bd1e8'], ['#7c3aed', '#ffe27a', '#ffffff']]],
+    ['event', 'birthday', 'Birthday', 'BIRTHDAY', 'HOORAY', null, [['#fff1d6', '#e2386a', '#1f8fd1'], ['#cfe8ff', '#1f3c74', '#e2386a'], ['#e2386a', '#ffffff', '#ffd76a']]],
+    ['friends', 'besties', 'Besties', 'BESTIES', 'FOREVER', null, [['#ffd25e', '#ff3e8a', '#ffffff'], ['#9fe0f2', '#ff3e8a', '#0c3f66'], ['#ff4f9a', '#ffffff', '#ffe27a']]],
+    ['friends', 'friends', 'Friends', 'FRIENDS', 'SUMMER', null, [['#fff1d6', '#ff6f91', '#2fb39a'], ['#ffb3c7', '#ffffff', '#c8102e'], ['#2fb39a', '#fff1d6', '#ffb3c7']]],
+    ['friends', 'girls-trip', 'Girls Trip', 'GIRLS TRIP', 'CHEERS', null, [['#2d2a5a', '#ff9ab8', '#5fd0c5'], ['#ffe3ec', '#e2386a', '#2fb39a'], ['#1d7fae', '#ffffff', '#ffd25e']]],
+    ['baby', 'hello-baby', 'Hello Baby', 'HELLO BABY', 'LITTLE ONE', null, [['#dcefff', '#2f6fa8', '#94602f'], ['#ffe4ec', '#d65a84', '#94602f'], ['#f4ecdf', '#94602f', '#5aaee0']]],
+    ['baby', 'first-year', 'First Year', 'FIRST YEAR', 'OUR BABY', null, [['#fff6ea', '#f06a91', '#7a5a4a'], ['#e3f1e8', '#3f8a6a', '#f06a91'], ['#cfe8ff', '#2f6fa8', '#f06a91']]],
+    ['baby', 'little-one', 'Little Walks', 'LITTLE ONE', 'NEW ADVENTURES', null, [['#fff1d6', '#2f80ed', '#e2386a'], ['#ffe4ec', '#3d4a56', '#5fb3dc'], ['#e3f1e8', '#2f6e5a', '#5fb3dc']]],
+    ['pets', 'good-boy', 'Good Boy', 'GOOD BOY', 'DOG DAYS', null, [['#86d6e8', '#ffffff', '#c8661f'], ['#fff1d6', '#c8661f', '#2f6e5a'], ['#ffd25e', '#3d2a1e', '#ffffff']]],
+    ['pets', 'meow', 'Meow', 'MEOW', 'CAT LIFE', null, [['#f6d34a', '#2d2d33', '#e2386a'], ['#ffb3c7', '#2d2d33', '#ffffff'], ['#e6e1d8', '#2d2d33', '#e2386a']]],
+    ['pets', 'paws', 'Paws', 'PAWS', 'BEST FRIEND', null, [['#fff1d6', '#c8661f', '#3d2a1e'], ['#c9e7d6', '#3d2a1e', '#ffffff'], ['#f2a5b5', '#3d2a1e', '#ffffff']]],
+    ['family', 'home', 'Home', 'FAMILY', 'HOME SWEET HOME', null, [['#f8e8c8', '#c4512b', '#2f6e5a'], ['#9fd6ef', '#ffffff', '#c4512b'], ['#2f6e5a', '#f8e8c8', '#f3c34c']]],
+    ['family', 'roots', 'Roots', 'OUR FAMILY', 'ROOTS & LOVE', null, [['#f4efe4', '#3f7a22', '#e2386a'], ['#fde2e4', '#7a4a26', '#3f7a22'], ['#3f7a22', '#ffffff', '#ffd25e']]],
+    ['year', '365-days', '365 Days', '365 DAYS', 'IN PICTURES', null, [['#fff1d6', '#e5383b', '#2f80ed'], ['#e5383b', '#ffffff', '#ffe27a'], ['#cfe8ff', '#1f3c74', '#e5383b']], '2026'],
+    ['year', 'my-year', 'My Year', 'MY YEAR', 'HIGHLIGHTS', null, [['#141a3a', '#ffd25e', '#ff5a8a'], ['#2d1f4a', '#5bd1e8', '#ffffff'], ['#0f3d3e', '#ffd25e', '#ffffff']], '2026'],
+    ['year', 'good-days', 'Good Days', 'THIS YEAR', 'GOOD DAYS', null, [['#86d6e8', '#ffffff', '#ff7a2e'], ['#fff1d6', '#ff7a2e', '#2f80ed'], ['#ff7a2e', '#fff1d6', '#ffffff']], '2026'],
+    ['someone', 'for-mum', 'For Mum', 'FOR MUM', 'WITH LOVE', null, [['#ffe3ec', '#d23a6a', '#3f8a3a'], ['#fff6d6', '#9d47c2', '#ff5a7a'], ['#2f4a3a', '#ffd8e4', '#ffb21e']]],
+    ['someone', 'for-you', 'For You', 'FOR YOU', 'A LITTLE GIFT', null, [['#ffe27a', '#1d63c4', '#e5383b'], ['#e8f1ff', '#2f80ed', '#f0a91c'], ['#e5383b', '#ffffff', '#ffd25e']]],
+    ['someone', 'ciel-test', 'Ciel Test', 'CIEL', 'TEST BOOK', null, [['#fff1d6', '#ff5a1f', '#1b1714'], ['#1b1714', '#ff5a1f', '#ffffff'], ['#ff5a1f', '#ffffff', '#1b1714']], null, true],
+    ['someone', 'for-dad', 'For Dad', 'FOR DAD', 'MY HERO', null, [['#dcefff', '#1f3c74', '#e5383b'], ['#f4ecdf', '#1f3c74', '#b9831e'], ['#1f3c74', '#ffffff', '#9fd6ef']]]
   ];
 
   var BLANK = ['#f4efe4', '#fbd3dc', '#86d6e8', '#ffd25e', '#c8e6c9', '#e5383b', '#1f3c74', '#2d2d33', '#c4512b', '#7c3aed'];
@@ -69,13 +69,43 @@
     var w = b[0] * s, h = b[1] * s;
     return { x: 650 - w / 2, y: 452 + (maxH - h) * 0.6, w: w, h: h };
   }
+  /* Geometric digital art for the non-travel covers: bold colour blocks and circles in the
+     cover's palette (each one is a movable shape in the editor). Five compositions, picked per cover. */
+  function mix(a, b, k) {
+    var A = parseInt(a.slice(1), 16), B = parseInt(b.slice(1), 16), o = '#';
+    [16, 8, 0].forEach(function (sh) { var x = Math.round(((A >> sh) & 255) * (1 - k) + ((B >> sh) & 255) * k); o += (x < 16 ? '0' : '') + x.toString(16); });
+    return o;
+  }
+  function blocks(t, p) {
+    var c1 = p[1], c2 = p[2], c3 = mix(p[0], p[1], 0.32), c4 = mix(p[0], p[2], 0.5), n = 0, L = [];
+    function box(x, y, w, h, c, r) { L.push({ id: 'g' + (n++), t: 'shape', shape: 'rect', x: x, y: y, w: w, h: h, r: r == null ? 38 : r, color: c }); }
+    function dot(x, y, d, c) { L.push({ id: 'g' + (n++), t: 'shape', shape: 'circle', x: x, y: y, w: d, h: d, color: c }); }
+    var h = 0; for (var i = 0; i < t.slug.length; i++) h = (h * 31 + t.slug.charCodeAt(i)) >>> 0;
+    switch (h % 5) {
+      case 0: /* four tiles, one of them round */
+        box(140, 470, 495, 470, c1); dot(665, 470, 495, c2); box(140, 970, 495, 470, c3); box(665, 970, 495, 470, c4); dot(225, 1055, 300, c2); break;
+      case 1: /* sun over a block */
+        box(140, 1040, 1020, 410, c1, 44); dot(330, 520, 640, c2); box(140, 1040, 300, 410, c3, 44); dot(930, 1120, 160, c4); break;
+      case 2: /* staggered bars */
+        box(140, 480, 860, 200, c1, 100); box(300, 720, 860, 200, c2, 100); box(140, 960, 700, 200, c3, 100); box(460, 1200, 700, 230, c4, 115); dot(880, 960, 200, c2); break;
+      case 3: /* grid of dots with one square */
+        [[0, c1], [1, c2], [2, c3], [3, c4], [4, c1], [5, c2], [6, c3], [7, c1], [8, c2]].forEach(function (d) {
+          var x = 140 + (d[0] % 3) * 360, y = 480 + Math.floor(d[0] / 3) * 330;
+          if (d[0] === 4) box(x + 10, y + 5, 280, 280, d[1], 46); else dot(x + 10, y + 5, 280, d[1]);
+        }); break;
+      default: /* rising steps and a ball */
+        box(140, 1150, 330, 300, c3, 30); box(485, 950, 330, 500, c1, 30); box(830, 750, 330, 700, c2, 30); dot(150, 820, 300, c4); dot(520, 620, 260, c2);
+    }
+    return L;
+  }
   function vectorDoc(t, pi) {
     var p = t.palettes[pi || 0] || t.palettes[0], ab = artBox(t.art);
     var els = [
       { id: 'title', t: 'text', role: 'title', text: t.title, x: 140, y: 86, w: 1020, h: 190, cap: 178, align: 'fill', font: 'spartan', color: p[1], shadow: 0 },
       { id: 'sub', t: 'text', role: 'sub', text: t.sub, x: 140, y: 300, w: 1020, h: 76, cap: 70, align: 'right', font: 'spartan', color: p[2], shadow: 0 },
-      isFl(t.art) ? { id: 'art', t: 'img', src: flSrc(t.art), x: ab.x, y: ab.y, w: ab.w, h: ab.h } : { id: 'art', t: 'art', art: t.art, x: ab.x, y: ab.y, w: ab.w, h: ab.h }
     ];
+    if (!t.art) els = els.concat(blocks(t, p));
+    else els.push(isFl(t.art) ? { id: 'art', t: 'img', src: flSrc(t.art), x: ab.x, y: ab.y, w: ab.w, h: ab.h } : { id: 'art', t: 'art', art: t.art, x: ab.x, y: ab.y, w: ab.w, h: ab.h });
     if (t.yr) els.splice(2, 0, { id: 'year', t: 'text', role: 'year', text: t.yr, x: 140, y: 300, w: 300, h: 76, cap: 70, align: 'left', font: 'spartan', color: p[1], shadow: 0 });
     return { kind: 'cover', bg: p[0], brand: p[3] || p[1], els: els };
   }

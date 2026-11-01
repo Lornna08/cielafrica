@@ -75,6 +75,20 @@ module.exports = async function handler(req, res){
       <table style="border-collapse:collapse;width:100%;font-size:14px">${rows}</table>
     </div>`;
 
+  // keep every website message in Ciel HQ's inbox (private Blob store) and ping the owner's devices
+  if (!isWanja) {
+    try {
+      const BS = require('../lib/photobooks/blobstore');
+      if (BS.on()) {
+        const at = Date.now(), id = at.toString(36) + require('crypto').randomBytes(4).toString('hex');
+        const fields = Object.keys(data).filter(k => !k.startsWith('## ') && String(data[k]).trim() !== '').slice(0, 40).map(k => [String(k).slice(0, 60), String(data[k]).slice(0, 3000)]);
+        await BS.putJSON('hq/inbox/' + id + '.json', { id, kind: isBrief || data.Details ? 'brief' : 'message', status: 'new', createdAt: at, subject, ref,
+          customer: { name: String(name).slice(0, 80), email: String(email).slice(0, 190), phone: String(data.Phone || data.phone || data.WhatsApp || '').slice(0, 30) }, fields });
+        await require('../lib/hq/notify').event({ kind: 'message', title: 'New message from ' + (name || email), body: subject.slice(0, 140), url: '/admin#inbox/' + id });
+      }
+    } catch (e) { console.error('contact inbox error', e && e.message); }
+  }
+
   // If email isn't configured yet, don't fail the user — accept and log.
   if (!process.env.RESEND_API_KEY && isWanja) {
     // Never tell a visitor their enquiry reached Wanja when it can't be delivered.
