@@ -3,7 +3,7 @@ from mathutils import Vector
 args = dict(a.split('=') for a in sys.argv[sys.argv.index('--')+1:]) if '--' in sys.argv else {}
 OUT = args.get('out', '.'); RES = int(args.get('res', 560)); ANG = float(args.get('ang', 34)); PASSES = args.get('passes', 'mask,uv,diff,gloss').split(',')
 POSE = args.get('pose', 'stand')
-W, H, T = 0.21, 0.28, 0.034
+W, H, T = 0.21, 0.28, float(args.get('t', 0.034))
 bpy.ops.wm.read_factory_settings(use_empty=True)
 sc = bpy.context.scene
 # ---- geometry: extrude cross-section along z

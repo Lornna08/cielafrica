@@ -282,8 +282,22 @@
      1) R,G = u (16 bit), B = v high byte; 2) R = v low byte, G = surface (60 front, 120 spine, 180 edge),
      B = diffuse light ×1.4; 3) R = gloss, G = book alpha, B = shadow alpha. */
   var maps3 = {};
+  /* Two book models: slim (up to 48 pages) and thick (more pages). sr = spine width / height. */
+  var BOOKS = {
+    thin: { sr: 0.017 / 0.28, s: '/assets/pbk/book3d-thin-440.png?v=1', l: '/assets/pbk/book3d-thin-720.png?v=1' },
+    thick: { sr: 0.034 / 0.28, s: '/assets/pbk/book3d-440.png?v=1', l: '/assets/pbk/book3d-720.png?v=1' }
+  };
+  function bookKind(pages) { return (pages || 24) > 48 ? 'thick' : 'thin'; }
+  function bookMap(kind, large) { var b = BOOKS[kind] || BOOKS.thin; return book3dMap(large ? b.l : b.s).then(function (m) { m.sr = b.sr; return m; }); }
+  /** Cover document → standing 3D book canvas. o: { pages, large, px, photo } */
+  function renderBook(doc, so, o) {
+    o = o || {}; var px = o.px || 900;
+    return Promise.all([bookMap(bookKind(o.pages), o.large), toCanvas(doc, px, { photo: o.photo, empty: o.empty }), so.artImg ? img(so.artImg) : so.art ? img(artSrc(so.art)) : null]).then(function (r) {
+      return book3d(r[1], spine(so, r[0].sr), r[0], { fw: px });
+    });
+  }
   function book3dMap(src) {
-    src = src || '/assets/pbk/book3d-440.png?v=1';
+    src = src || BOOKS.thin.s;
     if (maps3[src]) return maps3[src];
     maps3[src] = img(src).then(function (im) {
       if (!im) throw new Error('3D map missing');
@@ -313,20 +327,20 @@
     for (var k = 0; k < 3; k++) o[k] = (d[i00 + k] * (1 - ax) + d[i10 + k] * ax) * (1 - ay) + (d[i01 + k] * (1 - ax) + d[i11 + k] * ax) * ay;
   }
   /** The spine: background, the title running down, a small artwork and CIEL AFRICA. */
-  function spine(o) {
-    var w = 160, h = 1320, c = document.createElement('canvas'); c.width = w; c.height = h;
+  function spine(o, sr) {
+    var h = 1320, w = Math.max(40, Math.round(h * (sr || 0.1214))), k = w / 160, c = document.createElement('canvas'); c.width = w; c.height = h;
     var x = c.getContext('2d');
     x.fillStyle = o.bg || '#ffffff'; x.fillRect(0, 0, w, h);
     x.save(); x.translate(w, 0); x.rotate(Math.PI / 2); /* text runs top to bottom */
     var title = String(o.title || '').toUpperCase().slice(0, 28);
     if (title) {
-      var fs = 74; x.font = '800 ' + fs + 'px ' + FONTS.spartan.css;
+      var fs = 74 * k; x.font = '800 ' + fs + 'px ' + FONTS.spartan.css;
       var tw = x.measureText(title).width, maxW = h * 0.56;
       if (tw > maxW) { fs = fs * maxW / tw; x.font = '800 ' + fs + 'px ' + FONTS.spartan.css; }
       x.fillStyle = o.tc || '#111111'; x.textBaseline = 'middle';
       x.fillText(title, h * 0.06, w / 2 + fs * 0.04);
     }
-    var bs = 27; x.font = '500 ' + bs + 'px ' + FONTS.sans.css.replace('600', '500');
+    var bs = Math.max(12, 27 * k); x.font = '500 ' + bs + 'px ' + FONTS.sans.css.replace('600', '500');
     x.fillStyle = o.bc || o.tc || '#111111';
     var ls = bs * 0.24, bw = tracked(x, BRAND.text, ls);
     drawTracked(x, BRAND.text, h * 0.94 - bw, w / 2 + bs * 0.36, ls);
@@ -361,6 +375,6 @@
     return c;
   }
 
-  var API = { book3dMap: book3dMap, book3d: book3d, spine: spine, GEO: GEO, mockMap: mockMap, mock: mock, W: W, H: H, HINGE: HINGE, BRAND: BRAND, FONTS: FONTS, loadFonts: loadFonts, img: img, ready: ready, artSrc: artSrc, draw: draw, load: load, toCanvas: toCanvas, layoutText: layoutText, mockup: mockup, drawBrand: drawBrand, rr: rr };
+  var API = { BOOKS: BOOKS, bookKind: bookKind, bookMap: bookMap, renderBook: renderBook, book3dMap: book3dMap, book3d: book3d, spine: spine, GEO: GEO, mockMap: mockMap, mock: mock, W: W, H: H, HINGE: HINGE, BRAND: BRAND, FONTS: FONTS, loadFonts: loadFonts, img: img, ready: ready, artSrc: artSrc, draw: draw, load: load, toCanvas: toCanvas, layoutText: layoutText, mockup: mockup, drawBrand: drawBrand, rr: rr };
   if (typeof module === 'object' && module.exports) module.exports = API; else root.PBKR = API;
 })(typeof self !== 'undefined' ? self : this);

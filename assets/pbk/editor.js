@@ -61,9 +61,9 @@
     var L = LAYOUTS[layout] || LAYOUTS.one;
     return { kind: 'page', bg: '#ffffff', layout: layout, els: L.f.map(function (f, i) { return { id: 'ph' + (i + 1), t: 'photo', x: f[0], y: f[1], w: f[2], h: f[3], photo: null, crop: { z: 1, cx: 0.5, cy: 0.5 }, border: L.border || 0 }; }) };
   }
-  function newProject(tid, pal, pages) {
+  function newProject(tid, pal, pages, cu) {
     var t = tid === 'blank' ? null : C.TPL[tid];
-    var cover = C.docFor(tid, pal) || C.blankDoc(C.BLANK[0]);
+    var cover = C.customDoc(tid, pal, cu) || C.blankDoc(C.BLANK[0]);
     var n = Math.max(BOOK.pages.min, Math.min(BOOK.pages.max, pages || BOOK.pages.default));
     if (n % 2) n++;
     var list = []; for (var i = 0; i < n; i++) list.push(pageDoc('one'));
@@ -118,7 +118,8 @@
     var ready = pid ? ST.project(pid).then(function (p) { if (!p || p.app !== 'pbk') throw new Error('missing'); return p; }) :
       Promise.resolve().then(function () {
         var t = q.get('t') || 'blank'; if (t !== 'blank' && !C.TPL[t]) t = 'blank';
-        var p = newProject(t, +q.get('c') || 0, +q.get('n') || 0);
+        var cu = {}; ['title', 'sub', 'bg', 'tc', 'sc'].forEach(function (k) { var v = q.get(k); if (v) cu[k] = k === 'bg' || k === 'tc' || k === 'sc' ? (/^#[0-9a-f]{6}$/i.test(v) ? v : null) : v.slice(0, 40); });
+        var p = newProject(t, +q.get('c') || 0, +q.get('n') || 0, cu);
         return ST.saveProject(p).then(function () { history.replaceState({}, '', BASE + '/design?p=' + p.id); return p; });
       });
     ready.then(function (p) {
@@ -222,11 +223,8 @@
   }
   var mockT;
   /** The cover as a standing 3D book (canvas). */
-  function book3d(cover, px) {
-    var so = C.spineFor(cover, S.p.tpl, S.p.pal);
-    return Promise.all([R.book3dMap(), R.toCanvas(cover, px || 900, { photo: photoUrl }), so.artImg ? R.img(so.artImg) : so.art ? R.img(R.artSrc(so.art)) : null]).then(function (r) {
-      return R.book3d(r[1], R.spine(so), r[0]);
-    });
+  function book3d(cover, px, large) {
+    return R.renderBook(cover, C.spineFor(cover, S.p.tpl, S.p.pal), { pages: S.p.pages.length, photo: photoUrl, px: px || 900, large: large });
   }
   function mockSoon() {
     clearTimeout(mockT);
@@ -576,8 +574,9 @@
     } else if (name === 'colors') {
       var d = doc(), isCov = S.cur < 0, tt = isCov && C.TPL[S.p.tpl];
       h = head(isCov ? 'Cover colours' : 'Page colour');
-      if (isCov && tt && tt.kind === 'raster' && !d.edited) h += '<p class="pe-note">This cover’s colours are part of its artwork. Edit the title on the Cover tab to change the words and their colour.</p>';
-      else h += '<div class="pe-sub"><h4>Background</h4>' + swatches('bg', d.bg) + '</div>';
+      if (isCov && tt && tt.kind === 'raster' && !tt.layered) h += '<p class="pe-note">This cover’s colours are part of its artwork. ' + (tt.editable ? 'You can change its title and the title colour.' : '') + '</p>';
+      else h += '<div class="pe-sub"><h4>' + (isCov ? 'Cover colour' : 'Background') + '</h4>' + swatches('bg', d.img && tt ? tt.bg : d.bg, isCov ? C.COVER_COLORS : null) + '</div>';
+      if (isCov && tt && tt.kind === 'raster' && tt.editable && !d.edited) h += '<div class="pe-sub"><h4>Title</h4>' + swatches('title', tt.tc, C.TEXT_COLORS) + '</div>';
       if (isCov) {
         var tEl = d.els.filter(function (x) { return x.role === 'title'; })[0], sEl = d.els.filter(function (x) { return x.role === 'sub'; })[0];
         if (tEl) h += '<div class="pe-sub"><h4>Title</h4>' + swatches('title', tEl.color) + '</div>';
@@ -593,8 +592,11 @@
       if (S.p.tpl === 'blank') h += '<div class="pe-sub"><h4>Colour</h4><div class="pe-sw pe-sw--big">' + C.BLANK.map(function (c, i) { return '<button style="--c:' + c + '" data-blank="' + i + '"' + (cov.bg === c ? ' class="is-on"' : '') + '></button>'; }).join('') + '</div></div>';
       if (t2 && t2.kind === 'raster') h += rasterNote(t2);
       var tE = cov.els.filter(function (x) { return x.role === 'title'; })[0], sE = cov.els.filter(function (x) { return x.role === 'sub'; })[0];
-      if (tE) h += '<div class="pe-sub"><h4>Title</h4><input class="pe-in" data-role="title" value="' + esc(tE.text) + '" maxlength="40"></div>';
-      if (sE) h += '<div class="pe-sub"><h4>Subtitle</h4><input class="pe-in" data-role="sub" value="' + esc(sE.text) + '" maxlength="40"></div>';
+      var tw = t2 && t2.kind === 'raster' && t2.editable && !cov.edited ? { title: (t2.lines[0] || {}).text, sub: (t2.lines[1] || {}).text } : null;
+      if (tE || (tw && tw.title)) h += '<div class="pe-sub"><h4>Title</h4><input class="pe-in" data-role="title" value="' + esc(tE ? tE.text : tw.title) + '" maxlength="40"></div>';
+      if (sE || (tw && tw.sub)) h += '<div class="pe-sub"><h4>Subtitle</h4><input class="pe-in" data-role="sub" value="' + esc(sE ? sE.text : tw.sub) + '" maxlength="40"></div>';
+      if (t2 && t2.layered) h += '<div class="pe-sub"><h4>Cover colour</h4>' + swatches('bg', cov.img ? t2.bg : cov.bg, C.COVER_COLORS) + '</div>';
+      if (t2 && t2.kind === 'raster' && t2.editable) { var tc = tE ? tE.color : t2.tc; h += '<div class="pe-sub"><h4>Title colour</h4>' + swatches('title', tc, C.TEXT_COLORS) + '</div>'; }
       h += '<div class="pe-sub"><h4>Add to the cover</h4><div class="pe-row"><button class="btn btn--ghost btn--sm" data-act="covphoto">' + I.photo + ' A photo</button><button class="btn btn--ghost btn--sm" data-go-panel="stickers">' + I.sticker + ' Stickers</button><button class="btn btn--ghost btn--sm" data-go-panel="text">' + I.text + ' Text</button></div></div>' +
         '<p class="pe-note">' + I.lock + ' The small CIEL AFRICA mark always stays at the bottom of the cover.</p>';
     }
@@ -611,8 +613,8 @@
     return '<p class="pe-note">This cover’s lettering is part of its artwork and can’t be changed. You can still add stickers, text or a photo.</p>';
   }
   function uniq(a) { var o = []; a.forEach(function (x) { if (x && o.indexOf(x) < 0) o.push(x); }); return o; }
-  function swatches(k, cur) {
-    var list = uniq([cur].concat(COLORS));
+  function swatches(k, cur, set) {
+    var list = uniq([cur].concat(set || COLORS));
     return '<div class="pe-sw">' + list.map(function (c) { return '<button style="--c:' + c + '" data-k="' + k + '" data-c="' + c + '"' + (String(c).toLowerCase() === String(cur).toLowerCase() ? ' class="is-on"' : '') + ' aria-label="' + c + '"></button>'; }).join('') + '<label class="pe-sw__more" title="More colours"><input type="color" data-k="' + k + '" value="' + (/^#[0-9a-f]{6}$/i.test(cur) ? cur : '#ffffff') + '">+</label></div>';
   }
   var EMO = window.PBK_EMOJI || {};
@@ -731,6 +733,7 @@
     commit(); renderAll();
   }
   function setColor(k, c, live) {
+    if (S.cur < 0 && (k === 'bg' || k === 'brand')) ensureEditable();
     var d = doc();
     if (k === 'bg') d.bg = c;
     else if (k === 'brand') d.brand = c;
@@ -813,6 +816,7 @@
     var n = S.p.pages.length;
     $('#pePages').textContent = n + ' pages';
     $('#pePrice').textContent = PBK.priceLabel(n);
+    if (S.lastKind && S.lastKind !== R.bookKind(n)) mockSoon(); S.lastKind = R.bookKind(n);
   }
   function bindStrip() {
     el$.strip.addEventListener('click', function (ev) { var b = ev.target.closest('[data-pg]'); if (b) go(+b.getAttribute('data-pg')); var a = ev.target.closest('[data-addpg]'); if (a) { S.cur = S.p.pages.length - 1; addPages(); } });

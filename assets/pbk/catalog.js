@@ -131,6 +131,37 @@
     return t.kind === 'vector' ? vectorDoc(t, pi) : rasterDoc(t, edit);
   }
 
+  /* Cover colours offered for travel covers whose artwork is a separate layer (and blank covers). */
+  var COVER_COLORS = ['#f4ecdf', '#fff1d6', '#fbd3dc', '#ffd25e', '#86d6e8', '#c8e6c9', '#ff4f9a', '#e5383b', '#c4512b', '#2f80ed', '#1f3c74', '#1f3d36', '#3b2314', '#2d2d33'];
+  var TEXT_COLORS = ['#ffffff', '#141414', '#ffd25e', '#e5383b', '#ff4f9a', '#1f3c74', '#0f5c3a', '#c4512b'];
+  /** Can this template's colours / words be changed? */
+  function canColor(id) { var t = TPL[id]; return id === 'blank' || (t && (t.kind === 'vector' || t.layered)); }
+  function canText(id) { var t = TPL[id]; return id === 'blank' || (t && (t.kind === 'vector' || t.editable)); }
+  /** Cover document with the customer's changes: cu = { title, sub, bg, tc } */
+  function customDoc(id, pi, cu) {
+    cu = cu || {};
+    var t = TPL[id], any = cu.title != null || cu.sub != null || cu.bg || cu.tc || cu.sc;
+    var doc = t && t.kind === 'raster' ? rasterDoc(t, !!any && t.editable) : docFor(id, pi);
+    if (!doc) return null;
+    if (cu.bg && !doc.img) doc.bg = cu.bg;
+    (doc.els || []).forEach(function (e) {
+      if (e.role === 'title') { if (cu.title != null) e.text = cu.title; if (cu.tc) e.color = cu.tc; }
+      if (e.role === 'sub') { if (cu.sub != null) e.text = cu.sub; if (cu.sc) e.color = cu.sc; }
+    });
+    if ((cu.bg || cu.tc) && !doc.ownBrand) {
+      var tEl = (doc.els || []).filter(function (e) { return e.role === 'title'; })[0];
+      doc.brand = tEl && tEl.color && Math.abs(luminance(tEl.color) - luminance(doc.bg)) > 0.3 ? tEl.color : (luminance(doc.bg) < 0.5 ? '#ffffff' : '#141414');
+    }
+    return doc;
+  }
+  /** Default title / subtitle words of a template. */
+  function words(id, pi) {
+    var d = id === 'blank' ? blankDoc(BLANK[pi || 0]) : null, t = TPL[id];
+    if (t && t.kind === 'vector') return { title: t.title, sub: t.sub };
+    if (t && t.kind === 'raster') return { title: (t.lines[0] || {}).text || t.name.toUpperCase(), sub: (t.lines[1] || {}).text || '' };
+    return { title: 'YOUR TITLE', sub: 'SUBTITLE' };
+  }
+
   /** What goes on the spine of the 3D book for a document. */
   function spineFor(doc, tplId, pal) {
     var t = TPL[tplId], tEl = (doc.els || []).filter(function (e) { return e.role === 'title'; })[0];
@@ -142,6 +173,6 @@
     if (!o.bc) o.bc = o.tc;
     return o;
   }
-  var API = { spineFor: spineFor, CATS: CATS, TPL: TPL, ORDER: ORDER, BLANK: BLANK, byCat: byCat, docFor: docFor, vectorDoc: vectorDoc, rasterDoc: rasterDoc, blankDoc: blankDoc, luminance: luminance, cat: function (id) { return CATS.filter(function (c) { return c.id === id; })[0]; } };
+  var API = { COVER_COLORS: COVER_COLORS, TEXT_COLORS: TEXT_COLORS, canColor: canColor, canText: canText, customDoc: customDoc, words: words, spineFor: spineFor, CATS: CATS, TPL: TPL, ORDER: ORDER, BLANK: BLANK, byCat: byCat, docFor: docFor, vectorDoc: vectorDoc, rasterDoc: rasterDoc, blankDoc: blankDoc, luminance: luminance, cat: function (id) { return CATS.filter(function (c) { return c.id === id; })[0]; } };
   if (typeof module === 'object' && module.exports) module.exports = API; else root.PBKCat = API;
 })(typeof self !== 'undefined' ? self : this);

@@ -22,14 +22,10 @@ const XL = ['kenya-nairobi-0', 'kenya-mombasa-0', 'kenya-serengeti-0', 'kenya-ke
   for (let k = 0; k < jobs.length; k += 8) {
     const batch = jobs.slice(k, k + 8);
     const res = await p.evaluate(async ([batch, XL]) => {
-      const R = PBKR, C = PBKCat, map = await R.book3dMap('/tools/pbk/book3d-720.png'), out = [];
+      const R = PBKR, C = PBKCat, out = [];
       for (const [id, pi, name] of batch) {
         const doc = C.docFor(id, pi);
-        await R.load(doc);
-        const flat = await R.toCanvas(doc, 1200);
-        const so = C.spineFor(doc, id, pi);
-        if (so.art) await R.img(R.artSrc(so.art)); if (so.artImg) await R.img(so.artImg);
-        const m = R.book3d(flat, R.spine(so), map, { fw: 1200 });
+        const m = await R.renderBook(doc, C.spineFor(doc, id, pi), { pages: 24, large: true, px: 1200 });
         const s = document.createElement('canvas'); s.width = 440; s.height = 550;
         const x = s.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(m, 0, 0, 440, 550);
         out.push([name, s.toDataURL('image/webp', 0.86), XL.indexOf(name) >= 0 ? m.toDataURL('image/webp', 0.86) : null]);
