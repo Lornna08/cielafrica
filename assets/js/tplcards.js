@@ -9,15 +9,19 @@ window.CIEL = window.CIEL || {};
   var esc=function(x){return (CIEL.esc||function(y){return String(y==null?'':y).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});})(x);};
   var fmt=function(n){return (CIEL.fmt||function(m){return Number(m).toLocaleString('en-US');})(n);};
   var price=function(t){return t.price>0?'KES '+fmt(t.price):'On request';};
-  CIEL.tplCards=function(el,feats,opts){
-    opts=opts||{}; if(!el||!feats||!feats.length) return;
+  /* a short signature of what the cards show, so a page that ships the cards
+     pre-rendered (index.html, built by tools/build-home.js) only redraws when
+     data/templates.js has changed since that build */
+  CIEL.tplSig=function(feats){var k=JSON.stringify((feats||[]).map(function(t){return [t.id,t.name,t.desc,t.price,t.flag,t.demo,t.link,t.image,t.video,t.homeVideo,t.homePoster,t.homeRatio,t.duoVideo,t.duoPoster,t.phone,t.points];})+'|'+(CIEL.templates||[]).length),h=0;for(var i=0;i<k.length;i++){h=(h*31+k.charCodeAt(i))|0;}return (h>>>0).toString(36);};
+  CIEL.tplCardsHTML=function(feats,opts){
+    opts=opts||{}; if(!feats||!feats.length) return '';
     var T=CIEL.templates||[],P=CIEL.previewByCategory||{};
     var html=feats.map(function(feat,k){
       var webm=feat.video&&/\.mp4(\?|$)/.test(feat.video)?'<source src="'+esc(feat.video.replace(/\.mp4(\?|$)/,'.webm$1'))+'" type="video/webm">':'';
-      var media=feat.video?'<video muted loop playsinline preload="none" poster="'+esc(feat.image||'')+'" aria-label="'+esc(feat.name)+' preview"><source src="'+esc(feat.video)+'" type="video/mp4">'+webm+'</video>':(feat.image?'<img src="'+esc(feat.image)+'" alt="'+esc(feat.name)+' preview" loading="lazy">':(P[feat.category]||''));
-      if(feat.homeVideo){var hv=feat.homeVideo;media='<video muted loop playsinline preload="none" poster="'+esc(feat.homePoster||feat.image||'')+'" aria-label="'+esc(feat.name)+' preview"><source src="'+esc(hv)+'" type="video/mp4"><source src="'+esc(hv.replace(/\.mp4(\?|$)/,'.webm$1'))+'" type="video/webm"></video>';}
+      var media=feat.video?'<video muted loop playsinline preload="none" data-poster="'+esc(feat.image||'')+'" aria-label="'+esc(feat.name)+' preview"><source src="'+esc(feat.video)+'" type="video/mp4">'+webm+'</video>':(feat.image?'<img src="'+esc(feat.image)+'" alt="'+esc(feat.name)+' preview" loading="lazy">':(P[feat.category]||''));
+      if(feat.homeVideo){var hv=feat.homeVideo;media='<video muted loop playsinline preload="none" data-poster="'+esc(feat.homePoster||feat.image||'')+'" aria-label="'+esc(feat.name)+' preview"><source src="'+esc(hv)+'" type="video/mp4"><source src="'+esc(hv.replace(/\.mp4(\?|$)/,'.webm$1'))+'" type="video/webm"></video>';}
       if(feat.phone&&feat.video){ /* dashboard + iPhone 17 Pro Max side by side, no laptop */
-        if(feat.duoVideo){var dv=feat.duoVideo;media='<video muted loop playsinline preload="none" poster="'+esc(feat.duoPoster||feat.image||'')+'" aria-label="'+esc(feat.name)+' preview"><source src="'+esc(dv)+'" type="video/mp4"><source src="'+esc(dv.replace(/\.mp4(\?|$)/,'.webm$1'))+'" type="video/webm"></video>';}
+        if(feat.duoVideo){var dv=feat.duoVideo;media='<video muted loop playsinline preload="none" data-poster="'+esc(feat.duoPoster||feat.image||'')+'" aria-label="'+esc(feat.name)+' preview"><source src="'+esc(dv)+'" type="video/mp4"><source src="'+esc(dv.replace(/\.mp4(\?|$)/,'.webm$1'))+'" type="video/webm"></video>';}
         media='<div class="htpl__duo"><div class="htpl__dash">'+media+'</div>'+'<div class="ip17 htpl__phone ip17--blue" role="img" aria-label="@@LBL@@"><div class="ip17__body"><i class="ip17__k ip17__k--act"></i><i class="ip17__k ip17__k--vu"></i><i class="ip17__k ip17__k--vd"></i><i class="ip17__k ip17__k--pwr"></i><i class="ip17__k ip17__k--cam"></i><div class="ip17__bezel"><div class="ip17__scr"><div class="ip17__sb"><span>9:41</span><svg viewBox="0 0 68 13" aria-hidden="true"><rect x="0" y="8.5" width="3" height="4" rx="1" stroke="none"/><rect x="4.6" y="6.5" width="3" height="6" rx="1" stroke="none"/><rect x="9.2" y="4" width="3" height="8.5" rx="1" stroke="none"/><rect x="13.8" y="1.5" width="3" height="11" rx="1" stroke="none"/><path d="M31 12.4 28.5 9.7a3.5 3.5 0 0 1 5 0Z" stroke="none"/><path d="M26.1 7.3a6.9 6.9 0 0 1 9.8 0M23.7 4.8a10.3 10.3 0 0 1 14.6 0" fill="none" stroke-width="1.7" stroke-linecap="round"/><rect x="44.5" y="1.2" width="20" height="10.6" rx="3.2" fill="none" stroke-width="1.1" opacity=".45"/><rect x="46.3" y="3" width="14.6" height="7" rx="1.7" stroke="none"/><rect x="65.6" y="4.6" width="1.6" height="3.8" rx=".8" stroke="none" opacity=".45"/></svg></div><i class="ip17__di"></i>@@IMG@@<i class="ip17__hb"></i></div></div></div></div>'.replace('@@LBL@@',esc(feat.name)+' on an iPhone 17 Pro Max').replace('@@IMG@@','<img src="'+esc(feat.phone)+'" alt="" loading="lazy" width="880" height="1804">')+'</div>';
       }
       var link=feat.link||('quote.html?template='+encodeURIComponent(feat.name));
@@ -37,11 +41,24 @@ window.CIEL = window.CIEL || {};
       var cats={};T.forEach(function(t){cats[t.category]=1;});
       html+='<div class="htpl__more" data-r><p>'+T.length+' designs across '+Object.keys(cats).length+' industries — every one customised to your brand.</p><a class="ul" href="templates.html"><span class="brk">‹</span> Browse all templates</a></div>';
     }
-    el.innerHTML=html;
+    return html;
+  };
+  CIEL.tplCards=function(el,feats,opts){
+    if(!el||!feats||!feats.length) return;
+    var sig=CIEL.tplSig(feats);
+    if(el.getAttribute('data-sig')!==sig){ el.innerHTML=CIEL.tplCardsHTML(feats,opts); el.setAttribute('data-sig',sig); }
+    CIEL.tplWire(el);
+  };
+  /* posters load as the cards approach the screen; videos play only while visible */
+  CIEL.tplWire=function(el){
     if(CIEL.io)CIEL.io(el);
+    var vs=[].slice.call(el.querySelectorAll('video'));
+    var setPoster=function(v){var p=v.getAttribute('data-poster');if(p){v.setAttribute('poster',p);v.removeAttribute('data-poster');}};
     var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-    el.querySelectorAll('video').forEach(function(v){
-      if(reduce||!('IntersectionObserver' in window)){v.setAttribute('preload','metadata');return;}
+    if(!('IntersectionObserver' in window)){vs.forEach(setPoster);}
+    else{var po=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){setPoster(e.target);po.unobserve(e.target);}});},{rootMargin:'1200px 0px'});vs.forEach(function(v){po.observe(v);});}
+    vs.forEach(function(v){
+      if(reduce||!('IntersectionObserver' in window)){setPoster(v);v.setAttribute('preload','metadata');return;}
       new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var p=v.play();if(p&&p.catch)p.catch(function(){});}else v.pause();});},{threshold:.25}).observe(v);
     });
   };
