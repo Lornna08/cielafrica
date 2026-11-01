@@ -488,3 +488,9 @@ html[data-theme="dark"] select.hq-in option{background:#141417}
 }
 .ws{grid-template-columns:minmax(0,1fr)}.ws-pv{min-width:0}.ws-frame{min-width:0;max-width:100%}
 @media(max-width:760px){.card__h>.muted{flex:1 1 100%;font-size:.76rem!important}}
+/* the menu button must be impossible to miss on phones */
+.hq-burger span{font-size:.82rem;font-weight:600}
+@media(max-width:900px){
+  .hq-burger{display:inline-flex!important;gap:.35rem;width:auto;height:36px;padding:0 .7rem;background:var(--ink);color:var(--bg);border-color:var(--ink);border-radius:9px}
+  .hq-side .hq-nav a{min-height:44px}
+}
