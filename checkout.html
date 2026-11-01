@@ -27,7 +27,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/base.css?v=20261026a">
-<link rel="stylesheet" href="assets/css/components.css?v=20261031a">
+<link rel="stylesheet" href="assets/css/components.css?v=20261101p">
 </head>
 <body>
 <script src="/assets/js/autoplay.js?v=20261026a"></script>
@@ -96,16 +96,16 @@
 <script src="data/team.js?v=20261021i"></script>
 <script src="assets/js/render.js?v=20261021i"></script>
 <script src="assets/js/site.js?v=20261021i"></script>
-<script src="assets/js/cart.js?v=20261024l"></script>
+<script src="assets/js/cart.js?v=20261101p"></script>
 <script>(function(){
       function fmt(n){return Number(n).toLocaleString('en-US');}
       var C=window.CIEL&&CIEL.cart;
       function paint(){
-        var items=C?C.items():[];
+        var items=C?(C.siteItems?C.siteItems():C.items()):[];
         var box=document.getElementById('coLines');
         if(!items.length){ box.innerHTML='<p style="color:var(--ink-faint)">Your cart is empty. <a href="products.html" style="color:var(--orange)">Browse products</a></p>'; document.getElementById('coTotal').textContent='0'; document.getElementById('payAmt').textContent='0'; return; }
         box.innerHTML=items.map(function(i){return '<div class="co__line"><span>'+i.name+' <small>&times;'+i.qty+'</small></span><span>KES '+fmt(i.price*i.qty)+'</span></div>';}).join('');
-        var tot=C.total();
+        var tot=(C.siteTotal?C.siteTotal():C.total());
         document.getElementById('coTotal').textContent=fmt(tot);
         document.getElementById('payAmt').textContent=fmt(tot);
       }
@@ -113,14 +113,14 @@
       var form=document.getElementById('payForm');
       form.addEventListener('submit',function(e){
         e.preventDefault();
-        var items=C?C.items():[];
+        var items=C?(C.siteItems?C.siteItems():C.items()):[];
         if(!items.length){ alert('Your cart is empty.'); return; }
         var phone=document.getElementById('coPhone').value.trim();
         if(phone.replace(/\D/g,'').length<9){ alert('Please enter a valid M-Pesa phone number.'); return; }
         var cname=(document.getElementById('coName').value||'').trim();
         var cemail=(document.getElementById('coEmail').value||'').trim();
         var st=document.getElementById('coStatus'); var btn=document.getElementById('payBtn');
-        var amount=C?C.total():0;
+        var amount=C?(C.siteTotal?C.siteTotal():C.total()):0;
         var ref=(items[0]&&items[0].name)||'Ciel Africa';
         var orderList=items.map(function(i){return i.name+' x'+i.qty+' = KES '+fmt(i.price*i.qty);}).join('; ');
         btn.disabled=true; btn.style.opacity=.6;

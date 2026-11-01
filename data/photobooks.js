@@ -24,13 +24,14 @@
 
     /* The /photobooks book (portrait hardcover). The price depends on the number of pages:
        price = base + (pages − includedPages) × perExtraPage (KES). Set either to null to hide
-       prices ("price coming soon"). Online payment is not connected yet (ordering: false). */
+       prices ("price coming soon"). Delivery prices are in `delivery` below. */
     book: {
       name: 'Portrait photo book', size: '21 × 28 cm', trimW: 210, trimH: 280, binding: 'Hardcover',
       pages: { min: 24, max: 100, step: 2, default: 24 },
       maxPhotosPerPage: 2,
-      price: { base: 4500, includedPages: 24, perExtraPage: 100 }, /* starter prices (KES): change any time */
-      ordering: false /* true once online ordering and payment are live */
+      price: { base: 4500, includedPages: 24, perExtraPage: 100 },   /* printed hardcover (KES): starter prices, change any time */
+      digital: { base: 1500, includedPages: 24, perExtraPage: 25 },  /* print-ready PDF (KES) */
+      ordering: true /* M-Pesa checkout at /photobooks/checkout */
     },
 
     /* Free tier limits while designing (photos stay on the customer's device). */
@@ -84,9 +85,9 @@
 
     /* Kenya fulfilment. needsAddress = collect a delivery address. price null = not set. */
     delivery: [
-      { id: 'collect', name: 'Collect from Ciel Africa (Nairobi)', price: null, needsAddress: false, enabled: true },
-      { id: 'nairobi', name: 'Delivery within Nairobi', price: null, needsAddress: true, enabled: true },
-      { id: 'kenya', name: 'Courier elsewhere in Kenya', price: null, needsAddress: true, enabled: true }
+      { id: 'collect', name: 'Collect from Ciel Africa (Nairobi)', price: 0, needsAddress: false, enabled: true },
+      { id: 'nairobi', name: 'Delivery within Nairobi', price: 350, needsAddress: true, enabled: true },
+      { id: 'kenya', name: 'Courier elsewhere in Kenya', price: 600, needsAddress: true, enabled: true }
     ],
     maxQuantity: 10,
 

@@ -59,6 +59,7 @@
     document.body.classList.remove('pbk-editing');
     if (seg === 'design') { if (window.PBKEditor) PBKEditor.open(main); return; }
     if (seg === 'my-books') return myBooks();
+    if (seg === 'checkout') { if (window.PBKShop) PBKShop.checkout(main); return; }
     if (C.cat(seg) || seg === 'blank') return category(seg);
     landing();
   }
@@ -117,20 +118,20 @@
       '<p class="pk-lead">Pick a cover, add your photos and make every page yours. A portrait hardcover book, ' + esc(BOOK.size || '21 × 28 cm') + ', designed in minutes on your phone.</p>' +
       '<div class="pk-cta"><button class="btn btn--p btn--lg" data-pick>Create my photo book ' + ICON.arrow + '</button><a data-go href="' + BASE + '/travel" class="btn btn--ghost btn--lg">Browse travel covers</a></div>' +
       '<p class="pk-note">' + C.ORDER.length + ' covers · Kenya, travel, couples, family and more · <a data-go href="' + BASE + '/my-books">My books</a></p></div>' +
-      '<div class="pk-flow" id="pkFlow" aria-label="Cover designs">' + flow.map(function (id, i) { var t = C.TPL[id]; return '<a href="#collections" class="pk-flow__b" data-i="' + i + '" aria-label="' + esc(t.name) + '"><img src="' + bigSrc(t, 0) + '" alt="' + esc(t.name) + ' photo book" width="720" height="900"' + (i < 3 ? ' fetchpriority="high"' : ' loading="lazy"') + '></a>'; }).join('') + '<div class="pk-flow__name" id="pkFlowName"></div></div></section>' +
+      '<div class="pk-flow" id="pkFlow" aria-label="Cover designs">' + flow.map(function (id, i) { var t = C.TPL[id]; return '<a href="#collections" class="pk-flow__b" data-i="' + i + '" aria-label="' + esc(t.name) + '"><img src="' + bigSrc(t, 0) + '" alt="' + esc(t.name) + ' photo book" width="720" height="900"' + (i < 3 || i >= flow.length - 2 ? (i < 2 ? ' fetchpriority="high"' : '') : ' loading="lazy"') + '></a>'; }).join('') + '<div class="pk-flow__name" id="pkFlowName"></div></div></section>' +
       '<section class="pk-grid wrap" id="collections"><div class="pk-head"><span class="eyebrow"><span class="brk">‹</span> Collections</span><h2>A book for every story</h2></div><div class="pk-tiles">' +
       C.CATS.map(function (c) { var t = catHero(c.id); var n = C.byCat(c.id).length; return '<a data-go href="' + BASE + '/' + c.id + '" class="pk-tile pk-tile--' + c.id + '"><span class="pk-tile__img"><img src="' + mockSrc(t, 0) + '" alt="" loading="lazy"' + IMGWH + '></span><span class="pk-tile__t">' + esc(c.name) + '</span><span class="pk-tile__n">' + n + ' cover' + (n === 1 ? '' : 's') + '</span></a>'; }).join('') +
       '<button class="pk-tile pk-tile--blank" data-blank><span class="pk-tile__img"><img src="' + mockSrc('blank', 4) + '" alt="" loading="lazy"' + IMGWH + '></span><span class="pk-tile__t">Blank cover</span><span class="pk-tile__n">Design your own</span></button>' +
       '</div></section>' +
-      '<section class="pk-mq" aria-label="Cover designs"><div class="pk-mq__row"><div class="pk-mq__track">' + row(rowA, 0) + '</div></div><div class="pk-mq__row pk-mq__row--b"><div class="pk-mq__track">' + row(rowB, 1) + '</div></div></section>' +
       steps() +
+      '<section class="pk-mq" aria-label="Cover designs"><div class="pk-mq__row"><div class="pk-mq__track">' + row(rowA, 0) + '</div></div><div class="pk-mq__row pk-mq__row--b"><div class="pk-mq__track">' + row(rowB, 1) + '</div></div></section>' +
       '<section class="pk-kenya"><div class="wrap pk-kenya__in"><div class="pk-kenya__copy"><span class="eyebrow"><span class="brk">‹</span> New</span><h2>Made for <span class="pk-hl">Kenya</span></h2><p>Nairobi, Mombasa, the Serengeti plains and a Kenya cover for every trip home. Same minimal style, same CIEL AFRICA mark, every word editable.</p><a data-go href="' + BASE + '/kenya" class="btn btn--dark">See the Kenya covers ' + ICON.arrow + '</a></div>' +
       '<div class="pk-kenya__books">' + C.byCat('kenya').slice(0, 4).map(function (t, i) { return '<a data-go href="' + coverLink(t.id, 0) + '"><img src="' + mockSrc(t, 0) + '" alt="' + esc(t.name) + ' cover" loading="lazy"' + IMGWH + '></a>'; }).join('') + '</div></div></section>' +
       '<section class="pk-spec wrap"><div class="pk-spec__card"><div><span class="eyebrow"><span class="brk">‹</span> The book</span><h2>Price by pages</h2><p>Every book is a portrait hardcover, ' + esc(BOOK.size || '21 × 28 cm') + '. Start with ' + BOOK.pages.min + ' pages and add more as you go: the price depends on the number of pages.</p></div>' +
       '<div class="pk-calc"><label for="pkPages">Pages <output id="pkPagesOut">' + BOOK.pages.default + '</output></label><input type="range" id="pkPages" min="' + BOOK.pages.min + '" max="' + BOOK.pages.max + '" step="' + BOOK.pages.step + '" value="' + BOOK.pages.default + '"><div class="pk-calc__price" id="pkPrice">' + esc(priceLabel(BOOK.pages.default)) + '</div>' + (price(BOOK.pages.min) == null ? '<p class="pk-calc__note">Prices are being finalised. You can design and save your book now.</p>' : '') + '</div></div></section>' +
       trust() + faq() +
       '<section class="wrap"><div class="pk-band"><h2>Ready to make yours?</h2><p>Choose a cover and start adding photos.</p><button class="btn btn--p btn--lg" data-pick>Create my photo book ' + ICON.arrow + '</button></div></section>';
-    bindCommon(); flowStart(flow); continueCard();
+    bindCommon(); flowStart(flow); continueCard(); if (window.PBKShop) PBKShop.resumeBanner(main);
     var r = document.getElementById('pkPages');
     if (r) r.addEventListener('input', function () { document.getElementById('pkPagesOut').textContent = r.value; document.getElementById('pkPrice').textContent = priceLabel(+r.value); });
   }
@@ -163,8 +164,9 @@
       var p = l[0], box = document.createElement('div'); box.className = 'pk-cont wrap';
       var mins = Math.round((Date.now() - (p.updatedAt || Date.now())) / 60000);
       var ago = mins < 1 ? 'just now' : mins < 60 ? mins + ' min ago' : mins < 1440 ? Math.round(mins / 60) + ' h ago' : new Date(p.updatedAt).toLocaleDateString();
-      box.innerHTML = '<div class="pk-cont__in"><span class="pk-cont__dot"></span><div><b>Continue “' + esc(p.name || 'My photo book') + '”</b><span>Saved on this device · ' + ago + (l.length > 1 ? ' · <a data-go href="' + BASE + '/my-books">' + l.length + ' books</a>' : '') + '</span></div><a data-go class="btn btn--dark btn--sm" href="' + BASE + '/design?p=' + esc(p.id) + '">Continue</a></div>';
+      box.innerHTML = '<div class="pk-cont__in"><span class="pk-cont__dot"></span><div><b>Continue “' + esc(p.name || 'My photo book') + '”</b><span>Saved on this device · ' + ago + (l.length > 1 ? ' · <a data-go href="' + BASE + '/my-books">' + l.length + ' books</a>' : '') + '</span></div><a data-go class="btn btn--dark btn--sm" href="' + BASE + '/design?p=' + esc(p.id) + '">Continue</a><button class="pk-cont__del" aria-label="Delete this book" title="Delete this book">✕</button></div>';
       var strip = main.querySelector('.pk-cats'); if (strip) strip.insertAdjacentElement('afterend', box);
+      box.querySelector('.pk-cont__del').onclick = function () { if (!confirm('Delete “' + (p.name || 'this book') + '” and its photos from this device? This can’t be undone.')) return; PBStore.deleteProject(p.id).then(function () { box.remove(); try { CIEL.cart.pbItems().forEach(function (i) { if (i.pb.p === p.id) CIEL.cart.remove(i.id); }); } catch (e) { } }); };
     }).catch(function () {});
   }
   function bindCommon() {
@@ -179,6 +181,7 @@
     var list = catId === 'blank' ? [] : C.byCat(catId);
     var st = { t: list[0] ? list[0].id : 'blank', c: 0, pages: BOOK.pages.default, q: '', cu: {} };
     var params = new URLSearchParams(location.search);
+    st.collapsed = !!params.get('t');
     if (params.get('t') && (C.TPL[params.get('t')] || params.get('t') === 'blank')) st.t = params.get('t');
     if (params.get('c')) st.c = +params.get('c') || 0;
     var PAGES = [24, 36, 48, 60, 80, 100].filter(function (n) { return n >= BOOK.pages.min && n <= BOOK.pages.max; });
@@ -187,8 +190,9 @@
       '<div class="pk-prod__info"><div class="crumb"><a data-go href="' + BASE + '">Photo Books</a> <span class="brk">‹</span> ' + esc(cat.name) + '</div><h1>' + esc(cat.title) + '</h1>' +
       '<p class="pk-prod__blurb">' + esc(cat.blurb) + '</p>' +
       '<div class="pk-opt"><div class="pk-opt__h"><b><i class="pk-n">1</i>Choose your cover</b><span id="pkSel"></span></div>' +
-      (list.length > 8 ? '<label class="pk-search">' + ICON.search + '<input id="pkQ" type="search" placeholder="Search ' + list.length + ' covers (e.g. Paris, Kenya)" autocomplete="off"></label>' : '') +
-      '<div class="pk-covers" id="pkCovers"></div></div>' +
+      '<div class="pk-chosen" id="pkChosen" hidden><img alt=""' + IMGWH + '><div><b></b><span>✎ Customise it below</span></div><button type="button" class="btn btn--ghost btn--sm" id="pkChange">Change cover</button></div>' +
+      '<div id="pkPick">' + (list.length > 8 ? '<label class="pk-search">' + ICON.search + '<input id="pkQ" type="search" placeholder="Search ' + list.length + ' covers (e.g. Paris, Kenya)" autocomplete="off"></label>' : '') +
+      '<div class="pk-covers" id="pkCovers"></div></div></div>' +
       '<div class="pk-opt pk-make"><div class="pk-opt__h"><b><i class="pk-n">2</i>Make it yours</b><button type="button" class="pk-reset" id="pkReset" hidden>Reset</button></div><div class="pk-make__in"><canvas class="pk-make__mini" id="pkMini" aria-hidden="true"></canvas><div class="pk-make__f" id="pkMake"></div></div></div>' +
       '<div class="pk-opt"><div class="pk-opt__h"><b><i class="pk-n">3</i>Pages</b><span>' + esc(BOOK.size || '21 × 28 cm') + ' portrait hardcover</span></div><div class="pk-pages" id="pkPg">' +
       PAGES.map(function (n) { return '<button type="button" data-p="' + n + '"' + (n === st.pages ? ' class="is-on"' : '') + '>' + n + '</button>'; }).join('') + '</div><p class="pk-opt__note">Up to 48 pages makes a slim book; 60 or more, a thicker one. You can add or remove pages later.</p></div>' +
@@ -261,13 +265,25 @@
         cv.hidden = false; img.hidden = true;
       }).catch(function () {});
     }
+    function collapse(on) {
+      st.collapsed = on; var t = sel(), ch = document.getElementById('pkChosen');
+      ch.hidden = !on; document.getElementById('pkPick').hidden = on;
+      if (on) { ch.querySelector('img').src = mockSrc(t || 'blank', st.c); ch.querySelector('b').textContent = t ? t.name : 'Blank cover'; }
+    }
     function drawSel() {
       var t = sel();
+      collapse(st.collapsed);
       document.getElementById('pkSel').textContent = t ? t.name : 'Blank cover';
       covers.querySelectorAll('.pk-cv').forEach(function (b) { b.classList.toggle('is-on', b.getAttribute('data-t') === st.t); });
       drawAlt(); drawMake(); render();
     }
-    covers.addEventListener('click', function (e) { var b = e.target.closest('[data-t]'); if (!b) return; if (b.getAttribute('data-t') !== st.t) { st.t = b.getAttribute('data-t'); st.c = 0; st.cu = {}; } drawSel(); });
+    covers.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-t]'); if (!b) return;
+      if (b.getAttribute('data-t') !== st.t) { st.t = b.getAttribute('data-t'); st.c = 0; st.cu = {}; }
+      st.collapsed = true; drawSel();
+      var mk = document.querySelector('.pk-make'); if (mk) setTimeout(function () { var y = mk.getBoundingClientRect().top + scrollY - (innerWidth < 900 ? 90 : 110); window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' }); }, 60);
+    });
+    document.getElementById('pkChange').addEventListener('click', function () { collapse(false); var on = covers.querySelector('.is-on'); if (on) covers.scrollTop = Math.max(0, on.offsetTop - 8); });
     document.getElementById('pkAlt').addEventListener('click', function (e) { var b = e.target.closest('[data-alt]'); if (!b) return; var id = b.getAttribute('data-alt'); if (id !== st.t) st.cu = {}; st.t = id; st.c = +b.getAttribute('data-ac'); drawSel(); });
     document.getElementById('pkPg').addEventListener('click', function (e) {
       var b = e.target.closest('[data-p]'); if (!b) return; var was = R.bookKind(st.pages); st.pages = +b.getAttribute('data-p');

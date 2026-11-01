@@ -1,0 +1,238 @@
+/* ============================================================
+   CIEL AFRICA PHOTO BOOKS — photo editor
+   Crop (with aspect ratios), adjustments and filters, and
+   background removal (U²-Net small, run in the browser) with an
+   erase / restore brush. Nothing is uploaded.
+   PBKPhotoEdit.open({ src, fx, rect, maskSrc, frameAr, sticker }) → Promise<result|null>
+   result: { rect, ar, fx, mask: Blob|null|undefined (undefined = unchanged) }
+   ============================================================ */
+(function () {
+  'use strict';
+  var R = window.PBKR;
+  var PRESETS = [
+    ['Original', {}], ['B&W', { g: 1, c: 10 }], ['Noir', { g: 1, c: 45, b: -6 }], ['Sepia', { sp: 1 }], ['Vintage', { sp: 1, f: 40, w: 10, c: -10 }],
+    ['Warm', { w: 35, s: 10 }], ['Cool', { w: -30 }], ['Vivid', { s: 45, c: 15 }], ['Fade', { f: 55, c: -15 }], ['Bright', { b: 18, c: 6 }]
+  ];
+  var SLIDERS = [['b', 'Brightness'], ['c', 'Contrast'], ['s', 'Saturation'], ['w', 'Warmth'], ['f', 'Fade']];
+  var RATIOS = [['frame', 'Frame'], ['orig', 'Original'], ['1', 'Square'], ['0.8', '4:5'], ['0.75', '3:4'], ['1.333', '4:3'], ['1.778', '16:9'], ['free', 'Free']];
+  var X = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+  function loadImg(src) { return new Promise(function (ok, no) { var i = new Image(); i.onload = function () { ok(i); }; i.onerror = no; i.src = src; }); }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  /* ---------- background removal ---------- */
+  var ortP = null, sessP = null;
+  function model() {
+    if (sessP) return sessP;
+    ortP = ortP || new Promise(function (ok, no) {
+      if (window.ort) return ok(window.ort);
+      var s = document.createElement('script'); s.src = '/assets/vendor/ort/ort.wasm.min.js'; s.onload = function () { ok(window.ort); }; s.onerror = function () { no(new Error('Could not load the background tool. Check your connection.')); }; document.head.appendChild(s);
+    });
+    sessP = ortP.then(function (ort) {
+      ort.env.wasm.wasmPaths = '/assets/vendor/ort/'; ort.env.wasm.numThreads = 1;
+      return ort.InferenceSession.create('/assets/pbk/models/u2netp.onnx', { executionProviders: ['wasm'] });
+    }).catch(function (e) { sessP = null; throw e; });
+    return sessP;
+  }
+  /** returns a canvas (mw×mh) whose alpha is the foreground */
+  function autoMask(im, mw, mh) {
+    return model().then(function (sess) {
+      var S = 320, c = document.createElement('canvas'); c.width = S; c.height = S;
+      var x = c.getContext('2d'); x.drawImage(im, 0, 0, S, S);
+      var d = x.getImageData(0, 0, S, S).data, n = S * S, t = new Float32Array(3 * n);
+      var mean = [0.485, 0.456, 0.406], std = [0.229, 0.224, 0.225];
+      for (var i = 0; i < n; i++) for (var k = 0; k < 3; k++) t[k * n + i] = (d[i * 4 + k] / 255 - mean[k]) / std[k];
+      var feeds = {}; feeds[sess.inputNames[0]] = new window.ort.Tensor('float32', t, [1, 3, S, S]);
+      return sess.run(feeds).then(function (out) {
+        var o = out[sess.outputNames[0]].data, mn = Infinity, mx = -Infinity;
+        for (var i = 0; i < n; i++) { if (o[i] < mn) mn = o[i]; if (o[i] > mx) mx = o[i]; }
+        var sm = document.createElement('canvas'); sm.width = S; sm.height = S;
+        var sx = sm.getContext('2d'), id = sx.createImageData(S, S);
+        for (var j = 0; j < n; j++) { var a = (o[j] - mn) / (mx - mn || 1); a = clamp((a - 0.12) / 0.76, 0, 1); id.data[j * 4] = id.data[j * 4 + 1] = id.data[j * 4 + 2] = 255; id.data[j * 4 + 3] = a * 255; }
+        sx.putImageData(id, 0, 0);
+        var m = document.createElement('canvas'); m.width = mw; m.height = mh;
+        var mx2 = m.getContext('2d'); mx2.imageSmoothingQuality = 'high'; mx2.drawImage(sm, 0, 0, mw, mh);
+        return m;
+      });
+    });
+  }
+
+  var dlg;
+  function open(o) {
+    return new Promise(function (resolve) {
+      loadImg(o.src).then(function (im) {
+        var maskP = o.maskSrc ? loadImg(o.maskSrc).catch(function () { return null; }) : Promise.resolve(null);
+        maskP.then(function (mimg) { start(im, mimg, o, resolve); });
+      }).catch(function () { resolve(null); });
+    });
+  }
+
+  function start(im, mimg, o, resolve) {
+    var IW = im.naturalWidth, IH = im.naturalHeight, iar = IW / IH;
+    var st = { tab: o.sticker ? 'bg' : 'crop', fx: Object.assign({}, o.fx || {}), ratio: o.sticker ? 'free' : 'frame', rect: o.rect ? Object.assign({}, o.rect) : null, brush: 'erase', size: 40, maskChanged: false };
+    var frameAr = o.frameAr || iar;
+    // mask canvas in image pixel space (max 1400 px)
+    var mk = Math.min(1, 1400 / Math.max(IW, IH)), MW = Math.round(IW * mk), MH = Math.round(IH * mk);
+    var mask = null, undo = [];
+    if (mimg) { mask = document.createElement('canvas'); mask.width = MW; mask.height = MH; mask.getContext('2d').drawImage(mimg, 0, 0, MW, MH); }
+    function fitRect(ar) { // largest centred rect with the given aspect (in image pixels)
+      var w = 1, h = (IW / ar) / IH; if (h > 1) { h = 1; w = (IH * ar) / IW; } return { x: (1 - w) / 2, y: (1 - h) / 2, w: w, h: h };
+    }
+    if (!st.rect) st.rect = o.sticker ? { x: 0, y: 0, w: 1, h: 1 } : fitRect(frameAr);
+    function curAr() { return st.ratio === 'frame' ? frameAr : st.ratio === 'orig' ? iar : st.ratio === 'free' ? null : +st.ratio; }
+
+    if (!dlg) { dlg = document.createElement('dialog'); dlg.className = 'pfx'; document.body.appendChild(dlg); }
+    dlg.innerHTML = '<div class="pfx__in"><header class="pfx__h"><h3>Edit photo</h3><div class="pfx__tabs">' +
+      (o.sticker ? '' : '<button data-tab="crop">Crop</button>') + '<button data-tab="adj">Adjust</button><button data-tab="bg">Background</button></div><button class="pfx__x" data-x aria-label="Close">' + X + '</button></header>' +
+      '<div class="pfx__body"><div class="pfx__stage" id="pfxStage"><canvas id="pfxC"></canvas><div class="pfx__crop" id="pfxCrop" hidden><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i><b></b></div><div class="pfx__busy" id="pfxBusy" hidden><span></span><p>Finding the subject… the first time takes a few seconds.</p></div></div>' +
+      '<aside class="pfx__side" id="pfxSide"></aside></div>' +
+      '<footer class="pfx__f"><button class="btn btn--ghost" data-x>Cancel</button><button class="btn btn--p" data-ok>Apply</button></footer></div>';
+    var cv = dlg.querySelector('#pfxC'), g = cv.getContext('2d'), stage = dlg.querySelector('#pfxStage'), side = dlg.querySelector('#pfxSide'), box = dlg.querySelector('#pfxCrop');
+    var view = { k: 1, ox: 0, oy: 0, w: 0, h: 0 };
+    // preview source (max 1400 px) for fast filtering
+    var pk = Math.min(1, 1400 / Math.max(IW, IH)), P = document.createElement('canvas'); P.width = Math.round(IW * pk); P.height = Math.round(IH * pk); P.getContext('2d').drawImage(im, 0, 0, P.width, P.height);
+    var fxCache = { key: null, c: null };
+    function filtered() {
+      var key = JSON.stringify(st.fx); if (fxCache.key === key) return fxCache.c;
+      var c = document.createElement('canvas'); c.width = P.width; c.height = P.height; var x = c.getContext('2d'); x.drawImage(P, 0, 0);
+      if (R.hasFx(st.fx)) { var id = x.getImageData(0, 0, c.width, c.height); R.applyFx(id.data, st.fx); x.putImageData(id, 0, 0); }
+      fxCache = { key: key, c: c }; return c;
+    }
+    function layout() {
+      var dpr = Math.min(2, window.devicePixelRatio || 1), aw = stage.clientWidth - 24, ah = stage.clientHeight - 24;
+      var showAr = st.tab === 'crop' ? iar : (st.rect.w * IW) / (st.rect.h * IH);
+      var w = Math.min(aw, ah * showAr), h = w / showAr;
+      cv.style.width = w + 'px'; cv.style.height = h + 'px'; cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+      view = { w: w, h: h, dpr: dpr, left: (stage.clientWidth - w) / 2, top: (stage.clientHeight - h) / 2 };
+      paint();
+    }
+    function checker(x, w, h, s) { x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.fillStyle = '#e8e3da'; for (var yy = 0; yy < h; yy += s) for (var xx = (yy / s) % 2 ? s : 0; xx < w; xx += 2 * s) x.fillRect(xx, yy, s, s); }
+    function paint() {
+      var W = cv.width, H = cv.height, src = filtered();
+      g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, W, H);
+      if (st.tab === 'crop') {
+        g.drawImage(src, 0, 0, W, H);
+        g.fillStyle = 'rgba(20,16,12,.55)'; var r = st.rect;
+        g.fillRect(0, 0, W, r.y * H); g.fillRect(0, (r.y + r.h) * H, W, H - (r.y + r.h) * H); g.fillRect(0, r.y * H, r.x * W, r.h * H); g.fillRect((r.x + r.w) * W, r.y * H, W - (r.x + r.w) * W, r.h * H);
+        box.hidden = false; box.style.left = view.left + r.x * view.w + 'px'; box.style.top = view.top + r.y * view.h + 'px'; box.style.width = r.w * view.w + 'px'; box.style.height = r.h * view.h + 'px';
+      } else {
+        box.hidden = true;
+        var r2 = st.rect, sx = r2.x * src.width, sy = r2.y * src.height, sw = r2.w * src.width, sh = r2.h * src.height;
+        if (mask || st.tab === 'bg') checker(g, W, H, 14 * view.dpr);
+        if (mask) {
+          var t = document.createElement('canvas'); t.width = src.width; t.height = src.height; var tx = t.getContext('2d'); tx.drawImage(src, 0, 0);
+          tx.globalCompositeOperation = 'destination-in'; tx.drawImage(mask, 0, 0, t.width, t.height);
+          g.drawImage(t, sx, sy, sw, sh, 0, 0, W, H);
+        } else g.drawImage(src, sx, sy, sw, sh, 0, 0, W, H);
+      }
+    }
+    function sideUI() {
+      dlg.querySelectorAll('[data-tab]').forEach(function (b) { b.classList.toggle('is-on', b.getAttribute('data-tab') === st.tab); });
+      var h = '';
+      if (st.tab === 'crop') {
+        h = '<h4>Shape</h4><div class="pfx__chips">' + RATIOS.map(function (r) { return '<button data-ratio="' + r[0] + '"' + (st.ratio === r[0] ? ' class="is-on"' : '') + '>' + r[1] + '</button>'; }).join('') + '</div>' +
+          '<p class="pfx__note">Drag the box to choose what shows; drag its corners to crop tighter. The photo frame on the page takes this shape.</p><button class="pfx__link" data-act="rcrop">Reset crop</button>';
+      } else if (st.tab === 'adj') {
+        h = '<h4>Filters</h4><div class="pfx__pre" id="pfxPre">' + PRESETS.map(function (p, i) { return '<button data-pre="' + i + '"><canvas width="84" height="84"></canvas><span>' + p[0] + '</span></button>'; }).join('') + '</div>' +
+          '<h4>Adjust</h4>' + SLIDERS.map(function (s) { return '<label class="pfx__sl"><span>' + s[1] + '<output>' + (st.fx[s[0]] || 0) + '</output></span><input type="range" min="-100" max="100" value="' + (st.fx[s[0]] || 0) + '" data-fx="' + s[0] + '"></label>'; }).join('') +
+          '<div class="pfx__chips"><button data-tog="g"' + (st.fx.g ? ' class="is-on"' : '') + '>Black &amp; white</button><button data-tog="sp"' + (st.fx.sp ? ' class="is-on"' : '') + '>Sepia</button></div><button class="pfx__link" data-act="rfx">Reset adjustments</button>';
+      } else {
+        h = '<h4>Remove background</h4><button class="btn btn--p pfx__auto" data-act="auto">✨ Remove background</button><p class="pfx__note">Works best when the subject stands out: a person, a pet, an object. Then tidy the edges with the brush.</p>' +
+          '<h4>Brush</h4><div class="pfx__chips"><button data-brush="erase"' + (st.brush === 'erase' ? ' class="is-on"' : '') + '>Erase</button><button data-brush="restore"' + (st.brush === 'restore' ? ' class="is-on"' : '') + '>Restore</button></div>' +
+          '<label class="pfx__sl"><span>Brush size<output>' + st.size + '</output></span><input type="range" min="6" max="160" value="' + st.size + '" data-size></label>' +
+          '<div class="pfx__row"><button class="btn btn--ghost btn--sm" data-act="undo">Undo stroke</button><button class="btn btn--ghost btn--sm" data-act="rmask">Restore all</button></div><p class="pfx__note">Paint on the photo to erase or bring parts back.</p>';
+      }
+      side.innerHTML = h;
+      if (st.tab === 'adj') {
+        var thumbs = side.querySelectorAll('#pfxPre canvas'), t = document.createElement('canvas'), tw = 84; t.width = tw; t.height = tw;
+        var tx = t.getContext('2d'), s0 = Math.min(P.width, P.height); tx.drawImage(P, (P.width - s0) / 2, (P.height - s0) / 2, s0, s0, 0, 0, tw, tw);
+        var base = tx.getImageData(0, 0, tw, tw);
+        thumbs.forEach(function (c, i) { var d = new ImageData(new Uint8ClampedArray(base.data), tw, tw); R.applyFx(d.data, PRESETS[i][1]); c.getContext('2d').putImageData(d, 0, 0); });
+      }
+      layout();
+    }
+    // ---- crop interactions ----
+    var drag = null;
+    box.addEventListener('pointerdown', function (e) {
+      var h = e.target.getAttribute('data-h'); drag = { h: h, x: e.clientX, y: e.clientY, r: Object.assign({}, st.rect) };
+      box.setPointerCapture(e.pointerId); e.preventDefault();
+    });
+    box.addEventListener('pointermove', function (e) {
+      if (!drag) return;
+      var dx = (e.clientX - drag.x) / view.w, dy = (e.clientY - drag.y) / view.h, r = drag.r, n = Object.assign({}, r), ar = curAr();
+      if (!drag.h) { n.x = clamp(r.x + dx, 0, 1 - r.w); n.y = clamp(r.y + dy, 0, 1 - r.h); }
+      else {
+        var west = drag.h.indexOf('w') >= 0, north = drag.h.indexOf('n') >= 0;
+        var ax = west ? r.x + r.w : r.x, ay = north ? r.y + r.h : r.y;
+        var w = clamp(west ? r.w - dx : r.w + dx, 0.06, west ? ax : 1 - ax), hh = clamp(north ? r.h - dy : r.h + dy, 0.06, north ? ay : 1 - ay);
+        if (ar) { var hFromW = (w * IW / ar) / IH; if (hFromW <= (north ? ay : 1 - ay)) hh = hFromW; else { hh = north ? ay : 1 - ay; w = (hh * IH * ar) / IW; } }
+        n.w = w; n.h = hh; n.x = west ? ax - w : ax; n.y = north ? ay - hh : ay;
+      }
+      st.rect = n; paint();
+    });
+    box.addEventListener('pointerup', function () { drag = null; });
+    // ---- brush ----
+    var painting = null;
+    function brushAt(e) {
+      var r = cv.getBoundingClientRect(), u = (e.clientX - r.left) / r.width, v = (e.clientY - r.top) / r.height;
+      var mx = (st.rect.x + u * st.rect.w) * MW, my = (st.rect.y + v * st.rect.h) * MH, rad = st.size / 2 * (st.rect.w * MW / r.width);
+      var x = mask.getContext('2d'), grd = x.createRadialGradient(mx, my, rad * 0.55, mx, my, rad);
+      grd.addColorStop(0, 'rgba(255,255,255,1)'); grd.addColorStop(1, 'rgba(255,255,255,0)');
+      x.globalCompositeOperation = st.brush === 'erase' ? 'destination-out' : 'source-over'; x.fillStyle = grd;
+      if (painting.last) { var lx = painting.last[0], ly = painting.last[1], dist = Math.hypot(mx - lx, my - ly), steps = Math.max(1, Math.ceil(dist / (rad * 0.3))); for (var i = 1; i <= steps; i++) { var px = lx + (mx - lx) * i / steps, py = ly + (my - ly) * i / steps; var g2 = x.createRadialGradient(px, py, rad * 0.55, px, py, rad); g2.addColorStop(0, 'rgba(255,255,255,1)'); g2.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g2; x.beginPath(); x.arc(px, py, rad, 0, 7); x.fill(); } }
+      else { x.beginPath(); x.arc(mx, my, rad, 0, 7); x.fill(); }
+      x.globalCompositeOperation = 'source-over'; painting.last = [mx, my];
+    }
+    cv.addEventListener('pointerdown', function (e) {
+      if (st.tab !== 'bg') return;
+      if (!mask) { mask = document.createElement('canvas'); mask.width = MW; mask.height = MH; var mx = mask.getContext('2d'); mx.fillStyle = '#fff'; mx.fillRect(0, 0, MW, MH); }
+      undo.push(mask.getContext('2d').getImageData(0, 0, MW, MH)); if (undo.length > 15) undo.shift();
+      painting = { last: null }; st.maskChanged = true; cv.setPointerCapture(e.pointerId); brushAt(e); paint(); e.preventDefault();
+    });
+    cv.addEventListener('pointermove', function (e) { if (painting) { brushAt(e); paint(); } });
+    cv.addEventListener('pointerup', function () { painting = null; });
+    // ---- side panel ----
+    side.addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      if (b.hasAttribute('data-ratio')) {
+        st.ratio = b.getAttribute('data-ratio'); var ar = curAr();
+        if (ar) { var c = { x: st.rect.x + st.rect.w / 2, y: st.rect.y + st.rect.h / 2 }, f = fitRect(ar), s = Math.min(1, Math.max(st.rect.w / f.w, st.rect.h / f.h)); st.rect = { w: f.w * s, h: f.h * s }; st.rect.x = clamp(c.x - st.rect.w / 2, 0, 1 - st.rect.w); st.rect.y = clamp(c.y - st.rect.h / 2, 0, 1 - st.rect.h); }
+        sideUI(); return;
+      }
+      if (b.hasAttribute('data-pre')) { st.fx = Object.assign({}, PRESETS[+b.getAttribute('data-pre')][1]); sideUI(); return; }
+      if (b.hasAttribute('data-tog')) { var k = b.getAttribute('data-tog'); st.fx[k] = st.fx[k] ? 0 : 1; if (k === 'g' && st.fx.g) st.fx.sp = 0; if (k === 'sp' && st.fx.sp) st.fx.g = 0; sideUI(); return; }
+      if (b.hasAttribute('data-brush')) { st.brush = b.getAttribute('data-brush'); sideUI(); return; }
+      var a = b.getAttribute('data-act');
+      if (a === 'rcrop') { st.ratio = 'frame'; st.rect = fitRect(frameAr); sideUI(); }
+      else if (a === 'rfx') { st.fx = {}; sideUI(); }
+      else if (a === 'undo') { var u = undo.pop(); if (u) { mask.getContext('2d').putImageData(u, 0, 0); paint(); } }
+      else if (a === 'rmask') { if (mask) undo.push(mask.getContext('2d').getImageData(0, 0, MW, MH)); mask = null; st.maskChanged = true; paint(); }
+      else if (a === 'auto') {
+        var busy = dlg.querySelector('#pfxBusy'); busy.hidden = false; b.disabled = true;
+        autoMask(im, MW, MH).then(function (m) { if (mask) undo.push(mask.getContext('2d').getImageData(0, 0, MW, MH)); mask = m; st.maskChanged = true; paint(); })
+          .catch(function (er) { alert(er && er.message || 'The background could not be removed on this device.'); })
+          .then(function () { busy.hidden = true; b.disabled = false; });
+      }
+    });
+    side.addEventListener('input', function (e) {
+      var t = e.target;
+      if (t.hasAttribute('data-fx')) { st.fx[t.getAttribute('data-fx')] = +t.value; t.parentNode.querySelector('output').textContent = t.value; clearTimeout(st.ft); st.ft = setTimeout(paint, 30); }
+      if (t.hasAttribute('data-size')) { st.size = +t.value; t.parentNode.querySelector('output').textContent = t.value; }
+    });
+    dlg.querySelector('.pfx__tabs').onclick = function (e) { var b = e.target.closest('[data-tab]'); if (b) { st.tab = b.getAttribute('data-tab'); sideUI(); } };
+    function finish(res) { window.removeEventListener('resize', layout); dlg.close(); resolve(res); }
+    dlg.onclick = function (e) {
+      if (e.target.closest('[data-x]')) return finish(null);
+      if (e.target.closest('[data-ok]')) {
+        var r = st.rect, ar = (r.w * IW) / (r.h * IH), res = { rect: (r.x || r.y || r.w < 1 || r.h < 1) ? r : null, ar: ar, fx: R.hasFx(st.fx) ? st.fx : null };
+        if (!st.maskChanged) return finish(res);
+        if (!mask) { res.mask = null; return finish(res); }
+        mask.toBlob(function (bl) { res.mask = bl; finish(res); }, 'image/png');
+      }
+    };
+    dlg.oncancel = function (e) { e.preventDefault(); finish(null); };
+    window.addEventListener('resize', layout);
+    dlg.showModal(); sideUI();
+  }
+  window.PBKPhotoEdit = { open: open };
+})();

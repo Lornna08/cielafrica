@@ -4,6 +4,41 @@
   "trailingSlash": false,
   "headers": [
     {
+      "source": "/assets/vendor/ort/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/assets/pbk/models/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/photobooks/orders",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        }
+      ]
+    },
+    {
       "source": "/muse/assets/img/(.*)",
       "headers": [
         {
@@ -231,7 +266,7 @@
   ],
   "rewrites": [
     {
-      "source": "/photobooks/:page(travel|kenya|event|couple|friends|baby|pets|family|year|someone|blank|design|my-books)",
+      "source": "/photobooks/:page(travel|kenya|event|couple|friends|baby|pets|family|year|someone|blank|design|my-books|checkout)",
       "destination": "/photobooks"
     },
     {
@@ -272,6 +307,11 @@
     }
   ],
   "redirects": [
+    {
+      "source": "/photobooks/studio",
+      "destination": "/photobooks",
+      "permanent": false
+    },
     {
       "source": "/photo-books",
       "destination": "/photobooks",

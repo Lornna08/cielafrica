@@ -17,6 +17,16 @@ window.CIEL = window.CIEL || {};
       if(f)f.qty++; else c.push({id:id,name:name,price:Number(price),qty:1});
       write(c); openDrawer(); toast(name+' added to cart');
     },
+    /* photo books: { id, name, price, qty, pb:{p,product,pages}, thumb } — priced again on the server at checkout */
+    addItem:function(it,silent){
+      var c=read(), f=c.find(function(i){return i.id===it.id;});
+      if(f){ Object.assign(f,it,{qty:it.pb&&it.pb.product==='digital'?1:(f.qty+(it.qty||1))}); } else c.push(Object.assign({qty:1},it));
+      write(c); if(!silent){ openDrawer(); toast(it.name+' added to cart'); }
+    },
+    update:function(id,patch){ var c=read(),f=c.find(function(i){return i.id===id;}); if(f) Object.assign(f,patch); write(c); },
+    siteItems:function(){ return read().filter(function(i){return !i.pb;}); },
+    siteTotal:function(){ return read().filter(function(i){return !i.pb;}).reduce(function(s,i){return s+i.price*i.qty;},0); },
+    pbItems:function(){ return read().filter(function(i){return !!i.pb;}); },
     setQty:function(id,q){ var c=read(),f=c.find(function(i){return i.id===id;}); if(f){f.qty=Math.max(1,q);} write(c); },
     remove:function(id){ write(read().filter(function(i){return i.id!==id;})); },
     clear:function(){ write([]); }
@@ -84,15 +94,18 @@ window.CIEL = window.CIEL || {};
     }
     body.innerHTML=items.map(function(i){
       return '<div class="cart-row">'
-        +'<span class="cart-row__th" style="--c:'+tint(i.id)+'">'+esc(String(i.name||'?').trim().charAt(0).toUpperCase())+'</span>'
+        +(i.thumb?'<span class="cart-row__th cart-row__th--img"><img src="'+esc(i.thumb)+'" alt="" draggable="false"></span>':'<span class="cart-row__th" style="--c:'+tint(i.id)+'">'+esc(String(i.name||'?').trim().charAt(0).toUpperCase())+'</span>')
         +'<div class="cart-row__info"><div class="cart-row__name">'+esc(i.name)+'</div><div class="cart-row__price">KES '+fmt(i.price)+(i.qty>1?' × '+i.qty:'')+'</div>'
-        +'<div class="cart-row__qty"><button data-dec="'+esc(i.id)+'" aria-label="Decrease">&minus;</button><span>'+i.qty+'</span><button data-inc="'+esc(i.id)+'" aria-label="Increase">+</button></div></div>'
+        +(i.pb&&i.pb.product==='digital'?'<div class="cart-row__sub">Print-ready PDF · '+i.pb.pages+' pages</div>':(i.pb?'<div class="cart-row__sub">Printed hardcover · '+i.pb.pages+' pages</div>':'')+'<div class="cart-row__qty"><button data-dec="'+esc(i.id)+'" aria-label="Decrease">&minus;</button><span>'+i.qty+'</span><button data-inc="'+esc(i.id)+'" aria-label="Increase">+</button></div>')+'</div>'
         +'<div class="cart-row__end"><b>KES '+fmt(i.price*i.qty)+'</b><button class="cart-row__rm" data-rm="'+esc(i.id)+'">Remove</button></div>'
         +'</div>';
     }).join('');
     foot.innerHTML=''
       +'<div class="cart-sum"><span>Subtotal</span><b>KES '+fmt(Cart.total())+'</b></div>'
-      +'<a class="btn btn--p btn--lg cart-checkout" href="/checkout.html">Checkout '+ICO.arr+'</a>'
+      +(function(){ var pb=items.some(function(i){return i.pb;}), site=items.some(function(i){return !i.pb;});
+          if(pb&&!site) return '<a class="btn btn--p btn--lg cart-checkout" href="/photobooks/checkout">Checkout '+ICO.arr+'</a>';
+          if(pb&&site) return '<a class="btn btn--p btn--lg cart-checkout" href="/photobooks/checkout">Check out photo books '+ICO.arr+'</a><a class="btn btn--ghost cart-checkout cart-checkout--2" href="/checkout.html">Check out other items '+ICO.arr+'</a>';
+          return '<a class="btn btn--p btn--lg cart-checkout" href="/checkout.html">Checkout '+ICO.arr+'</a>'; })()
       +'<div class="cart-trust">'+ICO.lock+'Pay securely with M-Pesa</div>'
       +'<div class="cart-more"><a href="/products.html">Continue shopping</a><button class="cart-clear" data-clear>Clear cart</button></div>';
     body.querySelectorAll('[data-inc]').forEach(function(b){b.onclick=function(){var i=Cart.items().find(function(x){return x.id===b.dataset.inc;});Cart.setQty(b.dataset.inc,i.qty+1);paint();};});

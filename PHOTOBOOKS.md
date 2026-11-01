@@ -27,11 +27,19 @@ Every book is portrait, 21 × 28 cm (a 1200 × 1600 design space). The left 100 
 
 **Prices:** `book.price` starts as `null` ("Price coming soon"). Price = `base + (pages − includedPages) × perExtraPage`. `book.ordering` stays `false` until online ordering and payment are connected; until then the Order step offers a WhatsApp order request and a print PDF (cover + pages, 200 dpi, no bleed).
 
-Photos stay in the customer's browser (IndexedDB, `assets/js/pb/store.js` + `photos.js`). Nothing is uploaded.
+Photos stay in the customer's browser (IndexedDB, `assets/js/pb/store.js` + `photos.js`) until a printed book is paid for.
+### Orders, payment and print files
+
+- **Cart:** books go into the site cart as photo-book items (`assets/js/cart.js`). Checkout at **/photobooks/checkout** (`assets/pbk/shop.js`): printed hardcover or print-ready PDF, delivery, gift details, M-Pesa STK or an order request on WhatsApp.
+- **Server:** `api/photobooks.js` routes `pbk-quote`, `pbk-pay`, `pbk-status` (prices from `data/photobooks.js → book`, payment confirmed with Daraja's STK Query), `pbk-verify`, `pbk-upload`, `pbk-upload-done`.
+- **After payment** the customer's device renders every page at 300 dpi with 3 mm bleed plus small preview pages and uploads them to the **private Vercel Blob store** `cielafrica-photobooks` (`lib/photobooks/blobstore.js`). Paid PDFs download only with a signed receipt.
+- **Orders inbox:** **/photobooks/orders** (sign in with the `ADMIN_PASSWORD` environment variable): customer and delivery details, gift notes, status updates, a flip-through preview of each book, every print page, and a print-ready PDF (216 × 286 mm with TrimBox 210 × 280 mm).
+- **Editor extras:** photo editor (`photoedit.js`: crop with aspect ratios, filters, background removal with U²-Net small via onnxruntime-web, erase/restore brush), flip-book preview (`flip.js`, page-flip MIT), copy protection (`protect.js`).
+
 
 ---
 
-## Earlier studio (not linked)
+## Earlier studio (redirects to /photobooks)
 
 Customers create a personalised photo book at **/photobooks**, design it in the studio at **/photobooks/studio**, and buy a print-ready PDF or a printed book delivered in Kenya.
 

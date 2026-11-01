@@ -56,6 +56,7 @@
     cache[src] = o;
     return o.p;
   }
+  function forget(src) { delete cache[src]; FXCACHE.forEach(function (v, k) { if (k.indexOf(src + '|') === 0) FXCACHE.delete(k); }); }
   function ready(src) { var o = cache[src]; return o && o.im; }
   function artSrc(id, tint) {
     var A = root.PBKArt; if (!A || !A.all[id]) return null;
@@ -111,15 +112,50 @@
   }
 
   /* ---------- draw ---------- */
-  function cover(ctx, im, x, y, w, h, crop) {
-    var iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height;
+  /* Fills the frame with the photo (or the cropped part of it: rect = normalised source
+     rectangle), zoomed by crop.z and positioned by crop.cx/cy, never leaving a gap. */
+  function cover(ctx, im, x, y, w, h, crop, rect) {
+    var IW = im.naturalWidth || im.width, IH = im.naturalHeight || im.height;
+    var rx = 0, ry = 0, rw = IW, rh = IH;
+    if (rect && rect.w > 0 && rect.h > 0) { rx = rect.x * IW; ry = rect.y * IH; rw = rect.w * IW; rh = rect.h * IH; }
     var z = Math.max(1, (crop && crop.z) || 1);
-    var s = Math.max(w / iw, h / ih) * z;
-    var dw = iw * s, dh = ih * s;
+    var s = Math.max(w / rw, h / rh) * z;
+    var dw = rw * s, dh = rh * s;
     var cx = crop && crop.cx != null ? crop.cx : 0.5, cy = crop && crop.cy != null ? crop.cy : 0.5;
     var dx = x + w / 2 - cx * dw, dy = y + h / 2 - cy * dh;
     dx = Math.min(x, Math.max(x + w - dw, dx)); dy = Math.min(y, Math.max(y + h - dh, dy));
-    ctx.drawImage(im, dx, dy, dw, dh);
+    ctx.drawImage(im, rx, ry, rw, rh, dx, dy, dw, dh);
+  }
+  /* ---------- photo filters and background masks (applied per pixel, cached) ---------- */
+  var FXCACHE = new Map();
+  function fxKey(fx) { if (!fx) return ''; return ['b', 'c', 's', 'w', 'f', 'g', 'sp'].map(function (k) { return fx[k] || 0; }).join(','); }
+  function hasFx(fx) { return !!fx && fxKey(fx) !== '0,0,0,0,0,0,0'; }
+  function applyFx(d, fx) {
+    var b = (fx.b || 0) * 1.6, c = (fx.c || 0) * 1.28, cf = (259 * (c + 255)) / (255 * (259 - c)), sat = 1 + (fx.s || 0) / 100, warm = (fx.w || 0) * 0.35, fade = (fx.f || 0) / 100 * 0.35, g = fx.g, sp = fx.sp;
+    for (var i = 0; i < d.length; i += 4) {
+      var r = d[i], gg = d[i + 1], bb = d[i + 2];
+      if (g || sp) { var l = 0.299 * r + 0.587 * gg + 0.114 * bb; if (sp) { r = l * 1.07 + 18; gg = l * 0.95 + 8; bb = l * 0.78; } else { r = gg = bb = l; } }
+      r += b; gg += b; bb += b;
+      r = cf * (r - 128) + 128; gg = cf * (gg - 128) + 128; bb = cf * (bb - 128) + 128;
+      if (sat !== 1) { var L = 0.299 * r + 0.587 * gg + 0.114 * bb; r = L + (r - L) * sat; gg = L + (gg - L) * sat; bb = L + (bb - L) * sat; }
+      r += warm; bb -= warm;
+      if (fade) { r += (150 - r) * fade; gg += (145 - gg) * fade; bb += (140 - bb) * fade; }
+      d[i] = r < 0 ? 0 : r > 255 ? 255 : r; d[i + 1] = gg < 0 ? 0 : gg > 255 ? 255 : gg; d[i + 2] = bb < 0 ? 0 : bb > 255 ? 255 : bb;
+    }
+  }
+  /** The photo with its filters and background mask applied (canvas), or the photo itself. */
+  function processed(im, src, fx, mask, maskSrc) {
+    if (!hasFx(fx) && !mask) return im;
+    var key = src + '|' + fxKey(fx) + '|' + (maskSrc || '');
+    var hit = FXCACHE.get(key); if (hit) return hit;
+    var IW = im.naturalWidth || im.width, IH = im.naturalHeight || im.height, k = Math.min(1, 2600 / Math.max(IW, IH));
+    var c = document.createElement('canvas'); c.width = Math.round(IW * k); c.height = Math.round(IH * k);
+    var x = c.getContext('2d'); x.drawImage(im, 0, 0, c.width, c.height);
+    if (hasFx(fx)) { var id = x.getImageData(0, 0, c.width, c.height); applyFx(id.data, fx); x.putImageData(id, 0, 0); }
+    if (mask) { x.globalCompositeOperation = 'destination-in'; x.imageSmoothingQuality = 'high'; x.drawImage(mask, 0, 0, c.width, c.height); x.globalCompositeOperation = 'source-over'; }
+    FXCACHE.set(key, c);
+    if (FXCACHE.size > 30) FXCACHE.delete(FXCACHE.keys().next().value);
+    return c;
   }
   function rr(ctx, x, y, w, h, r) { r = Math.min(r, w / 2, h / 2); ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
 
@@ -142,7 +178,8 @@
         var src = el.photo && opt.photo ? opt.photo(el.photo) : null, im = src && ready(src);
         if (el.border) { ctx.fillStyle = el.borderColor || '#ffffff'; rr(ctx, el.x - el.border, el.y - el.border, el.w + el.border * 2, el.h + el.border * 2, (el.r || 0) + el.border); ctx.fill(); }
         rr(ctx, el.x, el.y, el.w, el.h, el.r || 0); ctx.clip();
-        if (im) cover(ctx, im, el.x, el.y, el.w, el.h, el.crop);
+        var msrc = el.mask && opt.photo ? opt.photo(el.mask) : null, mim = msrc && ready(msrc);
+        if (im) cover(ctx, processed(im, src, el.fx, mim, msrc), el.x, el.y, el.w, el.h, el.crop, el.rect);
         else if (opt.empty === 'editor') {
           ctx.fillStyle = 'rgba(20,20,20,.06)'; ctx.fillRect(el.x, el.y, el.w, el.h);
           ctx.strokeStyle = 'rgba(20,20,20,.25)'; ctx.lineWidth = 4; ctx.setLineDash([18, 14]); ctx.strokeRect(el.x + 2, el.y + 2, el.w - 4, el.h - 4); ctx.setLineDash([]);
@@ -158,6 +195,7 @@
         }
       } else if (el.t === 'img') {
         var isrc = el.src || (el.photo && opt.photo ? opt.photo(el.photo) : null), iim = isrc && ready(isrc);
+        var imsrc = el.mask && opt.photo ? opt.photo(el.mask) : null; if (iim) iim = processed(iim, isrc, el.fx, imsrc && ready(imsrc), imsrc);
         if (iim) {
           if (el.flip) { ctx.translate(el.x * 2 + el.w, 0); ctx.scale(-1, 1); }
           ctx.globalAlpha = el.op == null ? 1 : el.op;
@@ -165,6 +203,10 @@
         }
       } else if (el.t === 'text') {
         var L = layoutText(ctx, el);
+        if (el.bgc) {
+          var bx0 = Infinity, bx1 = -Infinity; L.lines.forEach(function (l) { bx0 = Math.min(bx0, l.x); bx1 = Math.max(bx1, l.x + l.w); });
+          var pad = L.cap * 0.45; ctx.fillStyle = el.bgc; rr(ctx, bx0 - pad, el.y - pad * 0.9, bx1 - bx0 + pad * 2, L.h + pad * 1.9 + L.cap * 0.1, pad * 0.6); ctx.fill();
+        }
         ctx.font = L.font; ctx.fillStyle = el.color || '#111'; ctx.textBaseline = 'alphabetic';
         if (el.shadow) { ctx.shadowColor = 'rgba(0,0,0,.2)'; ctx.shadowBlur = Math.max(2, L.cap * 0.06 * s); ctx.shadowOffsetX = L.cap * 0.02 * s; ctx.shadowOffsetY = L.cap * 0.035 * s; }
         L.lines.forEach(function (l) { drawTracked(ctx, l.t, l.x, l.y, L.ls); });
@@ -195,6 +237,7 @@
       if (el.t === 'art') list.push(img(artSrc(el.art)));
       if (el.t === 'photo' && el.photo && opt.photo) list.push(img(opt.photo(el.photo)));
       if (el.t === 'img') list.push(img(el.src || (el.photo && opt.photo ? opt.photo(el.photo) : null)));
+      if (el.mask && opt.photo) list.push(img(opt.photo(el.mask)));
     });
     return Promise.all(list);
   }
@@ -375,6 +418,6 @@
     return c;
   }
 
-  var API = { BOOKS: BOOKS, bookKind: bookKind, bookMap: bookMap, renderBook: renderBook, book3dMap: book3dMap, book3d: book3d, spine: spine, GEO: GEO, mockMap: mockMap, mock: mock, W: W, H: H, HINGE: HINGE, BRAND: BRAND, FONTS: FONTS, loadFonts: loadFonts, img: img, ready: ready, artSrc: artSrc, draw: draw, load: load, toCanvas: toCanvas, layoutText: layoutText, mockup: mockup, drawBrand: drawBrand, rr: rr };
+  var API = { forget: forget, applyFx: applyFx, processed: processed, hasFx: hasFx, cover: cover, BOOKS: BOOKS, bookKind: bookKind, bookMap: bookMap, renderBook: renderBook, book3dMap: book3dMap, book3d: book3d, spine: spine, GEO: GEO, mockMap: mockMap, mock: mock, W: W, H: H, HINGE: HINGE, BRAND: BRAND, FONTS: FONTS, loadFonts: loadFonts, img: img, ready: ready, artSrc: artSrc, draw: draw, load: load, toCanvas: toCanvas, layoutText: layoutText, mockup: mockup, drawBrand: drawBrand, rr: rr };
   if (typeof module === 'object' && module.exports) module.exports = API; else root.PBKR = API;
 })(typeof self !== 'undefined' ? self : this);

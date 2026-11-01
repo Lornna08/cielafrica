@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Photo Book orders — Ciel Africa</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png?v=20261021i">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/base.css?v=20261026a">
+<link rel="stylesheet" href="/assets/pbk/pbk.css?v=5">
+<style>
+body{background:#f6f2ea;font-family:Inter,system-ui,sans-serif;color:#1b1714}
+.ao{max-width:1240px;margin:0 auto;padding:1.2rem}
+.ao__top{display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem}
+.ao__top img{height:30px}
+.ao__top h1{font:800 1.5rem "PBK Spartan",Inter,sans-serif;flex:1}
+.ao button,.ao .btn{border-radius:999px}
+.ao__card{background:#fff;border:1px solid #e9e1d4;border-radius:18px;padding:1.2rem}
+.ao__login{max-width:380px;margin:12vh auto}
+.ao__login input,.ao__bar input,.ao__bar select,.ao select,.ao textarea{border:1px solid #e0d7c8;border-radius:12px;padding:.65rem .8rem;font:500 .95rem Inter,sans-serif;width:100%;background:#fff}
+.ao__login .btn{width:100%;justify-content:center;margin-top:.8rem}
+.ao__bar{display:flex;gap:.6rem;margin-bottom:1rem;flex-wrap:wrap}
+.ao__bar input{flex:1;min-width:200px}.ao__bar select{width:auto}
+.ao__list{display:grid;gap:.5rem}
+.ao__row{display:grid;grid-template-columns:120px 1fr 1fr 110px 130px;gap:1rem;align-items:center;background:#fff;border:1px solid #e9e1d4;border-radius:14px;padding:.8rem 1rem;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.ao__row:hover{border-color:#ff5a1f}
+.ao__row small{display:block;color:#8a8076;font-size:.8rem}
+.ao__b{display:inline-block;border-radius:999px;padding:.2rem .6rem;font-size:.76rem;font-weight:700;background:#efe8dc}
+.ao__b--paid,.ao__b--ready{background:#e3f5ea;color:#16794a}.ao__b--printing,.ao__b--preparing{background:#e8f0ff;color:#1f4fb5}.ao__b--awaiting_payment{background:#fff3e0;color:#8a5a00}.ao__b--payment_failed,.ao__b--cancelled{background:#fde8e8;color:#9b1c1c}.ao__b--dispatched,.ao__b--delivered,.ao__b--ready_collection{background:#ede7ff;color:#5b3fd1}
+.ao__det{display:grid;grid-template-columns:340px 1fr;gap:1.2rem;align-items:start}
+.ao__det dl{display:grid;grid-template-columns:auto 1fr;gap:.35rem .9rem;font-size:.92rem}
+.ao__det dt{color:#8a8076}
+.ao__book{display:flex;gap:1rem;align-items:flex-start;border:1px solid #efe8dc;border-radius:14px;padding:.9rem;margin-bottom:.8rem}
+.ao__book img{width:96px;border-radius:3px;box-shadow:0 4px 10px rgba(0,0,0,.12)}
+.ao__book>div{flex:1;display:flex;flex-direction:column;gap:.4rem;align-items:flex-start}
+.ao__acts{display:flex;flex-wrap:wrap;gap:.4rem}
+.ao__pages{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:.4rem;width:100%}
+.ao__pages button{border:1px solid #efe8dc;border-radius:6px;padding:0;background:#fff;cursor:pointer;overflow:hidden;font-size:.7rem;color:#8a8076}
+.ao__pages img{width:100%;display:block}
+.ao__hist{font-size:.84rem;color:#5c554e;list-style:none;display:grid;gap:.3rem;margin-top:.5rem}
+.ao__msg{color:#8a8076;font-size:.88rem}
+.ao h2{font:800 1.2rem "PBK Spartan",Inter,sans-serif;margin:0 0 .7rem}
+.ao__back{background:none;border:0;color:#5c554e;font-weight:600;cursor:pointer;margin-bottom:.8rem}
+@media(max-width:860px){.ao__row{grid-template-columns:1fr 1fr}.ao__det{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="ao" id="ao"><p class="ao__msg">Loading…</p></div>
+<script src="/data/photobooks.js?v=20261101d"></script>
+<script src="/assets/pbk/flip.js?v=1"></script>
+<script src="/assets/pbk/orders.js?v=1"></script>
+</body>
+</html>
