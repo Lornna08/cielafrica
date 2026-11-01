@@ -18,6 +18,7 @@ CIEL.productArt = {
 /* Product screens: one designed image per product (assets/img/products/<id>.webp); the drawings above are the fallback */
 CIEL.productShots = { v: '20261101a', ids: /^prd-(0[1-9]|1[0-9]|2[0-8]|test)$/ };
 CIEL.productPreview = function(p){
+  if (p && p.image) return '<img src="' + String(p.image).replace(/"/g, '&quot;') + '" alt="' + String(p.name || '').replace(/"/g, '&quot;') + '" width="800" height="720" loading="lazy" decoding="async" draggable="false">';
   if (p && CIEL.productShots.ids.test(p.id)) { var id = p.id === 'prd-test' ? 'prd-01' : p.id; return '<img src="/assets/img/products/' + id + '.webp?v=' + CIEL.productShots.v + '" alt="' + String(p.name || '').replace(/"/g, '&quot;') + ' screen" width="800" height="720" loading="lazy" decoding="async" draggable="false">'; }
   return (p && p.art && CIEL.productArt[p.art]) || CIEL.productArt['admin'];
 };

@@ -20,20 +20,22 @@
       .then(function (r) {
         W.index = r[0]; W.status = r[6] || {};
         W.base = r[1] && r[1].hero ? r[1] : C.extract(r[0]);
-        W.products = (evalData(r[2]).products || []).filter(function (p) { return p.id !== 'prd-test'; });
-        W.templates = evalData(r[3]).templates || [];
+        var pd = evalData(r[2]), td = evalData(r[3]);
+        W.products = (pd.products || []).filter(function (p) { return p.id !== 'prd-test'; }); W.pcats = (pd.productCategories || []).filter(function (c) { return c !== 'All'; });
+        W.templates = td.templates || []; W.tcats = (td.templateCategories || []).filter(function (c) { return c !== 'All'; });
         W.pbBase = C.readPhotoBooks(r[4]);
         var d = r[5] && r[5].draft;
         W.model = d && d.model ? d.model : clone(W.base);
         W.items = d && d.items ? d.items : { products: {}, templates: {} };
         W.pb = d && d.photobooks ? d.photobooks : clone(W.pbBase);
+        W.uploads = d && d.uploads ? d.uploads : {};
         W.draftAt = d && d.at; W.loaded = true;
       });
   }
   function changed() { W.dirty = true; status(); clearTimeout(W.t); W.t = setTimeout(saveDraft, 1800); if (W.tab !== 'prices') preview(); }
   function saveDraft() {
     W.saving = true; status();
-    return H.api('/api/hq?route=site-draft-save', { model: W.model, items: W.items, photobooks: W.pb }).then(function (r) { W.draftAt = r.at; W.dirty = false; W.saving = false; status(); }, function (e) { W.saving = false; status(e.message); });
+    return H.api('/api/hq?route=site-draft-save', { model: W.model, items: W.items, photobooks: W.pb, uploads: W.uploads }).then(function (r) { W.draftAt = r.at; W.dirty = false; W.saving = false; status(); }, function (e) { W.saving = false; status(e.message); });
   }
   function status(err) {
     var el = document.getElementById('wsSt'); if (!el) return;
@@ -71,7 +73,7 @@
     b.querySelectorAll('#wsTabs [data-t]').forEach(function (x) { x.onclick = function () { location.hash = '#website/' + x.getAttribute('data-t'); }; });
     b.querySelectorAll('#wsDev [data-d]').forEach(function (x) { x.onclick = function () { W.dev = x.getAttribute('data-d'); draw(); }; });
     b.querySelector('#wsPub').onclick = publish;
-    b.querySelector('#wsDiscard').onclick = function () { if (!confirm('Discard all unpublished changes and go back to what is live?')) return; H.api('/api/hq?route=site-draft-save', { clear: true }).then(function () { W.model = clone(W.base); W.items = { products: {}, templates: {} }; W.pb = clone(W.pbBase); W.draftAt = null; W.dirty = false; draw(); H.toast('Draft discarded'); }); };
+    b.querySelector('#wsDiscard').onclick = function () { if (!confirm('Discard all unpublished changes and go back to what is live?')) return; H.api('/api/hq?route=site-draft-save', { clear: true }).then(function () { W.model = clone(W.base); W.items = { products: {}, templates: {} }; W.pb = clone(W.pbBase); W.uploads = {}; W.draftAt = null; W.dirty = false; draw(); H.toast('Draft discarded'); }); };
     var f = b.querySelector('#wsForm');
     ({ home: formHome, menus: formMenus, prices: formPrices, history: formHistory })[W.tab](f);
     status(); preview(); fit();
@@ -211,7 +213,7 @@
     var m = H.modal('<h2>Publish to cielafrica.com?</h2><p class="muted">Your draft goes live on the public website in about a minute.</p><ul class="hist" style="margin:.6rem 0"><li>Homepage, menus, footer and announcement as shown in the preview</li>' + (n ? '<li>' + n + ' price or visibility change' + (n === 1 ? '' : 's') + '</li>' : '') + (pbCh ? '<li>Photo Books prices</li>' : '') + '</ul><label class="field"><span>Note (optional)</span><input class="hq-in" id="pubNote" placeholder="e.g. Christmas announcement"></label><div class="row" style="margin-top:12px;justify-content:flex-end"><button class="b" data-x>Cancel</button><button class="b b--p" id="pubGo">Publish now</button></div><p class="muted" id="pubMsg" style="margin-top:8px"></p>');
     m.querySelector('#pubGo').onclick = function () {
       var go = this; go.disabled = true; var msg = m.querySelector('#pubMsg'); msg.textContent = 'Saving the files…';
-      H.api('/api/hq?route=site-publish', { model: W.model, items: W.items, photobooks: pbCh ? W.pb : null, note: m.querySelector('#pubNote').value }).then(function (r) {
+      H.api('/api/hq?route=site-publish', { model: W.model, items: W.items, photobooks: pbCh ? W.pb : null, uploads: W.uploads, note: m.querySelector('#pubNote').value }).then(function (r) {
         if (!r.sha) { msg.textContent = r.message || 'Nothing changed.'; go.disabled = false; return; }
         msg.innerHTML = 'Saved (' + esc(r.files.length) + ' files). Deploying to cielafrica.com… <span class="ws-spin"></span>';
         W.draftAt = null; W.dirty = false; status();
@@ -226,5 +228,67 @@
     };
   }
 
-  window.HQSite = { init: function (h) { H = h; }, render: render, reload: function () { W.loaded = false; } };
+  /* ---------- Products & templates catalogue (create, edit, duplicate, delete, picture) ---------- */
+  function cur(kind, p) { var c = (W.items[kind] || {})[p.id] || {}; var o = {}; Object.keys(p).forEach(function (k) { o[k] = p[k]; }); Object.keys(c).forEach(function (k) { o[k] = c[k]; }); return o; }
+  function allItems(kind) {
+    var base = kind === 'products' ? W.products : W.templates, ch = W.items[kind] || {};
+    var list = base.map(function (p) { return cur(kind, p); }).filter(function (p) { return !p.delete; });
+    Object.keys(ch).forEach(function (id) { if (ch[id].create && !ch[id].delete) list.push(Object.assign({ id: id }, ch[id])); });
+    return list;
+  }
+  function nextId(kind) { var pre = kind === 'products' ? 'prd-' : 'tpl-', n = 0; allItems(kind).concat(kind === 'products' ? W.products : W.templates).forEach(function (p) { var m = new RegExp('^' + pre + '(\\d+)$').exec(p.id); if (m) n = Math.max(n, +m[1]); }); Object.keys(W.items[kind] || {}).forEach(function (id) { var m = new RegExp('^' + pre + '(\\d+)$').exec(id); if (m) n = Math.max(n, +m[1]); }); return pre + String(n + 1).padStart(2, '0'); }
+  function setItem(kind, id, patch) { var ch = W.items[kind] = W.items[kind] || {}; ch[id] = Object.assign(ch[id] || {}, patch); changed(); }
+  function shot(kind, p) { return p.image || (kind === 'products' && /^prd-(0[1-9]|1\d|2[0-8])$/.test(p.id) ? '/assets/img/products/' + p.id + '.webp' : ''); }
+  function renderCatalog(kind) {
+    var b = H.body('<div class="ws"><p class="muted">Loading the catalogue…</p></div>');
+    (W.loaded ? Promise.resolve() : load()).then(function () { drawCatalog(kind); }, function (e) { b.innerHTML = '<p class="empty">' + esc(e.message) + '</p>'; });
+  }
+  function drawCatalog(kind) {
+    W.tab = 'prices'; var q = (W.cq || '').toLowerCase(), cat = W.cc || '', list = allItems(kind), ch = W.items[kind] || {}, cats = kind === 'products' ? W.pcats : W.tcats;
+    var shown = list.filter(function (p) { return (!cat || p.category === cat) && (!q || (p.name + ' ' + (p.desc || '')).toLowerCase().indexOf(q) >= 0); });
+    var b = H.body('<div class="ws"><div class="ws-top"><div class="tabs" id="catT"><button data-k="products"' + (kind === 'products' ? ' class="is-on"' : '') + '>Products <i>' + allItems('products').length + '</i></button><button data-k="templates"' + (kind === 'templates' ? ' class="is-on"' : '') + '>Website templates <i>' + allItems('templates').length + '</i></button></div><span id="wsSt" class="ws-st"></span><button class="b" id="catNew">+ New ' + (kind === 'products' ? 'product' : 'template') + '</button><button class="b b--p" id="wsPub"' + (W.status.github === false ? ' disabled title="Add GITHUB_TOKEN first"' : '') + '>Publish to cielafrica.com</button></div>' +
+      '<div class="card"><div class="card__h" style="gap:.5rem;flex-wrap:wrap"><input class="hq-in" id="catQ" type="search" placeholder="Search" value="' + esc(W.cq || '') + '" style="max-width:260px"><select class="hq-in" id="catC" style="width:auto"><option value="">All categories</option>' + cats.map(function (c) { return '<option' + (c === cat ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') + '</select><span class="muted" style="font-size:.8rem;margin-left:auto">' + shown.length + ' shown</span></div>' +
+      '<table class="tbl cat-tbl"><thead><tr><th></th><th>Name</th><th class="hide-m">Category</th><th>Price</th><th>Status</th></tr></thead><tbody>' + shown.map(function (p) {
+        var c = ch[p.id], img = W.uploads[(p.image || '').split('?')[0]] ? 'data:image/webp;base64,' + W.uploads[p.image.split('?')[0]] : shot(kind, p);
+        return '<tr data-id="' + esc(p.id) + '"><td style="width:72px">' + (img ? '<img class="cat-img" src="' + esc(img.charAt(0) === '/' || /^data:/.test(img) ? img : '/' + img) + '" alt="">' : '<span class="cat-img cat-img--x"></span>') + '</td><td><b>' + esc(p.name) + '</b><small>' + esc(p.id) + (c ? ' · <span style="color:var(--b)">' + (c.create ? 'new, not published' : 'edited, not published') + '</span>' : '') + '</small></td><td class="hide-m">' + esc(p.category || '') + '</td><td><b>KES ' + Math.round(+p.price || 0).toLocaleString('en-KE') + '</b>' + (p.was > p.price ? '<small><s>KES ' + Math.round(p.was).toLocaleString('en-KE') + '</s></small>' : '') + '</td><td>' + (p.hidden ? '<span class="chip">Hidden</span>' : '<span class="chip chip--g">Live</span>') + '</td></tr>';
+      }).join('') + '</tbody></table></div><p class="faint" style="font-size:.78rem">Changes are saved as a draft and go live when you publish (together with any Website editor changes).</p></div>');
+    b.querySelectorAll('#catT [data-k]').forEach(function (x) { x.onclick = function () { W.cc = ''; location.hash = '#' + (x.getAttribute('data-k') === 'products' ? 'products' : 'templates'); }; });
+    var qi = b.querySelector('#catQ'); qi.oninput = function () { W.cq = qi.value; var pos = qi.selectionStart; drawCatalog(kind); var n = document.getElementById('catQ'); n.focus(); n.setSelectionRange(pos, pos); };
+    b.querySelector('#catC').onchange = function () { W.cc = this.value; drawCatalog(kind); };
+    b.querySelector('#wsPub').onclick = publish;
+    b.querySelector('#catNew').onclick = function () { var id = nextId(kind); editItem(kind, Object.assign({ id: id, create: true, name: '', category: cats[0] || '', desc: '', price: 0 }, kind === 'products' ? { art: 'admin', meta: '' } : { idealFor: '' }), true); };
+    b.querySelectorAll('tr[data-id]').forEach(function (tr) { tr.onclick = function () { var p = allItems(kind).filter(function (x) { return x.id === tr.getAttribute('data-id'); })[0]; if (p) editItem(kind, p); }; });
+    status();
+  }
+  function editItem(kind, p, isNew) {
+    var cats = kind === 'products' ? W.pcats : W.tcats, tpl = kind === 'templates';
+    var img = W.uploads[(p.image || '').split('?')[0]] ? 'data:image/webp;base64,' + W.uploads[p.image.split('?')[0]] : shot(kind, p);
+    var m = H.modal('<div class="cat-ed"><div class="row" style="justify-content:space-between"><h2 style="font-size:1rem">' + (isNew ? 'New ' + (tpl ? 'template' : 'product') : esc(p.name)) + '</h2><button class="b b--sm b--ghost" data-x>✕</button></div>' +
+      '<div class="cat-grid"><div><div class="cat-pic">' + (img ? '<img id="ePic" src="' + esc(img.charAt(0) === '/' || /^data:/.test(img) ? img : '/' + img) + '" alt="">' : '<span id="ePic" class="muted">No picture yet</span>') + '</div><label class="b b--sm" style="cursor:pointer;margin-top:8px;justify-content:center">Upload picture<input type="file" accept="image/*" id="eUp" hidden></label><p class="faint" style="font-size:.74rem;margin-top:6px">Shown on the card. Best at 800 × 720.</p></div>' +
+      '<div class="ws-grid">' + inp('Name', p.name, 'id="eName"') + '<label class="field"><span>Category</span><select class="hq-in" id="eCat">' + cats.map(function (c) { return '<option' + (c === p.category ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') + '</select></label>' +
+      inp('Description', p.desc || '', 'id="eDesc"', 3) + (tpl ? inp('Ideal for', p.idealFor || '', 'id="eFor"') + inp('Live demo link (optional)', p.demo || '', 'id="eDemo" placeholder="mokara/ or https://…"') : inp('Detail line', p.meta || '', 'id="eMeta" placeholder="e.g. Daraja API · STK Push · Sandbox & Live"')) +
+      '<div class="ws-2">' + inp(tpl ? 'Price from (KES)' : 'Price (KES)', p.price || 0, 'id="ePrice" type="number" min="0"') + inp('Was (KES, for a sale)', p.was || '', 'id="eWas" type="number" min="0" placeholder="—"') + '</div>' +
+      (tpl ? '' : '<label class="field"><span>Badge</span><select class="hq-in" id="eBadge">' + [['', 'None'], ['new', 'New'], ['popular', 'Popular']].map(function (o) { return '<option value="' + o[0] + '"' + ((p.badge || '') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>') +
+      '<label class="check"><input type="checkbox" id="eShow"' + (p.hidden ? '' : ' checked') + '> Shown on cielafrica.com</label></div></div>' +
+      '<div class="row" style="margin-top:14px">' + (isNew ? '' : '<button class="b b--sm" id="eDup">Duplicate</button><button class="b b--sm b--ghost" id="eDel" style="color:var(--r)">Delete</button>') + '<span style="flex:1"></span><button class="b" data-x>Cancel</button><button class="b b--p" id="eSave">' + (isNew ? 'Add to draft' : 'Save to draft') + '</button></div></div>');
+    m.classList.add('cat-modal');
+    var pic = null;
+    m.querySelector('#eUp').onchange = function () {
+      var f = this.files[0]; if (!f) return; var rd = new FileReader();
+      rd.onload = function () { var im = new Image(); im.onload = function () { var w = Math.min(1200, im.width), h = Math.round(im.height * w / im.width), c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(im, 0, 0, w, h); var url = c.toDataURL('image/webp', 0.86); pic = url.split(',')[1]; var el = m.querySelector('#ePic'); if (el.tagName !== 'IMG') { var n = document.createElement('img'); n.id = 'ePic'; el.replaceWith(n); el = n; } el.src = url; }; im.src = rd.result; };
+      rd.readAsDataURL(f);
+    };
+    m.querySelector('#eSave').onclick = function () {
+      var name = m.querySelector('#eName').value.trim(); if (!name) { H.toast('Give it a name'); return; }
+      var patch = { name: name, category: m.querySelector('#eCat').value, desc: m.querySelector('#eDesc').value.trim(), price: +m.querySelector('#ePrice').value || 0, was: +m.querySelector('#eWas').value || null, hidden: !m.querySelector('#eShow').checked };
+      if (tpl) { patch.idealFor = m.querySelector('#eFor').value.trim(); patch.demo = m.querySelector('#eDemo').value.trim(); } else { patch.meta = m.querySelector('#eMeta').value.trim(); patch.badge = m.querySelector('#eBadge').value; }
+      if (pic) { var path = 'assets/img/' + kind + '/' + p.id + (isNew || !/\.webp/.test(p.image || '') ? '' : '-' + Date.now().toString(36)) + '.webp'; W.uploads[path] = pic; patch.image = path + '?v=' + Date.now().toString(36); }
+      if (isNew) { patch.create = true; if (!tpl) patch.art = 'admin'; }
+      setItem(kind, p.id, patch); m.remove(); drawCatalog(kind); H.toast('Saved to draft · publish when ready');
+    };
+    var dup = m.querySelector('#eDup'); if (dup) dup.onclick = function () { var id = nextId(kind), c = cur(kind, p), o = {}; ['name', 'category', 'desc', 'meta', 'idealFor', 'price', 'was', 'badge', 'art', 'image'].forEach(function (k) { if (c[k] != null && c[k] !== '') o[k] = c[k]; }); o.name = (o.name || '') + ' (copy)'; o.create = true; o.hidden = true; setItem(kind, id, o); m.remove(); drawCatalog(kind); H.toast('Duplicated as hidden: edit and show it when ready'); };
+    var del = m.querySelector('#eDel'); if (del) del.onclick = function () { if (!confirm('Delete “' + p.name + '” from the website? It is removed when you publish. Past orders are not affected.')) return; var c = (W.items[kind] || {})[p.id]; if (c && c.create) { delete W.items[kind][p.id]; changed(); } else setItem(kind, p.id, { delete: true }); m.remove(); drawCatalog(kind); };
+  }
+
+  window.HQSite = { init: function (h) { H = h; }, render: render, renderCatalog: renderCatalog, reload: function () { W.loaded = false; } };
 })();

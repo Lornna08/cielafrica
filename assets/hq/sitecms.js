@@ -121,10 +121,26 @@
     var v = typeof val === 'string' ? JSON.stringify(val) : String(val);
     return re.test(obj) ? obj.replace(re, '$1' + v) : obj.replace(/\s*\}$/, ', ' + key + ':' + v + ' }');
   }
-  /** changes = { id: { price, was, hidden, badge } } */
-  function setItems(js, changes) {
+  var EDITABLE = ['name', 'category', 'desc', 'meta', 'idealFor', 'badge', 'image', 'link', 'demo', 'art'];
+  function literal(id, c) {
+    var keys = ['id'].concat(Object.keys(c).filter(function (k) { return k !== 'id' && k !== 'create' && k !== 'delete' && c[k] !== null && c[k] !== '' && c[k] !== undefined && c[k] !== false; }));
+    return '  { ' + keys.map(function (k) { var v = k === 'id' ? id : c[k]; return k + ':' + (typeof v === 'string' ? JSON.stringify(v) : typeof v === 'number' ? String(Math.round(v)) : String(!!v)); }).join(', ') + ' },\n';
+  }
+  /** changes = { id: { price, was, hidden, name, desc, …, create:true | delete:true } }; arrayName = 'products' | 'templates' */
+  function setItems(js, changes, arrayName) {
     Object.keys(changes || {}).forEach(function (id) {
-      var r = objRange(js, id); if (!r) return; var o = js.slice(r[0], r[1]), c = changes[id];
+      var c = changes[id];
+      if (!/^[a-z0-9-]{2,40}$/i.test(id)) return;
+      if (c.delete) { var d = objRange(js, id); if (!d) return; var end = d[1]; while (/[ ,]/.test(js[end])) end++; if (js[end] === '\n') end++; var st = d[0]; while (st > 0 && js[st - 1] === ' ') st--; js = js.slice(0, st) + js.slice(end); return; }
+      if (c.create && !objRange(js, id) && arrayName) {
+        var at = js.indexOf('window.CIEL.' + arrayName + ' = ['); if (at < 0) return;
+        var close = js.indexOf('\n];', at); if (close < 0) return;
+        var k = close; while (k > at && /\s/.test(js[k])) k--;
+        if (js[k] === '}') { js = js.slice(0, k + 1) + ',' + js.slice(k + 1); close++; }
+        js = js.slice(0, close + 1) + literal(id, c) + js.slice(close + 1); return;
+      }
+      var r = objRange(js, id); if (!r) return; var o = js.slice(r[0], r[1]);
+      EDITABLE.forEach(function (k) { if (k in c) o = setField(o, k, c[k] === '' ? null : String(c[k]).slice(0, 2000)); });
       if (c.price != null) o = setField(o, 'price', Math.max(0, Math.round(+c.price || 0)));
       if ('was' in c) o = setField(o, 'was', c.was ? Math.round(+c.was) : null);
       if ('hidden' in c) o = setField(o, 'hidden', c.hidden ? true : null);

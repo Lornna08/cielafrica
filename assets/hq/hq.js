@@ -16,8 +16,14 @@
   function dt(t) { return t ? new Date(t).toLocaleString('en-KE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''; }
   function iso(d) { var z = function (n) { return String(n).padStart(2, '0'); }; return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()); }
   function today() { return iso(new Date()); }
+  var inflight = 0;
+  function prog(d) { var p = document.getElementById('prog'); if (!p) return; inflight = Math.max(0, inflight + d); if (inflight) { p.className = 'hq-prog'; void p.offsetWidth; p.className = 'hq-prog is-on'; } else { p.className = 'hq-prog is-done'; } }
   function api(url, body) {
-    var get = body === undefined;
+    var get = body === undefined, quiet = /route=(pulse|mail-unread)\b/.test(url);
+    if (!quiet) { prog(1); return api0(url, body, get).then(function (r) { prog(-1); return r; }, function (e) { prog(-1); throw e; }); }
+    return api0(url, body, get);
+  }
+  function api0(url, body, get) {
     return fetch(url, { method: get ? 'GET' : 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'ciel' }, body: get ? undefined : JSON.stringify(body) })
       .then(function (r) { return r.json().catch(function () { return { ok: false, error: 'Unexpected response (' + r.status + ')' }; }).then(function (j) { if (!r.ok || j.ok === false) { var e = new Error(j.error || 'Request failed'); e.status = r.status; e.code = j.code; throw e; } return j; }); });
   }
@@ -43,7 +49,7 @@
     wa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c.3 2 2.5 4.3 4.6 4.6l1.2-1.1 1.7.8"/></svg>',
     globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/></svg>'
   };
-  var NAV = [['overview', 'Overview', I.home, 'Main'], ['orders', 'Orders', I.orders, 'Commerce'], ['inbox', 'Inbox', I.mail, 'Customers & sales'], ['customers', 'Customers', I.people], ['website', 'Website editor', I.web, 'Website'], ['content', 'Content library', I.pen], ['calendar', 'Calendar', I.cal, 'Operations'], ['tasks', 'Tasks', I.tasks], ['activity', 'Activity log', I.book, 'System'], ['settings', 'Setup', I.gear]];
+  var NAV = [['overview', 'Overview', I.home, 'Main'], ['orders', 'Orders', I.orders, 'Commerce'], ['payments', 'Payments', I.book], ['products', 'Products', I.pen], ['templates', 'Website templates', I.web], ['inbox', 'Inbox', I.mail, 'Customers & sales'], ['customers', 'Customers', I.people], ['website', 'Website editor', I.web, 'Website'], ['content', 'Content library', I.pen], ['calendar', 'Calendar', I.cal, 'Operations'], ['tasks', 'Tasks', I.tasks], ['activity', 'Activity log', I.book, 'System'], ['settings', 'Setup', I.gear]];
 
   /* ---------- order sources, normalised ---------- */
   var KIND = { photobook: ['Photo book', '#ff5a1f'], shop: ['Shop', '#1f4fb5'], domain: ['Domain', '#5b3fd1'], whatsapp: ['WhatsApp', '#1fa855'] };
@@ -96,9 +102,19 @@
     try { localStorage.setItem('pbk_admin', '1'); } catch (e) { }
     root.className = 'hq';
     root.innerHTML = '<aside class="hq-side"><div class="hq-side__brand"><img src="/assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa"><span class="hq-side__tag">Admin</span></div><nav class="hq-nav" id="nav"></nav><div class="hq-side__foot"><a href="/" target="_blank" rel="noopener">cielafrica.com ↗</a><button id="lo">Sign out</button></div></aside>' +
-      '<div class="hq-main"><header class="hq-top"><h1 id="ttl"></h1><span class="hq-live" id="lv" title="Live">Live</span><button class="b b--sm" id="inst" hidden>Install app</button><button class="b b--sm" id="nb" title="Phone notifications">' + I.bell + '</button><button class="b b--sm" id="rf" title="Refresh">' + I.ref + '<span>Refresh</span></button><div id="topx"></div></header><main class="hq-body" id="body"><p class="muted">Loading…</p></main></div><nav class="hq-mnav" id="mnav"></nav>';
+      '<div class="hq-main"><header class="hq-top"><button class="hq-burger" id="burger" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="ttl"></h1><span class="hq-live" id="lv" title="Live">Live</span><button class="b b--sm" id="inst" hidden>Install app</button><button class="b b--sm" id="thm" title="Light or dark"></button><button class="b b--sm" id="nb" title="Phone notifications">' + I.bell + '</button><button class="b b--sm" id="rf" title="Refresh">' + I.ref + '<span>Refresh</span></button><div id="topx"></div></header><main class="hq-body" id="body"><p class="muted">Loading…</p></main></div><nav class="hq-mnav" id="mnav"></nav>';
     document.getElementById('lo').onclick = function () { api('/api/hq?route=logout', {}).then(function () { try { localStorage.removeItem('pbk_admin'); } catch (e) { } login(S.setup || {}); }); };
     document.getElementById('rf').onclick = function () { refresh(true); };
+    /* phone & tablet: the sidebar slides in from the left */
+    var side = root.querySelector('.hq-side'), scrim = document.createElement('div'); scrim.className = 'hq-scrim'; root.appendChild(scrim);
+    var setNav = function (on) { root.classList.toggle('nav-open', on); document.body.style.overflow = on ? 'hidden' : ''; };
+    document.getElementById('burger').onclick = function () { setNav(true); };
+    scrim.onclick = function () { setNav(false); };
+    side.addEventListener('click', function (e) { if (e.target.closest('a[href^="#"]')) setNav(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setNav(false); });
+    var th = document.getElementById('thm'), dark = function () { return document.documentElement.getAttribute('data-theme') === 'dark'; };
+    var paintTh = function () { th.innerHTML = dark() ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>'; th.title = dark() ? 'Switch to light' : 'Switch to dark'; };
+    paintTh(); th.onclick = function () { var d = !dark(); if (d) document.documentElement.setAttribute('data-theme', 'dark'); else document.documentElement.removeAttribute('data-theme'); try { localStorage.setItem('ca_theme', d ? 'dark' : 'light'); } catch (e) { } paintTh(); var m = document.querySelector('meta[name=theme-color]'); if (m) m.content = d ? '#0c0c0e' : '#ffffff'; };
     document.getElementById('inst').onclick = install; if (installEv) document.getElementById('inst').hidden = false;
     var nb = document.getElementById('nb');
     pushState().then(function (st) { nb.classList.toggle('is-on', st === 'on'); });
@@ -186,13 +202,14 @@
     if (!NAV.some(function (n) { return n[0] === v; })) v = 'overview';
     document.querySelectorAll('.drawer,.modal').forEach(function (x) { x.remove(); });
     S.view = v; navs();
-    var titles = { overview: 'Good ' + (new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening') + ', Lorna', orders: 'Orders', calendar: 'Calendar', tasks: 'Tasks', customers: 'Customers', website: 'Website', settings: 'Setup', inbox: 'Inbox', content: 'Content library', activity: 'Activity log' };
+    var titles = { overview: 'Good ' + (new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening') + ', Lorna', orders: 'Orders', calendar: 'Calendar', tasks: 'Tasks', customers: 'Customers', website: 'Website', settings: 'Setup', inbox: 'Inbox', content: 'Content library', activity: 'Activity log', payments: 'Payments', products: 'Products', templates: 'Website templates' };
     document.getElementById('ttl').innerHTML = esc(titles[v]) + '<small>' + new Date().toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + '</small>';
     document.getElementById('topx').innerHTML = v === 'calendar' ? '<button class="b b--p b--sm" data-newev>' + I.plus + '<span>Event</span></button>' : v === 'tasks' ? '<button class="b b--p b--sm" data-newtk>' + I.plus + '<span>Task</span></button>' : '';
     var tb = document.querySelector('[data-newev]'); if (tb) tb.onclick = function () { eventModal({ date: today() }); };
     var tt = document.querySelector('[data-newtk]'); if (tt) tt.onclick = function () { taskModal({ status: 'todo' }); };
     if (v === 'website') { if (window.HQSite) HQSite.render(h[1] || 'home'); }
-    else ({ overview: overview, orders: orders, inbox: inbox, calendar: calendar, tasks: tasks, customers: customers, content: content, activity: activity, settings: settings })[v]();
+    else if (v === 'products' || v === 'templates') { if (window.HQSite) HQSite.renderCatalog(v); }
+    else ({ overview: overview, orders: orders, inbox: inbox, calendar: calendar, tasks: tasks, customers: customers, content: content, activity: activity, payments: payments, settings: settings })[v]();
     if (v === 'orders' && h[1]) { var o = S.orders.filter(function (x) { return x.ref === h[1]; })[0]; if (o) orderDrawer(o); }
     if (v === 'inbox' && h[1]) { S.itab = 'web'; inbox(); var m = S.inbox.filter(function (x) { return x.id === h[1]; })[0]; if (m) msgDrawer(m); }
     window.scrollTo(0, keep === true ? sy : 0);
@@ -469,6 +486,35 @@
   }
 
   /* ---------- website & setup ---------- */
+  /* ---------- payments: every M-Pesa payment across the shop, Photo Books, domains and WhatsApp ---------- */
+  function payments() {
+    var P = S.pay || (S.pay = { per: 'month', kind: 'all', st: 'paid', q: '', tests: false });
+    var now = new Date(), from = { today: new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime(), week: Date.now() - 7 * 864e5, month: new Date(now.getFullYear(), now.getMonth(), 1).getTime(), year: new Date(now.getFullYear(), 0, 1).getTime(), all: 0 }[P.per];
+    var REF = /refund/, FAIL = /fail|cancel/;
+    function stOf(o) { return REF.test(o.status) ? 'refunded' : o.paid ? 'paid' : FAIL.test(o.status) ? 'failed' : 'pending'; }
+    var base = S.orders.filter(function (o) { return (P.tests || !o.test) && (o.at || 0) >= from && (P.kind === 'all' || o.kind === P.kind); });
+    var list = base.filter(function (o) { return (P.st === 'all' || stOf(o) === P.st) && (!P.q || (o.ref + ' ' + (o.customer.name || '') + ' ' + (o.customer.phone || '') + ' ' + (o.raw.receipt || '')).toLowerCase().indexOf(P.q.toLowerCase()) >= 0); });
+    var sum = function (l) { return l.reduce(function (n, o) { return n + (o.total || 0); }, 0); };
+    var paid = base.filter(function (o) { return stOf(o) === 'paid'; }), refd = base.filter(function (o) { return stOf(o) === 'refunded'; }), pend = base.filter(function (o) { return stOf(o) === 'pending'; }), fail = base.filter(function (o) { return stOf(o) === 'failed'; });
+    var byKind = {}; paid.forEach(function (o) { byKind[o.kind] = (byKind[o.kind] || 0) + (o.total || 0); }); var mx = Math.max.apply(null, [1].concat(Object.keys(byKind).map(function (k) { return byKind[k]; })));
+    var b = body('<div class="row" style="gap:.5rem"><div class="tabs" id="pPer">' + [['today', 'Today'], ['week', '7 days'], ['month', 'This month'], ['year', 'This year'], ['all', 'All time']].map(function (x) { return '<button data-v="' + x[0] + '"' + (P.per === x[0] ? ' class="is-on"' : '') + '>' + x[1] + '</button>'; }).join('') + '</div><select class="hq-in" id="pKind" style="width:auto">' + [['all', 'All products'], ['photobook', 'Photo books'], ['shop', 'Shop'], ['domain', 'Domains'], ['whatsapp', 'WhatsApp']].map(function (x) { return '<option value="' + x[0] + '"' + (P.kind === x[0] ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select><label class="check" style="margin-left:auto"><input type="checkbox" id="pTest"' + (P.tests ? ' checked' : '') + '> Include test orders</label><button class="b b--sm" id="pCsv">Export CSV</button></div>' +
+      '<div class="kpis"><div class="card kpi"><span>Paid (gross)</span><b>' + money(sum(paid)) + '</b><small>' + paid.length + ' payment' + (paid.length === 1 ? '' : 's') + ' · avg ' + money(paid.length ? sum(paid) / paid.length : 0) + '</small></div><div class="card kpi"><span>Refunded</span><b>' + money(sum(refd)) + '</b><small>' + refd.length + ' refund' + (refd.length === 1 ? '' : 's') + '</small></div><div class="card kpi"><span>Net</span><b>' + money(sum(paid) - 0) + '</b><small>M-Pesa fees not included</small></div><div class="card kpi"><span>Not paid</span><b>' + money(sum(pend)) + '</b><small>' + pend.length + ' waiting · ' + fail.length + ' failed</small></div></div>' +
+      '<div class="ov"><div class="ov__main"><div class="card"><div class="card__h"><div class="tabs" id="pSt">' + [['paid', 'Paid'], ['pending', 'Waiting'], ['failed', 'Failed'], ['refunded', 'Refunded'], ['all', 'All']].map(function (x) { return '<button data-v="' + x[0] + '"' + (P.st === x[0] ? ' class="is-on"' : '') + '>' + x[1] + '</button>'; }).join('') + '</div><input class="hq-in" id="pQ" type="search" placeholder="Order, name, phone, receipt" value="' + esc(P.q) + '" style="max-width:240px;margin-left:auto"></div>' +
+      (list.length ? '<table class="tbl"><thead><tr><th>Date</th><th>Order</th><th class="hide-m">Customer</th><th>Amount</th><th>Status</th></tr></thead><tbody>' + list.slice(0, 300).map(function (o) { var st = stOf(o); return '<tr data-ref="' + esc(o.ref) + '"><td>' + dt(o.at) + '</td><td><b>' + esc(o.ref) + '</b>' + (o.test ? ' <span class="chip">TEST</span>' : '') + '<small><span class="kind"><i style="background:' + KIND[o.kind][1] + '"></i>' + KIND[o.kind][0] + '</span> · M-Pesa' + (o.raw.receipt ? ' · ' + esc(o.raw.receipt) : '') + '</small></td><td class="hide-m">' + esc(o.customer.name || '—') + '<small>' + esc(o.customer.phone || o.customer.email || '') + '</small></td><td><b>' + money(o.total) + '</b><small>KES</small></td><td><span class="chip chip--' + ({ paid: 'g', pending: 'y', failed: 'r', refunded: 'p' }[st]) + '">' + st.charAt(0).toUpperCase() + st.slice(1) + '</span></td></tr>'; }).join('') + '</tbody></table>' : '<p class="empty">No payments in this view.</p>') + '</div></div>' +
+      '<div class="ov__rail"><div class="card"><div class="card__h"><h2>Paid by product</h2></div><div class="card__b" style="display:grid;gap:.7rem">' + (Object.keys(byKind).length ? Object.keys(byKind).sort(function (a, c) { return byKind[c] - byKind[a]; }).map(function (k) { return '<div><div class="row" style="justify-content:space-between;font-size:.84rem"><span>' + KIND[k][0] + '</span><b>' + money(byKind[k]) + '</b></div><div style="height:6px;border-radius:6px;background:var(--line2);margin-top:5px"><div style="height:100%;width:' + Math.round(byKind[k] / mx * 100) + '%;border-radius:6px;background:' + KIND[k][1] + '"></div></div></div>'; }).join('') : '<p class="muted" style="font-size:.84rem">No paid orders in this period.</p>') + '</div></div>' +
+      '<div class="card card__b"><b style="font-size:.86rem">About these numbers</b><p class="muted" style="font-size:.8rem;margin-top:.3rem">Payments are confirmed by M-Pesa on the server, never by a customer returning to a page. All amounts are in KES (the only currency the checkout takes). Unpaid orders are never counted as revenue.</p></div></div></div>');
+    b.querySelectorAll('#pPer [data-v]').forEach(function (x) { x.onclick = function () { P.per = x.getAttribute('data-v'); payments(); }; });
+    b.querySelectorAll('#pSt [data-v]').forEach(function (x) { x.onclick = function () { P.st = x.getAttribute('data-v'); payments(); }; });
+    b.querySelector('#pKind').onchange = function () { P.kind = this.value; payments(); };
+    b.querySelector('#pTest').onchange = function () { P.tests = this.checked; payments(); };
+    var pq = b.querySelector('#pQ'); pq.oninput = function () { P.q = pq.value; var c = pq.selectionStart; payments(); var n = document.getElementById('pQ'); n.focus(); n.setSelectionRange(c, c); };
+    b.querySelector('#pCsv').onclick = function () {
+      var rows = [['Date', 'Order', 'Product', 'Customer', 'Phone', 'Email', 'Amount (KES)', 'Status', 'M-Pesa receipt', 'Test']].concat(list.map(function (o) { return [new Date(o.at).toISOString(), o.ref, KIND[o.kind][0], o.customer.name || '', o.customer.phone || '', o.customer.email || '', o.total || 0, stOf(o), o.raw.receipt || '', o.test ? 'yes' : '']; }));
+      var csv = rows.map(function (r) { return r.map(function (v) { v = String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(','); }).join('\n');
+      var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'ciel-payments-' + P.per + '-' + today() + '.csv'; a.click();
+    };
+    bindOrderRows(b);
+  }
   function content() {
     var tabs = [['/admin/content?embed=1', 'Products, templates, work & team'], ['/domains/admin?embed=1', 'Ciel Domains'], ['/photobooks/orders?embed=1', 'Photo Book files']];
     var cur = S.ctab || 0;
