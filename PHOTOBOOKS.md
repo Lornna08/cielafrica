@@ -23,7 +23,7 @@ The customer-facing Photo Books site is a single page app at **/photobooks** (`p
 | Styles | `assets/pbk/pbk.css` |
 | Asset tools | `tools/pbk/` (see its README) |
 
-Every book is portrait, 21 × 28 cm (a 1200 × 1600 design space). The left 100 units are the spine side. The CIEL AFRICA mark is drawn by the renderer at a fixed size and position (`BRAND` in `render.js`), or is part of the artwork on the travel covers, and nothing can be placed over it.
+Every book is portrait A4, 21 × 29.7 cm (a 1200 × 1697 design space; books made earlier at 21 × 28 cm move over automatically). The left 100 units are the spine side. The CIEL AFRICA mark is drawn by the renderer at a fixed size and position (`BRAND` in `render.js`), or is part of the artwork on the travel covers, and nothing can be placed over it.
 
 **Prices:** `book.price` starts as `null` ("Price coming soon"). Price = `base + (pages − includedPages) × perExtraPage`. `book.ordering` stays `false` until online ordering and payment are connected; until then the Order step offers a WhatsApp order request and a print PDF (cover + pages, 200 dpi, no bleed).
 
@@ -33,7 +33,7 @@ Photos stay in the customer's browser (IndexedDB, `assets/js/pb/store.js` + `pho
 - **Cart:** books go into the site cart as photo-book items (`assets/js/cart.js`). Checkout at **/photobooks/checkout** (`assets/pbk/shop.js`): printed hardcover or print-ready PDF, delivery, gift details, M-Pesa STK or an order request on WhatsApp.
 - **Server:** `api/photobooks.js` routes `pbk-quote`, `pbk-pay`, `pbk-status` (prices from `data/photobooks.js → book`, payment confirmed with Daraja's STK Query), `pbk-verify`, `pbk-upload`, `pbk-upload-done`.
 - **After payment** the customer's device renders every page at 300 dpi with 3 mm bleed plus small preview pages and uploads them to the **private Vercel Blob store** `cielafrica-photobooks` (`lib/photobooks/blobstore.js`). Paid PDFs download only with a signed receipt.
-- **Orders inbox:** **/photobooks/orders** (sign in with the `ADMIN_PASSWORD` environment variable): customer and delivery details, gift notes, status updates, a flip-through preview of each book, every print page, and a print-ready PDF (216 × 286 mm with TrimBox 210 × 280 mm).
+- **Orders inbox:** **/photobooks/orders** (sign in with the `ADMIN_PASSWORD` environment variable): customer and delivery details, gift notes, status updates, a flip-through preview of each book, every print page, and a print-ready PDF (216 × 303 mm with TrimBox 210 × 297 mm), and the whole cover in one piece (back · spine · front).
 - **Editor extras:** photo editor (`photoedit.js`: crop with aspect ratios, filters, background removal with U²-Net small via onnxruntime-web, erase/restore brush), flip-book preview (`flip.js`, page-flip MIT), copy protection (`protect.js`).
 
 

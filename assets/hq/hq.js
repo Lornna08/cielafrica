@@ -68,7 +68,7 @@
   var KIND = { photobook: ['Photo book', '#ff5a1f'], shop: ['Shop', '#1f4fb5'], domain: ['Domain', '#5b3fd1'], whatsapp: ['WhatsApp', '#1fa855'] };
   var WA_SET = ['pending', 'contacted', 'confirmed', 'paid', 'done', 'cancelled'];
   var WA_LABEL = { pending: 'Pending', contacted: 'Contacted', confirmed: 'Confirmed', paid: 'Paid', done: 'Delivered', cancelled: 'Cancelled', new: 'New' };
-  var PB_LABEL = { awaiting_payment: 'Awaiting payment', payment_failed: 'Payment failed', paid: 'Waiting for pages', preparing: 'Waiting for pages', ready: 'Pages received', printing: 'Printing', ready_collection: 'Ready to collect', dispatched: 'Dispatched', delivered: 'Delivered', cancelled: 'Cancelled', refunded: 'Refunded' };
+  var PB_LABEL = { awaiting_payment: 'Awaiting payment', awaiting_confirmation: 'Paybill: confirm payment', payment_failed: 'Payment failed', paid: 'Waiting for pages', preparing: 'Waiting for pages', ready: 'Pages received', printing: 'Printing', ready_collection: 'Ready to collect', dispatched: 'Dispatched', delivered: 'Delivered', cancelled: 'Cancelled', refunded: 'Refunded' };
   var PB_SET = ['paid', 'ready', 'printing', 'ready_collection', 'dispatched', 'delivered', 'cancelled', 'refunded'];
   var SHOP_SET = ['paid', 'processing', 'fulfilled', 'delivered', 'cancelled', 'refunded'];
   var CLOSED = /^(delivered|cancelled|refunded|payment_failed|registered|unavailable|failed|fulfilled|done)$/;
@@ -336,7 +336,7 @@
     var r = o.raw, c = o.customer, set = o.kind === 'photobook' ? PB_SET : o.kind === 'shop' ? SHOP_SET : o.kind === 'whatsapp' ? WA_SET : null;
     var a = r.address, g = r.gift, addr = a ? [a.line1, a.area, a.town, a.county].filter(Boolean).join(', ') + (a.notes ? ' (' + a.notes + ')' : '') : '';
     var labels = o.kind === 'photobook' ? PB_LABEL : o.kind === 'whatsapp' ? WA_LABEL : null;
-    var h = '<div class="row"><span class="kind"><i style="background:' + KIND[o.kind][1] + '"></i>' + KIND[o.kind][0] + '</span><span class="chip chip--' + tone(o.status) + '">' + esc(o.label) + '</span>' + (o.test ? '<span class="chip chip--k">TEST · deleted after 24 h</span>' : '') + '</div>' +
+    var h = '<div class="row"><span class="kind"><i style="background:' + KIND[o.kind][1] + '"></i>' + KIND[o.kind][0] + '</span><span class="chip chip--' + tone(o.status) + '">' + esc(o.label) + '</span>' + (o.test ? '<span class="chip chip--k">TEST · not printed</span>' : '') + '</div>' +
       '<dl class="dl"><dt>Placed</dt><dd>' + dt(o.at) + '</dd><dt>Total</dt><dd><b>' + money(o.total) + '</b></dd><dt>Customer</dt><dd>' + esc(c.name || '—') + (c.phone ? '<br><a href="tel:+' + esc(String(c.phone).replace(/^\+/, '')) + '">+' + esc(String(c.phone).replace(/^\+/, '')) + '</a> · <a target="_blank" rel="noopener" href="https://wa.me/' + esc(String(c.phone).replace(/\D/g, '')) + '">WhatsApp</a>' : '') + (c.email ? '<br><a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a>' : '') + '</dd>' +
       (o.kind === 'domain' ? '<dt>Domain</dt><dd>' + esc(r.domain) + ' · ' + esc(r.years) + ' year(s)</dd>' : '') +
       (r.delivery ? '<dt>Delivery</dt><dd>' + esc(r.delivery.name || r.delivery) + '</dd>' : '') + (addr ? '<dt>Address</dt><dd>' + esc(addr) + '</dd>' : '') +

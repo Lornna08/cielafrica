@@ -2,13 +2,49 @@
    CIEL AFRICA PHOTO BOOKS — page & cover renderer
    One renderer for everything: editor canvas, thumbnails,
    the book preview, mockups and the print file. A cover or page
-   is a small document in a 1200 × 1600 space (21 × 28 cm portrait).
+   is a small document in a 1200 × 1697 space (A4 portrait, 21 × 29.7 cm).
+   Books made before the A4 switch were drawn in 1200 × 1600 (21 × 28 cm);
+   toA4() brings them over the first time they are drawn.
    ============================================================ */
 (function (root) {
   'use strict';
-  var W = 1200, H = 1600, HINGE = 100;
+  var W = 1200, H = 1697, HINGE = 100, LEGACY_H = 1600, K = H / LEGACY_H;
   /* The CIEL AFRICA mark: fixed position, size and tracking on every cover. */
-  var BRAND = { text: 'CIEL AFRICA', size: 19, track: 0.3, y: 1556, x: 650, font: '500 {s}px "PBK Mont", "Montserrat", sans-serif' };
+  var BRAND = { text: 'CIEL AFRICA', size: 19, track: 0.3, y: H - 44, x: 650, font: '500 {s}px "PBK Mont", "Montserrat", sans-serif' };
+
+  /* ---------- A4: documents made in the old 21 × 28 cm space move over once ----------
+     Covers with a full artwork image scale evenly (the artwork fills the taller page and
+     the words stay where they were on it); everything else keeps its size and moves down
+     in proportion, while photo frames and colour blocks grow to the taller page. */
+  function a4El(e, uniform) {
+    if (!e || typeof e !== 'object') return e;
+    if (uniform) {
+      e.x = 600 + ((e.x || 0) - 600) * K; e.y = (e.y || 0) * K; if (e.w != null) e.w *= K; if (e.h != null) e.h *= K;
+      if (e.cap) e.cap *= K; if (e.size) e.size *= K; if (e.border) e.border *= K;
+      if (e.t === 'text' && e.x < 0) { if (e.w != null) e.w += e.x; e.x = 0; }
+      if (e.t === 'text' && e.w != null && e.x + e.w > W) e.w = W - e.x;
+      return e;
+    }
+    var stretch = e.t === 'photo' || (e.t === 'shape' && e.shape !== 'circle');
+    if (stretch) { e.y = (e.y || 0) * K; if (e.h != null) e.h *= K; }
+    else { var h = e.h || 0; e.y = ((e.y || 0) + h / 2) * K - h / 2; }
+    return e;
+  }
+  function toA4(doc) {
+    if (!doc || typeof doc !== 'object' || doc.a4) return doc;
+    var uni = !!doc.img;
+    (doc.els || []).forEach(function (e) { a4El(e, uni); });
+    doc.a4 = 1;
+    return doc;
+  }
+  /** spine width in mm for a page count (hardcover boards + paper), from data/photobooks.js → book.spine */
+  function spineMm(pages, cfg) {
+    cfg = cfg || (root.CIEL && root.CIEL.photobooks && root.CIEL.photobooks.book && root.CIEL.photobooks.book.spine) || {};
+    var b = cfg.boardMm == null ? 4 : +cfg.boardMm, pp = cfg.mmPerPage == null ? 0.1 : +cfg.mmPerPage;
+    return Math.round((b + (pages || 24) * pp) * 10) / 10;
+  }
+  /** spine width in document units (1200 units = 210 mm) */
+  function spineUnits(pages, cfg) { return spineMm(pages, cfg) / 210 * W; }
 
   var FONTS = {
     spartan: { css: '"PBK Spartan", "League Spartan", sans-serif', w: 800, name: 'Bold Sans' },
@@ -209,10 +245,12 @@
    */
   function draw(ctx, doc, opt) {
     opt = opt || {};
-    var s = opt.scale || 1;
-    ctx.save(); ctx.scale(s, s);
+    toA4(doc);
+    var s = opt.scale || 1, sy = opt.scaleY || s;
+    ctx.save(); ctx.scale(s, sy);
+    ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip(); /* nothing spills past the page (onto the spine or the next page) */
     ctx.fillStyle = doc.bg || '#ffffff'; ctx.fillRect(0, 0, W, H);
-    if (doc.img) { var b = ready(doc.img); if (b) ctx.drawImage(b, 0, 0, W, H); }
+    if (doc.img) { var b = ready(doc.img); if (b) drawFill(ctx, b); }
     (doc.els || []).forEach(function (el) {
       if (opt.hide && opt.hide === el.id) return;
       ctx.save();
@@ -265,11 +303,16 @@
     if (doc.kind === 'back') drawContact(ctx, doc.brand || '#ffffff');
     ctx.restore();
   }
+  /* full-page artwork: fills the page without stretching (centred, the sides trimmed if needed) */
+  function drawFill(ctx, im) {
+    var iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height, k = Math.max(W / iw, H / ih), dw = iw * k, dh = ih * k;
+    ctx.drawImage(im, (W - dw) / 2, (H - dh) / 2, dw, dh);
+  }
   /* back cover: the website and email, small, bottom right (clear of the spine on the right) */
   function drawContact(ctx, color) {
     ctx.save(); ctx.fillStyle = color; ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'right';
-    ctx.font = '600 25px "PBK Mont", "Montserrat", sans-serif'; ctx.fillText('cielafrica.com', 1040, 1508);
-    ctx.font = '500 21px "PBK Mont", "Montserrat", sans-serif'; ctx.globalAlpha = 0.85; ctx.fillText('hello@cielafrica.com', 1040, 1542);
+    ctx.font = '600 25px "PBK Mont", "Montserrat", sans-serif'; ctx.fillText('cielafrica.com', 1040, H - 92);
+    ctx.font = '500 21px "PBK Mont", "Montserrat", sans-serif'; ctx.globalAlpha = 0.85; ctx.fillText('hello@cielafrica.com', 1040, H - 58);
     ctx.restore();
   }
   function drawBrand(ctx, color) {
@@ -284,6 +327,7 @@
   /** Loads everything a document needs (fonts, base image, art, photos). */
   function load(doc, opt) {
     opt = opt || {};
+    toA4(doc);
     var list = [loadFonts(), img(doc.img)];
     (doc.els || []).forEach(function (el) {
       if (el.t === 'art') list.push(img(artSrc(el.art)));
@@ -301,7 +345,9 @@
     return load(doc, opt).then(function () {
       var c = document.createElement('canvas'); c.width = px; c.height = Math.round(px * H / W);
       var x = c.getContext('2d'); x.imageSmoothingQuality = 'high';
-      draw(x, doc, Object.assign({}, opt, { scale: px / W }));
+      /* the page fills every pixel row: no half-covered (see-through) last row, which used to print as a grey line */
+      x.fillStyle = doc.bg || '#ffffff'; x.fillRect(0, 0, c.width, c.height);
+      draw(x, doc, Object.assign({}, opt, { scale: px / W, scaleY: c.height / H }));
       return c;
     });
   }
@@ -444,10 +490,31 @@
     if (o.art || o.artImg) { var a = ready(o.artImg || artSrc(o.art)); if (a) { var r = a.naturalWidth / a.naturalHeight, aw = w * 0.74, ah = aw / r; if (ah > w * 1.1) { ah = w * 1.1; aw = ah * r; } x.drawImage(a, (w - aw) / 2, h * 0.68 - ah / 2, aw, ah); } }
     return c;
   }
+  /** The spine drawn flat, in document units: w wide, H high (for the wrap view and the print file).
+      o: { bg, title, tc, bc, art?, artImg?, hideTitle? } */
+  function drawSpine(ctx, o, w) {
+    ctx.save();
+    ctx.fillStyle = o.bg || '#ffffff'; ctx.fillRect(0, 0, w, H);
+    ctx.translate(w, 0); ctx.rotate(Math.PI / 2); /* text runs top to bottom, read with the book lying face up */
+    var title = o.hideTitle ? '' : String(o.title || '').toUpperCase().slice(0, 40);
+    if (title) {
+      var fs = Math.min(w * 0.56, 64);
+      ctx.font = '800 ' + fs + 'px ' + FONTS.spartan.css; ctx.textBaseline = 'middle';
+      var tw = ctx.measureText(title).width, maxW = H * 0.62;
+      if (tw > maxW) { fs = fs * maxW / tw; ctx.font = '800 ' + fs + 'px ' + FONTS.spartan.css; }
+      ctx.fillStyle = o.tc || '#111111'; ctx.fillText(title, H * 0.07, w / 2 + fs * 0.04);
+    }
+    var bs = Math.max(7, Math.min(18, w * 0.2)); ctx.font = '500 ' + bs + 'px ' + FONTS.sans.css.replace('600', '500');
+    ctx.fillStyle = o.bc || o.tc || '#111111'; ctx.textBaseline = 'middle';
+    var ls = bs * 0.24, bw = tracked(ctx, BRAND.text, ls);
+    drawTracked(ctx, BRAND.text, H * 0.95 - bw, w / 2 + bs * 0.05, ls);
+    ctx.restore();
+    return ctx;
+  }
   /** Composes the 3D book: front = flat cover canvas/image (3:4), sp = spine canvas. */
   function book3d(front, sp, map, opt) {
     opt = opt || {};
-    var F = pixels(front, opt.fw || Math.min(900, (front.naturalWidth || front.width)), Math.round((opt.fw || Math.min(900, (front.naturalWidth || front.width))) * 4 / 3));
+    var F = pixels(front, opt.fw || Math.min(900, (front.naturalWidth || front.width)), Math.round((opt.fw || Math.min(900, (front.naturalWidth || front.width))) * H / W));
     var P = pixels(sp, sp.width, sp.height);
     var edge = opt.edge || [80, 80, 80];
     var c = document.createElement('canvas'); c.width = map.w; c.height = map.h;
@@ -471,6 +538,6 @@
     return c;
   }
 
-  var API = { forget: forget, applyFx: applyFx, processed: processed, hasFx: hasFx, cover: cover, BOOKS: BOOKS, bookKind: bookKind, bookMap: bookMap, renderBook: renderBook, book3dMap: book3dMap, book3d: book3d, spine: spine, GEO: GEO, mockMap: mockMap, mock: mock, W: W, H: H, HINGE: HINGE, BRAND: BRAND, FONTS: FONTS, loadFonts: loadFonts, loadAllFonts: loadAllFonts, loadFam: loadFam, famOf: famOf, img: img, ready: ready, artSrc: artSrc, draw: draw, load: load, toCanvas: toCanvas, layoutText: layoutText, mockup: mockup, drawBrand: drawBrand, rr: rr };
+  var API = { toA4: toA4, a4El: a4El, LEGACY_H: LEGACY_H, spineMm: spineMm, spineUnits: spineUnits, drawSpine: drawSpine, drawFill: drawFill, forget: forget, applyFx: applyFx, processed: processed, hasFx: hasFx, cover: cover, BOOKS: BOOKS, bookKind: bookKind, bookMap: bookMap, renderBook: renderBook, book3dMap: book3dMap, book3d: book3d, spine: spine, GEO: GEO, mockMap: mockMap, mock: mock, W: W, H: H, HINGE: HINGE, BRAND: BRAND, FONTS: FONTS, loadFonts: loadFonts, loadAllFonts: loadAllFonts, loadFam: loadFam, famOf: famOf, img: img, ready: ready, artSrc: artSrc, draw: draw, load: load, toCanvas: toCanvas, layoutText: layoutText, mockup: mockup, drawBrand: drawBrand, rr: rr };
   if (typeof module === 'object' && module.exports) module.exports = API; else root.PBKR = API;
 })(typeof self !== 'undefined' ? self : this);

@@ -26,13 +26,17 @@
        price = base + (pages − includedPages) × perExtraPage (KES). Set either to null to hide
        prices ("price coming soon"). Delivery prices are in `delivery` below. */
     book: {
-      name: 'Portrait photo book', size: '21 × 28 cm', trimW: 210, trimH: 280, binding: 'Hardcover',
+      name: 'Portrait photo book', size: '21 × 29.7 cm (A4)', trimW: 210, trimH: 297, binding: 'Hardcover',
       pages: { min: 24, max: 100, step: 2, default: 24 },
       maxPhotosPerPage: 2,
       price: { base: 4500, includedPages: 24, perExtraPage: 100 },   /* printed hardcover (KES): starter prices, change any time */
       digital: { base: 1600, includedPages: 24, perExtraPage: 25 },  /* print-ready PDF (KES) */
-      testPrice: 5,  /* KES: the admin-only "Ciel Test" book (Someone), for trying real payments; deleted after 24 h */
-      ordering: true /* M-Pesa checkout at /photobooks/checkout */
+      testPrice: 5,  /* KES: the admin-only "Ciel Test" book (Someone), for trying real payments; kept until deleted in the orders inbox */
+      ordering: true, /* M-Pesa checkout at /photobooks/checkout */
+      /* Paybill paid by hand: the customer pastes the M-Pesa message and Ciel Africa confirms the order */
+      manualPay: { enabled: true, paybill: '400200', account: '613260' },
+      /* spine width = boardMm + pages × mmPerPage (hardcover). Confirm both with the printer. */
+      spine: { boardMm: 4, mmPerPage: 0.1 }
     },
 
     /* Free tier limits while designing (photos stay on the customer's device). */

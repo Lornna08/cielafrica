@@ -844,3 +844,109 @@ body.pbk-editing .pk{background:#efeae2}
 .pk-ob__help{font-size:.9rem;color:#5c554e;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
 .pk-myb.is-sent canvas{opacity:.92}
 @media(max-width:700px){.pk-ob__f{grid-template-columns:1fr}}
+
+/* ============================================================
+   2026-11-02 · A4 pages, whole-cover editing, open books, Paybill
+   ============================================================ */
+/* page thumbnails in the editor strip: A4 (210 × 297) */
+.pe-pg canvas{width:54px;height:76px}
+.pe-pg--cover canvas{width:58px;height:82px}
+.pe-pg--add{height:76px}
+@media(max-width:900px){.pe-pg canvas{width:42px;height:59px}.pe-pg--cover canvas{width:44px;height:62px}.pe-pg--add{width:42px;height:59px}}
+
+/* ---------- Back bar (above the category circles, every page but the landing page) ---------- */
+.pk-back{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding-top:.7rem;padding-bottom:.2rem}
+.pk-back__btn{display:inline-flex;align-items:center;gap:.35rem;border:1px solid var(--pk-line);background:#fff;color:var(--pk-ink);border-radius:999px;padding:.5rem .95rem .5rem .65rem;font:600 .92rem var(--text);cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04);transition:border-color .2s,transform .2s}
+.pk-back__btn:hover{border-color:var(--pk-hl)}
+.pk-back__btn:active{transform:scale(.97)}
+.pk-back__home{font:600 .86rem var(--text);color:var(--pk-soft);text-decoration:underline;text-underline-offset:3px}
+.pk-back+.pk-cats{margin-top:.5rem;border-top:1px solid var(--pk-line)}
+
+/* ---------- How it works: step 2 is a real open book ---------- */
+.pk-step__vis--photo{background:#efe8dc}
+.pk-step__vis--photo img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s var(--ease)}
+.pk-step:hover .pk-step__vis--photo img{transform:scale(1.04)}
+
+/* ---------- Inside the book: open spreads with arranged photos ---------- */
+.pk-open{padding-block:clamp(2.6rem,6vw,5rem);background:
+  repeating-linear-gradient(90deg,rgba(255,255,255,.55) 0 22px,rgba(236,229,218,.55) 22px 44px),#f3eee6}
+.pk-open .pk-head{margin-inline:auto;text-align:center}
+.pk-open__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(1.4rem,3vw,2.6rem) clamp(1rem,2.4vw,2rem)}
+.pk-open__item{margin:0;display:flex;flex-direction:column;align-items:center;gap:.8rem}
+.pk-open__item:nth-child(3n+1) .pk-spread{transform:rotate(-1.6deg)}
+.pk-open__item:nth-child(3n+2) .pk-spread{transform:rotate(1deg) translateY(10px)}
+.pk-open__item:nth-child(3n) .pk-spread{transform:rotate(-.6deg)}
+.pk-open__item figcaption{font:600 .82rem var(--text);letter-spacing:.06em;text-transform:uppercase;color:var(--pk-soft)}
+.pk-spread{--paper:#fbf8f3;position:relative;width:100%;aspect-ratio:420/297;display:grid;grid-template-columns:1fr 1fr;background:var(--paper);border-radius:3px 3px 4px 4px;
+  box-shadow:0 1px 0 #fff inset,0 2px 0 -1px #ddd2c2,0 4px 0 -2px #e9e1d4,0 6px 0 -3px #dcd1c0,0 22px 36px -12px rgba(60,40,20,.38),0 8px 14px -6px rgba(60,40,20,.2);transition:transform .45s var(--ease),box-shadow .45s}
+.pk-open__item:hover .pk-spread{transform:rotate(0) translateY(-6px) scale(1.02);box-shadow:0 1px 0 #fff inset,0 2px 0 -1px #ddd2c2,0 4px 0 -2px #e9e1d4,0 6px 0 -3px #dcd1c0,0 34px 50px -16px rgba(60,40,20,.42),0 10px 18px -8px rgba(60,40,20,.22)}
+.pk-spread::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:3;border-radius:inherit;
+  background:linear-gradient(90deg,rgba(0,0,0,.05),transparent 6%,transparent 40%,rgba(0,0,0,.08) 47%,rgba(0,0,0,.22) 50%,rgba(0,0,0,.08) 53%,transparent 60%,transparent 94%,rgba(0,0,0,.05))}
+.pk-spread__l,.pk-spread__r{position:relative;overflow:hidden;min-width:0}
+.pk-pg{position:absolute;inset:0;display:grid;gap:4%;padding:8% 9%}
+.pk-pg img{width:100%;height:100%;object-fit:cover;display:block;min-height:0;border-radius:1px;-webkit-user-drag:none;user-select:none;background:#e9e2d6}
+.pk-pg--bleed{padding:0}
+.pk-pg--trio{grid-template-columns:1fr 1fr;grid-template-rows:1.25fr 1fr}
+.pk-pg--trio img:first-child{grid-column:1/-1}
+.pk-pg--stack{grid-template-rows:1fr 1fr auto}
+.pk-pg--duo{grid-template-columns:1fr 1fr;grid-template-rows:1fr auto;align-items:stretch}
+.pk-pg--frame{padding:12% 13% 16%}
+.pk-pg--frame img{box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.pk-pg--note{grid-template-rows:1fr auto;padding:11% 12% 9%}
+.pk-pg__cap{font:600 clamp(.5rem,.85vw,.72rem)/1.2 var(--text);letter-spacing:.04em;color:#5c554e;text-align:center;grid-column:1/-1;align-self:center}
+.pk-pg__cap--light{position:absolute;left:0;right:0;bottom:7%;color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.45);font-weight:700}
+.pk-pg__cap--serif{font-family:"Playfair Display",Georgia,serif;font-style:italic;font-weight:500;font-size:clamp(.6rem,1vw,.85rem);letter-spacing:0}
+.pk-pg__cap--script{font-family:"PBK Dancing","Dancing Script","Brush Script MT",cursive;font-size:clamp(.8rem,1.4vw,1.15rem);letter-spacing:0;color:#7a5a46;font-weight:600}
+.pk-open__cta{display:flex;flex-direction:column;align-items:center;gap:.7rem;margin-top:clamp(2rem,4vw,3rem)}
+.pk-open__credit{font-size:.78rem;color:var(--pk-soft)}
+.pk-open__credit a{text-decoration:underline}
+@font-face{font-family:"PBK Dancing";src:url(/assets/fonts/pbk/dancing.woff2) format("woff2");font-weight:400 700;font-display:swap}
+@media(max-width:1000px){.pk-open__grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pk-open__item:nth-child(3n+2) .pk-spread{transform:rotate(1deg)}}
+@media(max-width:640px){
+  .pk-open__grid{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:1rem;padding:.6rem var(--gut) 1.6rem;margin-inline:calc(-1 * var(--gut));scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .pk-open__grid::-webkit-scrollbar{display:none}
+  .pk-open__item{flex:0 0 86%;scroll-snap-align:center}
+  .pk-open__item .pk-spread{transform:none!important}
+  .pk-pg__cap{font-size:.55rem}.pk-pg__cap--script{font-size:.85rem}
+}
+
+/* ---------- Editor: the whole cover (back · spine · front) ---------- */
+.pe-cvtabs{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:4;display:flex;gap:.2rem;background:#fff;border:1px solid #e6dfd3;border-radius:999px;padding:.2rem;box-shadow:0 4px 14px rgba(60,40,20,.1)}
+.pe-cvtabs[hidden]{display:none}
+.pe-cvtabs button{border:0;background:transparent;border-radius:999px;padding:.42rem .85rem;font:600 .8rem var(--text);color:#5c554e;cursor:pointer;white-space:nowrap}
+.pe-cvtabs button.is-on{background:#1b1714;color:#fff}
+.pe-wraplbl{position:absolute;left:0;right:0;top:-24px;height:20px;pointer-events:none}
+.pe-wraplbl[hidden]{display:none}
+.pe-wraplbl span{position:absolute;top:0;text-align:center;font:600 .68rem/20px var(--text);text-transform:uppercase;letter-spacing:.08em;color:#8a8076;white-space:nowrap;overflow:visible}
+.pe-wraplbl span[data-sp]{color:#ff5a1f}
+.pe-canvaswrap.is-wrap{box-shadow:0 14px 40px rgba(60,40,20,.2)}
+.pe-canvaswrap.is-wrap .pe-hinge{opacity:.75}
+.pe-spine{border-top:1px solid #efe8dc;padding-top:1rem}
+.pe-spine .pe-in{margin-bottom:.2rem}
+.pe-h4s{margin-top:.9rem}
+.pe-spine.is-flash{animation:peFlash 1.3s ease}
+@keyframes peFlash{0%,100%{background:transparent}25%,60%{background:#fff3ea}}
+@media(max-width:900px){.pe-cvtabs{top:6px}.pe-cvtabs button{padding:.38rem .7rem;font-size:.76rem}.pe-wraplbl span{font-size:.58rem}}
+
+/* ---------- Checkout: how to pay (M-Pesa prompt or Paybill) ---------- */
+.pkco__pmh{font:800 1.05rem var(--pk-disp);margin:1rem 0 .55rem}
+.pkco__pm{display:grid;gap:.5rem;margin-bottom:.9rem}
+.pkco__pm small{display:block;font-weight:500;color:var(--pk-soft);font-size:.8rem}
+.pkco__pm span{font-weight:700;font-size:.95rem}
+.pkco__man{background:#faf6ef;border:1px solid var(--pk-line);border-radius:16px;padding:.9rem 1rem;margin-bottom:.4rem}
+.pkco__man ol{margin:0 0 .9rem;padding-left:1.15rem;display:grid;gap:.45rem;font-size:.92rem;line-height:1.45}
+.pkco__man .pkco__f{margin-bottom:.8rem}
+.pkco__cp{display:inline-flex;align-items:center;gap:.35rem;border:1px dashed #d9cbb8;background:#fff;border-radius:8px;padding:.12rem .5rem;font:800 1rem/1.4 var(--text);letter-spacing:.04em;color:var(--pk-ink);cursor:pointer;vertical-align:baseline}
+.pkco__cp::after{content:"Copy";font:600 .68rem var(--text);letter-spacing:0;color:var(--pk-hl)}
+.pkco__cp.is-copied::after{content:"Copied ✓";color:#1f9d55}
+.pkco__ok.is-wait{background:#ff9a3d;font-size:1.7rem}
+
+/* ---------- Thank-you page: book covers keep their shape (they used to stretch to the card's height) ---------- */
+.pkco__book{align-items:flex-start}
+.pkco__book img{width:84px;height:auto;align-self:flex-start;aspect-ratio:210/297;object-fit:cover;border-radius:4px;box-shadow:0 6px 14px rgba(0,0,0,.14);background:#f3ede3}
+.pkco__item img{height:auto;aspect-ratio:210/297;object-fit:cover}
+
+/* ---------- Orders inbox & book preview: pages at their real shape ---------- */
+.pk-ob__pages img{aspect-ratio:auto;object-fit:contain;height:auto}
+.pf,.pf__in,.pf__stage{overflow:hidden;max-width:100vw}
+.pe-stage:has(.pe-cvtabs:not([hidden])) .pe-hint{top:auto;bottom:14px}

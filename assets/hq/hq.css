@@ -639,3 +639,26 @@ html[data-theme="dark"] .mx2-it:hover{background:#18181c}html[data-theme="dark"]
 .hq-top .b svg,.hq-burger svg{width:18px;height:18px}
 .hq-srch svg{width:16px;height:16px}
 .hq-nav a svg{width:18px;height:18px;stroke-width:1.75}
+
+/* ============================================================
+   iPhone home-screen app (black-translucent status bar, viewport-fit=cover):
+   panels that cover the screen keep their header and close button below the
+   status bar and their last rows above the home bar, scroll on their own
+   without dragging the page behind, and framed pages can't widen past the screen.
+   ============================================================ */
+/* iPhone / iPad (WebKit touch): a frosted sticky header can freeze as a blurred layer over the top
+   of the home-screen app and swallow touches, so the page can't scroll. A solid header there instead. */
+@supports (-webkit-touch-callout:none){
+  .hq-top{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:#ffffff!important}
+  html[data-theme="dark"] .hq-top{background:#0c0c0e!important}
+}
+.hq-main{overflow-x:clip}
+.drawer{height:100%;height:100dvh;overscroll-behavior:contain}
+.drawer__p{max-height:100%;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y}
+.drawer__h{padding-top:max(1rem,env(safe-area-inset-top))}
+.drawer__b{padding-bottom:calc(1.6rem + env(safe-area-inset-bottom))}
+.modal{padding-top:max(1rem,env(safe-area-inset-top))}
+@media(max-width:760px){.modal__p{padding-bottom:calc(1rem + env(safe-area-inset-bottom))}}
+.modal__p{max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 2rem);-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.hq-frame{height:100%;height:100dvh}
+.hq-frame iframe{width:1px;min-width:100%;min-height:0;padding-bottom:env(safe-area-inset-bottom)}

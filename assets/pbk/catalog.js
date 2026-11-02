@@ -231,6 +231,19 @@
     return doc;
   }
   function visible(t) { return !t.test || !!root.PBK_ADMIN; }
-  var API = { PH_ART: PH_ART, isFl: isFl, flSrc: flSrc, fixCover: fixCover, visible: visible, artBox: artBox, COVER_COLORS: COVER_COLORS, TEXT_COLORS: TEXT_COLORS, canColor: canColor, canText: canText, customDoc: customDoc, words: words, spineFor: spineFor, CATS: CATS, TPL: TPL, ORDER: ORDER, BLANK: BLANK, byCat: byCat, docFor: docFor, vectorDoc: vectorDoc, rasterDoc: rasterDoc, blankDoc: blankDoc, luminance: luminance, cat: function (id) { return CATS.filter(function (c) { return c.id === id; })[0]; } };
+  /* Templates are drawn in the original 1200 × 1600 space; every document handed out is moved to A4 (render.js → toA4). */
+  function a4(d) { return d && root.PBKR && root.PBKR.toA4 ? root.PBKR.toA4(d) : d; }
+  function a4DocFor(id, pi, edit) { return a4(docFor(id, pi, edit)); }
+  function a4CustomDoc(id, pi, cu) { return a4(customDoc(id, pi, cu)); }
+  function a4VectorDoc(t, pi) { return a4(vectorDoc(t, pi)); }
+  function a4RasterDoc(t, edit) { return a4(rasterDoc(t, edit)); }
+  function a4BlankDoc(c) { return a4(blankDoc(c)); }
+  function a4FixCover(doc, tplId) {
+    if (!doc || !doc.a4) return fixCover(doc, tplId);
+    var n = (doc.els || []).length; fixCover(doc, tplId);
+    (doc.els || []).slice(n).forEach(function (e) { if (root.PBKR) root.PBKR.a4El(e, !!doc.img); }); /* a year line added to an A4 cover */
+    return doc;
+  }
+  var API = { PH_ART: PH_ART, isFl: isFl, flSrc: flSrc, fixCover: a4FixCover, visible: visible, artBox: artBox, COVER_COLORS: COVER_COLORS, TEXT_COLORS: TEXT_COLORS, canColor: canColor, canText: canText, customDoc: a4CustomDoc, words: words, spineFor: spineFor, CATS: CATS, TPL: TPL, ORDER: ORDER, BLANK: BLANK, byCat: byCat, docFor: a4DocFor, vectorDoc: a4VectorDoc, rasterDoc: a4RasterDoc, blankDoc: a4BlankDoc, luminance: luminance, cat: function (id) { return CATS.filter(function (c) { return c.id === id; })[0]; } };
   if (typeof module === 'object' && module.exports) module.exports = API; else root.PBKCat = API;
 })(typeof self !== 'undefined' ? self : this);

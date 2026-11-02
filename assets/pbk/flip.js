@@ -19,6 +19,8 @@
   function open(o) {
     if (!dlg) { dlg = document.createElement('dialog'); dlg.className = 'pf'; document.body.appendChild(dlg); }
     var total = o.count + 4, urls = {}, pending = {};
+    /* page height ÷ width: A4 (297 / 210), or what the book was made at */
+    var RATIO = o.ratio || 297 / 210;
     dlg.innerHTML = '<div class="pf__in"><header class="pf__h"><b>' + esc(o.title || 'Your book') + '</b><span class="pf__lbl" id="pfLbl">Cover</span><button class="pf__x" data-x aria-label="Close preview">' + I.x + '<span>Close</span></button></header>' +
       '<div class="pf__stage" id="pfStage"><button class="pf__nav pf__nav--l" data-p aria-label="Previous page">' + I.l + '</button><div class="pf__book" id="pfBook" style="--board:' + (o.board || '#3b2f26') + '"><div class="pf__board"></div><div class="pf__stack pf__stack--l"></div><div class="pf__stack pf__stack--r"></div><div class="pf__flip" id="pfFlip"></div></div><button class="pf__nav pf__nav--r" data-n aria-label="Next page">' + I.r + '</button><div class="pf__load" id="pfLoad"><span></span></div></div>' +
       '<footer class="pf__f"><button class="pf__btn" data-p>' + I.l + '<span>Back</span></button><input type="range" id="pfR" min="0" max="' + (total - 1) + '" value="0" step="1" aria-label="Go to page"><button class="pf__btn pf__btn--n" data-n><span>Next</span>' + I.r + '</button></footer>' +
@@ -33,9 +35,9 @@
     function around(i) { var q = [i, i + 1, i - 1, i + 2, i + 3, i - 2, i + 4, i + 5]; return Promise.all(q.map(want)); }
     function sizes() {
       /* always an open book (two pages side by side), on phones too */
-      var sw = stage.clientWidth - (innerWidth > 760 ? 140 : 44), sh = stage.clientHeight - 28, spread = sw >= 240;
-      var pw = spread ? Math.min(sw / 2, sh * 0.75) : Math.min(sw, sh * 0.75);
-      return { pw: Math.floor(pw), ph: Math.floor(pw * 4 / 3), spread: spread };
+      var sw = Math.min(stage.clientWidth, document.documentElement.clientWidth || innerWidth) - (innerWidth > 760 ? 140 : 44), sh = stage.clientHeight - 28, spread = sw >= 240;
+      var pw = spread ? Math.min(sw / 2, sh / RATIO) : Math.min(sw, sh / RATIO);
+      return { pw: Math.floor(pw), ph: Math.floor(pw * RATIO), spread: spread };
     }
     function label(i) {
       if (i === 0) return 'Cover';

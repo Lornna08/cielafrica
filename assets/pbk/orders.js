@@ -3,12 +3,13 @@
    Sign in with ADMIN_PASSWORD. Lists paid orders, the customer's
    details, a flip-through preview of each book as they saw it, and
    the print files: every page at 300 dpi with 3 mm bleed, or one
-   print-ready PDF (trim 210 × 280 mm, TrimBox/BleedBox set).
+   print-ready PDF (A4 trim 210 × 297 mm, TrimBox/BleedBox set), and the
+   whole cover in one piece (back · spine · front) sized for the page count.
    ============================================================ */
 (function () {
   'use strict';
   var root = document.getElementById('ao'), CFG = (window.CIEL && CIEL.photobooks) || {}, BOOK = CFG.book || {};
-  var LABEL = { awaiting_payment: 'Awaiting payment', payment_failed: 'Payment failed', paid: 'Paid', preparing: 'Waiting for pages', ready: 'Pages received', printing: 'Printing', ready_collection: 'Ready for collection', dispatched: 'Dispatched', delivered: 'Delivered', cancelled: 'Cancelled', refunded: 'Refunded' };
+  var LABEL = { awaiting_payment: 'Awaiting payment', awaiting_confirmation: 'Paybill: confirm payment', payment_failed: 'Payment failed', paid: 'Paid', preparing: 'Waiting for pages', ready: 'Pages received', printing: 'Printing', ready_collection: 'Ready for collection', dispatched: 'Dispatched', delivered: 'Delivered', cancelled: 'Cancelled', refunded: 'Refunded' };
   var SET = ['paid', 'ready', 'printing', 'ready_collection', 'dispatched', 'delivered', 'cancelled', 'refunded'];
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function money(n) { return 'KES ' + Number(n || 0).toLocaleString('en-KE'); }
@@ -55,7 +56,7 @@
     var paidOnly = all.filter(function (o) { return o.paidAt && !o.test; });
     root.innerHTML = top('<button class="btn btn--ghost btn--sm" id="rf">Refresh</button>') +
       '<div class="ao__bar"><input id="aq" type="search" placeholder="Search order, name, phone, email" value="' + esc(filt.q) + '"><select id="as"><option value="">All statuses</option>' + Object.keys(LABEL).map(function (k) { return '<option value="' + k + '"' + (filt.s === k ? ' selected' : '') + '>' + LABEL[k] + '</option>'; }).join('') + '</select></div>' +
-      '<div class="ao__card ao__tip"><b>Try a real order for KES ' + (BOOK.testPrice || 5) + '</b><span>On this browser, open <a href="/photobooks/someone" target="_blank" rel="noopener">Photo Books → Someone</a> and pick <b>Ciel Test</b> (only you see it while signed in here). Add a few photos, tap <b>Order</b>, pay with M-Pesa, keep the page open while the pages send, then refresh this list. Test orders are marked TEST and deleted automatically after 24 hours.</span></div>' +
+      '<div class="ao__card ao__tip"><b>Try a real order for KES ' + (BOOK.testPrice || 5) + '</b><span>On this browser, open <a href="/photobooks/someone" target="_blank" rel="noopener">Photo Books → Someone</a> and pick <b>Ciel Test</b> (only you see it while signed in here). Add a few photos, tap <b>Order</b>, pay with M-Pesa, keep the page open while the pages send, then refresh this list. Test orders are marked TEST and stay here until you delete them.</span></div>' +
       '<p class="ao__msg">' + paidOnly.length + ' paid order' + (paidOnly.length === 1 ? '' : 's') + ' · ' + money(paidOnly.reduce(function (s, o) { return s + (o.total || 0); }, 0)) + '</p>' +
       '<div class="ao__list">' + (l.length ? l.map(function (o) {
         var prints = (o.items || []).filter(function (i) { return i.product === 'print'; }).length;
@@ -72,7 +73,10 @@
     document.getElementById('bk').onclick = drawList;
     api('pbk-admin-order', undefined, '&ref=' + encodeURIComponent(ref)).then(function (r) {
       var o = r.order, a = o.address, g = o.gift;
-      root.innerHTML = top() + '<button class="ao__back" id="bk">‹ All orders</button><div class="ao__det"><div class="ao__card"><h2>' + esc(o.ref) + ' ' + badge(o.status) + (o.test ? ' <i class="ao__test">TEST</i>' : '') + '</h2>' + (o.test ? '<p class="ao__msg">Test order: don’t print. Deleted automatically ' + when((o.createdAt || 0) + 864e5) + '. <button class="btn btn--ghost btn--sm" id="tdel">Delete now</button></p>' : '') + '<dl>' +
+      root.innerHTML = top() + '<button class="ao__back" id="bk">‹ All orders</button><div class="ao__det"><div class="ao__card"><h2>' + esc(o.ref) + ' ' + badge(o.status) + (o.test ? ' <i class="ao__test">TEST</i>' : '') + '</h2>' + (o.test ? '<p class="ao__msg">Test order: don’t print. It stays here until you delete it. <button class="btn btn--ghost btn--sm" id="tdel">Delete now</button></p>' : '') +
+        (o.payment && o.payment.method === 'paybill' ? '<div class="ao__pay' + (o.status === 'awaiting_confirmation' ? ' is-wait' : '') + '"><b>' + (o.status === 'awaiting_confirmation' ? 'Check this Paybill payment' : 'Paid by Paybill') + '</b><span>Paybill ' + esc(o.payment.paybill) + ' · account ' + esc(o.payment.account) + ' · code <b>' + esc(o.payment.code) + '</b> · ' + money(o.total) + '</span><blockquote>' + esc(o.payment.message) + '</blockquote>' +
+          (o.status === 'awaiting_confirmation' ? '<div class="ao__acts"><button class="btn btn--p btn--sm" id="pyok">Confirm payment</button><button class="btn btn--ghost btn--sm" id="pyno">Not received</button></div><p class="ao__msg">Confirming emails the customer and unlocks the order. Pages can arrive before you confirm; don’t print until it’s confirmed.</p>' : '') + '</div>' : '') +
+        '<dl>' +
         '<dt>Placed</dt><dd>' + when(o.createdAt) + '</dd><dt>Paid</dt><dd>' + (o.paidAt ? when(o.paidAt) : 'Not paid') + '</dd><dt>Total</dt><dd><b>' + money(o.total) + '</b></dd>' +
         '<dt>Customer</dt><dd>' + esc(o.customer.name) + '<br><a href="tel:+' + esc(o.customer.phone) + '">+' + esc(o.customer.phone) + '</a><br><a href="mailto:' + esc(o.customer.email) + '">' + esc(o.customer.email) + '</a></dd>' +
         (o.delivery ? '<dt>Delivery</dt><dd>' + esc(o.delivery.name) + '</dd>' : '') + (a ? '<dt>Address</dt><dd>' + esc([a.line1, a.area, a.town, a.county].filter(Boolean).join(', ')) + (a.notes ? '<br><i>' + esc(a.notes) + '</i>' : '') + '</dd>' : '') +
@@ -81,12 +85,15 @@
         '<h2 style="margin-top:1.2rem">Status</h2><div class="ao__acts"><select id="ss">' + SET.map(function (k) { return '<option value="' + k + '"' + (o.status === k ? ' selected' : '') + '>' + LABEL[k] + '</option>'; }).join('') + '</select></div><textarea id="sn" rows="2" placeholder="Note (optional)" style="margin-top:.4rem"></textarea><label style="display:flex;gap:.4rem;align-items:center;font-size:.86rem;margin-top:.4rem"><input type="checkbox" id="se" checked> Email the customer</label><button class="btn btn--dark btn--sm" id="sb" style="margin-top:.4rem">Update status</button>' +
         '<ul class="ao__hist">' + (o.history || []).slice().reverse().map(function (h) { return '<li><b>' + esc(LABEL[h.status] || h.status) + '</b> · ' + when(h.at) + (h.note ? ' — ' + esc(h.note) : '') + '</li>'; }).join('') + '</ul></div>' +
         '<div class="ao__card"><h2>Books</h2>' + (o.items || []).map(function (it) {
-          var b = r.books[it.projectId] || { print: [], view: [] }, bk = b.book || {};
-          return '<div class="ao__book" data-pid="' + esc(it.projectId) + '"><img data-cov alt=""><div><b>' + esc(it.name) + '</b><span class="ao__msg">' + (it.product === 'print' ? 'Printed hardcover × ' + it.qty : 'Print-ready PDF (customer downloads it)') + ' · ' + it.pages + ' pages · ' + esc(BOOK.size || '21 × 28 cm') + '</span>' +
-            (it.product === 'print' ? '<span class="ao__msg">' + b.print.length + ' of ' + (it.pages + 2) + ' print files received' + (bk.spine ? ' · Spine: “' + esc(bk.spine.title || '') + '” on ' + esc(bk.spine.bg || '') : '') + '</span>' : '') +
-            (b.view.length ? '<div class="ao__acts"><button class="btn btn--p btn--sm" data-prev>Preview book</button>' + (b.print.length ? '<button class="btn btn--dark btn--sm" data-pdf>Download print PDF</button><button class="btn btn--ghost btn--sm" data-pages>Show pages</button>' : '') + '</div><div class="ao__pages" data-grid hidden></div><span class="ao__msg" data-msg></span>' : (it.product === 'print' ? '<span class="ao__msg">The pages haven’t arrived yet. They send from the customer’s device after payment.</span>' : '')) + '</div></div>';
-        }).join('') + '<p class="ao__msg">Print files: 000 = front cover, then the pages in order, last = back cover. Each page is ' + ((BOOK.trimW || 210) + 6) + ' × ' + ((BOOK.trimH || 280) + 6) + ' mm (3 mm bleed) at 300 dpi; the PDF’s TrimBox is ' + (BOOK.trimW || 210) + ' × ' + (BOOK.trimH || 280) + ' mm.</p></div></div>';
+          var b = r.books[it.projectId] || { print: [], view: [], spine: [] }, bk = b.book || {}, tr = trim(bk);
+          return '<div class="ao__book" data-pid="' + esc(it.projectId) + '"><img data-cov alt=""><div><b>' + esc(it.name) + '</b><span class="ao__msg">' + (it.product === 'print' ? 'Printed hardcover × ' + it.qty : 'Print-ready PDF (customer downloads it)') + ' · ' + it.pages + ' pages · ' + tr.w / 10 + ' × ' + tr.h / 10 + ' cm' + (tr.h === 297 ? ' (A4)' : '') + '</span>' +
+            (it.product === 'print' ? '<span class="ao__msg">' + b.print.length + ' of ' + (it.pages + 2) + ' print files received' + (bk.spine ? ' · Spine ' + (bk.spineMm || spineMm(it.pages)) + ' mm: “' + esc(bk.spine.hideTitle ? '(no words)' : bk.spine.title || '') + '” on ' + esc(bk.spine.bg || '') : '') + '</span>' : '') +
+            (b.view.length ? '<div class="ao__acts"><button class="btn btn--p btn--sm" data-prev>Preview book</button>' + (b.print.length ? '<button class="btn btn--dark btn--sm" data-pdf>Download print PDF</button><button class="btn btn--dark btn--sm" data-wrap>Download full cover</button><button class="btn btn--ghost btn--sm" data-pages>Show pages</button>' : '') + '</div><div class="ao__pages" data-grid hidden></div><span class="ao__msg" data-msg></span>' : (it.product === 'print' ? '<span class="ao__msg">The pages haven’t arrived yet. They send from the customer’s device after payment.</span>' : '')) + '</div></div>';
+        }).join('') + '<p class="ao__msg">Print files: 000 = front cover, then the pages in order, last = back cover, each its own page at ' + ((BOOK.trimW || 210) + 6) + ' × ' + ((BOOK.trimH || 297) + 6) + ' mm (3 mm bleed) at 300 dpi; the PDF’s TrimBox is ' + (BOOK.trimW || 210) + ' × ' + (BOOK.trimH || 297) + ' mm. <b>Full cover</b> is one page: back · spine · front, with the spine width for that book’s page count.</p></div></div>';
       wireTop(); document.getElementById('bk').onclick = drawList;
+      var pyok = document.getElementById('pyok'), pyno = document.getElementById('pyno');
+      if (pyok) pyok.onclick = function () { if (!confirm('Confirm that ' + money(o.total) + ' (code ' + o.payment.code + ') reached Paybill ' + o.payment.paybill + '?')) return; pyok.disabled = true; api('pbk-admin-confirm', { ref: o.ref, ok: true }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { pyok.disabled = false; alert(e.message); }); };
+      if (pyno) pyno.onclick = function () { var note = prompt('Payment not found. A short note for the customer (optional):', ''); if (note === null) return; api('pbk-admin-confirm', { ref: o.ref, ok: false, note: note }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { alert(e.message); }); };
       var td = document.getElementById('tdel'); if (td) td.onclick = function () { if (!confirm('Delete test order ' + o.ref + ' and its files now?')) return; api('pbk-admin-delete', { ref: o.ref }).then(function () { all = all.filter(function (y) { return y.ref !== o.ref; }); drawList(); }, function (e) { alert(e.message); }); };
       document.getElementById('sb').onclick = function () { api('pbk-admin-status', { ref: o.ref, status: document.getElementById('ss').value, note: document.getElementById('sn').value, notify: document.getElementById('se').checked }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { alert(e.message); }); };
       (o.items || []).forEach(function (it) {
@@ -96,7 +103,8 @@
         var pv = el.querySelector('[data-prev]');
         if (pv) pv.onclick = function () {
           var n = b.view.length - 2;
-          PBKFlip.open({ title: it.name + ' · ' + o.ref, count: n, board: '#3b2f26', page: function (i) {
+          var tr = trim(b.book || {});
+          PBKFlip.open({ title: it.name + ' · ' + o.ref, count: n, board: '#3b2f26', ratio: tr.h / tr.w, page: function (i) {
             var k = i === 0 ? 0 : i === n + 3 ? n + 1 : (i === 1 || i === n + 2) ? -1 : i - 1;
             if (k < 0 || !b.view[k]) return null; return file(b.view[k].path).then(function (bl) { return URL.createObjectURL(bl); });
           } });
@@ -112,7 +120,7 @@
         if (pd) pd.onclick = function () {
           pd.disabled = true;
           loadPdfLib().then(function () {
-            var L = window.PDFLib, mm = 72 / 25.4, W = (BOOK.trimW || 210), H = (BOOK.trimH || 280), B = 3;
+            var L = window.PDFLib, mm = 72 / 25.4, tr = trim(b.book || {}), W = tr.w, H = tr.h, B = 3;
             return L.PDFDocument.create().then(function (doc) {
               doc.setTitle(it.name + ' ' + o.ref); doc.setCreator('Ciel Africa Photo Books');
               var i = 0;
@@ -129,9 +137,50 @@
             });
           }).then(function (bytes) { save(new Blob([bytes], { type: 'application/pdf' }), o.ref + '-' + it.name.replace(/[^\w-]+/g, '-') + '-print.pdf'); msg.textContent = 'Downloaded.'; }, function (e) { msg.textContent = e.message; }).then(function () { pd.disabled = false; });
         };
+        var wb = el.querySelector('[data-wrap]');
+        if (wb) wb.onclick = function () {
+          wb.disabled = true; msg.textContent = 'Making the full cover…';
+          var bk = b.book || {}, tr = trim(bk), sp = bk.spineMm || spineMm(it.pages), B = 3;
+          loadPdfLib().then(function () {
+            var L = window.PDFLib, mm = 72 / 25.4;
+            return Promise.all([file(b.print[0].path), file(b.print[b.print.length - 1].path), b.spine && b.spine[0] ? file(b.spine[0].path) : null]).then(function (bl) {
+              return Promise.all(bl.map(function (x) { return x ? x.arrayBuffer() : null; }));
+            }).then(function (bufs) {
+              return L.PDFDocument.create().then(function (doc) {
+                doc.setTitle(it.name + ' ' + o.ref + ' full cover'); doc.setCreator('Ciel Africa Photo Books');
+                return Promise.all([doc.embedJpg(bufs[0]), doc.embedJpg(bufs[1]), bufs[2] ? doc.embedJpg(bufs[2]) : null]).then(function (im) {
+                  var pw = (2 * tr.w + sp + 2 * B) * mm, ph = (tr.h + 2 * B) * mm, face = (tr.w + 2 * B) * mm, pg = doc.addPage([pw, ph]);
+                  pg.drawImage(im[1], { x: 0, y: 0, width: face, height: ph });
+                  pg.drawImage(im[0], { x: (tr.w + sp) * mm, y: 0, width: face, height: ph });
+                  if (im[2]) pg.drawImage(im[2], { x: (B + tr.w) * mm, y: 0, width: sp * mm, height: ph });
+                  else {
+                    /* books sent before spines were uploaded: the spine colour and title drawn here */
+                    var so = bk.spine || {}, hex = String(so.bg || '#ffffff').replace('#', ''), n = parseInt(hex.length === 3 ? hex.replace(/./g, '$&$&') : hex, 16) || 0xffffff;
+                    pg.drawRectangle({ x: (B + tr.w) * mm, y: 0, width: sp * mm, height: ph, color: L.rgb((n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255) });
+                    return doc.embedFont(L.StandardFonts.HelveticaBold).then(function (f) {
+                      var t = String(so.title || '').toUpperCase(), th = parseInt(String(so.tc || '#111111').replace('#', ''), 16) || 0x111111, fs = Math.min(sp * mm * 0.5, 14);
+                      if (t && !so.hideTitle) pg.drawText(t, { x: (B + tr.w + sp / 2) * mm - fs * 0.35, y: ph - (B + 20) * mm, size: fs, font: f, rotate: L.degrees(-90), color: L.rgb((th >> 16 & 255) / 255, (th >> 8 & 255) / 255, (th & 255) / 255) });
+                    });
+                  }
+                }).then(function () {
+                  var pg = doc.getPages()[0]; pg.setTrimBox(B * mm, B * mm, (2 * tr.w + sp) * mm, tr.h * mm); pg.setBleedBox(0, 0, pg.getWidth(), pg.getHeight());
+                  return doc.save();
+                });
+              });
+            });
+          }).then(function (bytes) { save(new Blob([bytes], { type: 'application/pdf' }), o.ref + '-' + it.name.replace(/[^\w-]+/g, '-') + '-full-cover-' + sp + 'mm-spine.pdf'); msg.textContent = 'Full cover downloaded: ' + (2 * tr.w + sp) + ' × ' + tr.h + ' mm (spine ' + sp + ' mm) plus 3 mm bleed.'; }, function (e) { msg.textContent = e.message; }).then(function () { wb.disabled = false; });
+        };
       });
     }).catch(function (e) { if (e.status === 401) return login(); root.innerHTML = top() + '<p class="ao__msg">' + esc(e.message) + '</p>'; wireTop(); });
   }
+  /** a book's trim size (mm): from the files it sent; books before the A4 switch were 210 × 280 */
+  function trim(bk) {
+    if (bk && bk.trimW && bk.trimH) return { w: +bk.trimW, h: +bk.trimH };
+    var m = bk && String(bk.size || '').match(/(\d+)\s*×\s*(\d+)/);
+    if (m) return { w: +m[1], h: +m[2] };
+    return { w: BOOK.trimW || 210, h: BOOK.trimH || 297 };
+  }
+  function spineMm(pages) { var s = BOOK.spine || {}; return Math.round(((s.boardMm == null ? 4 : s.boardMm) + (pages || 24) * (s.mmPerPage == null ? 0.1 : s.mmPerPage)) * 10) / 10; }
   function loadPdfLib() { return window.PDFLib ? Promise.resolve() : new Promise(function (ok, no) { var s = document.createElement('script'); s.src = '/assets/vendor/pdf-lib-1.17.1.min.js'; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
   start();
 })();
