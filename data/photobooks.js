@@ -29,7 +29,7 @@
       name: 'Portrait photo book', size: '21 × 29.7 cm (A4)', trimW: 210, trimH: 297, binding: 'Hardcover',
       pages: { min: 24, max: 100, step: 2, default: 24 },
       maxPhotosPerPage: 2,
-      price: { base: 4500, includedPages: 24, perExtraPage: 100 },   /* printed hardcover (KES): starter prices, change any time */
+      price: { base: 3700, includedPages: 24, perExtraPage: 100 },   /* printed hardcover (KES): starter prices, change any time */
       digital: { base: 1600, includedPages: 24, perExtraPage: 25 },  /* print-ready PDF (KES) */
       testPrice: 5,  /* KES: the admin-only "Ciel Test" book (Someone), for trying real payments; kept until deleted in the orders inbox */
       ordering: true, /* M-Pesa checkout at /photobooks/checkout */
@@ -90,9 +90,9 @@
 
     /* Kenya fulfilment. needsAddress = collect a delivery address. price null = not set. */
     delivery: [
-      { id: 'nairobi', name: 'Nairobi · parcel delivery', price: 200, needsAddress: true, enabled: true },
-      { id: 'kenya', name: 'Rest of Kenya · parcel delivery', price: 350, needsAddress: true, enabled: true },
-      { id: 'eastafrica', name: 'Other East African countries', price: 500, needsAddress: true, enabled: true },
+      { id: 'nairobi', name: 'Nairobi · parcel delivery', price: 0, needsAddress: true, enabled: true },
+      { id: 'kenya', name: 'Rest of Kenya · parcel delivery', price: 0, needsAddress: true, enabled: true },
+      { id: 'eastafrica', name: 'Other East African countries', price: 0, needsAddress: true, enabled: true },
       { id: 'uber', name: 'Uber bike (Nairobi): pay the rider on arrival', price: 0, needsAddress: true, enabled: true, note: 'We’ll tell you the Uber cost before we dispatch.' }
     ],
     maxQuantity: 10,
