@@ -89,7 +89,7 @@
           return '<div class="ao__book" data-pid="' + esc(it.projectId) + '"><img data-cov alt=""><div><b>' + esc(it.name) + '</b><span class="ao__msg">' + (it.product === 'print' ? 'Printed hardcover × ' + it.qty : 'Print-ready PDF (customer downloads it)') + ' · ' + it.pages + ' pages · ' + tr.w / 10 + ' × ' + tr.h / 10 + ' cm' + (tr.h === 297 ? ' (A4)' : '') + '</span>' +
             (it.product === 'print' ? '<span class="ao__msg">' + b.print.length + ' of ' + (it.pages + 2) + ' print files received' + (bk.spine ? ' · Spine ' + (bk.spineMm || spineMm(it.pages)) + ' mm: “' + esc(bk.spine.hideTitle ? '(no words)' : bk.spine.title || '') + '” on ' + esc(bk.spine.bg || '') : '') + '</span>' : '') +
             (b.view.length ? '<div class="ao__acts"><button class="btn btn--p btn--sm" data-prev>Preview book</button>' + (b.print.length ? '<button class="btn btn--dark btn--sm" data-pdf>Download print PDF</button><button class="btn btn--dark btn--sm" data-wrap>Download full cover</button><button class="btn btn--ghost btn--sm" data-pages>Show pages</button>' : '') + '</div><div class="ao__pages" data-grid hidden></div><span class="ao__msg" data-msg></span>' : (it.product === 'print' ? '<span class="ao__msg">The pages haven’t arrived yet. They send from the customer’s device after payment.</span>' : '')) + '</div></div>';
-        }).join('') + '<p class="ao__msg">Print files: 000 = front cover, then the pages in order, last = back cover, each its own page at ' + ((BOOK.trimW || 210) + 6) + ' × ' + ((BOOK.trimH || 297) + 6) + ' mm (3 mm bleed) at 300 dpi; the PDF’s TrimBox is ' + (BOOK.trimW || 210) + ' × ' + (BOOK.trimH || 297) + ' mm. <b>Full cover</b> is one page: back · spine · front, with the spine width for that book’s page count.</p></div></div>';
+        }).join('') + '<p class="ao__msg">Print files: 000 = front cover, then the pages in order, last = back cover, each its own page at ' + ((BOOK.trimW || 210) + 6) + ' × ' + ((BOOK.trimH || 297) + 6) + ' mm (3 mm bleed) at 300 dpi; the PDF’s TrimBox is ' + (BOOK.trimW || 210) + ' × ' + (BOOK.trimH || 297) + ' mm. <b>Full cover</b> is the hardcover case in one piece: wrap · back · hinge · spine · hinge · front · wrap, sized for that book’s page count (numbers from Ciel Admin → Prices → Hardcover case).</p></div></div>';
       wireTop(); document.getElementById('bk').onclick = drawList;
       var pyok = document.getElementById('pyok'), pyno = document.getElementById('pyno');
       if (pyok) pyok.onclick = function () { if (!confirm('Confirm that ' + money(o.total) + ' (code ' + o.payment.code + ') reached Paybill ' + o.payment.paybill + '?')) return; pyok.disabled = true; api('pbk-admin-confirm', { ref: o.ref, ok: true }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { pyok.disabled = false; alert(e.message); }); };
@@ -140,35 +140,30 @@
         var wb = el.querySelector('[data-wrap]');
         if (wb) wb.onclick = function () {
           wb.disabled = true; msg.textContent = 'Making the full cover…';
-          var bk = b.book || {}, tr = trim(bk), sp = bk.spineMm || spineMm(it.pages), B = 3;
-          loadPdfLib().then(function () {
-            var L = window.PDFLib, mm = 72 / 25.4;
-            return Promise.all([file(b.print[0].path), file(b.print[b.print.length - 1].path), b.spine && b.spine[0] ? file(b.spine[0].path) : null]).then(function (bl) {
-              return Promise.all(bl.map(function (x) { return x ? x.arrayBuffer() : null; }));
-            }).then(function (bufs) {
+          var bk = b.book || {}, tr = trim(bk), sp = spineMm(it.pages), cc = BOOK.cover || {}, R = window.PBKR;
+          function im(bl) { return new Promise(function (ok, no) { var u = URL.createObjectURL(bl), x = new Image(); x.onload = function () { ok(x); }; x.onerror = no; x.src = u; }); }
+          /* books sent before spine files were uploaded: the spine drawn here from its colour and words */
+          function spineImg() {
+            if (b.spine && b.spine[0]) return file(b.spine[0].path).then(im);
+            var so = bk.spine || {}; if (!R) return Promise.resolve(null);
+            return R.loadFonts().then(function () { var w = Math.max(8, Math.round(sp / 25.4 * 300)), h = Math.round((tr.h + 6) / 25.4 * 300), c = document.createElement('canvas'); c.width = w; c.height = h; var x = c.getContext('2d'), su = R.spineUnits(it.pages), bp = 3 / 25.4 * 300; x.fillStyle = so.bg || '#fff'; x.fillRect(0, 0, w, h); x.setTransform(w / su, 0, 0, (h - 2 * bp) / R.H, 0, bp); R.drawSpine(x, so, su); return c; });
+          }
+          Promise.all([file(b.print[0].path).then(im), file(b.print[b.print.length - 1].path).then(im), spineImg(), loadPdfLib()]).then(function (r) {
+            var cv = R.caseCover(r[1], r[0], r[2], { trimW: tr.w, trimH: tr.h, bleedMm: 3, spineMm: sp, cover: cc, dpi: 300, maxPx: /iPhone|iPad|iPod|Android/.test(navigator.userAgent) ? 16e6 : 60e6 });
+            return new Promise(function (ok) { cv.canvas.toBlob(ok, 'image/jpeg', 0.93); }).then(function (jb) { return jb.arrayBuffer(); }).then(function (buf) {
+              var L = window.PDFLib, mm = 72 / 25.4;
               return L.PDFDocument.create().then(function (doc) {
-                doc.setTitle(it.name + ' ' + o.ref + ' full cover'); doc.setCreator('Ciel Africa Photo Books');
-                return Promise.all([doc.embedJpg(bufs[0]), doc.embedJpg(bufs[1]), bufs[2] ? doc.embedJpg(bufs[2]) : null]).then(function (im) {
-                  var pw = (2 * tr.w + sp + 2 * B) * mm, ph = (tr.h + 2 * B) * mm, face = (tr.w + 2 * B) * mm, pg = doc.addPage([pw, ph]);
-                  pg.drawImage(im[1], { x: 0, y: 0, width: face, height: ph });
-                  pg.drawImage(im[0], { x: (tr.w + sp) * mm, y: 0, width: face, height: ph });
-                  if (im[2]) pg.drawImage(im[2], { x: (B + tr.w) * mm, y: 0, width: sp * mm, height: ph });
-                  else {
-                    /* books sent before spines were uploaded: the spine colour and title drawn here */
-                    var so = bk.spine || {}, hex = String(so.bg || '#ffffff').replace('#', ''), n = parseInt(hex.length === 3 ? hex.replace(/./g, '$&$&') : hex, 16) || 0xffffff;
-                    pg.drawRectangle({ x: (B + tr.w) * mm, y: 0, width: sp * mm, height: ph, color: L.rgb((n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255) });
-                    return doc.embedFont(L.StandardFonts.HelveticaBold).then(function (f) {
-                      var t = String(so.title || '').toUpperCase(), th = parseInt(String(so.tc || '#111111').replace('#', ''), 16) || 0x111111, fs = Math.min(sp * mm * 0.5, 14);
-                      if (t && !so.hideTitle) pg.drawText(t, { x: (B + tr.w + sp / 2) * mm - fs * 0.35, y: ph - (B + 20) * mm, size: fs, font: f, rotate: L.degrees(-90), color: L.rgb((th >> 16 & 255) / 255, (th >> 8 & 255) / 255, (th & 255) / 255) });
-                    });
-                  }
-                }).then(function () {
-                  var pg = doc.getPages()[0]; pg.setTrimBox(B * mm, B * mm, (2 * tr.w + sp) * mm, tr.h * mm); pg.setBleedBox(0, 0, pg.getWidth(), pg.getHeight());
+                doc.setTitle(it.name + ' ' + o.ref + ' hardcover case'); doc.setCreator('Ciel Africa Photo Books');
+                doc.setSubject('Case wrap ' + cv.widthMm + ' × ' + cv.heightMm + ' mm · spine ' + sp + ' mm · hinge ' + cv.hingeMm + ' mm each side · wrap ' + cv.wrapMm + ' mm · ' + cv.dpi + ' dpi');
+                return doc.embedJpg(buf).then(function (img) {
+                  var pg = doc.addPage([cv.widthMm * mm, cv.heightMm * mm]); pg.drawImage(img, { x: 0, y: 0, width: cv.widthMm * mm, height: cv.heightMm * mm });
+                  /* thin guides outside nothing printable: none drawn on the art. Sizes are in the PDF subject and the file name. */
                   return doc.save();
                 });
               });
-            });
-          }).then(function (bytes) { save(new Blob([bytes], { type: 'application/pdf' }), o.ref + '-' + it.name.replace(/[^\w-]+/g, '-') + '-full-cover-' + sp + 'mm-spine.pdf'); msg.textContent = 'Full cover downloaded: ' + (2 * tr.w + sp) + ' × ' + tr.h + ' mm (spine ' + sp + ' mm) plus 3 mm bleed.'; }, function (e) { msg.textContent = e.message; }).then(function () { wb.disabled = false; });
+            }).then(function (bytes) { save(new Blob([bytes], { type: 'application/pdf' }), o.ref + '-' + it.name.replace(/[^\w-]+/g, '-') + '-case-' + Math.round(cv.widthMm) + 'x' + Math.round(cv.heightMm) + 'mm-spine' + sp + 'mm.pdf');
+              msg.innerHTML = 'Full cover downloaded: <b>' + (Math.round(cv.widthMm * 10) / 10) + ' × ' + cv.heightMm + ' mm</b>. Back ' + tr.w + ' · hinge ' + cv.hingeMm + ' · spine ' + sp + ' · hinge ' + cv.hingeMm + ' · front ' + tr.w + ' mm, with ' + cv.wrapMm + ' mm wrap all round (' + cv.dpi + ' dpi).'; });
+          }).catch(function (e) { msg.textContent = e.message || 'Couldn’t make the cover.'; }).then(function () { wb.disabled = false; });
         };
       });
     }).catch(function (e) { if (e.status === 401) return login(); root.innerHTML = top() + '<p class="ao__msg">' + esc(e.message) + '</p>'; wireTop(); });
@@ -180,7 +175,7 @@
     if (m) return { w: +m[1], h: +m[2] };
     return { w: BOOK.trimW || 210, h: BOOK.trimH || 297 };
   }
-  function spineMm(pages) { var s = BOOK.spine || {}; return Math.round(((s.boardMm == null ? 4 : s.boardMm) + (pages || 24) * (s.mmPerPage == null ? 0.1 : s.mmPerPage)) * 10) / 10; }
+  function spineMm(pages) { var c = BOOK.cover || {}, g = +c.paperGsm || 170, k = +c.paperBulk || 1, bd = c.boardMm == null ? 3 : +c.boardMm; return Math.round((g * k * Math.ceil((pages || 24) / 2) / 1000 + 2 * bd) * 10) / 10; }
   function loadPdfLib() { return window.PDFLib ? Promise.resolve() : new Promise(function (ok, no) { var s = document.createElement('script'); s.src = '/assets/vendor/pdf-lib-1.17.1.min.js'; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
   start();
 })();

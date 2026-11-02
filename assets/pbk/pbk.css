@@ -1101,3 +1101,16 @@ body.pbk-editing .pk{background:#efeae2}
 .pe-mock .pe-rot__b canvas{margin:0;max-width:none}
 .pe-mock .pe-rot__f,.pe-mock .pe-rot__k{width:var(--w);height:var(--h)}
 .pe-mock .pe-rot__s{width:var(--d);height:var(--h)}
+
+/* checkout: country, outside East Africa, coupon, M-Pesa number */
+.pkco__f select{border:1px solid var(--pk-line);border-radius:12px;padding:.75rem .85rem;font:500 1rem var(--text);background:#fff;color:var(--pk-ink);appearance:auto}
+.pkco__intl{display:flex;flex-direction:column;gap:.2rem;background:#f6f1e8;border:1px solid var(--pk-line);border-radius:14px;padding:.8rem .95rem;font-size:.9rem}
+.pkco__cpn{display:flex;gap:.4rem;margin:.7rem 0 .2rem}
+.pkco__cpn input{flex:1;min-width:0;border:1px solid var(--pk-line);border-radius:999px;padding:.55rem .9rem;font:600 .9rem var(--text);text-transform:uppercase;letter-spacing:.04em;background:#fff}
+.pkco__cpn input:focus{outline:0;border-color:var(--pk-hl)}
+.pkco__cpn .btn{border-radius:999px}
+.pkco__cpnmsg{font-size:.8rem;color:var(--pk-soft);min-height:0;margin:0}
+.pkco__cpnmsg.is-err{color:#b42318}
+.pkco__ln--cpn b{color:#1f9d55}
+.pkco__cpx{border:0;background:none;color:var(--pk-soft);text-decoration:underline;font-size:.78rem;cursor:pointer;padding:0 0 0 .3rem}
+.pkco__mpsame{margin:.4rem 0 .7rem;font-weight:500;font-size:.9rem}

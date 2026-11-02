@@ -121,11 +121,14 @@
   function isCoverIdx(i) { i = i == null ? S.cur : i; return i < 0 || i >= S.p.pages.length; }
   function isWrap(i) { return isCoverIdx(i) && S.cview !== 'single'; }
   function spU() { return R.spineUnits(S.p.pages.length); }
+  /** the hinge (the groove where the cover bends) each side of the spine, and everything between back and front */
+  function hgU() { return R.hingeUnits(); }
+  function midU() { return spU() + 2 * hgU(); }
   /** where the side being edited starts inside the whole-cover view (document units) */
-  function ox() { return isWrap() ? (S.cur < 0 ? W + spU() : 0) : 0; }
+  function ox() { return isWrap() ? (S.cur < 0 ? W + midU() : 0) : 0; }
   function spineOpts() { return window.PBKShop && PBKShop.spineOf ? PBKShop.spineOf(S.p) : C.spineFor(S.p.cover, S.p.tpl, S.p.pal); }
   /** which part of the whole cover is under x (units from the left edge): -1 front, 'spine', or the back cover index */
-  function sideAt(x) { var sp = spU(); return x < W ? S.p.pages.length : x > W + sp ? -1 : 'spine'; }
+  function sideAt(x) { var m = midU(); return x < W ? S.p.pages.length : x > W + m ? -1 : 'spine'; }
   function selEl() { var d = doc(); return S.sel ? (d.els || []).filter(function (e) { return e.id === S.sel; })[0] : null; }
 
   /* ---------------- open ---------------- */
@@ -236,7 +239,7 @@
   function fit() {
     var st = el$.stage; if (!st) return;
     var pad = innerWidth < 700 ? 18 : 40;
-    var wrapV = isWrap(), cov = isCoverIdx(), TW = wrapV ? 2 * W + spU() : W;
+    var wrapV = isWrap(), cov = isCoverIdx(), TW = wrapV ? 2 * W + midU() : W;
     var mk = cov && innerWidth >= 900 ? 210 : 0, mob = cov && wrapV && innerWidth < 900 ? 150 : 0;
     var aw = st.clientWidth - pad * 2 - mk, ah = st.clientHeight - pad * 2 - (innerWidth < 700 ? 0 : 10) - (cov ? 44 : 0) - mob;
     var w = Math.max(160, Math.min(aw, ah * TW / H)), h = w * H / TW;
@@ -246,7 +249,7 @@
     var tabs = $('#peCvTabs'); tabs.hidden = !cov;
     tabs.querySelectorAll('[data-cv]').forEach(function (b) { var v = b.getAttribute('data-cv'); b.classList.toggle('is-on', wrapV ? v === 'wrap' : (S.cur < 0 ? v === 'front' : v === 'back')); });
     var lbl = $('#peWrapLbl'); lbl.hidden = !wrapV;
-    if (wrapV) { var sp = spU(), sl = lbl.children; sl[0].style.left = '0'; sl[0].style.width = (W / TW * 100) + '%'; sl[1].style.left = (W / TW * 100) + '%'; sl[1].style.width = (sp / TW * 100) + '%'; sl[2].style.left = ((W + sp) / TW * 100) + '%'; sl[2].style.width = (W / TW * 100) + '%'; sl[1].title = 'Spine: ' + R.spineMm(S.p.pages.length) + ' mm for ' + S.p.pages.length + ' pages'; }
+    if (wrapV) { var sp = midU(), sl = lbl.children; sl[0].style.left = '0'; sl[0].style.width = (W / TW * 100) + '%'; sl[1].style.left = (W / TW * 100) + '%'; sl[1].style.width = (sp / TW * 100) + '%'; sl[2].style.left = ((W + sp) / TW * 100) + '%'; sl[2].style.width = (W / TW * 100) + '%'; sl[1].title = 'Spine: ' + R.spineMm(S.p.pages.length) + ' mm for ' + S.p.pages.length + ' pages'; }
     if (wrapV) { lbl.children[0].classList.toggle('is-on', isBack()); lbl.children[2].classList.toggle('is-on', S.cur < 0); }
     el$.canvas.width = Math.round(w * dpr); el$.canvas.height = Math.round(h * dpr);
     el$.canvas.style.width = w + 'px'; el$.canvas.style.height = h + 'px';
@@ -264,12 +267,17 @@
           if (!isWrap()) return;
           g.setTransform(1, 0, 0, 1, 0, 0);
           g.clearRect(0, 0, el$.canvas.width, el$.canvas.height);
+          var hg = hgU(), cv = el$.canvas, ph = cv.height;
           R.draw(g, back, { scale: kk, photo: photoUrl, empty: S.cur < 0 ? 'soft' : 'editor' });
-          g.setTransform(kk, 0, 0, kk, W * kk, 0); R.drawSpine(g, so, sp);
-          g.setTransform(1, 0, 0, 1, (W + sp) * kk, 0); R.draw(g, front, { scale: kk, photo: photoUrl, empty: S.cur < 0 ? 'editor' : 'soft' });
-          /* fold lines and the side being edited */
-          g.setTransform(kk, 0, 0, kk, 0, 0); g.save(); g.setLineDash([10, 8]); g.lineWidth = 2 / S.k; g.strokeStyle = 'rgba(27,23,20,.35)';
-          [W, W + sp].forEach(function (x) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); });
+          /* hinges: the cover's edge carries on into the groove, as it does in print */
+          g.setTransform(1, 0, 0, 1, 0, 0); var bx = Math.round(W * kk); g.drawImage(cv, bx - 2, 0, 1, ph, bx, 0, Math.ceil(hg * kk) + 1, ph);
+          g.setTransform(kk, 0, 0, kk, (W + hg) * kk, 0); R.drawSpine(g, so, sp);
+          g.setTransform(1, 0, 0, 1, (W + midU()) * kk, 0); R.draw(g, front, { scale: kk, photo: photoUrl, empty: S.cur < 0 ? 'editor' : 'soft' });
+          g.setTransform(1, 0, 0, 1, 0, 0); var fx = Math.round((W + midU()) * kk); g.drawImage(cv, fx + 1, 0, 1, ph, Math.floor((W + hg + sp) * kk), 0, fx - Math.floor((W + hg + sp) * kk) + 1, ph);
+          /* folds: the spine edges (dashed) and the hinge edges (dotted) */
+          g.setTransform(kk, 0, 0, kk, 0, 0); g.save(); g.lineWidth = 2 / S.k; g.strokeStyle = 'rgba(27,23,20,.35)';
+          g.setLineDash([10, 8]); [W + hg, W + hg + sp].forEach(function (x) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); });
+          g.strokeStyle = 'rgba(27,23,20,.18)'; g.setLineDash([3, 6]); [W, W + midU()].forEach(function (x) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); });
           g.restore();
           g.setTransform(1, 0, 0, 1, 0, 0);
           placeSel();
@@ -1256,7 +1264,7 @@
       '<p class="pe-or__name"><b>' + esc(S.p.name) + '</b><span>' + n + ' pages · A4 hardcover</span></p>' +
       (Sh.isTest(S.p) ? '<div class="pe-or__opts"><label class="pe-or__opt is-on"><input type="radio" name="prod" value="print" checked><span><b>Test order</b><small>A real M-Pesa payment that goes through the whole order flow. Only works while you’re signed in to Photo Book orders. Not printed; it stays in your orders until you delete it.</small></span><em>' + PBK.money(BOOK.testPrice || 5) + '</em></label></div>' :
       '<div class="pe-or__opts"><label class="pe-or__opt is-on"><input type="radio" name="prod" value="print" checked><span><b>Printed hardcover</b><small>Printed in Kenya and delivered or collected</small></span><em>' + PBK.money(pPrint) + '</em></label>' +
-      '<label class="pe-or__opt"><input type="radio" name="prod" value="digital"><span><b>Print-ready PDF</b><small>Download the finished book after paying</small></span><em>' + PBK.money(pPdf) + '</em></label></div>') +
+      (BOOK.pdf === false ? '' : '<label class="pe-or__opt"><input type="radio" name="prod" value="digital"><span><b>Print-ready PDF</b><small>Download the finished book after paying</small></span><em>' + PBK.money(pPdf) + '</em></label>') + '</div>') +
       ((c.emptyPages || c.low) ? '<div class="pe-or__warn"><b>Before you order</b><ul>' + (c.emptyPages ? '<li>' + c.emptyPages + ' page' + (c.emptyPages === 1 ? ' is' : 's are') + ' still empty — they print blank.</li>' : '') + (c.low ? '<li>' + c.low + ' small photo' + (c.low === 1 ? '' : 's') + ' may look soft in print.</li>' : '') + '</ul></div>' : '') +
       '<div class="pe-or__exact">' + I.eye + '<span><b>Printed exactly as you designed it.</b> Every page, the cover and the spine come out just as you see them in the preview.</span></div>' +
       '<div class="pe-or__back"><button class="btn btn--ghost btn--sm" data-prev>' + I.eye + ' Preview my book</button><button class="btn btn--ghost btn--sm" data-x>' + I.left + ' Keep editing</button></div>' +

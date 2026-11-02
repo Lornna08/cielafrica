@@ -29,14 +29,18 @@
       name: 'Portrait photo book', size: '21 × 29.7 cm (A4)', trimW: 210, trimH: 297, binding: 'Hardcover',
       pages: { min: 24, max: 100, step: 2, default: 24 },
       maxPhotosPerPage: 2,
-      price: { base: 3700, includedPages: 24, perExtraPage: 100 },   /* printed hardcover (KES): starter prices, change any time */
+      /* printed hardcover (KES) for each book size; a book between sizes pays the next size up. Edited in Ciel Admin → Website → Prices. */
+      price: { tiers: { 24: 3700, 36: 4900, 48: 6100, 60: 7300, 80: 9300, 100: 11300 } },
       digital: { base: 1600, includedPages: 24, perExtraPage: 25 },  /* print-ready PDF (KES) */
+      pdf: false,    /* print-ready PDFs on sale? (false = printed books only) */
       testPrice: 5,  /* KES: the admin-only "Ciel Test" book (Someone), for trying real payments; kept until deleted in the orders inbox */
       ordering: true, /* M-Pesa checkout at /photobooks/checkout */
       /* Paybill paid by hand: the customer pastes the M-Pesa message and Ciel Africa confirms the order */
       manualPay: { enabled: true, paybill: '400200', account: '613260' },
-      /* spine width = boardMm + pages × mmPerPage (hardcover). Confirm both with the printer. */
-      spine: { boardMm: 4, mmPerPage: 0.1 }
+      /* The hardcover case. Spine = paperGsm × paperBulk × sheets ÷ 1000 + 2 × boardMm (2 pages a sheet).
+         hingeMm = the groove each side of the spine; wrapMm = cover folded over the boards (incl. bleed).
+         Ask the printer for their paper gsm/bulk, board thickness, hinge and turn-in, and enter them in Ciel Admin. */
+      cover: { paperGsm: 170, paperBulk: 1, boardMm: 3, hingeMm: 8, wrapMm: 15 }
     },
 
     /* Free tier limits while designing (photos stay on the customer's device). */
@@ -90,9 +94,9 @@
 
     /* Kenya fulfilment. needsAddress = collect a delivery address. price null = not set. */
     delivery: [
-      { id: 'nairobi', name: 'Nairobi · parcel delivery', price: 0, needsAddress: true, enabled: true },
-      { id: 'kenya', name: 'Rest of Kenya · parcel delivery', price: 0, needsAddress: true, enabled: true },
-      { id: 'eastafrica', name: 'Other East African countries', price: 0, needsAddress: true, enabled: true },
+      { id: 'nairobi', name: 'Nairobi · parcel delivery', price: 200, needsAddress: true, enabled: true },
+      { id: 'kenya', name: 'Rest of Kenya · parcel delivery', price: 350, needsAddress: true, enabled: true },
+      { id: 'eastafrica', name: 'Other East African countries', price: 500, needsAddress: true, enabled: true },
       { id: 'uber', name: 'Uber bike (Nairobi): pay the rider on arrival', price: 0, needsAddress: true, enabled: true, note: 'We’ll tell you the Uber cost before we dispatch.' }
     ],
     maxQuantity: 10,

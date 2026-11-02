@@ -13,11 +13,16 @@
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function money(n) { return (CFG.currency || 'KES') + ' ' + String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  /** a price rule: a price for each book size (a book between sizes pays the next size up), or base + extra pages */
+  PBK.rule = function (r, pages) {
+    if (!r) return null;
+    if (r.tiers) { var t = Object.keys(r.tiers).map(Number).filter(function (n) { return n > 0 && r.tiers[n] != null; }).sort(function (a, b) { return a - b; }); if (!t.length) return null; var k = t.filter(function (n) { return n >= pages; })[0] || t[t.length - 1]; return Math.round(+r.tiers[k]); }
+    if (r.base == null || r.perExtraPage == null) return null;
+    return Math.round(r.base + Math.max(0, pages - (r.includedPages || BOOK.pages.min)) * r.perExtraPage);
+  };
   /** Book price for a page count, or null while prices are not set. */
   function price(pages) {
-    var p = BOOK.price || {};
-    if (p.base == null || p.perExtraPage == null) return null;
-    return p.base + Math.max(0, pages - (p.includedPages || BOOK.pages.min)) * p.perExtraPage;
+    return PBK.rule(BOOK.price, pages);
   }
   function priceLabel(pages) { var v = price(pages); return v == null ? 'Price coming soon' : money(v); }
   PBK.esc = esc; PBK.price = price; PBK.priceLabel = priceLabel; PBK.money = money; PBK.BOOK = BOOK; PBK.BASE = BASE;
@@ -76,7 +81,9 @@
     main.insertAdjacentElement('afterbegin', b);
     b.querySelector('button').onclick = function () { if (inApp > 0) { inApp--; history.back(); } else PBK.go(BASE); };
   }
-  PBK.go = function (url) { history.pushState({}, '', url); inApp++; window.scrollTo(0, 0); route(); };
+  /* a new page always opens at its top (instant: the page's smooth scrolling would stop part-way while the new page is drawn) */
+  function toTop() { try { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); } catch (e) { window.scrollTo(0, 0); } }
+  PBK.go = function (url) { history.pushState({}, '', url); inApp++; toTop(); route(); toTop(); requestAnimationFrame(toTop); };
   document.addEventListener('click', function (e) {
     var a = e.target.closest && e.target.closest('a[data-go]');
     if (!a || e.metaKey || e.ctrlKey || e.shiftKey || a.target === '_blank') return;
@@ -174,18 +181,16 @@
         l: '<div class="pk-pg pk-pg--trio">' + im(D + 'beach.webp', 'White sand beach') + im(D + 'palms.webp', 'Palm trees by the pool') + im(D + 'deck.webp', 'Sun deck by the sea') + '</div>',
         r: '<div class="pk-pg pk-pg--bleed">' + im(D + 'dhow.webp', 'A dhow at sunset') + '<span class="pk-pg__cap pk-pg__cap--light">Sunset on the water</span></div>' },
       { k: 'year', tag: 'Year in photos', note: 'Twelve months, one book', bg: '#f6efe4',
-        l: '<div class="pk-pg pk-pg--duo">' + im(US('photo-1739302750675-042ed497a429', 500, 1.5, 'faces'), 'Two friends laughing on a sofa') + im(D + 'run.webp', 'A runner at sunset') + '<span class="pk-pg__cap">January → June</span></div>',
-        r: '<div class="pk-pg pk-pg--stack">' + im(D + 'coast.webp', 'The coast from the boat') + im(US('photo-1605087745782-32cd1a138c53', 600, 0.62), 'An elephant and her calf') + '<span class="pk-pg__cap">July → December</span></div>' },
+        l: '<div class="pk-pg pk-pg--duo">' + im(US('photo-1739302750675-042ed497a429', 420, 1.75, 'faces'), 'Two friends laughing on a sofa') + im(D + 'run.webp', 'A runner at sunset') + '<span class="pk-pg__cap">January → June</span></div>',
+        r: '<div class="pk-pg pk-pg--duo">' + im(US('photo-1605087745782-32cd1a138c53', 420, 1.75), 'An elephant and her calf') + im(D + 'coast.webp', 'The coast from the boat') + '<span class="pk-pg__cap">July → December</span></div>' },
       { k: 'wedding', tag: 'Wedding', note: 'Forever, in print', bg: '#f5f0ea',
         l: '<div class="pk-pg pk-pg--bleed">' + im(US('photo-1695281536457-01f9a07c575b', 700, 1.414, 'faces'), 'A bride and groom under a tree') + '</div>',
         r: '<div class="pk-pg pk-pg--frame pk-pg--note">' + im(US('photo-1695281535578-ce371088bb3e', 600, 1.15, 'faces'), 'A bride and groom pose for a photo') + '<span class="pk-pg__cap pk-pg__cap--script">Forever &amp; always</span></div>' }
     ];
-    var closed = C.byCat('kenya')[0];
     return '<section class="pk-open" id="inside" aria-label="Inside the book"><div class="wrap"><div class="pk-head"><span class="eyebrow"><span class="brk">‹</span> Inside the book</span><h2>Open it and <span class="pk-hl">every page is yours</span></h2><p>Full-bleed sunsets, collages, framed portraits and captions in your own words.</p></div>' +
       '<div class="pk-open__grid">' + spreads.map(function (sp, i) {
         var inner = sp.pano ? '<div class="pk-pano">' + sp.pano + '</div>' : '<div class="pk-spread__l">' + sp.l + '</div><div class="pk-spread__r">' + sp.r + '</div>';
         return '<figure class="pk-open__item pk-open__item--' + sp.k + '" style="--paper:' + sp.bg + '"><div class="pk-spread' + (sp.pano ? ' pk-spread--pano' : '') + '">' + inner + '</div>' +
-          (i === 0 && closed ? '<img class="pk-open__closed" src="' + mockSrc(closed, 0) + '" alt="" loading="lazy" draggable="false">' : '') +
           '<figcaption><b>' + esc(sp.tag) + '</b><span>' + esc(sp.note) + '</span></figcaption></figure>';
       }).join('') + '</div>' +
       '<div class="pk-open__cta"><button class="btn btn--p btn--lg" data-pick>Start my book ' + ICON.arrow + '</button></div></div></section>';
@@ -219,7 +224,7 @@
       '<section class="pk-hero wrap"><span class="eyebrow pk-hero__eye"><span class="brk">‹</span> Photo Books</span><div class="pk-hero__copy">' +
       '<h1>Your memories deserve more than a <span class="pk-hl">camera roll.</span></h1>' +
       '<div class="pk-cta"><button class="btn btn--p btn--lg" data-pick>Create my photo book ' + ICON.arrow + '</button><a data-go href="' + BASE + '/travel" class="btn btn--ghost btn--lg">Browse travel covers</a></div></div>' +
-      '<div class="pk-flow" id="pkFlow" aria-label="Cover designs">' + flow.map(function (id, i) { var t = C.TPL[id]; return '<a href="#collections" class="pk-flow__b" data-i="' + i + '" aria-label="' + esc(t.name) + '"><img src="' + bigSrc(t, 0) + '" alt="' + esc(t.name) + ' photo book" width="720" height="900"' + (i < 3 || i >= flow.length - 2 ? (i < 2 ? ' fetchpriority="high"' : '') : ' loading="lazy"') + '></a>'; }).join('') + '<div class="pk-flow__name" id="pkFlowName"></div></div></section>' +
+      '<div class="pk-flow" id="pkFlow" aria-label="Cover designs">' + flow.map(function (id, i) { var t = C.TPL[id]; return '<a href="' + coverLink(id, 0) + '" class="pk-flow__b" data-i="' + i + '" aria-label="' + esc(t.name) + '"><img src="' + bigSrc(t, 0) + '" alt="' + esc(t.name) + ' photo book" width="720" height="900"' + (i < 3 || i >= flow.length - 2 ? (i < 2 ? ' fetchpriority="high"' : '') : ' loading="lazy"') + '></a>'; }).join('') + '<div class="pk-flow__name" id="pkFlowName"></div></div></section>' +
       '<section class="pk-grid wrap" id="collections"><div class="pk-head"><span class="eyebrow"><span class="brk">‹</span> Collections</span><h2>A book for every story</h2></div><div class="pk-tiles">' +
       C.CATS.map(function (c) {
         var l = C.byCat(c.id), t = catHero(c.id), t2 = l.filter(function (x) { return x !== t; })[c.id === 'travel' ? 3 : 0] || t, n = l.length;
@@ -257,7 +262,7 @@
     box.addEventListener('pointerup', function (e) { if (sx == null) return; var dx = e.clientX - sx; sx = null; if (Math.abs(dx) > 40) { moved = true; next(dx < 0 ? 1 : -1); } });
     box.addEventListener('click', function (e) {
       e.preventDefault(); if (moved) return;
-      var c = document.getElementById('collections'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      var a = e.target.closest('a.pk-flow__b'); if (a) PBK.go(a.getAttribute('href'));
     });
   }
   /* "continue your book" when a draft is saved on this device */

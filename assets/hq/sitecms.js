@@ -148,18 +148,34 @@
     });
     return js;
   }
-  /** p = { printBase, printPage, pdfBase, pdfPage, delivery:{id:price} } */
+  /** p = { tiers:{pages:price}, cover:{paperGsm,paperBulk,boardMm,hingeMm,wrapMm}, delivery:{id:price} }
+      (older drafts: { printBase, printPage, pdfBase, pdfPage, delivery }) */
   function setPhotoBooks(js, p) {
-    var n = function (v) { return Math.max(0, Math.round(+v || 0)); };
-    if (p.printBase != null) js = js.replace(/(price: \{ base: )\d+(, includedPages: \d+, perExtraPage: )\d+/, '$1' + n(p.printBase) + '$2' + n(p.printPage));
+    var n = function (v) { return Math.max(0, Math.round(+v || 0)); }, d1 = function (v) { return Math.max(0, Math.round((+v || 0) * 100) / 100); };
+    if (p.tiers && typeof p.tiers === 'object') {
+      var t = Object.keys(p.tiers).map(Number).filter(function (k) { return k >= 2 && k <= 400 && k % 2 === 0; }).sort(function (a, b) { return a - b; });
+      if (t.length) {
+        var lit = 'price: { tiers: { ' + t.map(function (k) { return k + ': ' + n(p.tiers[k]); }).join(', ') + ' } }';
+        if (/price: \{ tiers: \{[^}]*\} \}/.test(js)) js = js.replace(/price: \{ tiers: \{[^}]*\} \}/, lit);
+        else js = js.replace(/price: \{ base: \d+, includedPages: \d+, perExtraPage: \d+ \}/, lit);
+      }
+    } else if (p.printBase != null) js = js.replace(/(price: \{ base: )\d+(, includedPages: \d+, perExtraPage: )\d+/, '$1' + n(p.printBase) + '$2' + n(p.printPage));
     if (p.pdfBase != null) js = js.replace(/(digital: \{ base: )\d+(, includedPages: \d+, perExtraPage: )\d+/, '$1' + n(p.pdfBase) + '$2' + n(p.pdfPage));
-    Object.keys(p.delivery || {}).forEach(function (id) { js = js.replace(new RegExp("(\\{ id: '" + id + "', name: '[^']*', price: )\\d+"), '$1' + n(p.delivery[id])); });
+    if (p.cover && typeof p.cover === 'object') {
+      var c = p.cover, cl = 'cover: { paperGsm: ' + n(c.paperGsm || 170) + ', paperBulk: ' + d1(c.paperBulk || 1) + ', boardMm: ' + d1(c.boardMm) + ', hingeMm: ' + d1(c.hingeMm) + ', wrapMm: ' + d1(c.wrapMm) + ' }';
+      js = js.replace(/cover: \{ paperGsm: [^}]*\}/, cl);
+    }
+    Object.keys(p.delivery || {}).forEach(function (id) { var v = p.delivery[id]; v = v && typeof v === 'object' ? v.price : v; js = js.replace(new RegExp("(\\{ id: '" + id + "', name: '[^']*', price: )\\d+"), '$1' + n(v)); });
     return js;
   }
   function readPhotoBooks(js) {
-    var a = /price: \{ base: (\d+), includedPages: \d+, perExtraPage: (\d+)/.exec(js) || [], b = /digital: \{ base: (\d+), includedPages: \d+, perExtraPage: (\d+)/.exec(js) || [], d = {};
+    var d = {}, tiers = null, cover = null, m = /price: \{ tiers: \{([^}]*)\} \}/.exec(js);
+    if (m) { tiers = {}; m[1].replace(/(\d+)\s*:\s*(\d+)/g, function (_, k, v) { tiers[k] = +v; }); }
+    else { var a = /price: \{ base: (\d+), includedPages: (\d+), perExtraPage: (\d+)/.exec(js); if (a) { tiers = {}; [24, 36, 48, 60, 80, 100].forEach(function (k) { tiers[k] = +a[1] + Math.max(0, k - +a[2]) * +a[3]; }); } }
+    var cm = /cover: \{ paperGsm: ([\d.]+), paperBulk: ([\d.]+), boardMm: ([\d.]+), hingeMm: ([\d.]+), wrapMm: ([\d.]+) \}/.exec(js);
+    cover = cm ? { paperGsm: +cm[1], paperBulk: +cm[2], boardMm: +cm[3], hingeMm: +cm[4], wrapMm: +cm[5] } : { paperGsm: 170, paperBulk: 1, boardMm: 3, hingeMm: 8, wrapMm: 15 };
     js.replace(/\{ id: '([a-z]+)', name: '([^']*)', price: (\d+)/g, function (_, id, name, pr) { d[id] = { name: name, price: +pr }; });
-    return { printBase: +a[1], printPage: +a[2], pdfBase: +b[1], pdfPage: +b[2], delivery: d };
+    return { tiers: tiers || {}, cover: cover, delivery: d };
   }
   return { extract: extract, apply: apply, setItems: setItems, setPhotoBooks: setPhotoBooks, readPhotoBooks: readPhotoBooks, splitMain: splitMain, esc: esc };
 });

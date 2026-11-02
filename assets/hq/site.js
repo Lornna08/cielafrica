@@ -24,10 +24,12 @@
         W.products = (pd.products || []).filter(function (p) { return p.id !== 'prd-test'; }); W.pcats = (pd.productCategories || []).filter(function (c) { return c !== 'All'; });
         W.templates = td.templates || []; W.tcats = (td.templateCategories || []).filter(function (c) { return c !== 'All'; });
         W.pbBase = C.readPhotoBooks(r[4]);
+        /* just published from here: the new prices, until the live file catches up */
+        if (W.pbPublished && JSON.stringify(W.pbBase) !== JSON.stringify(W.pbPublished)) W.pbBase = clone(W.pbPublished); else W.pbPublished = null;
         var d = r[5] && r[5].draft;
         W.model = d && d.model ? d.model : clone(W.base);
         W.items = d && d.items ? d.items : { products: {}, templates: {} };
-        W.pb = d && d.photobooks ? d.photobooks : clone(W.pbBase);
+        W.pb = d && d.photobooks && d.photobooks.tiers ? d.photobooks : clone(W.pbBase); /* drafts from before per-size prices are ignored */
         W.uploads = d && d.uploads ? d.uploads : {};
         W.draftAt = d && d.at; W.loaded = true;
       });
@@ -174,15 +176,25 @@
         return '<tr data-id="' + esc(p.id) + '" class="' + (hidden ? 'is-off' : '') + '"><td><b>' + esc(p.name) + '</b><small>' + esc(p.category || '') + '</small></td><td><input class="hq-in ws-num" type="number" min="0" step="50" data-f="price" value="' + esc(price) + '"></td><td><input class="hq-in ws-num" type="number" min="0" step="50" data-f="was" value="' + esc(was || '') + '" placeholder="—"></td><td><label class="check"><input type="checkbox" data-f="show"' + (hidden ? '' : ' checked') + '> Visible</label></td></tr>';
       }).join('');
     }
-    var pb = W.pb;
-    f.innerHTML = '<section class="card"><div class="card__h"><h2>Photo Books</h2><span class="muted" style="font-size:.8rem">Used by the editor, checkout and M-Pesa amount</span></div><div class="card__b ws-4">' +
-      inp('Printed hardcover · first 24 pages (KES)', pb.printBase, 'type="number" min="0" data-k="printBase"') + inp('Each extra page (KES)', pb.printPage, 'type="number" min="0" data-k="printPage"') +
-      inp('Print-ready PDF · first 24 pages (KES)', pb.pdfBase, 'type="number" min="0" data-k="pdfBase"') + inp('Each extra page (KES)', pb.pdfPage, 'type="number" min="0" data-k="pdfPage"') +
-      Object.keys(pb.delivery).map(function (id) { return inp('Delivery: ' + esc(pb.delivery[id].name), pb.delivery[id].price, 'type="number" min="0" data-k="delivery.' + id + '.price"'); }).join('') + '</div></section>' +
+    var pb = W.pb; pb.tiers = pb.tiers || {}; pb.cover = pb.cover || { paperGsm: 170, paperBulk: 1, boardMm: 3, hingeMm: 8, wrapMm: 15 };
+    var sizes = Object.keys(pb.tiers).map(Number).sort(function (a, b) { return a - b; });
+    function spineAt(n) { var c = pb.cover; return Math.round(((+c.paperGsm || 0) * (+c.paperBulk || 0) * Math.ceil(n / 2) / 1000 + 2 * (+c.boardMm || 0)) * 10) / 10; }
+    f.innerHTML = '<section class="card"><div class="card__h"><h2>Photo Books · printed hardcover</h2><span class="muted" style="font-size:.8rem">The price for each book size. A book between sizes pays the next size up.</span></div><div class="card__b ws-4" id="pbTiers">' +
+      sizes.map(function (k) { return inp(k + ' pages (KES)', pb.tiers[k], 'type="number" min="0" step="50" data-k="tiers.' + k + '"'); }).join('') + '</div></section>' +
+      '<section class="card"><div class="card__h"><h2>Delivery prices</h2></div><div class="card__b ws-4">' +
+      Object.keys(pb.delivery).map(function (id) { return inp(esc(pb.delivery[id].name), pb.delivery[id].price, 'type="number" min="0" data-k="delivery.' + id + '.price"'); }).join('') + '</div></section>' +
+      '<section class="card"><div class="card__h"><h2>Hardcover case (for the printer)</h2><span class="muted" style="font-size:.8rem">Ask your printer for these. They set the spine width and the full-cover file.</span></div><div class="card__b ws-4" id="pbCase">' +
+      inp('Paper weight (gsm)', pb.cover.paperGsm, 'type="number" min="60" max="400" data-k="cover.paperGsm"') + inp('Paper bulk (1.0 = 1 µm per gsm)', pb.cover.paperBulk, 'type="number" min="0.5" max="2" step="0.05" data-k="cover.paperBulk"') +
+      inp('Board thickness (mm)', pb.cover.boardMm, 'type="number" min="0" max="6" step="0.1" data-k="cover.boardMm"') + inp('Hinge each side of the spine (mm)', pb.cover.hingeMm, 'type="number" min="0" max="20" step="0.5" data-k="cover.hingeMm"') +
+      inp('Wrap / turn-in all round (mm)', pb.cover.wrapMm, 'type="number" min="3" max="25" step="0.5" data-k="cover.wrapMm"') +
+      '</div><p class="muted" id="pbSpines" style="font-size:.82rem;padding:0 1.2rem 1rem"></p></section>' +
+      '<section class="card"><div class="card__h"><h2>Photo book coupons</h2><span class="muted" style="font-size:.8rem">Saved straight away (no publishing). Codes stay private.</span></div><div class="card__b" id="cpBox"><p class="empty">Loading coupons…</p></div></section>' +
       '<section class="card"><div class="card__h"><h2>Products</h2><span class="muted" style="font-size:.8rem">“Was” shows a sale: the old price crossed out</span></div><table class="tbl ws-tbl"><thead><tr><th>Product</th><th>Price (KES)</th><th>Was</th><th>Shown</th></tr></thead><tbody data-key="products">' + rowsFor(W.products, 'products') + '</tbody></table></section>' +
       '<section class="card"><div class="card__h"><h2>Website templates</h2></div><table class="tbl ws-tbl"><thead><tr><th>Template</th><th>From (KES)</th><th>Was</th><th>Shown</th></tr></thead><tbody data-key="templates">' + rowsFor(W.templates, 'templates') + '</tbody></table></section>' +
       '<p class="faint" style="font-size:.8rem">New prices apply to new orders once published. Items already in a customer’s cart keep the price they were added at.</p>';
-    bindInputs(f.querySelector('.card__b'), function (k, v) { if (/^delivery\./.test(k)) { var id = k.split('.')[1]; pb.delivery[id].price = +v; } else pb[k] = +v; });
+    function spines() { var el = document.getElementById('pbSpines'); if (el) el.innerHTML = 'Spine width: ' + sizes.map(function (k) { return '<b>' + k + ' pages ' + spineAt(k) + ' mm</b>'; }).join(' · ') + '. Full cover for 24 pages: ' + Math.round((2 * (+pb.cover.wrapMm) + 2 * 210 + 2 * (+pb.cover.hingeMm) + spineAt(24)) * 10) / 10 + ' × ' + (297 + 2 * (+pb.cover.wrapMm)) + ' mm.'; }
+    f.querySelectorAll('section.card').forEach(function (sec, i) { if (i < 3) bindInputs(sec, function (k, v) { var p = k.split('.'); if (p[0] === 'delivery') pb.delivery[p[1]].price = +v; else if (p[0] === 'tiers') pb.tiers[p[1]] = +v; else if (p[0] === 'cover') { pb.cover[p[1]] = +v; spines(); } }); });
+    spines(); coupons(document.getElementById('cpBox'));
     f.querySelectorAll('tbody[data-key] input').forEach(function (x) {
       x.addEventListener(x.type === 'checkbox' ? 'change' : 'input', function () {
         var key = x.closest('tbody').getAttribute('data-key'), tr = x.closest('tr'), id = tr.getAttribute('data-id'), ch = W.items[key][id] = W.items[key][id] || {}, fl = x.getAttribute('data-f');
@@ -190,6 +202,37 @@
         changed();
       });
     });
+  }
+
+  /* ---------- photo book coupons (kept on the server, not in the public files) ---------- */
+  function coupons(box) {
+    var list = [];
+    function day(v) { return v ? new Date(v + 'T12:00:00').toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' }) : ''; }
+    function state(c) { var t = new Date(Date.now() + 3 * 36e5).toISOString().slice(0, 10); if (c.active === false) return ['Off', 'k']; if (c.expires && t > c.expires) return ['Expired', 'r']; if (c.starts && t < c.starts) return ['Starts ' + day(c.starts), 'y']; if (c.maxUses && (c.uses || 0) >= c.maxUses) return ['Used up', 'r']; return ['Active', 'g']; }
+    function draw() {
+      box.innerHTML = '<div class="ws-cpform"><b>' + (box._ed ? 'Edit ' + esc(box._ed.code) : 'New coupon') + '</b><div class="ws-4">' +
+        inp('Code', box._ed ? box._ed.code : '', 'id="cpCode" maxlength="24" placeholder="e.g. KARIBU10" style="text-transform:uppercase"') +
+        '<label class="field"><span>Type</span><select class="hq-in" id="cpType"><option value="percent">Percentage off</option><option value="fixed"' + (box._ed && box._ed.type === 'fixed' ? ' selected' : '') + '>Fixed amount off (KES)</option></select></label>' +
+        inp('Value', box._ed ? box._ed.value : '', 'id="cpVal" type="number" min="1" step="1" placeholder="10"') +
+        inp('Expires (optional)', box._ed ? box._ed.expires || '' : '', 'id="cpExp" type="date"') +
+        inp('Starts (optional)', box._ed ? box._ed.starts || '' : '', 'id="cpStart" type="date"') +
+        inp('Max uses (optional)', box._ed ? box._ed.maxUses || '' : '', 'id="cpMax" type="number" min="0" placeholder="Unlimited"') +
+        inp('Minimum books total, KES (optional)', box._ed ? box._ed.minTotal || '' : '', 'id="cpMin" type="number" min="0" placeholder="None"') +
+        inp('Note (only you see it)', box._ed ? box._ed.note || '' : '', 'id="cpNote" maxlength="120"') + '</div>' +
+        '<label class="check"><input type="checkbox" id="cpOn"' + (!box._ed || box._ed.active !== false ? ' checked' : '') + '> Active</label>' +
+        '<div class="row" style="gap:.5rem;margin-top:.5rem"><button class="b b--p b--sm" id="cpSave">' + (box._ed ? 'Save changes' : 'Add coupon') + '</button>' + (box._ed ? '<button class="b b--sm" id="cpCancel">Cancel</button>' : '') + '<span class="muted" id="cpMsg" style="font-size:.82rem"></span></div></div>' +
+        (list.length ? '<table class="tbl ws-tbl" style="margin-top:1rem"><thead><tr><th>Code</th><th>Discount</th><th>Valid</th><th>Used</th><th>Status</th><th></th></tr></thead><tbody>' + list.map(function (c) { var st = state(c); return '<tr><td><b>' + esc(c.code) + '</b>' + (c.note ? '<small>' + esc(c.note) + '</small>' : '') + '</td><td>' + (c.type === 'percent' ? esc(c.value) + '%' : money(c.value)) + (c.minTotal ? '<small>min ' + money(c.minTotal) + '</small>' : '') + '</td><td>' + (c.starts ? 'from ' + day(c.starts) + '<br>' : '') + (c.expires ? 'until ' + day(c.expires) : 'No end date') + '</td><td>' + (c.uses || 0) + (c.maxUses ? ' / ' + c.maxUses : '') + '</td><td><span class="chip chip--' + st[1] + '">' + st[0] + '</span></td><td style="white-space:nowrap"><button class="b b--sm b--ghost" data-ed="' + esc(c.code) + '">Edit</button><button class="b b--sm b--ghost" data-del="' + esc(c.code) + '">Delete</button></td></tr>'; }).join('') + '</tbody></table>' : '<p class="empty" style="margin-top:1rem">No coupons yet.</p>');
+      var g = function (id) { return box.querySelector('#' + id); };
+      g('cpSave').onclick = function () {
+        var bt = this; bt.disabled = true; g('cpMsg').textContent = 'Saving…';
+        H.api('/api/photobooks?route=pbk-admin-coupon-save', { was: box._ed ? box._ed.code : null, code: g('cpCode').value, type: g('cpType').value, value: g('cpVal').value, expires: g('cpExp').value, starts: g('cpStart').value, maxUses: g('cpMax').value, minTotal: g('cpMin').value, note: g('cpNote').value, active: g('cpOn').checked })
+          .then(function (r) { list = r.coupons; box._ed = null; draw(); H.toast('Coupon saved'); }, function (e) { bt.disabled = false; g('cpMsg').textContent = e.message; });
+      };
+      if (g('cpCancel')) g('cpCancel').onclick = function () { box._ed = null; draw(); };
+      box.querySelectorAll('[data-ed]').forEach(function (bt) { bt.onclick = function () { box._ed = list.filter(function (c) { return c.code === bt.getAttribute('data-ed'); })[0]; draw(); box.scrollIntoView({ block: 'start', behavior: 'smooth' }); }; });
+      box.querySelectorAll('[data-del]').forEach(function (bt) { bt.onclick = function () { var c = bt.getAttribute('data-del'); if (!confirm('Delete coupon ' + c + '? Customers can no longer use it.')) return; H.api('/api/photobooks?route=pbk-admin-coupon-delete', { code: c }).then(function (r) { list = r.coupons; draw(); H.toast('Coupon deleted'); }, function (e) { alert(e.message); }); }; });
+    }
+    H.api('/api/photobooks?route=pbk-admin-coupons').then(function (r) { list = r.coupons || []; if (!r.storage) { box.innerHTML = '<p class="empty">Coupons need Blob storage (Setup).</p>'; return; } draw(); }, function (e) { box.innerHTML = '<p class="empty">' + esc(e.message) + '</p>'; });
   }
 
   /* ---------- history ---------- */
@@ -216,7 +259,7 @@
       H.api('/api/hq?route=site-publish', { model: W.model, items: W.items, photobooks: pbCh ? W.pb : null, uploads: W.uploads, note: m.querySelector('#pubNote').value }).then(function (r) {
         if (!r.sha) { msg.textContent = r.message || 'Nothing changed.'; go.disabled = false; return; }
         msg.innerHTML = 'Saved (' + esc(r.files.length) + ' files). Deploying to cielafrica.com… <span class="ws-spin"></span>';
-        W.draftAt = null; W.dirty = false; status();
+        W.draftAt = null; W.dirty = false; if (pbCh) { W.pbBase = clone(W.pb); W.pbPublished = clone(W.pb); } status();
         var tries = 0; (function poll() {
           tries++;
           txt('/data/site.json').then(JSON.parse).then(function (j) {

@@ -37,15 +37,58 @@
     doc.a4 = 1;
     return doc;
   }
-  /** spine width in mm for a page count (hardcover boards + paper), from data/photobooks.js → book.spine */
+  /* ---------- the hardcover case (data/photobooks.js → book.cover, edited in Ciel Admin) ----------
+     spine  = paper thickness (gsm × bulk ÷ 1000 per sheet, 2 pages a sheet) + 2 boards
+     hinge  = the groove each side of the spine where the cover bends
+     wrap   = the cover material folded over the boards' edges (includes bleed)
+     Confirm all four numbers with the printer: they depend on their paper and boards. */
+  function coverCfg(cfg) {
+    var bk = (root.CIEL && root.CIEL.photobooks && root.CIEL.photobooks.book) || {};
+    var c = cfg || bk.cover || {};
+    return { paperGsm: +c.paperGsm || 170, paperBulk: +c.paperBulk || 1, boardMm: c.boardMm == null ? 3 : +c.boardMm, hingeMm: c.hingeMm == null ? 8 : +c.hingeMm, wrapMm: c.wrapMm == null ? 15 : +c.wrapMm };
+  }
+  /** spine width in mm for a page count */
   function spineMm(pages, cfg) {
-    cfg = cfg || (root.CIEL && root.CIEL.photobooks && root.CIEL.photobooks.book && root.CIEL.photobooks.book.spine) || {};
-    var b = cfg.boardMm == null ? 4 : +cfg.boardMm, pp = cfg.mmPerPage == null ? 0.1 : +cfg.mmPerPage;
-    return Math.round((b + (pages || 24) * pp) * 10) / 10;
+    var c = coverCfg(cfg), sheets = Math.ceil((pages || 24) / 2);
+    return Math.round((c.paperGsm * c.paperBulk * sheets / 1000 + 2 * c.boardMm) * 10) / 10;
   }
   /** spine width in document units (1200 units = 210 mm) */
   function spineUnits(pages, cfg) { return spineMm(pages, cfg) / 210 * W; }
-
+  function hingeUnits(cfg) { return coverCfg(cfg).hingeMm / 210 * W; }
+  /** The whole case cover in one image: wrap · back · hinge · spine · hinge · front · wrap.
+      back/front: print pages with bleedMm on every edge; spine: spine width × (trim height + 2 bleed).
+      Each panel's own edge carries on into the hinges and the wrap. */
+  function caseCover(back, front, spine, o) {
+    var c = coverCfg(o.cover), b = o.bleedMm == null ? 3 : o.bleedMm, tw = o.trimW || 210, th = o.trimH || 297, sp = o.spineMm, hg = c.hingeMm, wr = Math.max(c.wrapMm, b);
+    var Wmm = 2 * wr + 2 * tw + 2 * hg + sp, Hmm = 2 * wr + th, dpi = o.dpi || 300;
+    var max = o.maxPx || 16e6; if ((Wmm / 25.4 * dpi) * (Hmm / 25.4 * dpi) > max) dpi = Math.floor(dpi * Math.sqrt(max / ((Wmm / 25.4 * dpi) * (Hmm / 25.4 * dpi))));
+    var k = dpi / 25.4, cv = document.createElement('canvas'); cv.width = Math.round(Wmm * k); cv.height = Math.round(Hmm * k);
+    var x = cv.getContext('2d'); x.imageSmoothingQuality = 'high';
+    function sz(im) { return { w: im.naturalWidth || im.width, h: im.naturalHeight || im.height }; }
+    /* draws the trim area of im into [dx,dy,dw,dh] mm, then stretches its outer pixels by l/r/t/u mm */
+    function panel(im, bl, dx, dy, dw, dh, l, r, t, u) {
+      var s = sz(im), fx = s.w / (dw + 2 * bl), fy = s.h / (dh + 2 * bl), sx = bl * fx, sy = bl * fy, sw = dw * fx, sh = dh * fy;
+      var X = dx * k, Y = dy * k, Wd = dw * k, Hd = dh * k, L = l * k, R = r * k, T = t * k, U = u * k;
+      x.drawImage(im, sx, sy, sw, sh, X, Y, Wd, Hd);
+      if (L) x.drawImage(im, sx, sy, 1, sh, X - L, Y, L + 1, Hd);
+      if (R) x.drawImage(im, sx + sw - 1, sy, 1, sh, X + Wd - 1, Y, R + 1, Hd);
+      if (T) x.drawImage(im, sx, sy, sw, 1, X, Y - T, Wd, T + 1);
+      if (U) x.drawImage(im, sx, sy + sh - 1, sw, 1, X, Y + Hd - 1, Wd, U + 1);
+      if (L && T) x.drawImage(im, sx, sy, 1, 1, X - L, Y - T, L + 1, T + 1);
+      if (R && T) x.drawImage(im, sx + sw - 1, sy, 1, 1, X + Wd - 1, Y - T, R + 1, T + 1);
+      if (L && U) x.drawImage(im, sx, sy + sh - 1, 1, 1, X - L, Y + Hd - 1, L + 1, U + 1);
+      if (R && U) x.drawImage(im, sx + sw - 1, sy + sh - 1, 1, 1, X + Wd - 1, Y + Hd - 1, R + 1, U + 1);
+    }
+    panel(back, b, wr, wr, tw, th, wr, hg, wr, wr);
+    panel(front, b, wr + tw + 2 * hg + sp, wr, tw, th, hg, wr, wr, wr);
+    if (spine) {
+      var ss = sz(spine), fy2 = ss.h / (th + 2 * b), X2 = (wr + tw + hg) * k;
+      x.drawImage(spine, 0, b * fy2, ss.w, th * fy2, X2, wr * k, sp * k, th * k);
+      x.drawImage(spine, 0, b * fy2, ss.w, 1, X2, 0, sp * k, wr * k + 1);
+      x.drawImage(spine, 0, (b + th) * fy2 - 1, ss.w, 1, X2, (wr + th) * k - 1, sp * k, wr * k + 1);
+    }
+    return { canvas: cv, dpi: dpi, widthMm: Wmm, heightMm: Hmm, spineMm: sp, hingeMm: hg, wrapMm: wr, trimW: tw, trimH: th };
+  }
   var FONTS = {
     spartan: { css: '"PBK Spartan", "League Spartan", sans-serif', w: 800, name: 'Bold Sans' },
     sans: { css: '"PBK Mont", "Montserrat", sans-serif', w: 600, name: 'Clean Sans' },
@@ -554,6 +597,6 @@
     return c;
   }
 
-  var API = { toA4: toA4, a4El: a4El, LEGACY_H: LEGACY_H, spineMm: spineMm, spineUnits: spineUnits, drawSpine: drawSpine, loadSpine: loadSpine, drawFill: drawFill, forget: forget, applyFx: applyFx, processed: processed, hasFx: hasFx, cover: cover, BOOKS: BOOKS, bookKind: bookKind, bookMap: bookMap, renderBook: renderBook, book3dMap: book3dMap, book3d: book3d, spine: spine, GEO: GEO, mockMap: mockMap, mock: mock, W: W, H: H, HINGE: HINGE, BRAND: BRAND, FONTS: FONTS, loadFonts: loadFonts, loadAllFonts: loadAllFonts, loadFam: loadFam, famOf: famOf, img: img, ready: ready, artSrc: artSrc, draw: draw, load: load, toCanvas: toCanvas, layoutText: layoutText, mockup: mockup, drawBrand: drawBrand, rr: rr };
+  var API = { toA4: toA4, a4El: a4El, LEGACY_H: LEGACY_H, spineMm: spineMm, spineUnits: spineUnits, hingeUnits: hingeUnits, coverCfg: coverCfg, caseCover: caseCover, drawSpine: drawSpine, loadSpine: loadSpine, drawFill: drawFill, forget: forget, applyFx: applyFx, processed: processed, hasFx: hasFx, cover: cover, BOOKS: BOOKS, bookKind: bookKind, bookMap: bookMap, renderBook: renderBook, book3dMap: book3dMap, book3d: book3d, spine: spine, GEO: GEO, mockMap: mockMap, mock: mock, W: W, H: H, HINGE: HINGE, BRAND: BRAND, FONTS: FONTS, loadFonts: loadFonts, loadAllFonts: loadAllFonts, loadFam: loadFam, famOf: famOf, img: img, ready: ready, artSrc: artSrc, draw: draw, load: load, toCanvas: toCanvas, layoutText: layoutText, mockup: mockup, drawBrand: drawBrand, rr: rr };
   if (typeof module === 'object' && module.exports) module.exports = API; else root.PBKR = API;
 })(typeof self !== 'undefined' ? self : this);
