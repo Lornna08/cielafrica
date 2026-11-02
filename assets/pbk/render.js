@@ -495,13 +495,22 @@
   function drawSpine(ctx, o, w) {
     ctx.save();
     ctx.fillStyle = o.bg || '#ffffff'; ctx.fillRect(0, 0, w, H);
+    /* a small picture from the front cover, upright, between the words and the CIEL AFRICA mark */
+    var pic = o.noPic ? null : ready(o.artImg || (o.art ? artSrc(o.art) : null));
+    if (pic && w >= 18) {
+      var iw = pic.naturalWidth || pic.width, ih = pic.naturalHeight || pic.height, pw = w * 0.7, ph = pw * ih / iw;
+      if (ph > w * 1.4) { ph = w * 1.4; pw = ph * iw / ih; }
+      ctx.drawImage(pic, (w - pw) / 2, H * 0.775 - ph / 2, pw, ph);
+    }
     ctx.translate(w, 0); ctx.rotate(Math.PI / 2); /* text runs top to bottom, read with the book lying face up */
     var title = o.hideTitle ? '' : String(o.title || '').toUpperCase().slice(0, 40);
     if (title) {
-      var fs = Math.min(w * 0.56, 64);
-      ctx.font = '800 ' + fs + 'px ' + FONTS.spartan.css; ctx.textBaseline = 'middle';
-      var tw = ctx.measureText(title).width, maxW = H * 0.62;
-      if (tw > maxW) { fs = fs * maxW / tw; ctx.font = '800 ' + fs + 'px ' + FONTS.spartan.css; }
+      var F = FONTS[o.font] || FONTS.spartan, k = o.scale || 1;
+      var fs = Math.min(w * 0.56, 64) * k, fnt = function (z) { return (F.italic ? 'italic ' : '') + F.w + ' ' + z + 'px ' + F.css; };
+      ctx.font = fnt(fs); ctx.textBaseline = 'middle';
+      var tw = ctx.measureText(title).width, maxW = H * (pic ? 0.62 : 0.7);
+      if (tw > maxW) { fs = fs * maxW / tw; ctx.font = fnt(fs); }
+      if (fs > w * 0.8) { fs = w * 0.8; ctx.font = fnt(fs); }
       ctx.fillStyle = o.tc || '#111111'; ctx.fillText(title, H * 0.07, w / 2 + fs * 0.04);
     }
     var bs = Math.max(7, Math.min(18, w * 0.2)); ctx.font = '500 ' + bs + 'px ' + FONTS.sans.css.replace('600', '500');
@@ -510,6 +519,13 @@
     drawTracked(ctx, BRAND.text, H * 0.95 - bw, w / 2 + bs * 0.05, ls);
     ctx.restore();
     return ctx;
+  }
+  /** loads what the spine needs (its picture and font) */
+  function loadSpine(o) {
+    o = o || {}; var l = [loadFonts()];
+    if (!o.noPic && (o.artImg || o.art)) l.push(img(o.artImg || artSrc(o.art)));
+    if (o.font && loadFam) l.push(Promise.resolve(loadFam(o.font)).catch(function () {}));
+    return Promise.all(l).catch(function () {});
   }
   /** Composes the 3D book: front = flat cover canvas/image (3:4), sp = spine canvas. */
   function book3d(front, sp, map, opt) {
@@ -538,6 +554,6 @@
     return c;
   }
 
-  var API = { toA4: toA4, a4El: a4El, LEGACY_H: LEGACY_H, spineMm: spineMm, spineUnits: spineUnits, drawSpine: drawSpine, drawFill: drawFill, forget: forget, applyFx: applyFx, processed: processed, hasFx: hasFx, cover: cover, BOOKS: BOOKS, bookKind: bookKind, bookMap: bookMap, renderBook: renderBook, book3dMap: book3dMap, book3d: book3d, spine: spine, GEO: GEO, mockMap: mockMap, mock: mock, W: W, H: H, HINGE: HINGE, BRAND: BRAND, FONTS: FONTS, loadFonts: loadFonts, loadAllFonts: loadAllFonts, loadFam: loadFam, famOf: famOf, img: img, ready: ready, artSrc: artSrc, draw: draw, load: load, toCanvas: toCanvas, layoutText: layoutText, mockup: mockup, drawBrand: drawBrand, rr: rr };
+  var API = { toA4: toA4, a4El: a4El, LEGACY_H: LEGACY_H, spineMm: spineMm, spineUnits: spineUnits, drawSpine: drawSpine, loadSpine: loadSpine, drawFill: drawFill, forget: forget, applyFx: applyFx, processed: processed, hasFx: hasFx, cover: cover, BOOKS: BOOKS, bookKind: bookKind, bookMap: bookMap, renderBook: renderBook, book3dMap: book3dMap, book3d: book3d, spine: spine, GEO: GEO, mockMap: mockMap, mock: mock, W: W, H: H, HINGE: HINGE, BRAND: BRAND, FONTS: FONTS, loadFonts: loadFonts, loadAllFonts: loadAllFonts, loadFam: loadFam, famOf: famOf, img: img, ready: ready, artSrc: artSrc, draw: draw, load: load, toCanvas: toCanvas, layoutText: layoutText, mockup: mockup, drawBrand: drawBrand, rr: rr };
   if (typeof module === 'object' && module.exports) module.exports = API; else root.PBKR = API;
 })(typeof self !== 'undefined' ? self : this);

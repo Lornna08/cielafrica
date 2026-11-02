@@ -98,6 +98,7 @@
     if (u.bg) o.bg = u.bg;
     if (u.tc) { o.tc = u.tc; o.bc = u.tc; }
     if (u.hideTitle) o.hideTitle = true;
+    if (u.font) o.font = u.font; if (u.scale) o.scale = u.scale; if (u.noPic) o.noPic = true;
     o.mm = R.spineMm(p.pages.length); o.pages = p.pages.length;
     return o;
   }
@@ -119,7 +120,7 @@
   /** the spine as a print image: spine width × (trim height + bleed top and bottom), at dpi */
   function renderSpine(p, dpi, bleedMm) {
     var so = spineOf(p), mm = so.mm, b = bleedMm == null ? BLEED : bleedMm;
-    return R.loadFonts().then(function () {
+    return R.loadSpine(so).then(function () {
       var w = Math.max(8, Math.round(mm / 25.4 * dpi)), th = Math.round(TRIM.h / 25.4 * dpi), bp = Math.round(b / 25.4 * dpi);
       var c = document.createElement('canvas'); c.width = w; c.height = th + 2 * bp;
       var x = c.getContext('2d'); x.fillStyle = so.bg || '#ffffff'; x.fillRect(0, 0, c.width, c.height);
@@ -238,8 +239,7 @@
     var q = new URLSearchParams(location.search);
     if (q.get('sent')) return afterPay(main, q.get('sent'));
     main.innerHTML = '<section class="pkco wrap"><div class="crumb"><a data-go href="' + BASE + '">Photo Books</a> <span class="brk">‹</span> Checkout</div><h1>Checkout</h1><div class="pkco__grid"><div class="pkco__main" id="coMain"><p class="pk-empty">Loading your cart…</p></div><aside class="pkco__side" id="coSide"></aside></div></section>';
-    var st = { delivery: (DEL.filter(function (d) { return d.id === 'nairobi'; })[0] || DEL[0] || {}).id, f: {} };
-    try { var ld = localStorage.getItem('pbk_delivery'); if (ld && DEL.some(function (d) { return d.id === ld; })) st.delivery = ld; } catch (e) { }
+    var st = { delivery: null, f: {} }; /* the customer picks the delivery (and sees its price) themselves */
     try { Object.assign(st.f, JSON.parse(localStorage.getItem('pbk_details') || '{}')); } catch (e) { }
     Promise.all([sync(), caps()]).then(function (r) {
       var rows = r[0], cp = r[1];
@@ -249,7 +249,7 @@
     function draw(rows, cp) {
       var test = rows.some(function (r) { return r.item.pb.test; });
       var anyPrint = rows.some(function (r) { return r.item.pb.product === 'print'; }), missing = rows.filter(function (r) { return !r.project; });
-      var del = DEL.filter(function (d) { return d.id === st.delivery; })[0] || DEL[0];
+      var del = DEL.filter(function (d) { return d.id === st.delivery; })[0] || null;
       if (test && del) del = Object.assign({}, del, { price: 0 });
       var eta = sendEstimate(rows.filter(function (r) { return r.item.pb.product === 'print'; }).map(function (r) { return r.project; }));
       var lines = rows.map(function (r) { return { label: r.item.name + ' · ' + (r.item.pb.product === 'digital' ? 'PDF' : 'Printed') + ' · ' + r.item.pb.pages + ' pages', amount: r.item.price, qty: r.item.qty }; });
@@ -257,17 +257,17 @@
       document.getElementById('coMain').innerHTML =
         '<h2 class="pkco__h">Your books</h2>' + rows.map(function (r) {
           var it = r.item, pr = it.pb.product;
-          return '<div class="pkco__item" data-id="' + esc(it.id) + '"><img src="' + esc(it.thumb || '') + '" alt="" draggable="false"><div class="pkco__it"><b>' + esc(it.name) + '</b><span>' + it.pb.pages + ' pages · ' + esc(BOOK.size || '21 × 29.7 cm (A4)') + '</span>' +
+          return '<div class="pkco__item" data-id="' + esc(it.id) + '"><img src="' + esc(it.thumb || '') + '" alt="" draggable="false"><div class="pkco__it"><b>' + esc(it.name) + '</b><span>' + it.pb.pages + ' pages · A4 hardcover</span>' +
             (it.pb.test ? '<p class="pkco__test"><b>TEST order</b> · only for Ciel Africa (you must be signed in to Photo Book orders on this browser). Not printed; it stays in your orders until you delete it.</p>' : '<div class="pkco__seg"><button data-prod="print"' + (pr === 'print' ? ' class="is-on"' : '') + '>Printed hardcover<small>' + money(unit('print', it.pb.pages)) + '</small></button><button data-prod="digital"' + (pr === 'digital' ? ' class="is-on"' : '') + '>Print-ready PDF<small>' + money(unit('digital', it.pb.pages)) + '</small></button></div>') +
             (r.project ? '' : '<p class="pkco__warn">This book isn’t saved on this device. Open checkout on the phone or computer you designed it on.</p>') +
             '</div><div class="pkco__end">' + (pr === 'print' && !it.pb.test ? '<div class="pkco__qty"><button data-q="-1" aria-label="One less">−</button><span>' + it.qty + '</span><button data-q="1" aria-label="One more">+</button></div>' : '') + '<b>' + money(it.price * it.qty) + '</b><button class="pkco__rm" data-rm>Remove</button></div></div>';
         }).join('') +
-        (anyPrint ? '<h2 class="pkco__h">Delivery</h2><div class="pkco__del">' + DEL.map(function (d) { return '<label class="pkco__opt' + (d.id === st.delivery ? ' is-on' : '') + '"><input type="radio" name="del" value="' + d.id + '"' + (d.id === st.delivery ? ' checked' : '') + '><span>' + esc(d.name) + '</span><b>' + (d.id === 'uber' ? 'Pay rider' : d.price && !test ? money(d.price) : 'Free') + '</b></label>'; }).join('') + '</div><p class="pkco__note">' + (del && del.note ? esc(del.note) + ' ' : '') + 'Printing and delivery usually take 5–10 working days. We’ll confirm by email and WhatsApp.</p>' : '') +
-        '<h2 class="pkco__h">Is this a gift?</h2><div class="pkco__gift"><label class="pkco__opt' + (!st.gift ? ' is-on' : '') + '"><input type="radio" name="gift" value="0"' + (!st.gift ? ' checked' : '') + '><span>No, it’s for me</span></label><label class="pkco__opt' + (st.gift ? ' is-on' : '') + '"><input type="radio" name="gift" value="1"' + (st.gift ? ' checked' : '') + '><span>Yes, it’s a gift for someone 🎁</span></label></div>' +
-        (st.gift ? '<div class="pkco__form pkco__form--gift">' + fld('gto', 'Who is it for?', 'text', 'off', 'Their name') + (anyPrint && del && del.needsAddress ? fld('gphone', 'Their phone (for delivery)', 'tel', 'off', 'Optional') : '') + '<label class="pkco__f pkco__f--full"><span>Gift message (optional)</span><textarea data-f="gnote" rows="3" maxlength="400" placeholder="Write a short message">' + esc(st.f.gnote || '') + '</textarea></label></div>' : '') +
+        (anyPrint ? '<h2 class="pkco__h">Delivery</h2><div class="pkco__del">' + DEL.map(function (d) { return '<label class="pkco__opt' + (d.id === st.delivery ? ' is-on' : '') + '"><input type="radio" name="del" value="' + d.id + '"' + (d.id === st.delivery ? ' checked' : '') + '><span>' + esc(d.name) + '</span>' + (d.id === st.delivery ? '<b>' + (d.id === 'uber' ? 'Pay rider' : d.price && !test ? money(d.price) : 'Free') + '</b>' : '') + '</label>'; }).join('') + '</div><p class="pkco__note">' + (del && del.note ? esc(del.note) + ' ' : '') + 'Delivered within 1–3 working days of dispatch.</p>' : '') +
+        '<label class="pkco__giftck"><input type="checkbox" id="coGift"' + (st.gift ? ' checked' : '') + '><span>This is a gift 🎁</span></label>' +
+        (st.gift ? '<div class="pkco__form pkco__form--gift">' + fld('gto', 'Who is it for?', 'text', 'off', 'Their name', true) + (anyPrint && del && del.needsAddress ? fld('gphone', 'Their phone (for delivery)', 'tel', 'off', 'Optional') : '') + '<label class="pkco__f pkco__f--full"><span>Gift message (optional)</span><textarea data-f="gnote" rows="3" maxlength="400" placeholder="Write a short message">' + esc(st.f.gnote || '') + '</textarea></label></div>' : '') +
         '<h2 class="pkco__h">Your details</h2><div class="pkco__form">' +
-        fld('name', 'Full name', 'text', 'name') + fld('phone', 'M-Pesa phone number', 'tel', 'tel', '0712 345 678') + fld('email', 'Email (for your receipt)', 'email', 'email') +
-        (anyPrint && del && del.needsAddress ? '</div><h2 class="pkco__h">Delivery address</h2><p class="pkco__note">Where should we bring your book?</p><div class="pkco__form">' + fld('line1', 'Street address or building', 'text', 'address-line1') + fld('area', 'Area / estate', 'text', 'address-line2') + fld('town', 'Town', 'text', 'address-level2') + fld('county', 'County (or country)', 'text', 'address-level1') + fld('notes', 'Delivery notes (optional)', 'text', 'off') : '') + '</div>';
+        fld('name', 'Full name', 'text', 'name', '', true) + fld('phone', 'M-Pesa phone number', 'tel', 'tel', '0712 345 678', true) + fld('email', 'Email (for your receipt)', 'email', 'email', '', true) +
+        (anyPrint && (!del || del.needsAddress) ? '</div><h2 class="pkco__h">Delivery address</h2><div class="pkco__form">' + fld('line1', 'Street address or building', 'text', 'address-line1', '', true) + fld('area', 'Area / estate', 'text', 'address-line2', '', true) + fld('town', 'Town', 'text', 'address-level2', '', true) + fld('county', 'County (or country)', 'text', 'address-level1', '', true) + fld('notes', 'Delivery notes (optional)', 'text', 'off') : '') + '</div>';
       document.getElementById('coSide').innerHTML = '<div class="pkco__sum"><h3>Order summary</h3>' + lines.map(function (l) { return '<div class="pkco__ln"><span>' + esc(l.label) + (l.qty > 1 ? ' × ' + l.qty : '') + '</span><b>' + money(l.amount * l.qty) + '</b></div>'; }).join('') +
         (anyPrint && del ? '<div class="pkco__ln"><span>' + esc(del.name) + '</span><b>' + (del.id === 'uber' ? 'On arrival' : del.price ? money(del.price) : 'Free') + '</b></div>' : '') +
         '<div class="pkco__tot"><span>Total</span><b>' + money(total) + '</b></div>' +
@@ -284,15 +284,15 @@
       });
       M.querySelectorAll('[name=del]').forEach(function (r2) { r2.onchange = function () { keep(); st.delivery = r2.value; try { localStorage.setItem('pbk_delivery', r2.value); } catch (e) { } draw(rows.map(function (x) { return { item: CIEL.cart.items().filter(function (y) { return y.id === x.item.id; })[0] || x.item, project: x.project }; }), cp); }; });
       M.querySelectorAll('[data-f]').forEach(function (i) { i.addEventListener('input', keep); });
-      M.querySelectorAll('[name=gift]').forEach(function (r2) { r2.onchange = function () { keep(); st.gift = r2.value === '1'; draw(rows, cp); }; });
+      var gk = document.getElementById('coGift'); if (gk) gk.onchange = function () { keep(); st.gift = gk.checked; draw(rows, cp); };
       function waText() {
         keep(); var f = st.f;
         return 'Hello Ciel Africa, I’d like to order:\n' + rows.map(function (r) { return '• ' + r.item.name + ' — ' + (r.item.pb.product === 'digital' ? 'print-ready PDF' : 'printed hardcover × ' + r.item.qty) + ', ' + r.item.pb.pages + ' pages (' + money(r.item.price * r.item.qty) + ')'; }).join('\n') +
           (anyPrint && del ? '\nDelivery: ' + del.name : '') + '\nTotal: ' + money(total) + (f.name ? '\nName: ' + f.name : '') + (f.phone ? '\nPhone: ' + f.phone : '') + (f.line1 ? '\nAddress: ' + [f.line1, f.area, f.town, f.county].filter(Boolean).join(', ') : '') + (st.gift ? '\nIt’s a gift' + (f.gto ? ' for ' + f.gto : '') + (f.gphone ? ' (' + f.gphone + ')' : '') + (f.gnote ? '\nGift message: ' + f.gnote : '') : '');
       }
       var wa = document.getElementById('coWa'); wa.href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(waText()); wa.onclick = function () { wa.href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(waText()); };
-      var pay = document.getElementById('coPay'); if (pay) pay.onclick = function () { keep(); startPay(rows, del, total); };
-      var man = document.getElementById('coManual'); if (man) man.onclick = function () { keep(); startManual(rows, del, total); };
+      var pay = document.getElementById('coPay'); if (pay) pay.onclick = function () { if (check(rows, del)) startPay(rows, del, total); };
+      var man = document.getElementById('coManual'); if (man) man.onclick = function () { if (check(rows, del)) startManual(rows, del, total); };
       document.querySelectorAll('[name=pm]').forEach(function (r2) { r2.onchange = function () { keep(); st.method = r2.value; try { localStorage.setItem('pbk_pm', r2.value); } catch (e) { } draw(rows, cp); }; });
       document.querySelectorAll('[data-copy]').forEach(function (b) { b.onclick = function () { var v = b.getAttribute('data-copy'); try { navigator.clipboard.writeText(v).then(function () { b.classList.add('is-copied'); setTimeout(function () { b.classList.remove('is-copied'); }, 1200); }); } catch (e) { } }; });
       var cm = document.getElementById('coMsg'); if (cm) { cm.value = st.msg || ''; cm.oninput = function () { st.msg = cm.value; }; }
@@ -316,7 +316,7 @@
         '<li>Amount <b>' + money(total) + '</b>, then enter your M-Pesa PIN.</li></ol>' +
         '<label class="pkco__f pkco__f--full"><span>Paste the M-Pesa confirmation message</span><textarea id="coMsg" rows="4" maxlength="800" placeholder="e.g. SKL4ABC12D Confirmed. Ksh' + (total || 0).toLocaleString('en-KE') + '.00 sent to …"></textarea></label>' +
         '<button class="btn btn--p btn--lg pkco__pay" id="coManual"' + (missing.length ? ' disabled' : '') + '>I’ve paid: place my order</button>' +
-        '<p class="pkco__small">We check Paybill payments by hand, usually within a few hours, and confirm your order by email. ' + (rowsHavePrint() ? 'Your book’s pages send to us right away, so keep this page open after you place the order.' : 'Your PDF unlocks as soon as we confirm the payment.') + '</p></div>';
+        '<p class="pkco__small">Your order is confirmed as soon as we’ve checked your payment.</p></div>';
     }
     function rowsHavePrint() { return CIEL.cart.pbItems().some(function (i) { return i.pb.product === 'print'; }); }
     function startManual(rows, del, total) {
@@ -334,7 +334,17 @@
         });
       }).catch(function (e) { status(esc(e.message), 'is-err'); btn.disabled = false; });
     }
-    function fld(k, label, type, ac, ph) { return '<label class="pkco__f"><span>' + label + '</span><input data-f="' + k + '" type="' + type + '" autocomplete="' + ac + '" value="' + esc(st.f[k] || '') + '"' + (ph ? ' placeholder="' + ph + '"' : '') + '></label>'; }
+    function fld(k, label, type, ac, ph, req) { return '<label class="pkco__f"><span>' + label + (req ? ' <i class="pkco__req">*</i>' : '') + '</span><input data-f="' + k + '" type="' + type + '" autocomplete="' + ac + '" value="' + esc(st.f[k] || '') + '"' + (ph ? ' placeholder="' + ph + '"' : '') + (req ? ' required' : '') + '></label>'; }
+    /** everything but the delivery notes (and the gift message) must be filled in */
+    function check(rows, del) {
+      keep(); var f = st.f, anyPrint = rows.some(function (r) { return r.item.pb.product === 'print'; }), miss = [];
+      if (anyPrint && !del) { status('Choose how you’d like your book delivered.', 'is-err'); var dl = document.querySelector('.pkco__del'); if (dl) dl.scrollIntoView({ block: 'center', behavior: 'smooth' }); return false; }
+      var need = ['name', 'phone', 'email'].concat(anyPrint && del && del.needsAddress ? ['line1', 'area', 'town', 'county'] : []).concat(st.gift ? ['gto'] : []);
+      document.querySelectorAll('[data-f]').forEach(function (i) { i.classList.remove('is-bad'); });
+      need.forEach(function (k) { if (!f[k] || String(f[k]).trim().length < 2) { miss.push(k); var i = document.querySelector('[data-f="' + k + '"]'); if (i) i.classList.add('is-bad'); } });
+      if (miss.length) { status('Please fill in all the details marked *.', 'is-err'); var b = document.querySelector('[data-f].is-bad'); if (b) { b.scrollIntoView({ block: 'center', behavior: 'smooth' }); b.focus({ preventScroll: true }); } return false; }
+      return true;
+    }
     function keep() { document.querySelectorAll('[data-f]').forEach(function (i) { st.f[i.getAttribute('data-f')] = i.value.trim(); }); try { var s = Object.assign({}, st.f); delete s.gto; delete s.gphone; delete s.gnote; localStorage.setItem('pbk_details', JSON.stringify(s)); } catch (e) { } }
     function status(h, cls) { var s = document.getElementById('coStatus'); if (s) s.innerHTML = '<div class="pkco__st ' + (cls || '') + '">' + h + '</div>'; }
     function startPay(rows, del, total) {
@@ -391,7 +401,7 @@
   function afterPay(main, ref) {
     var pend = manualList().filter(function (x) { return x.ref === ref; })[0];
     main.innerHTML = '<section class="pkco wrap pkco--done"><div class="pkco__ok' + (pend ? ' is-wait' : '') + '">' + (pend ? '⏳' : '✓') + '</div><h1>' + (pend ? 'Order received!' : 'Thank you!') + '</h1><p class="pkco__lead">' +
-      (pend ? 'We’re confirming your M-Pesa Paybill payment for order <b>' + esc(ref) + '</b>. You’ll get an email as soon as it’s confirmed, usually within a few hours.' + (pend.items.some(function (i) { return i.product === 'print'; }) ? ' Printed books are dispatched 24–48 hours after the payment is confirmed and your pages reach us.' : '') :
+      (pend ? 'We’re confirming your M-Pesa Paybill payment for order <b>' + esc(ref) + '</b>. You’ll get an email as soon as it’s confirmed, usually within a few minutes.' + (pend.items.some(function (i) { return i.product === 'print'; }) ? ' Printed books are dispatched 24–48 hours after the payment is confirmed and your pages reach us.' : '') :
         'Payment received for order <b>' + esc(ref) + '</b>. A receipt is on its way to your email. Printed books are dispatched for delivery 24–48 hours after your pages reach us.') + '</p><div id="coDone"><p class="pk-empty">Loading…</p></div></section>';
     Promise.all([purchases(), caps()]).then(function (r) {
       var list = r[0].filter(function (x) { return x.ref === ref; }), cp = r[1], box = document.getElementById('coDone');

@@ -251,7 +251,7 @@
     var now = new Date(), m0 = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
     var real = S.orders.filter(function (o) { return o.paid && !o.test && !/cancel|refund/.test(o.status); });
     var month = real.filter(function (o) { return o.at >= m0; }), rev = month.reduce(function (s, o) { return s + (o.total || 0); }, 0);
-    var todo = S.orders.filter(function (o) { return o.paid && !CLOSED.test(o.status) && o.kind !== 'whatsapp'; });
+    var todo = S.orders.filter(function (o) { return (o.paid || o.status === 'awaiting_confirmation') && !CLOSED.test(o.status) && o.kind !== 'whatsapp'; });
     var pending = S.orders.filter(function (o) { return (o.kind === 'whatsapp' && !CLOSED.test(o.status) && o.status !== 'paid') || (o.kind !== 'whatsapp' && !o.paid && /await|pending_payment|payment_failed/.test(o.status) && Date.now() - o.at < 14 * 864e5); });
     var newMsgs = S.inbox.filter(function (m) { return m.kind !== 'whatsapp' && m.status === 'new'; });
     var open = S.tasks.filter(function (t) { return t.status !== 'done'; }), overdue = open.filter(function (t) { return t.due && t.due < today(); });
@@ -266,6 +266,7 @@
     S.orders.forEach(function (o) {
       var tg = o.test ? 'TEST · ' : '';
       if (o.paid && !CLOSED.test(o.status) && Date.now() - o.at < 2 * 864e5 && !(o.kind === 'photobook' && o.status === 'ready')) attention.push(['o', tg + 'New ' + KIND[o.kind][0].toLowerCase() + ' order ' + o.ref + ' · ' + money(o.total), (o.customer.name || '') + ' · ' + o.label + ' · ' + dt(o.at), '#orders/' + o.ref]);
+      if (o.status === 'awaiting_confirmation') attention.push(['o', tg + 'Paybill payment to confirm · ' + o.ref + ' · ' + money(o.total), (o.customer.name || '') + ' · check M-Pesa, then confirm · ' + dt(o.at), '#orders/' + o.ref]);
       if (o.kind === 'whatsapp' && o.status === 'pending') attention.push(['g', 'WhatsApp order ' + o.ref + (o.customer.name ? ' · ' + o.customer.name : ''), o.summary.slice(0, 80) || 'Reply on WhatsApp', '#orders/' + o.ref]);
       if (o.test && o.kind === 'photobook' && o.status === 'ready') attention.push(['b', tg + o.ref + ' pages received', 'Test only: don’t print', '#orders/' + o.ref]);
       if (o.test) return;
@@ -308,7 +309,7 @@
     var f = S.filt, q = f.q.toLowerCase();
     var list = S.orders.filter(function (o) {
       if (f.kind !== 'all' && o.kind !== f.kind) return false;
-      if (f.st === 'open' && (CLOSED.test(o.status) || (!o.paid && o.kind !== 'whatsapp'))) return false;
+      if (f.st === 'open' && (CLOSED.test(o.status) || (!o.paid && o.kind !== 'whatsapp' && o.status !== 'awaiting_confirmation'))) return false;
       if (f.st === 'unpaid' && o.paid) return false;
       if (f.st === 'done' && !CLOSED.test(o.status)) return false;
       return !q || (o.ref + ' ' + o.customer.name + ' ' + o.customer.email + ' ' + o.customer.phone + ' ' + o.summary).toLowerCase().indexOf(q) >= 0;
@@ -343,6 +344,7 @@
       (g ? '<dt>Gift</dt><dd>For ' + esc(g.to || '—') + (g.phone ? ' · ' + esc(g.phone) : '') + (g.note ? '<br>“' + esc(g.note) + '”' : '') + '</dd>' : '') +
       '<dt>Items</dt><dd>' + (r.lines ? r.lines.map(function (l) { return esc(l.label) + (l.qty > 1 ? ' × ' + l.qty : '') + ' — ' + money(l.amount * (l.qty || 1)); }).join('<br>') : esc(o.summary)) + '</dd></dl>' +
       (o.kind === 'whatsapp' ? '<dl class="dl"><dt>Page</dt><dd>' + esc(r.page || '—') + '</dd><dt>Message</dt><dd style="white-space:pre-wrap">' + esc(r.text || '—') + '</dd></dl>' : '') +
+      (r.payment && r.payment.method === 'paybill' ? '<div class="card" style="padding:1rem;display:grid;gap:.5rem' + (o.status === 'awaiting_confirmation' ? ';border-color:#ff5a1f' : '') + '"><b>' + (o.status === 'awaiting_confirmation' ? 'Check this Paybill payment' : 'Paid by Paybill') + '</b><span class="muted">Paybill ' + esc(r.payment.paybill) + ' · account ' + esc(r.payment.account) + ' · code <b>' + esc(r.payment.code) + '</b></span><div style="white-space:pre-wrap;font-size:.85rem;background:var(--side2,#f6f2ea);border-radius:8px;padding:.6rem">' + esc(r.payment.message) + '</div>' + (o.status === 'awaiting_confirmation' ? '<div class="row" style="gap:.5rem"><button class="b b--p" id="pyok">Confirm payment</button><button class="b" id="pyno">Not received</button></div>' : '') + '</div>' : '') +
       (o.kind === 'photobook' ? '<button class="b b--d" id="dpf">' + I.book + '<span>Book preview, pages &amp; print PDF</span></button>' : '') +
       (o.kind === 'domain' ? '<button class="b b--d" id="ddm">' + I.globe + '<span>Register, check or refund</span></button>' : '') +
       (o.kind === 'whatsapp' && c.phone ? '<a class="b b--d" target="_blank" rel="noopener" href="https://wa.me/' + esc(String(c.phone).replace(/\D/g, '').replace(/^0/, '254')) + '">' + I.wa + '<span>Reply on WhatsApp</span></a>' : '') +
@@ -351,6 +353,10 @@
       (r.history && r.history.length ? '<b>History</b><ul class="hist">' + r.history.slice().reverse().map(function (x) { return '<li><b>' + esc((labels && labels[x.status]) || x.status) + '</b> · ' + dt(x.at) + (x.note ? '<br><span class="muted">' + esc(x.note) + '</span>' : '') + '</li>'; }).join('') + '</ul>' : '') +
       '<button class="b" id="dtask">' + I.tasks + '<span>Make a task for this order</span></button>';
     var d = drawer(esc(o.ref), h, function () { if (location.hash.indexOf('#orders/') === 0) history.replaceState(null, '', '#orders'); });
+    var pyok = d.querySelector('#pyok'), pyno = d.querySelector('#pyno');
+    function pyDone(x) { var n = fromPB(x.order); S.orders = S.orders.map(function (y) { return y.ref === n.ref ? n : y; }); d.remove(); orderDrawer(n); }
+    if (pyok) pyok.onclick = function () { if (!confirm('Confirm that ' + money(o.total) + ' (code ' + r.payment.code + ') reached Paybill ' + r.payment.paybill + '?')) return; pyok.disabled = true; api('/api/photobooks?route=pbk-admin-confirm', { ref: o.ref, ok: true }).then(function (x) { toast('Payment confirmed: customer emailed'); pyDone(x); }, function (e) { pyok.disabled = false; toast(e.message); }); };
+    if (pyno) pyno.onclick = function () { var note = prompt('Payment not found. A short note for the customer (optional):', ''); if (note === null) return; api('/api/photobooks?route=pbk-admin-confirm', { ref: o.ref, ok: false, note: note }).then(function (x) { toast('Order put on hold: customer emailed'); pyDone(x); }, function (e) { toast(e.message); }); };
     var sb = d.querySelector('#db');
     if (sb) sb.onclick = function () {
       sb.disabled = true; var st = d.querySelector('#ds').value, note = d.querySelector('#dn').value;

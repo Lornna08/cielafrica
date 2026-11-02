@@ -72,7 +72,7 @@
     if (main.querySelector('.pk-back')) return;
     var label = { checkout: 'Back', 'my-books': 'Photo Books', track: 'Photo Books' }[seg] || 'Back';
     var b = document.createElement('div'); b.className = 'pk-back wrap';
-    b.innerHTML = '<button type="button" class="pk-back__btn" aria-label="Go back"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span>' + label + '</span></button><a data-go href="' + BASE + '" class="pk-back__home">All photo books</a>';
+    b.innerHTML = '<button type="button" class="pk-back__btn" aria-label="Go back"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span>' + label + '</span></button>';
     main.insertAdjacentElement('afterbegin', b);
     b.querySelector('button').onclick = function () { if (inApp > 0) { inApp--; history.back(); } else PBK.go(BASE); };
   }
@@ -150,29 +150,45 @@
     return '<section class="pk-steps wrap" id="how"><div class="pk-head"><span class="eyebrow"><span class="brk">‹</span> How it works</span><h2>Your photo book in <span class="pk-hl">3 steps</span></h2><p>About ten minutes on your phone. No design skills needed.</p></div>' +
       '<ol class="pk-steps__list">' +
       '<li class="pk-step"><div class="pk-step__vis pk-step__vis--1">' + c1 + '</div><span class="pk-step__n">1</span><h3>Choose your template</h3><p>Pick a cover for the trip, the person or the year: more than a hundred designs, or start from a blank cover.</p></li>' +
-      '<li class="pk-step"><div class="pk-step__vis pk-step__vis--photo"><img src="' + US('photo-1646645733353-55c8bfb60a70', 720, 0.62) + '" alt="An open photo book with four photos across two pages" loading="lazy" width="720" height="480"></div><span class="pk-step__n">2</span><h3>Add your photos</h3><p>Choose them straight from your camera roll. They drop into the pages, one or two per page, ready to print.</p></li>' +
-      '<li class="pk-step"><div class="pk-step__vis pk-step__vis--3"><div class="pk-ui"><span class="pk-ui__bar"></span><span class="pk-ui__page"><b></b></span><span class="pk-ui__tools"><i>Aa</i><i>★</i><i>●</i></span></div></div><span class="pk-step__n">3</span><h3>Personalise it</h3><p>Just like Canva: change the words, colours and stickers, move and resize photos, then preview the whole book.</p></li>' +
+      '<li class="pk-step"><div class="pk-step__vis pk-step__vis--prints"><img src="' + US('photo-1739302750675-042ed497a429', 420, 0.75, 'faces') + '" alt="Two friends laughing" loading="lazy"><img src="' + US('photo-1643818657367-491080baeece', 360, 1.25, 'faces') + '" alt="A family with a child on their shoulders" loading="lazy"><img src="' + US('photo-1605087745782-32cd1a138c53', 360, 1.25) + '" alt="An elephant and her calf" loading="lazy"></div><span class="pk-step__n">2</span><h3>Add your photos</h3><p>Choose them straight from your camera roll. They drop into the pages, one or two per page, ready to print.</p></li>' +
+      '<li class="pk-step"><div class="pk-step__vis pk-step__vis--ed"><img src="/assets/img/pb-demo/editor.webp?v=1" alt="The photo book editor: back cover, spine and front cover side by side" loading="lazy"></div><span class="pk-step__n">3</span><h3>Personalise it</h3><p>Just like Canva: change the words, colours and stickers, move and resize photos, then preview the whole book.</p></li>' +
       '</ol></section>';
   }
   /* Unsplash photos (hotlinked, as Unsplash asks; credits in assets/img/pb-demo/CREDITS.md) */
-  function US(id, w, ar) { return 'https://images.unsplash.com/' + id + '?auto=format&fit=crop&q=72&w=' + w + (ar ? '&h=' + Math.round(w * ar) : ''); }
+  function US(id, w, ar, crop) { return 'https://images.unsplash.com/' + id + '?auto=format&fit=crop&q=72&w=' + w + (ar ? '&h=' + Math.round(w * ar) : '') + '&crop=' + (crop || 'entropy'); }
   /* ---------------- open books: real pages, arranged ---------------- */
   function openBooks() {
     var D = '/assets/img/pb-demo/';
     function im(src, alt, cls) { return '<img class="' + (cls || '') + '" src="' + src + '" alt="' + esc(alt) + '" loading="lazy" draggable="false">'; }
+    /* order: portraits, family, safari, travel, year in photos, wedding */
     var spreads = [
-      { tag: 'Travel · Diani', bg: '#f4efe6', l: '<div class="pk-pg pk-pg--trio">' + im(D + 'beach.webp', 'White sand beach') + im(D + 'palms.webp', 'Palm trees by the pool') + im(D + 'deck.webp', 'Sun deck by the sea') + '</div>', r: '<div class="pk-pg pk-pg--bleed">' + im(D + 'dhow.webp', 'A dhow at sunset') + '<span class="pk-pg__cap pk-pg__cap--light">Sunset on the water</span></div>' },
-      { tag: 'Safari · Maasai Mara', bg: '#f1ebe0', l: '<div class="pk-pg pk-pg--bleed">' + im(US('photo-1656266732667-59f75f1a56db', 700, 1.414), 'Two lions walking through the grass') + '</div>', r: '<div class="pk-pg pk-pg--stack">' + im(US('photo-1518709594023-6eab9bab7b23', 700, 0.62), 'A herd of zebra running') + im(US('photo-1571567009295-edc3206e7cce', 700, 0.62), 'Plains of the Maasai Mara') + '<span class="pk-pg__cap">Day three, Maasai Mara</span></div>' },
-      { tag: 'Portraits', bg: '#ece9e4', l: '<div class="pk-pg pk-pg--frame">' + im(D + 'pf2.webp', 'Black and white portrait') + '</div>', r: '<div class="pk-pg pk-pg--duo">' + im(D + 'pf1.webp', 'Portrait with braids') + im(D + 'pf3.webp', 'Portrait by the window') + '<span class="pk-pg__cap pk-pg__cap--serif">The faces we love</span></div>' },
-      { tag: 'Wedding', bg: '#f5f0ea', l: '<div class="pk-pg pk-pg--bleed">' + im(US('photo-1695281536457-01f9a07c575b', 700, 1.414), 'A bride and groom under a tree') + '</div>', r: '<div class="pk-pg pk-pg--frame pk-pg--note">' + im(US('photo-1695281535578-ce371088bb3e', 600, 1.15), 'A bride and groom pose for a photo') + '<span class="pk-pg__cap pk-pg__cap--script">Forever &amp; always</span></div>' },
-      { tag: 'Family', bg: '#eef1f0', l: '<div class="pk-pg pk-pg--frame">' + im(US('photo-1596510914965-9ae08acae566', 600, 1.3), 'A mother carrying her baby by the sea') + '</div>', r: '<div class="pk-pg pk-pg--bleed">' + im(US('photo-1597698110516-023a0489ac0c', 700, 1.414), 'A family moment at the seaside') + '<span class="pk-pg__cap pk-pg__cap--light">Sundays by the sea</span></div>' },
-      { tag: 'Year in photos', bg: '#f6efe4', l: '<div class="pk-pg pk-pg--duo">' + im(D + 'run.webp', 'A runner at sunset') + im(D + 'coast.webp', 'The coast from the boat') + '<span class="pk-pg__cap">January → June</span></div>', r: '<div class="pk-pg pk-pg--frame">' + im(D + 'pf8.webp', 'A golden evening') + '</div>' }
+      { k: 'portraits', tag: 'Portraits', note: 'Black & white, framed', bg: '#efebe5',
+        l: '<div class="pk-pg pk-pg--frame">' + im(D + 'pf2.webp', 'Black and white portrait') + '</div>',
+        r: '<div class="pk-pg pk-pg--duo">' + im(D + 'pf1.webp', 'Portrait with braids') + im(D + 'pf3.webp', 'Portrait by the window') + '<span class="pk-pg__cap pk-pg__cap--serif">The faces we love</span></div>' },
+      { k: 'family', tag: 'Family', note: 'Sundays together', bg: '#f3efe8',
+        l: '<div class="pk-pg pk-pg--bleed">' + im(US('photo-1643818657367-491080baeece', 700, 1.414, 'faces'), 'A family with a child on their shoulders') + '</div>',
+        r: '<div class="pk-pg pk-pg--frame pk-pg--note">' + im(US('photo-1596510914965-9ae08acae566', 600, 1.15, 'faces'), 'A mother carrying her baby by the sea') + '<span class="pk-pg__cap pk-pg__cap--script">Our little world</span></div>' },
+      { k: 'safari', tag: 'Safari · Maasai Mara', note: 'One photo across both pages', bg: '#f1ebe0',
+        pano: im(US('photo-1656266732667-59f75f1a56db', 1200, 297 / 420), 'Two lions walking through the grass') + '<span class="pk-pg__cap pk-pg__cap--light pk-pano__cap">Day three, Maasai Mara</span>' },
+      { k: 'travel', tag: 'Travel · Diani', note: 'A collage and a sunset', bg: '#f4efe6',
+        l: '<div class="pk-pg pk-pg--trio">' + im(D + 'beach.webp', 'White sand beach') + im(D + 'palms.webp', 'Palm trees by the pool') + im(D + 'deck.webp', 'Sun deck by the sea') + '</div>',
+        r: '<div class="pk-pg pk-pg--bleed">' + im(D + 'dhow.webp', 'A dhow at sunset') + '<span class="pk-pg__cap pk-pg__cap--light">Sunset on the water</span></div>' },
+      { k: 'year', tag: 'Year in photos', note: 'Twelve months, one book', bg: '#f6efe4',
+        l: '<div class="pk-pg pk-pg--duo">' + im(US('photo-1739302750675-042ed497a429', 500, 1.5, 'faces'), 'Two friends laughing on a sofa') + im(D + 'run.webp', 'A runner at sunset') + '<span class="pk-pg__cap">January → June</span></div>',
+        r: '<div class="pk-pg pk-pg--stack">' + im(D + 'coast.webp', 'The coast from the boat') + im(US('photo-1605087745782-32cd1a138c53', 600, 0.62), 'An elephant and her calf') + '<span class="pk-pg__cap">July → December</span></div>' },
+      { k: 'wedding', tag: 'Wedding', note: 'Forever, in print', bg: '#f5f0ea',
+        l: '<div class="pk-pg pk-pg--bleed">' + im(US('photo-1695281536457-01f9a07c575b', 700, 1.414, 'faces'), 'A bride and groom under a tree') + '</div>',
+        r: '<div class="pk-pg pk-pg--frame pk-pg--note">' + im(US('photo-1695281535578-ce371088bb3e', 600, 1.15, 'faces'), 'A bride and groom pose for a photo') + '<span class="pk-pg__cap pk-pg__cap--script">Forever &amp; always</span></div>' }
     ];
-    return '<section class="pk-open" id="inside" aria-label="Inside the book"><div class="wrap"><div class="pk-head"><span class="eyebrow"><span class="brk">‹</span> Inside the book</span><h2>Open it and <span class="pk-hl">every page is yours</span></h2><p>Full-bleed sunsets, collages, framed portraits and captions in your own words. One or two photos to a page, printed on an A4 hardcover.</p></div>' +
+    var closed = C.byCat('kenya')[0];
+    return '<section class="pk-open" id="inside" aria-label="Inside the book"><div class="wrap"><div class="pk-head"><span class="eyebrow"><span class="brk">‹</span> Inside the book</span><h2>Open it and <span class="pk-hl">every page is yours</span></h2><p>Full-bleed sunsets, collages, framed portraits and captions in your own words.</p></div>' +
       '<div class="pk-open__grid">' + spreads.map(function (sp, i) {
-        return '<figure class="pk-open__item' + (i === 0 ? ' is-big' : '') + '" style="--paper:' + sp.bg + '"><div class="pk-spread"><div class="pk-spread__l">' + sp.l + '</div><div class="pk-spread__r">' + sp.r + '</div></div><figcaption>' + esc(sp.tag) + '</figcaption></figure>';
+        var inner = sp.pano ? '<div class="pk-pano">' + sp.pano + '</div>' : '<div class="pk-spread__l">' + sp.l + '</div><div class="pk-spread__r">' + sp.r + '</div>';
+        return '<figure class="pk-open__item pk-open__item--' + sp.k + '" style="--paper:' + sp.bg + '"><div class="pk-spread' + (sp.pano ? ' pk-spread--pano' : '') + '">' + inner + '</div>' +
+          (i === 0 && closed ? '<img class="pk-open__closed" src="' + mockSrc(closed, 0) + '" alt="" loading="lazy" draggable="false">' : '') +
+          '<figcaption><b>' + esc(sp.tag) + '</b><span>' + esc(sp.note) + '</span></figcaption></figure>';
       }).join('') + '</div>' +
-      '<div class="pk-open__cta"><button class="btn btn--p btn--lg" data-pick>Start my book ' + ICON.arrow + '</button><span class="pk-open__credit">Example photos: <a href="https://unsplash.com/?utm_source=ciel_africa&amp;utm_medium=referral" target="_blank" rel="noopener">Unsplash</a></span></div></div></section>';
+      '<div class="pk-open__cta"><button class="btn btn--p btn--lg" data-pick>Start my book ' + ICON.arrow + '</button></div></div></section>';
   }
   function trust() {
     return '<ul class="pk-trust"><li>' + ICON.book + '<span><b>Portrait hardcover</b>' + esc(BOOK.size || '21 × 29.7 cm (A4)') + ', ' + BOOK.pages.min + '–' + BOOK.pages.max + ' pages</span></li>' +
@@ -215,7 +231,7 @@
       '<section class="pk-mq" aria-label="Cover designs"><div class="pk-mq__row"><div class="pk-mq__track">' + row(rowA, 0) + '</div></div><div class="pk-mq__row pk-mq__row--b"><div class="pk-mq__track">' + row(rowB, 1) + '</div></div></section>' +
       '<section class="pk-kenya"><div class="wrap pk-kenya__in"><div class="pk-kenya__copy"><span class="eyebrow"><span class="brk">‹</span> New</span><h2>Made for <span class="pk-hl">Kenya</span></h2><p>Nairobi, Mombasa, the Serengeti plains and a Kenya cover for every trip home. Same minimal style, same CIEL AFRICA mark, every word editable.</p><a data-go href="' + BASE + '/kenya" class="btn btn--dark">See the Kenya covers ' + ICON.arrow + '</a></div>' +
       '<div class="pk-kenya__books">' + C.byCat('kenya').slice(0, 4).map(function (t, i) { return '<a data-go href="' + coverLink(t.id, 0) + '"><img src="' + mockSrc(t, 0) + '" alt="' + esc(t.name) + ' cover" loading="lazy"' + IMGWH + '></a>'; }).join('') + '</div></div></section>' +
-      '<section class="pk-spec wrap"><div class="pk-spec__card"><div><span class="eyebrow"><span class="brk">‹</span> The book</span><h2>Price by pages</h2><p>Every book is a portrait hardcover, ' + esc(BOOK.size || '21 × 29.7 cm (A4)') + '. Start with ' + BOOK.pages.min + ' pages and add more as you go: the price depends on the number of pages.</p></div>' +
+      '<section class="pk-spec wrap"><div class="pk-spec__card"><div><span class="eyebrow"><span class="brk">‹</span> The book</span><h2>Price by pages</h2><p>Start with ' + BOOK.pages.min + ' pages and add more as you go: the price depends on the number of pages.</p></div>' +
       '<div class="pk-calc"><label for="pkPages">Pages <output id="pkPagesOut">' + BOOK.pages.default + '</output></label><input type="range" id="pkPages" min="' + BOOK.pages.min + '" max="' + BOOK.pages.max + '" step="' + BOOK.pages.step + '" value="' + BOOK.pages.default + '"><div class="pk-calc__price" id="pkPrice">' + esc(priceLabel(BOOK.pages.default)) + '</div>' + (price(BOOK.pages.min) == null ? '<p class="pk-calc__note">Prices are being finalised. You can design and save your book now.</p>' : '') + '</div></div></section>' +
       trust() + faq() +
       '<section class="wrap"><div class="pk-band"><h2>Ready to make yours?</h2><p>Choose a cover and start adding photos.</p><button class="btn btn--p btn--lg" data-pick>Create my photo book ' + ICON.arrow + '</button><p class="pk-band__track">Already ordered? <a data-go href="' + BASE + '/track">Track your order</a> · <a data-go href="' + BASE + '/my-books">My books</a></p></div></section>';
@@ -282,9 +298,9 @@
       '<div id="pkPick">' + (list.length > 8 ? '<label class="pk-search">' + ICON.search + '<input id="pkQ" type="search" placeholder="Search ' + list.length + ' covers (e.g. Paris, Kenya)" autocomplete="off"></label>' : '') +
       '<div class="pk-covers" id="pkCovers"></div></div></div>' +
       '<div class="pk-opt pk-make"><div class="pk-opt__h"><b><i class="pk-n">2</i>Make it yours</b><button type="button" class="pk-reset" id="pkReset" hidden>Reset</button></div><div class="pk-make__in"><canvas class="pk-make__mini" id="pkMini" aria-hidden="true"></canvas><div class="pk-make__f" id="pkMake"></div></div></div>' +
-      '<div class="pk-opt"><div class="pk-opt__h"><b><i class="pk-n">3</i>Pages</b><span>' + esc(BOOK.size || '21 × 29.7 cm (A4)') + ' portrait hardcover</span></div><div class="pk-pages" id="pkPg">' +
+      '<div class="pk-opt"><div class="pk-opt__h"><b><i class="pk-n">3</i>Pages</b></div><div class="pk-pages" id="pkPg">' +
       PAGES.map(function (n) { return '<button type="button" data-p="' + n + '"' + (n === st.pages ? ' class="is-on"' : '') + '>' + n + '</button>'; }).join('') + '</div><p class="pk-opt__note">Up to 48 pages makes a slim book; 60 or more, a thicker one. You can add or remove pages later.</p></div>' +
-      '<div class="pk-price"><div><span>Price</span><b id="pkPrice">' + esc(priceLabel(st.pages)) + '</b></div><small id="pkPriceFor">' + st.pages + ' pages · ' + esc(BOOK.size || '21 × 29.7 cm (A4)') + '</small></div>' +
+      '<div class="pk-price"><div><span>Price</span><b id="pkPrice">' + esc(priceLabel(st.pages)) + '</b></div><small id="pkPriceFor">' + st.pages + ' pages</small></div>' +
       '<button class="btn btn--ghost btn--lg pk-cust" id="pkCust">' + ICON_EDIT + ' Customise cover in the editor</button>' +
       '<button class="btn btn--p btn--lg pk-start" id="pkStart">' + esc(cat.cta) + ' ' + ICON.arrow + '</button>' +
       '<button class="pk-link" data-pick="' + (catId === 'blank' ? 'all' : catId) + '">See all templates</button>' +
@@ -385,7 +401,7 @@
     document.getElementById('pkPg').addEventListener('click', function (e) {
       var b = e.target.closest('[data-p]'); if (!b) return; var was = R.bookKind(st.pages); st.pages = +b.getAttribute('data-p');
       this.querySelectorAll('button').forEach(function (x) { x.classList.toggle('is-on', x === b); });
-      document.getElementById('pkPrice').textContent = priceLabel(st.pages); document.getElementById('pkPriceFor').textContent = st.pages + ' pages · ' + (BOOK.size || '21 × 29.7 cm (A4)');
+      document.getElementById('pkPrice').textContent = priceLabel(st.pages); document.getElementById('pkPriceFor').textContent = st.pages + ' pages';
       if (R.bookKind(st.pages) !== was) render();
     });
     var q = document.getElementById('pkQ'); if (q) q.addEventListener('input', function () { st.q = q.value; drawCovers(); });

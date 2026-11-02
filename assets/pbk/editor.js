@@ -185,10 +185,10 @@
       '<aside class="pe-panel" id="pePanel" aria-live="polite"></aside>' +
       '<main class="pe-stage" id="peStage"><div class="pe-cvtabs" id="peCvTabs" role="tablist" aria-label="Cover view" hidden><button data-cv="wrap">Whole cover</button><button data-cv="front">Front</button><button data-cv="back">Back</button></div><div class="pe-canvaswrap" id="peWrap"><div class="pe-wraplbl" id="peWrapLbl" hidden><span>Back cover</span><span data-sp>Spine</span><span>Front cover</span></div><canvas id="peCanvas"></canvas><div class="pe-hinge" id="peHinge" title="Spine side"></div><div class="pe-brand" id="peBrand">' + I.lock + ' CIEL AFRICA stays here</div><div class="pe-sel" id="peSel" hidden><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i></div></div>' +
       '<div class="pe-ctx" id="peCtx" hidden></div>' +
-      '<div class="pe-mock" id="peMock"><span>Book preview</span><canvas id="peMockC" width="550" height="710"></canvas></div>' +
+      '<div class="pe-mock" id="peMock"><span>Your book</span><div class="pe-rot" id="peRotBox"><div class="pe-rot__b" id="peRot"><canvas class="pe-rot__f"></canvas><canvas class="pe-rot__k"></canvas><canvas class="pe-rot__s"></canvas><i class="pe-rot__p"></i><i class="pe-rot__t"></i><i class="pe-rot__u"></i></div></div><canvas id="peMockC" width="550" height="710" hidden></canvas></div>' +
       '<div class="pe-hint" id="peHint"></div></main>' +
       '</div>' +
-      '<footer class="pe-strip"><div class="pe-strip__nav"><button class="pe-ib" id="pePgPrev" aria-label="Previous page">' + I.left + '</button><span id="pePgLbl"></span><button class="pe-ib" id="pePgNext" aria-label="Next page">' + I.right + '</button></div><div class="pe-strip__list" id="peStrip"></div><div class="pe-strip__info"><span id="pePages"></span><b id="pePrice"></b></div></footer>' +
+      '<footer class="pe-strip"><div class="pe-strip__nav"><button class="pe-ib" id="pePgPrev" aria-label="Previous page">' + I.left + '</button><span id="pePgLbl"></span><button class="pe-ib" id="pePgNext" aria-label="Next page">' + I.right + '</button></div><div class="pe-strip__list" id="peStrip"></div><button class="pe-strip__info" id="pePgCount" title="Change the number of pages"><span id="pePages"></span><b id="pePrice"></b></button></footer>' +
       '<div class="pe-toast" id="peToast" role="status"></div>' +
       '<input type="file" id="peFile" accept="' + (PH.accept || 'image/*') + '" multiple hidden><input type="file" id="peSFile" accept="image/png,image/webp,image/jpeg" hidden>';
     el$ = { pe: pe, canvas: $('#peCanvas', pe), wrap: $('#peWrap', pe), sel: $('#peSel', pe), ctx: $('#peCtx', pe), panel: $('#pePanel', pe), strip: $('#peStrip', pe), toast: $('#peToast', pe), saved: $('#peSaved', pe), undo: $('#peUndo', pe), redo: $('#peRedo', pe), mock: $('#peMockC', pe), mockBox: $('#peMock', pe), stage: $('#peStage', pe), file: $('#peFile', pe), sfile: $('#peSFile', pe), hint: $('#peHint', pe) };
@@ -237,18 +237,17 @@
     var st = el$.stage; if (!st) return;
     var pad = innerWidth < 700 ? 18 : 40;
     var wrapV = isWrap(), cov = isCoverIdx(), TW = wrapV ? 2 * W + spU() : W;
-    var aw = st.clientWidth - pad * 2, ah = st.clientHeight - pad * 2 - (innerWidth < 700 ? 0 : 10) - (cov ? 44 : 0);
+    var mk = cov && innerWidth >= 900 ? 210 : 0, mob = cov && wrapV && innerWidth < 900 ? 150 : 0;
+    var aw = st.clientWidth - pad * 2 - mk, ah = st.clientHeight - pad * 2 - (innerWidth < 700 ? 0 : 10) - (cov ? 44 : 0) - mob;
     var w = Math.max(160, Math.min(aw, ah * TW / H)), h = w * H / TW;
     S.k = w / TW;
     el$.wrap.style.width = w + 'px'; el$.wrap.style.height = h + 'px';
-    el$.wrap.classList.toggle('is-wrap', wrapV); el$.wrap.style.marginTop = cov ? '34px' : '';
+    el$.wrap.classList.toggle('is-wrap', wrapV); el$.wrap.style.marginRight = mk ? mk + 'px' : ''; el$.wrap.style.marginBottom = mob ? mob + 'px' : ''; st.classList.toggle('is-wrapv', wrapV); st.classList.toggle('is-covv', cov); el$.wrap.style.marginTop = cov ? '34px' : '';
     var tabs = $('#peCvTabs'); tabs.hidden = !cov;
     tabs.querySelectorAll('[data-cv]').forEach(function (b) { var v = b.getAttribute('data-cv'); b.classList.toggle('is-on', wrapV ? v === 'wrap' : (S.cur < 0 ? v === 'front' : v === 'back')); });
     var lbl = $('#peWrapLbl'); lbl.hidden = !wrapV;
     if (wrapV) { var sp = spU(), sl = lbl.children; sl[0].style.left = '0'; sl[0].style.width = (W / TW * 100) + '%'; sl[1].style.left = (W / TW * 100) + '%'; sl[1].style.width = (sp / TW * 100) + '%'; sl[2].style.left = ((W + sp) / TW * 100) + '%'; sl[2].style.width = (W / TW * 100) + '%'; sl[1].title = 'Spine: ' + R.spineMm(S.p.pages.length) + ' mm for ' + S.p.pages.length + ' pages'; }
-    var hg = $('#peHinge'), br = $('#peBrand');
-    hg.style.left = wrapV ? ((W + spU()) / TW * 100) + '%' : ''; hg.style.width = wrapV ? (R.HINGE / TW * 100) + '%' : '';
-    br.style.left = wrapV ? ((W + spU() + 650) / TW * 100) + '%' : '';
+    if (wrapV) { lbl.children[0].classList.toggle('is-on', isBack()); lbl.children[2].classList.toggle('is-on', S.cur < 0); }
     el$.canvas.width = Math.round(w * dpr); el$.canvas.height = Math.round(h * dpr);
     el$.canvas.style.width = w + 'px'; el$.canvas.style.height = h + 'px';
     draw();
@@ -261,7 +260,7 @@
       var d = doc(), g = el$.g;
       if (isWrap()) {
         var front = S.p.cover, back = backDoc(), sp = spU(), so = spineOpts(), kk = S.k * dpr;
-        Promise.all([R.load(front, { photo: photoUrl }), R.load(back, { photo: photoUrl }), R.loadFonts()]).then(function () {
+        Promise.all([R.load(front, { photo: photoUrl }), R.load(back, { photo: photoUrl }), R.loadFonts(), R.loadSpine(so)]).then(function () {
           if (!isWrap()) return;
           g.setTransform(1, 0, 0, 1, 0, 0);
           g.clearRect(0, 0, el$.canvas.width, el$.canvas.height);
@@ -272,7 +271,6 @@
           g.setTransform(kk, 0, 0, kk, 0, 0); g.save(); g.setLineDash([10, 8]); g.lineWidth = 2 / S.k; g.strokeStyle = 'rgba(27,23,20,.35)';
           [W, W + sp].forEach(function (x) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); });
           g.restore();
-          g.save(); g.lineWidth = 3 / S.k; g.strokeStyle = 'rgba(255,90,31,.85)'; var ax = S.cur < 0 ? W + sp : 0; g.strokeRect(ax + 1.5 / S.k, 1.5 / S.k, W - 3 / S.k, H - 3 / S.k); g.restore();
           g.setTransform(1, 0, 0, 1, 0, 0);
           placeSel();
         });
@@ -283,9 +281,11 @@
         placeSel();
       });
       var isCover = S.cur < 0;
-      $('#peHinge').hidden = !isCover && !isWrap(); $('#peBrand').hidden = !isCover && !isWrap();
-      el$.mockBox.hidden = !isCover || isWrap();
-      if (isCover || isWrap()) mockSoon();
+      /* front and back on their own look like the real book (the hinge groove by the spine); the whole cover is flat */
+      var hg = $('#peHinge'); hg.hidden = isWrap() || !isCoverIdx(); hg.classList.toggle('is-back', isBack() && !isWrap());
+      $('#peBrand').hidden = !isCover || isWrap();
+      el$.mockBox.hidden = !isCoverIdx();
+      if (isCoverIdx()) mockSoon();
     });
   }
   var mockT;
@@ -298,10 +298,24 @@
     clearTimeout(mockT);
     mockT = setTimeout(function () {
       if (!S.p || !el$.mock || !el$.mock.isConnected) return;
+      rotBook();
       book3d(S.p.cover, 900).then(function (m) {
         [el$.mock, document.getElementById('peMockP')].forEach(function (cv) { if (!cv) return; cv.width = m.width; cv.height = m.height; var x = cv.getContext('2d'); x.clearRect(0, 0, cv.width, cv.height); x.drawImage(m, 0, 0); });
       }).catch(function () {});
     }, 180);
+  }
+  /** the slowly turning book beside the cover: front, spine and back drawn from the design */
+  function rotBook() {
+    var box = $('#peRot'); if (!box || !S.p) return;
+    var fw = 240, fh = Math.round(fw * H / W), su = spU(), so = spineOpts(), front = S.p.cover, back = backDoc();
+    Promise.all([R.load(front, { photo: photoUrl }), R.load(back, { photo: photoUrl }), R.loadFonts(), R.loadSpine(so)]).then(function () {
+      var cf = box.querySelector('.pe-rot__f'), ck = box.querySelector('.pe-rot__k'), cs = box.querySelector('.pe-rot__s');
+      [cf, ck].forEach(function (c, i) { c.width = fw; c.height = fh; var g = c.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, fw, fh); R.draw(g, i ? back : front, { scale: fw / W, photo: photoUrl, empty: 'none' }); });
+      var sw = Math.max(6, Math.round(su / W * fw)); cs.width = sw; cs.height = fh; var gs = cs.getContext('2d'); gs.setTransform(sw / su, 0, 0, fh / H, 0, 0); R.drawSpine(gs, so, su);
+      var vw = box.parentNode.clientWidth || 120, vh = vw * H / W, d = Math.max(9, su / W * vw * 1.6);
+      box.style.setProperty('--w', vw + 'px'); box.style.setProperty('--h', vh + 'px'); box.style.setProperty('--d', d + 'px');
+      box.parentNode.style.height = vh + 'px';
+    }).catch(function () {});
   }
   function renderAll() { fit(); drawStrip(); drawInfo(); if (S.panel) openPanel(S.panel, true); ctxBar(); }
 
@@ -330,7 +344,7 @@
   function pickSide(clientX) {
     if (!isWrap()) return true;
     var r = el$.canvas.getBoundingClientRect(), sd = sideAt((clientX - r.left) / S.k);
-    if (sd === 'spine') { select(null); openPanel('cover'); setTimeout(function () { var sp = $('#peSpine'); if (sp) { sp.scrollIntoView({ block: 'start', behavior: 'smooth' }); sp.classList.add('is-flash'); setTimeout(function () { sp.classList.remove('is-flash'); }, 1400); } }, 60); hint('Spine: change its words and colours in the Cover panel. It is ' + R.spineMm(S.p.pages.length) + ' mm wide for ' + S.p.pages.length + ' pages.'); return false; }
+    if (sd === 'spine') { select(null); openPanel('spine'); return false; }
     if (sd !== S.cur) { S.cur = sd; S.sel = null; S.crop = false; S.target = null; draw(); drawStripSel(); ctxBar(); if (S.panel && S.panel !== 'photos' && S.panel !== 'stickers') openPanel(S.panel, false); }
     return true;
   }
@@ -375,7 +389,18 @@
       if (drag.mode === 'move') {
         if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 6) return;
         drag.moved = true;
-        if (e.t === 'photo' && e.photo) { var pg = stripTarget(ev.clientX, ev.clientY); drag.toPage = pg; }
+        var movable = !e.role && e.id !== 'map' && e.id !== 'place';
+        if ((e.t === 'photo' && e.photo) || (movable && e.t !== 'photo')) { var pg = stripTarget(ev.clientX, ev.clientY); drag.toPage = pg; }
+        /* whole cover: drag a sticker, words or a photo across from the back to the front (or back) */
+        if (isWrap() && movable) {
+          var rr = el$.canvas.getBoundingClientRect(), sd = sideAt((ev.clientX - rr.left) / S.k);
+          if (sd !== 'spine' && sd !== S.cur && (e.t !== 'photo' || photoCount(docAt(sd)) < MAXPH)) {
+            var from = doc(), o1 = ox(); from.els.splice(from.els.indexOf(e), 1);
+            S.cur = sd; var o2 = ox(); doc().els.push(e);
+            var sh = o1 - o2; drag.o.x += sh; drag.p.x += sh; o = drag.o; dx = p.x - drag.p.x;
+            fit(); drawStripSel(); drag.crossed = true;
+          }
+        }
         e.x = o.x + dx; e.y = o.y + dy;
         // gentle snapping to the page centre and margins
         var b = bounds(e), cx = b.x + b.w / 2;
@@ -414,6 +439,14 @@
         return;
       }
       stripTarget(null);
+      if (d.mode === 'move' && d.toPage != null && d.toPage !== S.cur && d.e.t !== 'photo') {
+        /* a sticker, artwork or words dropped on another page in the strip moves there */
+        Object.assign(d.e, { x: d.o.x, y: d.o.y }); var src = doc(); src.els.splice(src.els.indexOf(d.e), 1);
+        var dst = docAt(d.toPage); dst.els.push(d.e); clampEl(d.e); var from = S.cur;
+        commit(); drawThumb(from); drawThumb(d.toPage); select(null); go(d.toPage); select(d.e.id);
+        toast('Moved to ' + (d.toPage < 0 ? 'the cover' : isBack(d.toPage) ? 'the back cover' : 'page ' + (d.toPage + 1)) + '.'); return;
+      }
+      if (d.crossed) { commit(); drawThumb(-1); drawThumb(S.p.pages.length); ctxBar(); return; }
       if (d.mode === 'move' && d.toPage != null && d.toPage !== S.cur) {
         // dropped on another page in the strip: the photo moves there
         Object.assign(d.e, { x: d.o.x, y: d.o.y }); var ph = d.e.photo; d.e.photo = null;
@@ -748,7 +781,7 @@
   function openPanel(name, keepScroll) {
     var P = el$.panel, sc = P.scrollTop;
     S.panel = name;
-    document.querySelectorAll('#peRail [data-panel]').forEach(function (b) { b.classList.toggle('is-on', b.getAttribute('data-panel') === name); });
+    document.querySelectorAll('#peRail [data-panel]').forEach(function (b) { b.classList.toggle('is-on', b.getAttribute('data-panel') === (name === 'spine' ? 'cover' : name)); });
     el$.pe.classList.toggle('has-panel', !!name);
     if (!name) { P.innerHTML = ''; setTimeout(fit, 0); return; }
     var head = function (t, sub) { return '<div class="pe-ph"><div><h3>' + t + '</h3>' + (sub ? '<p>' + sub + '</p>' : '') + '</div><button class="pe-ib pe-ph__x" data-close aria-label="Close">' + I.x + '</button></div>'; };
@@ -783,10 +816,10 @@
         if (S.cur < 0) { var t = C.TPL[S.p.tpl]; if (t && t.kind === 'raster') h += rasterNote(t); }
       }
     } else if (name === 'stickers') {
-      var tab = S.stab || 'classic'; if (['classic', 'stickers', 'emoji', 'words', 'mine'].indexOf(tab) < 0) tab = S.stab = 'classic';
+      var tab = S.stab || 'all'; if (['all', 'classic', 'stickers', 'emoji', 'words', 'mine'].indexOf(tab) < 0) tab = S.stab = 'all';
       h = head(S.replaceArt ? 'Replace artwork' : 'Stickers', S.replaceArt ? 'Choose what goes in its place.' : 'Tap to add, then drag and resize.') +
         '<label class="pe-q"><input type="search" id="peSq" placeholder="Search: Paris, safari, beach, flowers…"></label>' +
-        '<div class="pe-tabs">' + [['classic', 'Stickers'], ['stickers', 'Travel art'], ['emoji', 'Emoji'], ['words', 'Words'], ['mine', 'My uploads']].map(function (x) { return '<button data-stab="' + x[0] + '"' + (tab === x[0] ? ' class="is-on"' : '') + '>' + x[1] + '</button>'; }).join('') + '</div>' +
+        '<div class="pe-tabs">' + [['all', 'All'], ['classic', 'Stickers'], ['stickers', 'Travel art'], ['emoji', 'Emoji'], ['words', 'Words'], ['mine', 'My uploads']].map(function (x) { return '<button data-stab="' + x[0] + '"' + (tab === x[0] ? ' class="is-on"' : '') + '>' + x[1] + '</button>'; }).join('') + '</div>' +
         '<div id="peStk">' + stickerGrid('', tab) + '</div>';
     } else if (name === 'colors') {
       var d = doc(), isCov = S.cur < 0, tt = isCov && C.TPL[S.p.tpl];
@@ -819,13 +852,19 @@
       if (t2 && t2.layered) h += '<div class="pe-sub"><h4>Cover colour</h4>' + swatches('bg', cov.img ? t2.bg : cov.bg, C.COVER_COLORS) + '</div>';
       if (t2 && t2.kind === 'raster' && t2.editable) { var tc = tE ? tE.color : t2.tc; h += '<div class="pe-sub"><h4>Title colour</h4>' + swatches('title', tc, C.TEXT_COLORS) + '</div>'; }
       var so = spineOpts();
-      h += '<div class="pe-sub pe-spine" id="peSpine"><h4>Spine</h4><p class="pe-note">' + R.spineMm(S.p.pages.length) + ' mm wide for ' + S.p.pages.length + ' pages. It grows as you add pages.</p>' +
-        '<input class="pe-in" data-spine="title" value="' + esc(so.title || '') + '" maxlength="40" placeholder="Words on the spine"' + (so.hideTitle ? ' disabled' : '') + '>' +
-        '<label class="pe-check"><input type="checkbox" data-act="spineoff"' + (so.hideTitle ? ' checked' : '') + '><span>No words on the spine</span></label>' +
-        '<h4 class="pe-h4s">Spine colour</h4>' + swatches('spbg', so.bg, C.COVER_COLORS) + '<h4 class="pe-h4s">Spine words</h4>' + swatches('sptc', so.tc, C.TEXT_COLORS) + '</div>';
+      h += '<div class="pe-sub"><h4>Spine</h4><button class="pe-spbtn" data-go-panel="spine"><span class="pe-spbtn__s" style="background:' + esc(so.bg || '#fff') + ';color:' + esc(so.tc || '#111') + '">' + esc(so.hideTitle ? '' : (so.title || '').slice(0, 14)) + '</span><span>Edit the spine<small>Words, font, colours</small></span>' + I.right + '</button></div>';
       h += '<div class="pe-sub"><h4>Add to the cover</h4><div class="pe-row"><button class="btn btn--ghost btn--sm" data-act="covphoto">' + I.photo + ' A photo</button><button class="btn btn--ghost btn--sm" data-go-panel="stickers">' + I.sticker + ' Stickers</button><button class="btn btn--ghost btn--sm" data-go-panel="text">' + I.text + ' Text</button></div></div>' +
-        '<p class="pe-note">' + I.lock + ' The small CIEL AFRICA mark always stays at the bottom of the cover.</p>' +
         '<div class="pe-sub"><h4>This book</h4><button class="btn btn--ghost btn--sm pe-danger" data-act="delbook">' + I.trash + ' Delete this book</button></div>';
+    }
+    if (name === 'spine') {
+      var sp = spineOpts(), SPF = [['spartan', 'Bold'], ['sans', 'Clean'], ['serif', 'Serif'], ['script', 'Script'], ['bebas', 'Tall'], ['playfair', 'Elegant']].filter(function (f) { return R.FONTS[f[0]]; });
+      h = head('Spine', 'What you see on the shelf. CIEL AFRICA stays at the bottom.') +
+        '<div class="pe-sub"><h4>Words</h4><input class="pe-in" data-spine="title" value="' + esc(sp.title || '') + '" maxlength="40" placeholder="Words on the spine"' + (sp.hideTitle ? ' disabled' : '') + '>' +
+        '<label class="pe-check"><input type="checkbox" data-act="spineoff"' + (sp.hideTitle ? ' checked' : '') + '><span>No words on the spine</span></label></div>' +
+        '<div class="pe-sub"><h4>Font</h4><div class="pe-spf">' + SPF.map(function (f) { var F = R.FONTS[f[0]]; return '<button data-spf="' + f[0] + '"' + ((sp.font || 'spartan') === f[0] ? ' class="is-on"' : '') + ' style="font-family:' + esc(F.css) + ';font-weight:' + F.w + (F.italic ? ';font-style:italic' : '') + '">' + f[1] + '</button>'; }).join('') + '</div></div>' +
+        '<div class="pe-sub"><h4>Size</h4><input type="range" id="peSpSz" min="50" max="130" step="5" value="' + Math.round((sp.scale || 1) * 100) + '"></div>' +
+        '<label class="pe-check"><input type="checkbox" data-act="spinepic"' + (sp.noPic ? '' : ' checked') + '><span>Small picture from the cover</span></label>' +
+        '<div class="pe-sub"><h4>Spine colour</h4>' + swatches('spbg', sp.bg, C.COVER_COLORS) + '</div><div class="pe-sub"><h4>Words colour</h4>' + swatches('sptc', sp.tc, C.TEXT_COLORS) + '</div>';
     }
     P.innerHTML = h;
     P.scrollTop = keepScroll ? sc : 0;
@@ -882,11 +921,12 @@
     q = (q || '').toLowerCase().trim();
     var h = '';
     if (q) tab = 'all';
+    if (tab === 'all' && !q) h += travelGrid(q) + '<h4 class="pe-gh">Stickers</h4>';
     if (tab === 'classic' || tab === 'all') {
       var al = A.list().filter(function (a) { return !q || (a.n + ' ' + a.k).toLowerCase().indexOf(q) >= 0; });
       if (al.length) h += '<div class="pe-stk">' + al.map(function (a) { return '<button data-art="' + a.id + '" title="' + esc(a.n) + '"><img alt="' + esc(a.n) + '" loading="lazy" src="' + R.artSrc(a.id) + '"></button>'; }).join('') + '</div>';
     }
-    if (tab === 'stickers' || tab === 'all') h += travelGrid(q);
+    if (tab === 'stickers' || (tab === 'all' && q)) h += travelGrid(q);
     if (tab === 'emoji' || tab === 'all') {
       var E = EMO(); Object.keys(E).forEach(function (g) {
         var l = E[g].filter(function (e) { return !q || ((e[2] || '') + ' ' + g).toLowerCase().indexOf(q) >= 0; });
@@ -937,8 +977,10 @@
     }
     var ts = $('#peTs', P);
     if (ts) { ts.addEventListener('input', function () { var e = selEl(); if (!e) return; var v = +ts.value; if (e.cap) e.cap = v; else e.size = v / 0.7; if (e.align === 'fill' && e.cap) e.w = Math.max(e.w, 200); clampEl(e); draw(); }); ts.addEventListener('change', function () { commit(); drawThumb(S.cur); }); }
-    var sq = $('#peSq', P); if (sq) sq.addEventListener('input', function () { $('#peStk').innerHTML = stickerGrid(sq.value, S.stab || 'stickers'); loadMine(); });
+    var sq = $('#peSq', P); if (sq) sq.addEventListener('input', function () { $('#peStk').innerHTML = stickerGrid(sq.value, S.stab || 'all'); loadMine(); });
     if (name === 'stickers') loadMine();
+    P.querySelectorAll('[data-spf]').forEach(function (b) { b.onclick = function () { S.p.spine = S.p.spine || {}; S.p.spine.font = b.getAttribute('data-spf'); R.loadFam && R.loadFam(S.p.spine.font); R.loadAllFonts(); commit(); if (!isCoverIdx()) go(-1); draw(); mockSoon(); openPanel('spine', true); setTimeout(draw, 400); }; });
+    var spz = $('#peSpSz', P); if (spz) { spz.addEventListener('input', function () { S.p.spine = S.p.spine || {}; S.p.spine.scale = +spz.value / 100; draw(); }); spz.addEventListener('change', function () { commit(); mockSoon(); }); }
     P.querySelectorAll('.pe-in[data-spine]').forEach(function (inp) {
       inp.addEventListener('input', function () { S.p.spine = S.p.spine || {}; S.p.spine.title = inp.value.toUpperCase(); if (!isCoverIdx()) go(-1); draw(); mockSoon(); });
       inp.addEventListener('change', function () { commit(); });
@@ -972,7 +1014,8 @@
     else if (a === 'delpage') delPage();
     else if (a === 'mvl' || a === 'mvr') movePage(a === 'mvl' ? -1 : 1);
     else if (a === 'deltext') removeSel();
-    else if (a === 'spineoff') { S.p.spine = S.p.spine || {}; S.p.spine.hideTitle = !S.p.spine.hideTitle; commit(); if (!isCoverIdx()) go(-1); draw(); mockSoon(); openPanel('cover', true); }
+    else if (a === 'spineoff') { S.p.spine = S.p.spine || {}; S.p.spine.hideTitle = !S.p.spine.hideTitle; commit(); if (!isCoverIdx()) go(-1); draw(); mockSoon(); openPanel('spine', true); }
+    else if (a === 'spinepic') { S.p.spine = S.p.spine || {}; S.p.spine.noPic = !S.p.spine.noPic; commit(); if (!isCoverIdx()) go(-1); draw(); mockSoon(); openPanel('spine', true); }
     else if (a === 'shadow') { var e = selEl(); if (e) { e.shadow = e.shadow ? 0 : 1; commit(); draw(); drawThumb(S.cur); } }
     else if (a === 'covshadow') { ensureEditable(); var on = !(S.p.cover.els.filter(function (x) { return x.role === 'title' || x.role === 'year'; })[0] || {}).shadow; S.p.cover.els.forEach(function (x) { if (x.t === 'text' && (x.role === 'title' || x.role === 'sub' || x.role === 'year')) x.shadow = on ? 1 : 0; }); if (S.cur !== -1) go(-1); commit(); draw(); drawThumb(-1); mockSoon(); }
     else if (a === 'bgall') { var c = doc().bg; S.p.pages.forEach(function (p) { p.bg = c; }); commit(); renderAll(); toast('Every page now uses this colour.'); }
@@ -993,7 +1036,7 @@
   function changeCover(id, c) {
     var keep = S.p.cover.els.filter(function (x) { return x.t === 'photo' && x.photo; });
     var nd = C.docFor(id, c); nd.els = nd.els.concat(keep);
-    S.p.cover = nd; S.p.tpl = id; S.p.pal = c;
+    S.p.cover = nd; S.p.tpl = id; S.p.pal = c; refreshBack(true);
     if (/photo book$/.test(S.p.name) || S.p.name === 'My photo book') { var t = C.TPL[id]; S.p.name = t ? t.name + ' photo book' : 'My photo book'; $('#peName').value = S.p.name; }
     select(null); commit(); go(-1); renderAll();
   }
@@ -1002,7 +1045,14 @@
     var p = t.palettes[i]; S.p.pal = i;
     var d = S.p.cover; d.bg = p[0]; d.brand = p[3] || p[1];
     d.els.forEach(function (e) { if (e.role === 'title') e.color = p[1]; if (e.role === 'sub') e.color = p[2]; });
-    commit(); renderAll();
+    refreshBack(false); commit(); renderAll();
+  }
+  /** a new cover (or colour) brings a matching back cover; anything the customer added there stays.
+      The spine takes the new cover's words and colours, keeping the chosen font and size. */
+  function refreshBack(newCover) {
+    var old = S.p.back; delete S.p.back;
+    var nb = backDoc(); if (old && nb) nb.els = nb.els.concat((old.els || []).filter(function (e) { return ['map', 'place', 'art'].indexOf(e.id) < 0; }));
+    if (S.p.spine) { delete S.p.spine.bg; delete S.p.spine.tc; if (newCover) delete S.p.spine.title; }
   }
   function setColor(k, c, live) {
     if (S.cur < 0 && (k === 'bg' || k === 'brand')) ensureEditable();
@@ -1071,6 +1121,33 @@
     ctxBar(); drawStripSel();
     if (S.panel && S.panel !== 'photos' && S.panel !== 'stickers') openPanel(S.panel, false);
   }
+  /** choose how many pages the book has (from the strip) */
+  var pcdlg;
+  function pageCount() {
+    if (!pcdlg) { pcdlg = document.createElement('dialog'); pcdlg.className = 'pe-pc'; document.body.appendChild(pcdlg); pcdlg.addEventListener('click', function (e) { if (e.target === pcdlg) pcdlg.close(); }); }
+    var n = S.p.pages.length, opts = [], mn = BOOK.pages.min, mx = BOOK.pages.max, st = BOOK.pages.step || 2;
+    [24, 36, 48, 60, 80, 100].forEach(function (k) { if (k >= mn && k <= mx) opts.push(k); }); if (opts.indexOf(n) < 0) opts.push(n); opts.sort(function (a, b) { return a - b; });
+    pcdlg.innerHTML = '<div class="pe-pc__in"><header><h3>Pages</h3><button class="pe-ib" data-x aria-label="Close">' + I.x + '</button></header>' +
+      '<div class="pe-pc__step"><button class="pe-ib" data-d="-' + st + '" aria-label="Fewer pages"' + (n - st < mn ? ' disabled' : '') + '>−</button><b>' + n + '</b><button class="pe-ib" data-d="' + st + '" aria-label="More pages"' + (n + st > mx ? ' disabled' : '') + '>+</button></div>' +
+      '<div class="pe-pc__opts">' + opts.map(function (k) { return '<button data-n="' + k + '"' + (k === n ? ' class="is-on"' : '') + '><b>' + k + '</b><small>' + esc(PBK.priceLabel(k)) + '</small></button>'; }).join('') + '</div>' +
+      '<p class="pe-note">New pages are added at the end. Removing pages takes them off the end.</p></div>';
+    pcdlg.querySelector('[data-x]').onclick = function () { pcdlg.close(); };
+    pcdlg.querySelectorAll('[data-d]').forEach(function (b) { b.onclick = function () { setPages(n + +b.getAttribute('data-d')); }; });
+    pcdlg.querySelectorAll('[data-n]').forEach(function (b) { b.onclick = function () { setPages(+b.getAttribute('data-n')); }; });
+    if (!pcdlg.open) pcdlg.showModal();
+  }
+  function setPages(t) {
+    var n = S.p.pages.length; t = Math.max(BOOK.pages.min, Math.min(BOOK.pages.max, t)); if (t % 2) t++;
+    if (t === n) return pageCount();
+    if (t < n) {
+      var gone = S.p.pages.slice(t), used = gone.filter(function (d) { return (d.els || []).some(function (e) { return (e.t === 'photo' && e.photo) || e.t === 'text' || e.t === 'art' || e.t === 'img'; }); }).length;
+      if (used && !confirm('The last ' + (n - t) + ' pages include ' + used + ' page' + (used === 1 ? '' : 's') + ' you’ve designed. Remove them?')) return;
+      S.p.pages.length = t;
+    } else { for (var i = n; i < t; i++) S.p.pages.push(pageDoc('one')); }
+    if (S.cur >= S.p.pages.length && S.cur !== n) S.cur = S.p.pages.length - 1;
+    if (S.cur === n) S.cur = S.p.pages.length; /* was on the back cover */
+    commit(); drawStrip(); drawInfo(); fit(); mockSoon(); pageCount();
+  }
   function addPages() {
     if (S.p.pages.length + 2 > BOOK.pages.max) { toast('A book can have up to ' + BOOK.pages.max + ' pages.'); return; }
     S.p.pages.splice(S.cur + 1, 0, pageDoc('one'), pageDoc('one')); commit(); drawStrip(); drawInfo(); go(S.cur + 1);
@@ -1099,6 +1176,7 @@
     el$.strip.addEventListener('click', function (ev) { var b = ev.target.closest('[data-pg]'); if (b) go(+b.getAttribute('data-pg')); var a = ev.target.closest('[data-addpg]'); if (a) { S.cur = S.p.pages.length - 1; addPages(); } });
     $('#pePgPrev').addEventListener('click', function () { go(S.cur - 1); });
     $('#pePgNext').addEventListener('click', function () { go(S.cur + 1); });
+    $('#pePgCount').addEventListener('click', pageCount);
   }
   function drawStrip() {
     var h = '<button class="pe-pg pe-pg--cover" data-pg="-1"><canvas width="96" height="136"></canvas><span>Cover</span></button>';
@@ -1175,16 +1253,19 @@
     var msg = 'Hello Ciel Africa, I’d like to order a photo book.\nBook: ' + S.p.name + '\nCover: ' + (t ? t.name : 'Blank cover') + '\nPages: ' + n + '\nSize: ' + (BOOK.size || '21 × 29.7 cm (A4)') + ' portrait hardcover';
     odlg.innerHTML = '<div class="pe-or__in"><header><h3>Order your book</h3><button class="pe-ib" data-x aria-label="Close">' + I.x + '</button></header>' +
       '<div class="pe-or__body"><canvas width="440" height="550" id="orCov"></canvas><div>' +
-      '<p class="pe-or__name"><b>' + esc(S.p.name) + '</b><span>' + n + ' pages · ' + esc(BOOK.size || '21 × 29.7 cm (A4)') + ' portrait</span></p>' +
+      '<p class="pe-or__name"><b>' + esc(S.p.name) + '</b><span>' + n + ' pages · A4 hardcover</span></p>' +
       (Sh.isTest(S.p) ? '<div class="pe-or__opts"><label class="pe-or__opt is-on"><input type="radio" name="prod" value="print" checked><span><b>Test order</b><small>A real M-Pesa payment that goes through the whole order flow. Only works while you’re signed in to Photo Book orders. Not printed; it stays in your orders until you delete it.</small></span><em>' + PBK.money(BOOK.testPrice || 5) + '</em></label></div>' :
       '<div class="pe-or__opts"><label class="pe-or__opt is-on"><input type="radio" name="prod" value="print" checked><span><b>Printed hardcover</b><small>Printed in Kenya and delivered or collected</small></span><em>' + PBK.money(pPrint) + '</em></label>' +
       '<label class="pe-or__opt"><input type="radio" name="prod" value="digital"><span><b>Print-ready PDF</b><small>Download the finished book after paying</small></span><em>' + PBK.money(pPdf) + '</em></label></div>') +
       ((c.emptyPages || c.low) ? '<div class="pe-or__warn"><b>Before you order</b><ul>' + (c.emptyPages ? '<li>' + c.emptyPages + ' page' + (c.emptyPages === 1 ? ' is' : 's are') + ' still empty — they print blank.</li>' : '') + (c.low ? '<li>' + c.low + ' small photo' + (c.low === 1 ? '' : 's') + ' may look soft in print.</li>' : '') + '</ul></div>' : '') +
+      '<div class="pe-or__exact">' + I.eye + '<span><b>Printed exactly as you designed it.</b> Every page, the cover and the spine come out just as you see them in the preview.</span></div>' +
+      '<div class="pe-or__back"><button class="btn btn--ghost btn--sm" data-prev>' + I.eye + ' Preview my book</button><button class="btn btn--ghost btn--sm" data-x>' + I.left + ' Keep editing</button></div>' +
       '<div class="pe-or__acts"><button class="btn btn--p" data-buy>Checkout</button><button class="btn btn--ghost" data-cart>Add to cart</button></div>' +
       '<a class="pe-or__wa" target="_blank" rel="noopener" href="https://wa.me/254706549703?text=' + encodeURIComponent(msg) + '">Or order on WhatsApp</a><div id="orPaid"></div></div></div></div>';
     odlg.querySelectorAll('[name=prod]').forEach(function (r) { r.onchange = function () { st.product = r.value; odlg.querySelectorAll('.pe-or__opt').forEach(function (l) { l.classList.toggle('is-on', l.contains(r)); }); }; });
     odlg.onclick = function (e) {
       if (e.target.closest('[data-x]')) odlg.close();
+      if (e.target.closest('[data-prev]')) { odlg.close(); preview(); return; }
       if (e.target.closest('[data-cart]')) Sh.add(S.p, st.product).then(function () { odlg.close(); });
       if (e.target.closest('[data-buy]')) Sh.add(S.p, st.product, { silent: true }).then(function () { odlg.close(); PBK.go(BASE + '/checkout'); });
     };
