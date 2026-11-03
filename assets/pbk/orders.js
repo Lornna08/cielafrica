@@ -9,7 +9,7 @@
 (function () {
   'use strict';
   var root = document.getElementById('ao'), CFG = (window.CIEL && CIEL.photobooks) || {}, BOOK = CFG.book || {};
-  var LABEL = { awaiting_payment: 'Awaiting payment', awaiting_confirmation: 'Paybill: confirm payment', payment_failed: 'Payment failed', paid: 'Paid', preparing: 'Waiting for pages', ready: 'Pages received', printing: 'Printing', ready_collection: 'Ready for collection', dispatched: 'Dispatched', delivered: 'Delivered', cancelled: 'Cancelled', refunded: 'Refunded' };
+  var LABEL = { awaiting_payment: 'Awaiting payment', awaiting_confirmation: 'Paybill: confirm payment', whatsapp_request: 'WhatsApp request', payment_failed: 'Payment failed', paid: 'Paid', preparing: 'Waiting for pages', ready: 'Pages received', printing: 'Printing', ready_collection: 'Ready for collection', dispatched: 'Dispatched', delivered: 'Delivered', cancelled: 'Cancelled', refunded: 'Refunded' };
   var SET = ['paid', 'ready', 'printing', 'ready_collection', 'dispatched', 'delivered', 'cancelled', 'refunded'];
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function money(n) { return 'KES ' + Number(n || 0).toLocaleString('en-KE'); }
@@ -87,6 +87,7 @@
         '<div class="ao__card"><h2>Books</h2>' + (o.items || []).map(function (it) {
           var b = r.books[it.projectId] || { print: [], view: [], spine: [] }, bk = b.book || {}, tr = trim(bk);
           return '<div class="ao__book" data-pid="' + esc(it.projectId) + '"><img data-cov alt=""><div><b>' + esc(it.name) + '</b><span class="ao__msg">' + (it.product === 'print' ? 'Printed hardcover × ' + it.qty : 'Print-ready PDF (customer downloads it)') + ' · ' + it.pages + ' pages · ' + tr.w / 10 + ' × ' + tr.h / 10 + ' cm' + (tr.h === 297 ? ' (A4)' : '') + '</span>' +
+            (o.channel === 'whatsapp' ? '<span class="ao__msg"><b>WhatsApp order request.</b> ' + (b.view.length ? 'These are previews of what they designed (not print files).' : 'No preview yet: it sends from their device right after they tap Order on WhatsApp.') + '</span>' : '') +
             (it.product === 'print' ? '<span class="ao__msg">' + b.print.length + ' of ' + (it.pages + 2) + ' print files received' + (bk.spine ? ' · Spine ' + (bk.spineMm || spineMm(it.pages)) + ' mm: “' + esc(bk.spine.hideTitle ? '(no words)' : bk.spine.title || '') + '” on ' + esc(bk.spine.bg || '') : '') + '</span>' : '') +
             (b.view.length ? '<div class="ao__acts"><button class="btn btn--p btn--sm" data-prev>Preview book</button>' + (b.print.length ? '<button class="btn btn--dark btn--sm" data-pdf>Download print PDF</button><button class="btn btn--dark btn--sm" data-wrap>Download full cover</button><button class="btn btn--ghost btn--sm" data-pages>Show pages</button>' : '') + '</div><div class="ao__pages" data-grid hidden></div><span class="ao__msg" data-msg></span>' : (it.product === 'print' ? '<span class="ao__msg">The pages haven’t arrived yet. They send from the customer’s device after payment.</span>' : '')) + '</div></div>';
         }).join('') + '<p class="ao__msg">Print files: 000 = front cover, then the pages in order, last = back cover, each its own page at ' + ((BOOK.trimW || 210) + 6) + ' × ' + ((BOOK.trimH || 297) + 6) + ' mm (3 mm bleed) at 300 dpi; the PDF’s TrimBox is ' + (BOOK.trimW || 210) + ' × ' + (BOOK.trimH || 297) + ' mm. <b>Full cover</b> is the hardcover case in one piece: wrap · back · hinge · spine · hinge · front · wrap, sized for that book’s page count (numbers from Ciel Admin → Prices → Hardcover case).</p></div></div>';
@@ -144,9 +145,11 @@
           function im(bl) { return new Promise(function (ok, no) { var u = URL.createObjectURL(bl), x = new Image(); x.onload = function () { ok(x); }; x.onerror = no; x.src = u; }); }
           /* books sent before spine files were uploaded: the spine drawn here from its colour and words */
           function spineImg() {
-            if (b.spine && b.spine[0]) return file(b.spine[0].path).then(im);
-            var so = bk.spine || {}; if (!R) return Promise.resolve(null);
-            return R.loadFonts().then(function () { var w = Math.max(8, Math.round(sp / 25.4 * 300)), h = Math.round((tr.h + 6) / 25.4 * 300), c = document.createElement('canvas'); c.width = w; c.height = h; var x = c.getContext('2d'), su = R.spineUnits(it.pages), bp = 3 / 25.4 * 300; x.fillStyle = so.bg || '#fff'; x.fillRect(0, 0, w, h); x.setTransform(w / su, 0, 0, (h - 2 * bp) / R.H, 0, bp); R.drawSpine(x, so, su); return c; });
+            /* drawn fresh from the book's spine settings (the current spine layout); the uploaded spine file only if those are missing */
+            var so = bk.spine || null;
+            if (!so || !R) return b.spine && b.spine[0] ? file(b.spine[0].path).then(im) : Promise.resolve(null);
+            if (so.artImg && !/^(\/assets\/|https:\/\/cielafrica\.com\/)/.test(so.artImg)) { so = Object.assign({}, so); delete so.artImg; }
+            return Promise.all([R.loadFonts(), R.loadSpine(so)]).then(function () { var w = Math.max(8, Math.round(sp / 25.4 * 300)), h = Math.round((tr.h + 6) / 25.4 * 300), c = document.createElement('canvas'); c.width = w; c.height = h; var x = c.getContext('2d'), su = R.spineUnits(it.pages), bp = 3 / 25.4 * 300; x.fillStyle = so.bg || '#fff'; x.fillRect(0, 0, w, h); x.setTransform(w / su, 0, 0, (h - 2 * bp) / R.H, 0, bp); R.drawSpine(x, so, su); return c; });
           }
           Promise.all([file(b.print[0].path).then(im), file(b.print[b.print.length - 1].path).then(im), spineImg(), loadPdfLib()]).then(function (r) {
             var cv = R.caseCover(r[1], r[0], r[2], { trimW: tr.w, trimH: tr.h, bleedMm: 3, spineMm: sp, cover: cc, dpi: 300, maxPx: /iPhone|iPad|iPod|Android/.test(navigator.userAgent) ? 16e6 : 60e6 });
@@ -157,8 +160,19 @@
                 doc.setSubject('Case wrap ' + cv.widthMm + ' × ' + cv.heightMm + ' mm · spine ' + sp + ' mm · hinge ' + cv.hingeMm + ' mm each side · wrap ' + cv.wrapMm + ' mm · ' + cv.dpi + ' dpi');
                 return doc.embedJpg(buf).then(function (img) {
                   var pg = doc.addPage([cv.widthMm * mm, cv.heightMm * mm]); pg.drawImage(img, { x: 0, y: 0, width: cv.widthMm * mm, height: cv.heightMm * mm });
-                  /* thin guides outside nothing printable: none drawn on the art. Sizes are in the PDF subject and the file name. */
-                  return doc.save();
+                  /* page 2: the same cover with the folds marked, to check against (print page 1) */
+                  var p2 = doc.addPage([cv.widthMm * mm, cv.heightMm * mm]); p2.drawImage(img, { x: 0, y: 0, width: cv.widthMm * mm, height: cv.heightMm * mm, opacity: 0.55 });
+                  var wr = cv.wrapMm, hg = cv.hingeMm, tw = tr.w, Hh = cv.heightMm;
+                  var xs = [[wr, 'wrap ' + wr], [wr + tw, 'back ' + tw], [wr + tw + hg, 'hinge ' + hg], [wr + tw + hg + sp, 'spine ' + sp], [wr + tw + 2 * hg + sp, 'hinge ' + hg], [wr + 2 * tw + 2 * hg + sp, 'front ' + tw]];
+                  var red = L.rgb(0.85, 0.1, 0.1);
+                  xs.forEach(function (x) { p2.drawLine({ start: { x: x[0] * mm, y: 0 }, end: { x: x[0] * mm, y: Hh * mm }, thickness: 0.6, color: red, dashArray: [4, 3] }); });
+                  [wr, Hh - wr].forEach(function (y) { p2.drawLine({ start: { x: 0, y: y * mm }, end: { x: cv.widthMm * mm, y: y * mm }, thickness: 0.6, color: red, dashArray: [4, 3] }); });
+                  return doc.embedFont(L.StandardFonts.HelveticaBold).then(function (font) {
+                    var prev = 0; xs.forEach(function (x) { var mid = (prev + x[0]) / 2; p2.drawText(x[1] + ' mm', { x: mid * mm - 18, y: (Hh / 2) * mm, size: 7, font: font, color: red }); prev = x[0]; });
+                    p2.drawText('wrap ' + wr + ' mm', { x: (cv.widthMm - wr / 2) * mm - 18, y: (Hh / 2) * mm, size: 7, font: font, color: red });
+                    p2.drawText('Guide only: print page 1. Total ' + (Math.round(cv.widthMm * 10) / 10) + ' × ' + Hh + ' mm · spine ' + sp + ' mm for ' + it.pages + ' pages', { x: 12, y: 8, size: 8, font: font, color: red });
+                    return doc.save();
+                  });
                 });
               });
             }).then(function (bytes) { save(new Blob([bytes], { type: 'application/pdf' }), o.ref + '-' + it.name.replace(/[^\w-]+/g, '-') + '-case-' + Math.round(cv.widthMm) + 'x' + Math.round(cv.heightMm) + 'mm-spine' + sp + 'mm.pdf');

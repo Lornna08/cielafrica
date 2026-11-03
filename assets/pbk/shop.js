@@ -180,6 +180,20 @@
     });
   }
 
+  /* ---------- a WhatsApp order request: small previews of every page, so Ciel Admin sees the book ---------- */
+  function previews(rc) {
+    return ST.project(rc.projectId).then(function (p) {
+      if (!p) return;
+      var list = docs(p), srcV = photoSource('prev'), so = spineOf(p), k = 0;
+      function up(kind, i, blob) { return fetch('/api/photobooks?route=pbk-upload&kind=' + kind + '&i=' + i, { method: 'POST', headers: { 'Content-Type': 'application/octet-stream', 'X-Requested-With': 'ciel', 'X-Receipt': rc.receipt }, body: blob }).then(function (r) { if (!r.ok) throw new Error('upload'); }); }
+      var info = { name: p.name, template: p.tpl, colour: p.pal, size: TRIM.w + ' × ' + TRIM.h + ' mm', trimW: TRIM.w, trimH: TRIM.h, spineMm: so.mm, cover: R.coverCfg(), spine: so, preview: true, note: 'WhatsApp order request: previews only, not print files' };
+      function next() {
+        if (k >= list.length) { srcV.done(); return; }
+        return renderPage(list[k], srcV, 700, 0).then(function (c) { return jpeg(c, 0.8); }).then(function (b) { return up('view', k, b); }).then(function () { k++; return next(); });
+      }
+      return up('book', 0, new Blob([JSON.stringify(info)], { type: 'application/octet-stream' })).then(next);
+    });
+  }
   /* ---------- sending a paid printed book to Ciel Africa ---------- */
   function sendPages(pu, onProgress) {
     return ST.project(pu.projectId).then(function (p) {
@@ -207,7 +221,7 @@
       }
       return retry(function () { return up('book', 0, new Blob([JSON.stringify(bookInfo)], { type: 'application/octet-stream' })); }).then(step).then(function () {
         return api('pbk-upload-done', { receipt: pu.receipt });
-      }).then(function () { done = total; if (onProgress) onProgress(total, total); pu.done = true; pu.sentAt = Date.now(); return save(); });
+      }).then(function () { done = total; if (onProgress) onProgress(total, total); pu.done = true; pu.sentAt = Date.now(); try { var lb = JSON.parse(localStorage.getItem('pbk_last') || 'null'); if (lb && lb.id === pu.projectId) localStorage.removeItem('pbk_last'); } catch (e) { } return save(); });
     });
   }
   /** purchases saved on this device */
@@ -249,6 +263,7 @@
       var rows = r[0], cp = r[1];
       if (!rows.length) { document.getElementById('coMain').innerHTML = '<div class="pk-empty"><p>No photo books in your cart yet.</p><a class="btn btn--p" data-go href="' + BASE + '">Create a photo book</a></div>'; document.getElementById('coSide').innerHTML = ''; return; }
       draw(rows, cp);
+      if (/[?&]wa=1/.test(location.search)) setTimeout(function () { var n = document.querySelector('[data-f="name"]'); if (n) { n.scrollIntoView({ block: 'center', behavior: 'smooth' }); if (!n.value) n.focus({ preventScroll: true }); } if (window.CielNote) CielNote('Add your name and mobile number, then tap Order on WhatsApp below.', { kind: 'tip' }); }, 400);
     });
     function draw(rows, cp) {
       var test = rows.some(function (r) { return r.item.pb.test; });
@@ -280,16 +295,19 @@
           : '<h2 class="pkco__h">Delivery</h2><div class="pkco__del">' + dl.map(function (d) { return '<label class="pkco__opt' + (d.id === st.delivery ? ' is-on' : '') + '"><input type="radio" name="del" value="' + d.id + '"' + (d.id === st.delivery ? ' checked' : '') + '><span>' + esc(d.name) + '</span>' + (d.id === st.delivery ? '<b>' + (d.id === 'uber' ? 'Pay rider' : d.price && !test ? money(d.price) : 'Free') + '</b>' : '') + '</label>'; }).join('') + '</div><p class="pkco__note">' + (del && del.note ? esc(del.note) + ' ' : '') + 'Delivered within 1–3 working days of dispatch.</p>') : '') +
         '<label class="pkco__giftck"><input type="checkbox" id="coGift"' + (st.gift ? ' checked' : '') + '><span>This is a gift 🎁</span></label>' +
         (st.gift ? '<div class="pkco__form pkco__form--gift">' + fld('gto', 'Who is it for?', 'text', 'off', 'Their name', true) + (anyPrint ? fld('gphone', 'Their phone (for delivery)', 'tel', 'off', 'Optional') : '') + '<label class="pkco__f pkco__f--full"><span>Gift message (optional)</span><textarea data-f="gnote" rows="3" maxlength="400" placeholder="Write a short message">' + esc(st.f.gnote || '') + '</textarea></label></div>' : '');
+      var oldN = document.querySelector('.pkco__notes'); if (oldN) oldN.remove();
+      var grid = document.getElementById('coMain').parentElement;
+      if (anyPrint || eta) grid.insertAdjacentHTML('afterend', '<div class="pkco__notes"><h3>Good to know</h3><ul>' +
+        (anyPrint ? '<li><b>Dispatch in 24–48 hours</b> after all your pages reach us. Delivery time depends on where you are.</li>' : '') +
+        (eta ? '<li><b>After you pay</b>, your book’s pages upload from this device (about ' + eta + ' on a good connection). Keep the page open; if it stops, open <a data-go href="' + BASE + '/my-books">My books</a> on this device and tap <b>Send now</b>.</li>' : '') + '</ul></div>');
       document.getElementById('coSide').innerHTML = '<div class="pkco__sum"><h3>Order summary</h3>' + lines.map(function (l) { return '<div class="pkco__ln"><span>' + esc(l.label) + (l.qty > 1 ? ' × ' + l.qty : '') + '</span><b>' + money(l.amount * l.qty) + '</b></div>'; }).join('') +
         (anyPrint && del ? '<div class="pkco__ln"><span>' + esc(del.name) + '</span><b>' + (del.id === 'uber' ? 'On arrival' : del.price ? money(del.price) : 'Free') + '</b></div>' : '') +
         (cpn ? '<div class="pkco__ln pkco__ln--cpn"><span>Coupon ' + esc(cpn.code) + (cpn.type === 'percent' ? ' · ' + cpn.value + '% off' : '') + ' <button type="button" class="pkco__cpx" id="coCpnX">Remove</button></span><b>−' + money(off) + '</b></div>'
           : (test ? '' : '<div class="pkco__cpn"><input id="coCpn" placeholder="Coupon code" autocomplete="off" autocapitalize="characters" maxlength="24"><button type="button" class="btn btn--ghost btn--sm" id="coCpnGo">Apply</button></div><p class="pkco__cpnmsg" id="coCpnMsg"></p>')) +
         '<div class="pkco__tot"><span>Total</span><b>' + money(total) + '</b></div>' +
-        (anyPrint ? '<div class="pkco__eta"><b>Dispatch in 24–48 hours</b><span>Printed books leave our studio for delivery 24–48 hours after all your pages reach us. Delivery time depends on where you are.</span></div>' : '') +
-        (eta ? '<div class="pkco__eta"><b>After you pay</b><span>Your book’s pages upload from this device so we can print them: about ' + eta + ' on a good connection. More photos and pages take longer. Keep this page open; if it stops, open <a data-go href="' + BASE + '/my-books">My books</a> on this device and tap <b>Send now</b>.</span></div>' : '') +
-        (anyPrint && reg === 'world' ? '<a class="btn btn--p btn--lg pkco__pay" id="coIntl" target="_blank" rel="noopener">Send my order request</a><p class="pkco__small">Opens WhatsApp with your order. We’ll reply with the delivery cost and how to pay.</p><div id="coStatus"></div></div>' :
+        (anyPrint && reg === 'world' ? '<a class="btn btn--p btn--lg pkco__pay" id="coIntl" href="#" rel="noopener">Send my order request on WhatsApp</a><div id="coStatus"></div></div>' :
         payBox(cp, total, missing) +
-        '<div class="pkco__or"><span>or</span></div><a class="btn btn--ghost pkco__wa" id="coWa" target="_blank" rel="noopener">Order on WhatsApp</a><p class="pkco__small">We’ll reply with how to pay and send your book.</p><div id="coStatus"></div></div>');
+        '<div class="pkco__or"><span>or</span></div><a class="btn btn--ghost pkco__wa" id="coWa" href="#" rel="noopener">Order on WhatsApp</a><div id="coStatus"></div></div>');
       var M = document.getElementById('coMain');
       M.querySelectorAll('.pkco__item').forEach(function (el) {
         var id = el.getAttribute('data-id');
@@ -307,13 +325,41 @@
         api('pbk-coupon', { coupon: code, items: rows.map(function (r) { return { projectId: r.item.pb.p, name: r.item.name, product: r.item.pb.product, pages: r.item.pb.pages, qty: r.item.qty }; }) }).then(function (r) { keep(); st.coupon = r.coupon; draw(rows, cp); }, function (e) { cg.disabled = false; cm2.textContent = e.message; cm2.className = 'pkco__cpnmsg is-err'; }); };
         ci.onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); cg.click(); } }; }
       var cx = document.getElementById('coCpnX'); if (cx) cx.onclick = function () { keep(); st.coupon = null; draw(rows, cp); };
-      var intl = document.getElementById('coIntl'); if (intl) { intl.href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(waText()); intl.onclick = function (e) { if (!check(rows, null, true)) { e.preventDefault(); return; } intl.href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(waText()); }; }
-      function waText() {
+      var intl = document.getElementById('coIntl'); if (intl) intl.onclick = function (e) { e.preventDefault(); if (!check(rows, null, true)) return; waOrder(); };
+      /* Order on WhatsApp: name and number first; the order (and a preview of the book) is saved for Ciel Admin, then WhatsApp opens */
+      function waOrder() {
+        keep(); var f = st.f, w = null;
+        try { w = window.open('', '_blank'); if (w) w.document.write('<p style="font:16px system-ui;padding:2rem">Opening WhatsApp…</p>'); } catch (e) { }
+        status('<span class="pkco__spin"></span> Saving your order…');
+        var body = { items: rows.map(function (r) { return { projectId: r.item.pb.p, name: r.item.name, product: r.item.pb.product, pages: r.item.pb.pages, qty: r.item.qty, test: r.item.pb.test || undefined }; }),
+          delivery: del ? del.id : null, name: f.name, phone: f.phone, email: f.email, coupon: st.coupon ? st.coupon.code : undefined,
+          address: anyPrint && f.line1 ? { line1: f.line1, area: f.area, town: f.town, county: f.county, country: countryName(), notes: f.notes } : null,
+          gift: st.gift ? { is: true, to: f.gto, phone: f.gphone, note: f.gnote } : null };
+        api('pbk-wa', body).then(function (r) { open(r.ref); if (r.receipts && r.receipts.length) sendViews(r.receipts); }, function (e) {
+          if (e && /name|phone/.test(e.code || '')) { if (w) w.close(); status(esc(e.message), 'is-err'); return; }
+          open(null);
+        });
+        function open(ref) {
+          var url = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(waText(ref));
+          if (w && !w.closed) { w.location.href = url; status('<b>WhatsApp is open with your order' + (ref ? ' ' + esc(ref) : '') + '.</b> Send the message and we’ll reply with how to pay. <a href="' + url + '" target="_blank" rel="noopener">Open WhatsApp again</a>', 'is-ok'); }
+          else status('<b>Your order' + (ref ? ' ' + esc(ref) : '') + ' is ready.</b> <a class="btn btn--p btn--sm" href="' + url + '" target="_blank" rel="noopener">Open WhatsApp</a>', 'is-ok');
+        }
+      }
+      function sendViews(rcs) {
+        rcs.reduce(function (pr, rc) { return pr.then(function () { return previews(rc).catch(function () { }); }); }, Promise.resolve());
+      }
+      function waText(ref) {
         keep(); var f = st.f;
-        return 'Hello Ciel Africa, I’d like to order:\n' + rows.map(function (r) { return '• ' + r.item.name + ' — ' + (r.item.pb.product === 'digital' ? 'print-ready PDF' : 'printed hardcover × ' + r.item.qty) + ', ' + r.item.pb.pages + ' pages (' + money(r.item.price * r.item.qty) + ')'; }).join('\n') +
+        return 'Hello Ciel Africa, I’d like to order' + (ref ? ' (order ' + ref + ')' : '') + ':\n' + rows.map(function (r) { return '• ' + r.item.name + ' — ' + (r.item.pb.product === 'digital' ? 'print-ready PDF' : 'printed hardcover × ' + r.item.qty) + ', ' + r.item.pb.pages + ' pages (' + money(r.item.price * r.item.qty) + ')'; }).join('\n') +
           (anyPrint && del ? '\nDelivery: ' + del.name : '') + '\nTotal: ' + money(total) + (f.name ? '\nName: ' + f.name : '') + (f.phone ? '\nPhone: ' + f.phone : '') + (f.line1 ? '\nAddress: ' + [f.line1, f.area, f.town, f.county, countryName()].filter(Boolean).join(', ') : '') + (st.coupon ? '\nCoupon: ' + st.coupon.code : '') + (st.gift ? '\nIt’s a gift' + (f.gto ? ' for ' + f.gto : '') + (f.gphone ? ' (' + f.gphone + ')' : '') + (f.gnote ? '\nGift message: ' + f.gnote : '') : '');
       }
-      var wa = document.getElementById('coWa'); if (wa) { wa.href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(waText()); wa.onclick = function () { wa.href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(waText()); }; }
+      var wa = document.getElementById('coWa'); if (wa) wa.onclick = function (e) {
+        e.preventDefault(); keep();
+        var miss = ['name', 'phone'].filter(function (k) { return !st.f[k] || st.f[k].length < 2; });
+        document.querySelectorAll('[data-f]').forEach(function (i) { i.classList.remove('is-bad'); });
+        if (miss.length) { miss.forEach(function (k) { var i = document.querySelector('[data-f="' + k + '"]'); if (i) i.classList.add('is-bad'); }); status('Enter your name and mobile number first, so we know who’s ordering.', 'is-err'); var b = document.querySelector('[data-f].is-bad'); if (b) { b.scrollIntoView({ block: 'center', behavior: 'smooth' }); b.focus({ preventScroll: true }); } return; }
+        waOrder();
+      };
       var pay = document.getElementById('coPay'); if (pay) pay.onclick = function () { if (check(rows, del)) startPay(rows, del, total); };
       var man = document.getElementById('coManual'); if (man) man.onclick = function () { if (check(rows, del)) startManual(rows, del, total); };
       document.querySelectorAll('[name=pm]').forEach(function (r2) { r2.onchange = function () { keep(); st.method = r2.value; draw(rows, cp); }; });
@@ -330,7 +376,7 @@
       if (methods.length > 1) h += '<div class="pkco__pm">' +
         '<label class="pkco__opt' + (st.method === 'stk' ? ' is-on' : '') + '"><input type="radio" name="pm" value="stk"' + (st.method === 'stk' ? ' checked' : '') + '><span>M-Pesa prompt<small>We send a payment request to your phone</small></span></label>' +
         '<label class="pkco__opt' + (st.method === 'manual' ? ' is-on' : '') + '"><input type="radio" name="pm" value="manual"' + (st.method === 'manual' ? ' checked' : '') + '><span>M-Pesa Paybill<small>Pay from your M-Pesa menu, then paste the message</small></span></label></div>';
-      if (st.method === 'stk') return h + '<label class="pkco__giftck pkco__mpsame"><input type="checkbox" id="coMpSame"' + (st.mpOther ? '' : ' checked') + '><span>Use my mobile number for M-Pesa' + (st.f.phone ? ' (' + esc(st.f.phone) + ')' : '') + '</span></label>' + (st.mpOther ? '<div class="pkco__form">' + fld('mpesa', 'M-Pesa number', 'tel', 'tel', '0712 345 678', true) + '</div>' : '') + '<button class="btn btn--p btn--lg pkco__pay" id="coPay"' + (missing.length ? ' disabled' : '') + '>Pay ' + money(total) + ' with M-Pesa</button><p class="pkco__small">You’ll get a prompt on your phone. Enter your M-Pesa PIN to pay.</p>';
+      if (st.method === 'stk') return h + '<label class="pkco__giftck pkco__mpsame"><input type="checkbox" id="coMpSame"' + (st.mpOther ? '' : ' checked') + '><span>Use my mobile number for M-Pesa' + (st.f.phone ? ' (' + esc(st.f.phone) + ')' : '') + '</span></label>' + (st.mpOther ? '<div class="pkco__form">' + fld('mpesa', 'M-Pesa number', 'tel', 'tel', '0712 345 678', true) + '</div>' : '') + '<button class="btn btn--p btn--lg pkco__pay" id="coPay"' + (missing.length ? ' disabled' : '') + '>Pay ' + money(total) + ' with M-Pesa</button>';
       return h + '<div class="pkco__man"><ol>' +
         '<li>On your phone open <b>M-Pesa → Lipa na M-Pesa → Pay Bill</b>.</li>' +
         '<li>Business number <button type="button" class="pkco__cp" data-copy="' + esc(MANUAL.paybill) + '" title="Copy">' + esc(MANUAL.paybill) + '</button></li>' +

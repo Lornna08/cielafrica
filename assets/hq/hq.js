@@ -28,7 +28,7 @@
       .then(function (r) { return r.json().catch(function () { return { ok: false, error: 'Unexpected response (' + r.status + ')' }; }).then(function (j) { if (!r.ok || j.ok === false) { var e = new Error(j.error || 'Request failed'); e.status = r.status; e.code = j.code; throw e; } return j; }); });
   }
   var toastT;
-  function toast(m) { var t = document.querySelector('.toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); } t.textContent = m; t.classList.add('is-on'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('is-on'); }, 2600); }
+  function toast(m, kind) { if (window.CielNote) return CielNote(m, kind ? { kind: kind } : null); var t = document.querySelector('.toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); } t.textContent = m; t.classList.add('is-on'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('is-on'); }, 2600); }
   /* icons: Lucide (ISC licence), one consistent 24px line set */
   var I = {
     home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
@@ -68,7 +68,7 @@
   var KIND = { photobook: ['Photo book', '#ff5a1f'], shop: ['Shop', '#1f4fb5'], domain: ['Domain', '#5b3fd1'], whatsapp: ['WhatsApp', '#1fa855'] };
   var WA_SET = ['pending', 'contacted', 'confirmed', 'paid', 'done', 'cancelled'];
   var WA_LABEL = { pending: 'Pending', contacted: 'Contacted', confirmed: 'Confirmed', paid: 'Paid', done: 'Delivered', cancelled: 'Cancelled', new: 'New' };
-  var PB_LABEL = { awaiting_payment: 'Awaiting payment', awaiting_confirmation: 'Paybill: confirm payment', payment_failed: 'Payment failed', paid: 'Waiting for pages', preparing: 'Waiting for pages', ready: 'Pages received', printing: 'Printing', ready_collection: 'Ready to collect', dispatched: 'Dispatched', delivered: 'Delivered', cancelled: 'Cancelled', refunded: 'Refunded' };
+  var PB_LABEL = { awaiting_payment: 'Awaiting payment', awaiting_confirmation: 'Paybill: confirm payment', whatsapp_request: 'WhatsApp request', payment_failed: 'Payment failed', paid: 'Waiting for pages', preparing: 'Waiting for pages', ready: 'Pages received', printing: 'Printing', ready_collection: 'Ready to collect', dispatched: 'Dispatched', delivered: 'Delivered', cancelled: 'Cancelled', refunded: 'Refunded' };
   var PB_SET = ['paid', 'ready', 'printing', 'ready_collection', 'dispatched', 'delivered', 'cancelled', 'refunded'];
   var SHOP_SET = ['paid', 'processing', 'fulfilled', 'delivered', 'cancelled', 'refunded'];
   var CLOSED = /^(delivered|cancelled|refunded|payment_failed|registered|unavailable|failed|fulfilled|done)$/;
@@ -251,7 +251,7 @@
     var now = new Date(), m0 = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
     var real = S.orders.filter(function (o) { return o.paid && !o.test && !/cancel|refund/.test(o.status); });
     var month = real.filter(function (o) { return o.at >= m0; }), rev = month.reduce(function (s, o) { return s + (o.total || 0); }, 0);
-    var todo = S.orders.filter(function (o) { return (o.paid || o.status === 'awaiting_confirmation') && !CLOSED.test(o.status) && o.kind !== 'whatsapp'; });
+    var todo = S.orders.filter(function (o) { return (o.paid || o.status === 'awaiting_confirmation' || o.status === 'whatsapp_request') && !CLOSED.test(o.status) && o.kind !== 'whatsapp'; });
     var pending = S.orders.filter(function (o) { return (o.kind === 'whatsapp' && !CLOSED.test(o.status) && o.status !== 'paid') || (o.kind !== 'whatsapp' && !o.paid && /await|pending_payment|payment_failed/.test(o.status) && Date.now() - o.at < 14 * 864e5); });
     var newMsgs = S.inbox.filter(function (m) { return m.kind !== 'whatsapp' && m.status === 'new'; });
     var open = S.tasks.filter(function (t) { return t.status !== 'done'; }), overdue = open.filter(function (t) { return t.due && t.due < today(); });
@@ -266,6 +266,7 @@
     S.orders.forEach(function (o) {
       var tg = o.test ? 'TEST · ' : '';
       if (o.paid && !CLOSED.test(o.status) && Date.now() - o.at < 2 * 864e5 && !(o.kind === 'photobook' && o.status === 'ready')) attention.push(['o', tg + 'New ' + KIND[o.kind][0].toLowerCase() + ' order ' + o.ref + ' · ' + money(o.total), (o.customer.name || '') + ' · ' + o.label + ' · ' + dt(o.at), '#orders/' + o.ref]);
+      if (o.status === 'whatsapp_request') attention.push(['o', tg + 'WhatsApp order request · ' + o.ref + ' · ' + money(o.total), (o.customer.name || '') + (o.customer.phone ? ' · +' + o.customer.phone : '') + ' · reply on WhatsApp · ' + dt(o.at), '#orders/' + o.ref]);
       if (o.status === 'awaiting_confirmation') attention.push(['o', tg + 'Paybill payment to confirm · ' + o.ref + ' · ' + money(o.total), (o.customer.name || '') + ' · check M-Pesa, then confirm · ' + dt(o.at), '#orders/' + o.ref]);
       if (o.kind === 'whatsapp' && o.status === 'pending') attention.push(['g', 'WhatsApp order ' + o.ref + (o.customer.name ? ' · ' + o.customer.name : ''), o.summary.slice(0, 80) || 'Reply on WhatsApp', '#orders/' + o.ref]);
       if (o.test && o.kind === 'photobook' && o.status === 'ready') attention.push(['b', tg + o.ref + ' pages received', 'Test only: don’t print', '#orders/' + o.ref]);
@@ -309,7 +310,7 @@
     var f = S.filt, q = f.q.toLowerCase();
     var list = S.orders.filter(function (o) {
       if (f.kind !== 'all' && o.kind !== f.kind) return false;
-      if (f.st === 'open' && (CLOSED.test(o.status) || (!o.paid && o.kind !== 'whatsapp' && o.status !== 'awaiting_confirmation'))) return false;
+      if (f.st === 'open' && (CLOSED.test(o.status) || (!o.paid && o.kind !== 'whatsapp' && o.status !== 'awaiting_confirmation' && o.status !== 'whatsapp_request'))) return false;
       if (f.st === 'unpaid' && o.paid) return false;
       if (f.st === 'done' && !CLOSED.test(o.status)) return false;
       return !q || (o.ref + ' ' + o.customer.name + ' ' + o.customer.email + ' ' + o.customer.phone + ' ' + o.summary).toLowerCase().indexOf(q) >= 0;

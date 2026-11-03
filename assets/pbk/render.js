@@ -541,22 +541,23 @@
     /* a small picture from the front cover, upright, between the words and the CIEL AFRICA mark */
     var pic = o.noPic ? null : ready(o.artImg || (o.art ? artSrc(o.art) : null));
     if (pic && w >= 18) {
-      var iw = pic.naturalWidth || pic.width, ih = pic.naturalHeight || pic.height, pw = w * 0.7, ph = pw * ih / iw;
-      if (ph > w * 1.4) { ph = w * 1.4; pw = ph * iw / ih; }
-      ctx.drawImage(pic, (w - pw) / 2, H * 0.775 - ph / 2, pw, ph);
+      var iw = pic.naturalWidth || pic.width, ih = pic.naturalHeight || pic.height, pw = w * 0.8, ph = pw * ih / iw;
+      if (ph > w * 1.7) { ph = w * 1.7; pw = ph * iw / ih; }
+      ctx.drawImage(pic, (w - pw) / 2, H * 0.8 - ph / 2, pw, ph);
     }
     ctx.translate(w, 0); ctx.rotate(Math.PI / 2); /* text runs top to bottom, read with the book lying face up */
     var title = o.hideTitle ? '' : String(o.title || '').toUpperCase().slice(0, 40);
     if (title) {
       var F = FONTS[o.font] || FONTS.spartan, k = o.scale || 1;
-      var fs = Math.min(w * 0.56, 64) * k, fnt = function (z) { return (F.italic ? 'italic ' : '') + F.w + ' ' + z + 'px ' + F.css; };
+      /* the words fill the spine: most of its width, as long as the space allows */
+      var fs = w * 0.9 * k, fnt = function (z) { return (F.italic ? 'italic ' : '') + F.w + ' ' + z + 'px ' + F.css; };
       ctx.font = fnt(fs); ctx.textBaseline = 'middle';
-      var tw = ctx.measureText(title).width, maxW = H * (pic ? 0.62 : 0.7);
+      var tw = ctx.measureText(title).width, maxW = H * (pic ? 0.64 : 0.8);
       if (tw > maxW) { fs = fs * maxW / tw; ctx.font = fnt(fs); }
-      if (fs > w * 0.8) { fs = w * 0.8; ctx.font = fnt(fs); }
-      ctx.fillStyle = o.tc || '#111111'; ctx.fillText(title, H * 0.07, w / 2 + fs * 0.04);
+      if (fs > w * 1.05) { fs = w * 1.05; ctx.font = fnt(fs); }
+      ctx.fillStyle = o.tc || '#111111'; ctx.fillText(title, H * 0.05, w / 2 + fs * 0.04);
     }
-    var bs = Math.max(7, Math.min(18, w * 0.2)); ctx.font = '500 ' + bs + 'px ' + FONTS.sans.css.replace('600', '500');
+    var bs = Math.max(7, Math.min(24, w * 0.26)); ctx.font = '500 ' + bs + 'px ' + FONTS.sans.css.replace('600', '500');
     ctx.fillStyle = o.bc || o.tc || '#111111'; ctx.textBaseline = 'middle';
     var ls = bs * 0.24, bw = tracked(ctx, BRAND.text, ls);
     drawTracked(ctx, BRAND.text, H * 0.95 - bw, w / 2 + bs * 0.05, ls);

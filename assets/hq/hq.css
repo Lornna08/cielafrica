@@ -664,3 +664,20 @@ html[data-theme="dark"] .mx2-it:hover{background:#18181c}html[data-theme="dark"]
 .hq-frame iframe{width:1px;min-width:100%;min-height:0;padding-bottom:env(safe-area-inset-bottom)}
 .ws-cpform{border:1px solid var(--line);border-radius:12px;padding:1rem;display:grid;gap:.6rem;background:var(--side2,#faf8f4)}
 .ws-tbl td small{display:block;color:var(--soft);font-size:.75rem}
+/* notifications: top-right cards (assets/js/notes.js) */
+.cnote-box{position:fixed;z-index:2147483000;top:calc(env(safe-area-inset-top,0px) + 70px);right:18px;display:flex;flex-direction:column;gap:10px;width:min(370px,calc(100vw - 24px));pointer-events:none}
+.cnote{pointer-events:auto;display:flex;align-items:flex-start;gap:.7rem;background:#fff;color:#1b1714;border:1px solid #ece5da;border-left:4px solid #6b625a;border-radius:12px;padding:.8rem .7rem .8rem .85rem;box-shadow:0 14px 34px rgba(30,20,10,.18),0 2px 6px rgba(30,20,10,.08);font:500 .9rem/1.4 Inter,system-ui,-apple-system,sans-serif;opacity:0;transform:translateX(24px);transition:opacity .22s,transform .25s}
+.cnote.is-on{opacity:1;transform:none}
+.cnote p{margin:0;flex:1;min-width:0;padding-top:.05rem;overflow-wrap:anywhere}
+.cnote__i{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#f1ece5;color:#6b625a}
+.cnote__i svg{width:15px;height:15px}
+.cnote__x{flex:none;border:0;background:transparent;color:#8a8178;font-size:1.3rem;line-height:1;width:28px;height:28px;margin:-.2rem -.1rem 0 0;border-radius:8px;cursor:pointer}
+.cnote__x:hover{background:#f4efe8;color:#1b1714}
+.cnote--ok{border-left-color:#1f9d55}.cnote--ok .cnote__i{background:#e3f5ea;color:#1f9d55}
+.cnote--err{border-left-color:#d93a2b}.cnote--err .cnote__i{background:#fde8e5;color:#d93a2b}
+.cnote--info{border-left-color:#2f6fdc}.cnote--info .cnote__i{background:#e7effc;color:#2f6fdc}
+.cnote--tip{border-left-color:#ff5a1f}.cnote--tip .cnote__i{background:#fff0e8;color:#ff5a1f}
+@media (max-width:700px){.cnote-box{top:calc(env(safe-area-inset-top,0px) + 62px);right:12px;left:12px;width:auto}.cnote{transform:translateY(-14px);font-size:.88rem}}
+[data-theme=dark] .cnote{background:#231e1a;color:#f3ede6;border-color:#3a322b}
+[data-theme=dark] .cnote__i{background:#2f2823}
+[data-theme=dark] .cnote__x:hover{background:#2f2823;color:#fff}

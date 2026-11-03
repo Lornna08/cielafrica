@@ -168,14 +168,8 @@
   }
 
   /* ---------- prices & visibility ---------- */
-  function formPrices(f) {
-    function rowsFor(list, key, unit) {
-      var ch = W.items[key] = W.items[key] || {};
-      return list.map(function (p) {
-        var c = ch[p.id] || {}, price = c.price != null ? c.price : p.price, was = 'was' in c ? c.was : p.was, hidden = 'hidden' in c ? c.hidden : !!p.hidden;
-        return '<tr data-id="' + esc(p.id) + '" class="' + (hidden ? 'is-off' : '') + '"><td><b>' + esc(p.name) + '</b><small>' + esc(p.category || '') + '</small></td><td><input class="hq-in ws-num" type="number" min="0" step="50" data-f="price" value="' + esc(price) + '"></td><td><input class="hq-in ws-num" type="number" min="0" step="50" data-f="was" value="' + esc(was || '') + '" placeholder="—"></td><td><label class="check"><input type="checkbox" data-f="show"' + (hidden ? '' : ' checked') + '> Visible</label></td></tr>';
-      }).join('');
-    }
+  /** Photo Books: a price for each book size, delivery, the hardcover case and coupons (used on Website → Prices and Products → Photo Books) */
+  function pbCards(f) {
     var pb = W.pb; pb.tiers = pb.tiers || {}; pb.cover = pb.cover || { paperGsm: 170, paperBulk: 1, boardMm: 3, hingeMm: 8, wrapMm: 15 };
     var sizes = Object.keys(pb.tiers).map(Number).sort(function (a, b) { return a - b; });
     function spineAt(n) { var c = pb.cover; return Math.round(((+c.paperGsm || 0) * (+c.paperBulk || 0) * Math.ceil(n / 2) / 1000 + 2 * (+c.boardMm || 0)) * 10) / 10; }
@@ -188,13 +182,24 @@
       inp('Board thickness (mm)', pb.cover.boardMm, 'type="number" min="0" max="6" step="0.1" data-k="cover.boardMm"') + inp('Hinge each side of the spine (mm)', pb.cover.hingeMm, 'type="number" min="0" max="20" step="0.5" data-k="cover.hingeMm"') +
       inp('Wrap / turn-in all round (mm)', pb.cover.wrapMm, 'type="number" min="3" max="25" step="0.5" data-k="cover.wrapMm"') +
       '</div><p class="muted" id="pbSpines" style="font-size:.82rem;padding:0 1.2rem 1rem"></p></section>' +
-      '<section class="card"><div class="card__h"><h2>Photo book coupons</h2><span class="muted" style="font-size:.8rem">Saved straight away (no publishing). Codes stay private.</span></div><div class="card__b" id="cpBox"><p class="empty">Loading coupons…</p></div></section>' +
-      '<section class="card"><div class="card__h"><h2>Products</h2><span class="muted" style="font-size:.8rem">“Was” shows a sale: the old price crossed out</span></div><table class="tbl ws-tbl"><thead><tr><th>Product</th><th>Price (KES)</th><th>Was</th><th>Shown</th></tr></thead><tbody data-key="products">' + rowsFor(W.products, 'products') + '</tbody></table></section>' +
-      '<section class="card"><div class="card__h"><h2>Website templates</h2></div><table class="tbl ws-tbl"><thead><tr><th>Template</th><th>From (KES)</th><th>Was</th><th>Shown</th></tr></thead><tbody data-key="templates">' + rowsFor(W.templates, 'templates') + '</tbody></table></section>' +
-      '<p class="faint" style="font-size:.8rem">New prices apply to new orders once published. Items already in a customer’s cart keep the price they were added at.</p>';
+      '<section class="card"><div class="card__h"><h2>Photo book coupons</h2><span class="muted" style="font-size:.8rem">Saved straight away (no publishing). Codes stay private.</span></div><div class="card__b" id="cpBox"><p class="empty">Loading coupons…</p></div></section>';
     function spines() { var el = document.getElementById('pbSpines'); if (el) el.innerHTML = 'Spine width: ' + sizes.map(function (k) { return '<b>' + k + ' pages ' + spineAt(k) + ' mm</b>'; }).join(' · ') + '. Full cover for 24 pages: ' + Math.round((2 * (+pb.cover.wrapMm) + 2 * 210 + 2 * (+pb.cover.hingeMm) + spineAt(24)) * 10) / 10 + ' × ' + (297 + 2 * (+pb.cover.wrapMm)) + ' mm.'; }
     f.querySelectorAll('section.card').forEach(function (sec, i) { if (i < 3) bindInputs(sec, function (k, v) { var p = k.split('.'); if (p[0] === 'delivery') pb.delivery[p[1]].price = +v; else if (p[0] === 'tiers') pb.tiers[p[1]] = +v; else if (p[0] === 'cover') { pb.cover[p[1]] = +v; spines(); } }); });
     spines(); coupons(document.getElementById('cpBox'));
+  }
+  function formPrices(f) {
+    function rowsFor(list, key, unit) {
+      var ch = W.items[key] = W.items[key] || {};
+      return list.map(function (p) {
+        var c = ch[p.id] || {}, price = c.price != null ? c.price : p.price, was = 'was' in c ? c.was : p.was, hidden = 'hidden' in c ? c.hidden : !!p.hidden;
+        return '<tr data-id="' + esc(p.id) + '" class="' + (hidden ? 'is-off' : '') + '"><td><b>' + esc(p.name) + '</b><small>' + esc(p.category || '') + '</small></td><td><input class="hq-in ws-num" type="number" min="0" step="50" data-f="price" value="' + esc(price) + '"></td><td><input class="hq-in ws-num" type="number" min="0" step="50" data-f="was" value="' + esc(was || '') + '" placeholder="—"></td><td><label class="check"><input type="checkbox" data-f="show"' + (hidden ? '' : ' checked') + '> Visible</label></td></tr>';
+      }).join('');
+    }
+    f.innerHTML = '<div id="pbWrap" style="display:grid;gap:1rem"></div>' +
+      '<section class="card"><div class="card__h"><h2>Products</h2><span class="muted" style="font-size:.8rem">“Was” shows a sale: the old price crossed out</span></div><table class="tbl ws-tbl"><thead><tr><th>Product</th><th>Price (KES)</th><th>Was</th><th>Shown</th></tr></thead><tbody data-key="products">' + rowsFor(W.products, 'products') + '</tbody></table></section>' +
+      '<section class="card"><div class="card__h"><h2>Website templates</h2></div><table class="tbl ws-tbl"><thead><tr><th>Template</th><th>From (KES)</th><th>Was</th><th>Shown</th></tr></thead><tbody data-key="templates">' + rowsFor(W.templates, 'templates') + '</tbody></table></section>' +
+      '<p class="faint" style="font-size:.8rem">New prices apply to new orders once published. Items already in a customer’s cart keep the price they were added at.</p>';
+    pbCards(f.querySelector('#pbWrap'));
     f.querySelectorAll('tbody[data-key] input').forEach(function (x) {
       x.addEventListener(x.type === 'checkbox' ? 'change' : 'input', function () {
         var key = x.closest('tbody').getAttribute('data-key'), tr = x.closest('tr'), id = tr.getAttribute('data-id'), ch = W.items[key][id] = W.items[key][id] || {}, fl = x.getAttribute('data-f');
@@ -287,20 +292,31 @@
     (W.loaded ? Promise.resolve() : load()).then(function () { drawCatalog(kind); }, function (e) { b.innerHTML = '<p class="empty">' + esc(e.message) + '</p>'; });
   }
   function drawCatalog(kind) {
+    if (kind === 'photobooks' || (kind === 'products' && W.ctab === 'photobooks')) return drawPbTab();
     W.tab = 'prices'; var q = (W.cq || '').toLowerCase(), cat = W.cc || '', list = allItems(kind), ch = W.items[kind] || {}, cats = kind === 'products' ? W.pcats : W.tcats;
     var shown = list.filter(function (p) { return (!cat || p.category === cat) && (!q || (p.name + ' ' + (p.desc || '')).toLowerCase().indexOf(q) >= 0); });
-    var b = H.body('<div class="ws"><div class="ws-top"><div class="tabs" id="catT"><button data-k="products"' + (kind === 'products' ? ' class="is-on"' : '') + '>Products <i>' + allItems('products').length + '</i></button><button data-k="templates"' + (kind === 'templates' ? ' class="is-on"' : '') + '>Website templates <i>' + allItems('templates').length + '</i></button></div><span id="wsSt" class="ws-st"></span><button class="b" id="catNew">+ New ' + (kind === 'products' ? 'product' : 'template') + '</button><button class="b b--p" id="wsPub"' + (W.status.github === false ? ' disabled title="Add GITHUB_TOKEN first"' : '') + '>Publish to cielafrica.com</button></div>' +
+    var b = H.body('<div class="ws"><div class="ws-top"><div class="tabs" id="catT"><button data-k="products"' + (kind === 'products' ? ' class="is-on"' : '') + '>Products <i>' + allItems('products').length + '</i></button><button data-k="templates"' + (kind === 'templates' ? ' class="is-on"' : '') + '>Website templates <i>' + allItems('templates').length + '</i></button><button data-k="photobooks"' + (kind === 'photobooks' ? ' class="is-on"' : '') + '>Photo Books</button></div><span id="wsSt" class="ws-st"></span><button class="b" id="catNew">+ New ' + (kind === 'products' ? 'product' : 'template') + '</button><button class="b b--p" id="wsPub"' + (W.status.github === false ? ' disabled title="Add GITHUB_TOKEN first"' : '') + '>Publish to cielafrica.com</button></div>' +
       '<div class="card"><div class="card__h" style="gap:.5rem;flex-wrap:wrap"><input class="hq-in" id="catQ" type="search" placeholder="Search" value="' + esc(W.cq || '') + '" style="max-width:260px"><select class="hq-in" id="catC" style="width:auto"><option value="">All categories</option>' + cats.map(function (c) { return '<option' + (c === cat ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') + '</select><span class="muted" style="font-size:.8rem;margin-left:auto">' + shown.length + ' shown</span></div>' +
       '<table class="tbl cat-tbl"><thead><tr><th></th><th>Name</th><th class="hide-m">Category</th><th>Price</th><th>Status</th></tr></thead><tbody>' + shown.map(function (p) {
         var c = ch[p.id], img = W.uploads[(p.image || '').split('?')[0]] ? 'data:image/webp;base64,' + W.uploads[p.image.split('?')[0]] : shot(kind, p);
         return '<tr data-id="' + esc(p.id) + '"><td style="width:72px">' + (img ? '<img class="cat-img" src="' + esc(img.charAt(0) === '/' || /^data:/.test(img) ? img : '/' + img) + '" alt="">' : '<span class="cat-img cat-img--x"></span>') + '</td><td><b>' + esc(p.name) + '</b><small>' + esc(p.id) + (c ? ' · <span style="color:var(--b)">' + (c.create ? 'new, not published' : 'edited, not published') + '</span>' : '') + '</small></td><td class="hide-m">' + esc(p.category || '') + '</td><td><b>KES ' + Math.round(+p.price || 0).toLocaleString('en-KE') + '</b>' + (p.was > p.price ? '<small><s>KES ' + Math.round(p.was).toLocaleString('en-KE') + '</s></small>' : '') + '</td><td>' + (p.hidden ? '<span class="chip">Hidden</span>' : '<span class="chip chip--g">Live</span>') + '</td></tr>';
       }).join('') + '</tbody></table></div><p class="faint" style="font-size:.78rem">Changes are saved as a draft and go live when you publish (together with any Website editor changes).</p></div>');
-    b.querySelectorAll('#catT [data-k]').forEach(function (x) { x.onclick = function () { W.cc = ''; location.hash = '#' + (x.getAttribute('data-k') === 'products' ? 'products' : 'templates'); }; });
+    b.querySelectorAll('#catT [data-k]').forEach(function (x) { x.onclick = function () { W.cc = ''; var k = x.getAttribute('data-k'); W.ctab = k === 'photobooks' ? 'photobooks' : null; if (k === 'photobooks') { if (location.hash !== '#products') location.hash = '#products'; drawPbTab(); return; } location.hash = '#' + (k === 'products' ? 'products' : 'templates'); }; });
     var qi = b.querySelector('#catQ'); qi.oninput = function () { W.cq = qi.value; var pos = qi.selectionStart; drawCatalog(kind); var n = document.getElementById('catQ'); n.focus(); n.setSelectionRange(pos, pos); };
     b.querySelector('#catC').onchange = function () { W.cc = this.value; drawCatalog(kind); };
     b.querySelector('#wsPub').onclick = publish;
     b.querySelector('#catNew').onclick = function () { var id = nextId(kind); editItem(kind, Object.assign({ id: id, create: true, name: '', category: cats[0] || '', desc: '', price: 0 }, kind === 'products' ? { art: 'admin', meta: '' } : { idealFor: '' }), true); };
     b.querySelectorAll('tr[data-id]').forEach(function (tr) { tr.onclick = function () { var p = allItems(kind).filter(function (x) { return x.id === tr.getAttribute('data-id'); })[0]; if (p) editItem(kind, p); }; });
+    status();
+  }
+  /* Products → Photo Books: the same settings as Website → Prices, with Publish at the top */
+  function drawPbTab() {
+    W.tab = 'prices'; W.ctab = 'photobooks';
+    var b = H.body('<div class="ws"><div class="ws-top"><div class="tabs" id="catT"><button data-k="products">Products <i>' + allItems('products').length + '</i></button><button data-k="templates">Website templates <i>' + allItems('templates').length + '</i></button><button data-k="photobooks" class="is-on">Photo Books</button></div><span id="wsSt" class="ws-st"></span><button class="b b--p b--sm" id="wsPub">Publish to cielafrica.com</button></div>' +
+      '<div id="pbWrap" style="display:grid;gap:1rem"></div><p class="faint" style="font-size:.78rem">Prices, delivery and the hardcover case go live when you publish. Coupons save straight away.</p></div>');
+    b.querySelectorAll('#catT [data-k]').forEach(function (x) { x.onclick = function () { var k = x.getAttribute('data-k'); if (k === 'photobooks') return; W.ctab = null; if (k === 'products' && location.hash === '#products') drawCatalog('products'); else location.hash = '#' + k; }; });
+    b.querySelector('#wsPub').onclick = publish;
+    pbCards(b.querySelector('#pbWrap'));
     status();
   }
   function editItem(kind, p, isNew) {

@@ -1114,3 +1114,43 @@ body.pbk-editing .pk{background:#efeae2}
 .pkco__ln--cpn b{color:#1f9d55}
 .pkco__cpx{border:0;background:none;color:var(--pk-soft);text-decoration:underline;font-size:.78rem;cursor:pointer;padding:0 0 0 .3rem}
 .pkco__mpsame{margin:.4rem 0 .7rem;font-weight:500;font-size:.9rem}
+/* spine on its own (Spine tab): turned to read left to right */
+.pe-stage.is-spinev{overflow-x:auto;overflow-y:hidden;place-items:center start;touch-action:pan-x;padding-left:24px}
+.pe-stage.is-spinev .pe-canvaswrap{margin-left:auto;margin-right:auto}
+.pe-stage.is-spinev .pe-canvaswrap{box-shadow:0 10px 30px rgba(60,40,20,.22);border-radius:3px;cursor:pointer}
+.pe-stage.is-spinev .pe-canvaswrap::after{content:"Top of the book";position:absolute;left:0;top:-22px;font:600 .72rem var(--text);color:#8a8178}
+@media (max-width:480px){.pe-cvtabs button{padding:.4rem .6rem;font-size:.76rem}}
+/* notifications: top-right cards (assets/js/notes.js) */
+.cnote-box{position:fixed;z-index:2147483000;top:calc(env(safe-area-inset-top,0px) + 70px);right:18px;display:flex;flex-direction:column;gap:10px;width:min(370px,calc(100vw - 24px));pointer-events:none}
+.cnote{pointer-events:auto;display:flex;align-items:flex-start;gap:.7rem;background:#fff;color:#1b1714;border:1px solid #ece5da;border-left:4px solid #6b625a;border-radius:12px;padding:.8rem .7rem .8rem .85rem;box-shadow:0 14px 34px rgba(30,20,10,.18),0 2px 6px rgba(30,20,10,.08);font:500 .9rem/1.4 Inter,system-ui,-apple-system,sans-serif;opacity:0;transform:translateX(24px);transition:opacity .22s,transform .25s}
+.cnote.is-on{opacity:1;transform:none}
+.cnote p{margin:0;flex:1;min-width:0;padding-top:.05rem;overflow-wrap:anywhere}
+.cnote__i{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#f1ece5;color:#6b625a}
+.cnote__i svg{width:15px;height:15px}
+.cnote__x{flex:none;border:0;background:transparent;color:#8a8178;font-size:1.3rem;line-height:1;width:28px;height:28px;margin:-.2rem -.1rem 0 0;border-radius:8px;cursor:pointer}
+.cnote__x:hover{background:#f4efe8;color:#1b1714}
+.cnote--ok{border-left-color:#1f9d55}.cnote--ok .cnote__i{background:#e3f5ea;color:#1f9d55}
+.cnote--err{border-left-color:#d93a2b}.cnote--err .cnote__i{background:#fde8e5;color:#d93a2b}
+.cnote--info{border-left-color:#2f6fdc}.cnote--info .cnote__i{background:#e7effc;color:#2f6fdc}
+.cnote--tip{border-left-color:#ff5a1f}.cnote--tip .cnote__i{background:#fff0e8;color:#ff5a1f}
+@media (max-width:700px){.cnote-box{top:calc(env(safe-area-inset-top,0px) + 62px);right:12px;left:12px;width:auto}.cnote{transform:translateY(-14px);font-size:.88rem}}
+.pe-or__wa{border:0;background:transparent;width:100%;cursor:pointer;font-family:inherit}
+/* checkout: the M-Pesa number tick wraps inside the column; notes sit at the bottom of the page */
+.pkco__giftck{max-width:100%}
+.pkco__giftck span{min-width:0}
+.pkco__mpsame{width:auto;align-items:flex-start;line-height:1.35}
+.pkco__mpsame input{margin-top:.05rem;flex:none}
+.pkco__notes{margin:2.2rem 0 .5rem;padding-top:1.2rem;border-top:1px solid #ece5da;color:#6b625a;font-size:.84rem;line-height:1.5}
+.pkco__notes h3{font:700 .78rem var(--text);letter-spacing:.06em;text-transform:uppercase;color:#8a8178;margin:0 0 .5rem}
+.pkco__notes ul{margin:0;padding-left:1.1rem;display:grid;gap:.35rem}
+.pkco__notes a{text-decoration:underline}
+.pkco__st.is-ok{background:#e9f7ee;color:#14532d}
+.pkco__st a{text-decoration:underline;font-weight:600}
+.pkco__st .btn{text-decoration:none;margin-left:.4rem}
+.pbk-editing .cnote-box{top:calc(var(--pe-top,58px) + 58px)}
+@media (max-width:700px){.pbk-editing .cnote-box{top:calc(54px + 52px + env(safe-area-inset-top,0px))}}
+/* checkout columns never grow wider than the screen (a long field pushed them off the right edge on phones) */
+.pkco__grid{grid-template-columns:minmax(0,1fr) 380px}
+.pkco__grid>*{min-width:0}
+@media(max-width:900px){.pkco__grid{grid-template-columns:minmax(0,1fr)}}
+.pkco__ln b{white-space:nowrap}

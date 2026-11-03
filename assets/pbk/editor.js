@@ -32,7 +32,7 @@
   function uid(p) { return (p || 'x') + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
   function $(s, r) { return (r || document).querySelector(s); }
-  function toast(msg) { var t = el$.toast; t.textContent = msg; t.classList.add('is-on'); clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove('is-on'); }, 2600); }
+  function toast(msg, kind) { if (window.CielNote) return CielNote(msg, kind ? { kind: kind } : null); var t = el$.toast; t.textContent = msg; t.classList.add('is-on'); clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove('is-on'); }, 2600); }
 
   var I = {
     back: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
@@ -100,8 +100,22 @@
     el$.saved.textContent = 'Saving…';
     clearTimeout(saveT);
     saveT = setTimeout(function () {
-      ST.saveProject(S.p).then(function () { var t = new Date(); el$.saved.textContent = 'Saved ' + t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); el$.saved.classList.add('is-ok'); }, function (e) { el$.saved.textContent = 'Not saved'; toast(e.message || 'Could not save'); });
+      ST.saveProject(S.p).then(function () { remember(); var t = new Date(); el$.saved.textContent = 'Saved ' + t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); el$.saved.classList.add('is-ok'); }, function (e) { el$.saved.textContent = 'Not saved'; toast(e.message || 'Could not save'); });
     }, 500);
+  }
+  /* the "Back to my book" button on every page of the site (assets/js/site.js) reads this */
+  var lastT;
+  function remember() {
+    if (!S || !S.p) return;
+    var p = S.p, o = { id: p.id, name: p.name || 'My photo book', at: Date.now() };
+    try { var old = JSON.parse(localStorage.getItem('pbk_last') || 'null'); if (old && old.id === p.id && old.img) o.img = old.img; localStorage.setItem('pbk_last', JSON.stringify(o)); } catch (e) { }
+    clearTimeout(lastT);
+    lastT = setTimeout(function () {
+      if (!S || !S.p || S.p.id !== o.id || !R.toCanvas) return;
+      R.load(S.p.cover, { photo: photoUrl }).then(function () { return R.toCanvas(S.p.cover, 72, { photo: photoUrl, empty: 'none' }); }).then(function (c) {
+        o.img = c.toDataURL('image/jpeg', 0.7); try { localStorage.setItem('pbk_last', JSON.stringify(o)); } catch (e) { }
+      }).catch(function () { });
+    }, 1500);
   }
   function flush() { if (!S || !S.p) return; clearTimeout(saveT); ST.saveProject(S.p).catch(function () {}); }
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden' && document.body.classList.contains('pbk-editing')) flush(); });
@@ -119,7 +133,9 @@
   function doc() { return docAt(S.cur); }
   /* ---- the whole cover: back · spine · front side by side (like a printed cover sheet) ---- */
   function isCoverIdx(i) { i = i == null ? S.cur : i; return i < 0 || i >= S.p.pages.length; }
-  function isWrap(i) { return isCoverIdx(i) && S.cview !== 'single'; }
+  function isWrap(i) { return isCoverIdx(i) && S.cview === 'wrap'; }
+  /** the spine on its own, turned to read left to right and made as big as the screen allows */
+  function isSpineV() { return isCoverIdx() && S.cview === 'spine'; }
   function spU() { return R.spineUnits(S.p.pages.length); }
   /** the hinge (the groove where the cover bends) each side of the spine, and everything between back and front */
   function hgU() { return R.hingeUnits(); }
@@ -128,7 +144,7 @@
   function ox() { return isWrap() ? (S.cur < 0 ? W + midU() : 0) : 0; }
   function spineOpts() { return window.PBKShop && PBKShop.spineOf ? PBKShop.spineOf(S.p) : C.spineFor(S.p.cover, S.p.tpl, S.p.pal); }
   /** which part of the whole cover is under x (units from the left edge): -1 front, 'spine', or the back cover index */
-  function sideAt(x) { var m = midU(); return x < W ? S.p.pages.length : x > W + m ? -1 : 'spine'; }
+  function sideAt(x) { var m = midU(), e = Math.max(0, (70 - m) / 2); return x < W - e ? S.p.pages.length : x > W + m + e ? -1 : 'spine'; }
   function selEl() { var d = doc(); return S.sel ? (d.els || []).filter(function (e) { return e.id === S.sel; })[0] : null; }
 
   /* ---------------- open ---------------- */
@@ -156,6 +172,14 @@
       /* books made before the A4 switch move to A4 now (same photos, words and stickers) */
       [p.cover].concat(p.pages).concat(p.back ? [p.back] : []).forEach(function (d) { R.toA4(d); });
       C.fixCover(p.cover, p.tpl);
+      /* older books on a layered travel cover that was never customised: make its words and artwork movable now */
+      var tl = C.TPL[p.tpl];
+      if (tl && tl.kind === 'raster' && tl.layered && tl.editable && !p.cover.edited) {
+        var nd = C.rasterDoc(tl, true), oy = (p.cover.els || []).filter(function (x) { return x.role === 'year'; })[0];
+        if (oy) nd.els.forEach(function (x) { if (x.role === 'year') { x.text = oy.text; x.shadow = oy.shadow; } });
+        nd.els = nd.els.concat((p.cover.els || []).filter(function (x) { return x.role !== 'title' && x.role !== 'sub' && x.role !== 'year'; }));
+        R.toA4(nd); p.cover = nd;
+      }
       S = { p: p, cur: -1, sel: null, undo: [], redo: [], last: null, photos: {}, order: [], stickers: [], panel: null, crop: false };
       S.last = snap(); S.go = q.get('go');
       return ST.photos(p.id).then(function (list) {
@@ -186,7 +210,7 @@
       [['cover', I.cover, 'Cover'], ['photos', I.photo, 'Photos'], ['layouts', I.layout, 'Layouts'], ['text', I.text, 'Text'], ['stickers', I.sticker, 'Stickers'], ['colors', I.color, 'Colours']].map(function (b) { return '<button data-panel="' + b[0] + '">' + b[1] + '<span>' + b[2] + '</span></button>'; }).join('') +
       '</nav>' +
       '<aside class="pe-panel" id="pePanel" aria-live="polite"></aside>' +
-      '<main class="pe-stage" id="peStage"><div class="pe-cvtabs" id="peCvTabs" role="tablist" aria-label="Cover view" hidden><button data-cv="wrap">Whole cover</button><button data-cv="front">Front</button><button data-cv="back">Back</button></div><div class="pe-canvaswrap" id="peWrap"><div class="pe-wraplbl" id="peWrapLbl" hidden><span>Back cover</span><span data-sp>Spine</span><span>Front cover</span></div><canvas id="peCanvas"></canvas><div class="pe-hinge" id="peHinge" title="Spine side"></div><div class="pe-brand" id="peBrand">' + I.lock + ' CIEL AFRICA stays here</div><div class="pe-sel" id="peSel" hidden><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i></div></div>' +
+      '<main class="pe-stage" id="peStage"><div class="pe-cvtabs" id="peCvTabs" role="tablist" aria-label="Cover view" hidden><button data-cv="wrap">Whole cover</button><button data-cv="front">Front</button><button data-cv="back">Back</button><button data-cv="spine">Spine</button></div><div class="pe-canvaswrap" id="peWrap"><div class="pe-wraplbl" id="peWrapLbl" hidden><span>Back cover</span><span data-sp>Spine</span><span>Front cover</span></div><canvas id="peCanvas"></canvas><div class="pe-hinge" id="peHinge" title="Spine side"></div><div class="pe-brand" id="peBrand">' + I.lock + ' CIEL AFRICA stays here</div><div class="pe-sel" id="peSel" hidden><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i></div></div>' +
       '<div class="pe-ctx" id="peCtx" hidden></div>' +
       '<div class="pe-mock" id="peMock"><span>Your book</span><div class="pe-rot" id="peRotBox"><div class="pe-rot__b" id="peRot"><canvas class="pe-rot__f"></canvas><canvas class="pe-rot__k"></canvas><canvas class="pe-rot__s"></canvas><i class="pe-rot__p"></i><i class="pe-rot__t"></i><i class="pe-rot__u"></i></div></div><canvas id="peMockC" width="550" height="710" hidden></canvas></div>' +
       '<div class="pe-hint" id="peHint"></div></main>' +
@@ -200,8 +224,9 @@
     if (S.cview == null) S.cview = 'wrap';
     $('#peCvTabs', pe).addEventListener('click', function (ev) {
       var b = ev.target.closest('[data-cv]'); if (!b) return; var v = b.getAttribute('data-cv');
-      S.cview = v === 'wrap' ? 'wrap' : 'single'; S.sel = null; S.crop = false;
-      if (v === 'front') S.cur = -1; else if (v === 'back') S.cur = S.p.pages.length;
+      S.cview = v === 'wrap' || v === 'spine' ? v : 'single'; S.sel = null; S.crop = false;
+      if (v === 'front' || v === 'spine') S.cur = -1; else if (v === 'back') S.cur = S.p.pages.length;
+      if (v === 'spine') { fit(); ctxBar(); drawStripSel(); openPanel('spine'); return; }
       fit(); ctxBar(); drawStripSel(); if (S.panel && S.panel !== 'photos' && S.panel !== 'stickers') openPanel(S.panel, false);
       if (v === 'wrap') hint('Tap the front, the back or the spine to change it.');
     });
@@ -213,7 +238,7 @@
     if (S.go === 'cover') setTimeout(function () { hint('Tap anything on the cover to change it: words, colours, artwork. CIEL AFRICA stays.'); }, 700);
     else if (!S.order.length) setTimeout(function () { hint('Add as many photos as you like: we’ll arrange them for you.'); }, 900);
   }
-  function hint(t) { var h = el$.hint; if (!h) return; h.textContent = t; h.classList.add('is-on'); clearTimeout(h._t); h._t = setTimeout(function () { h.classList.remove('is-on'); }, 6000); }
+  function hint(t) { if (window.CielNote) return CielNote(t, { kind: 'tip' }); var h = el$.hint; if (!h) return; h.textContent = t; h.classList.add('is-on'); clearTimeout(h._t); h._t = setTimeout(function () { h.classList.remove('is-on'); }, 6000); }
 
   function bindTop() {
     $('#peName').addEventListener('input', function () { S.p.name = this.value.slice(0, 60); save(); });
@@ -243,11 +268,13 @@
     var mk = cov && innerWidth >= 900 ? 210 : 0, mob = cov && wrapV && innerWidth < 900 ? 150 : 0;
     var aw = st.clientWidth - pad * 2 - mk, ah = st.clientHeight - pad * 2 - (innerWidth < 700 ? 0 : 10) - (cov ? 44 : 0) - mob;
     var w = Math.max(160, Math.min(aw, ah * TW / H)), h = w * H / TW;
-    S.k = w / TW;
+    if (isSpineV()) { w = Math.max(160, st.clientWidth - pad * 2 - mk); h = w * spU() / H; var mn = innerWidth < 700 ? 56 : 48; if (h < mn) { h = mn; w = h * H / spU(); if (!S.spHint) { S.spHint = 1; setTimeout(function () { hint('Slide sideways to see the whole spine, top to bottom.'); }, 300); } } }
+    S.k = w / (isSpineV() ? H : TW);
     el$.wrap.style.width = w + 'px'; el$.wrap.style.height = h + 'px';
     el$.wrap.classList.toggle('is-wrap', wrapV); el$.wrap.style.marginRight = mk ? mk + 'px' : ''; el$.wrap.style.marginBottom = mob ? mob + 'px' : ''; st.classList.toggle('is-wrapv', wrapV); st.classList.toggle('is-covv', cov); el$.wrap.style.marginTop = cov ? '34px' : '';
     var tabs = $('#peCvTabs'); tabs.hidden = !cov;
-    tabs.querySelectorAll('[data-cv]').forEach(function (b) { var v = b.getAttribute('data-cv'); b.classList.toggle('is-on', wrapV ? v === 'wrap' : (S.cur < 0 ? v === 'front' : v === 'back')); });
+    tabs.querySelectorAll('[data-cv]').forEach(function (b) { var v = b.getAttribute('data-cv'); b.classList.toggle('is-on', wrapV ? v === 'wrap' : isSpineV() ? v === 'spine' : (S.cur < 0 ? v === 'front' : v === 'back')); });
+    st.classList.toggle('is-spinev', isSpineV());
     var lbl = $('#peWrapLbl'); lbl.hidden = !wrapV;
     if (wrapV) { var sp = midU(), sl = lbl.children; sl[0].style.left = '0'; sl[0].style.width = (W / TW * 100) + '%'; sl[1].style.left = (W / TW * 100) + '%'; sl[1].style.width = (sp / TW * 100) + '%'; sl[2].style.left = ((W + sp) / TW * 100) + '%'; sl[2].style.width = (W / TW * 100) + '%'; sl[1].title = 'Spine: ' + R.spineMm(S.p.pages.length) + ' mm for ' + S.p.pages.length + ' pages'; }
     if (wrapV) { lbl.children[0].classList.toggle('is-on', isBack()); lbl.children[2].classList.toggle('is-on', S.cur < 0); }
@@ -261,7 +288,16 @@
     rafId = requestAnimationFrame(function () {
       if (!el$.canvas || !el$.canvas.isConnected || !S.p) return;
       var d = doc(), g = el$.g;
-      if (isWrap()) {
+      if (isSpineV()) {
+        var so2 = spineOpts(), su2 = spU(), k2 = S.k * dpr;
+        Promise.all([R.loadFonts(), R.loadSpine(so2)]).then(function () {
+          if (!isSpineV()) return;
+          g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, el$.canvas.width, el$.canvas.height);
+          /* turned a quarter to the left: the top of the book is on the left, the words read left to right */
+          g.setTransform(0, -k2, k2, 0, 0, su2 * k2); R.drawSpine(g, so2, su2);
+          g.setTransform(1, 0, 0, 1, 0, 0); el$.sel.hidden = true;
+        });
+      } else if (isWrap()) {
         var front = S.p.cover, back = backDoc(), sp = spU(), so = spineOpts(), kk = S.k * dpr;
         Promise.all([R.load(front, { photo: photoUrl }), R.load(back, { photo: photoUrl }), R.loadFonts(), R.loadSpine(so)]).then(function () {
           if (!isWrap()) return;
@@ -290,8 +326,8 @@
       });
       var isCover = S.cur < 0;
       /* front and back on their own look like the real book (the hinge groove by the spine); the whole cover is flat */
-      var hg = $('#peHinge'); hg.hidden = isWrap() || !isCoverIdx(); hg.classList.toggle('is-back', isBack() && !isWrap());
-      $('#peBrand').hidden = !isCover || isWrap();
+      var hg = $('#peHinge'); hg.hidden = isWrap() || isSpineV() || !isCoverIdx(); hg.classList.toggle('is-back', isBack() && !isWrap());
+      $('#peBrand').hidden = !isCover || isWrap() || isSpineV();
       el$.mockBox.hidden = !isCoverIdx();
       if (isCoverIdx()) mockSoon();
     });
@@ -350,9 +386,10 @@
   function pt(ev) { var r = el$.canvas.getBoundingClientRect(); return { x: (ev.clientX - r.left) / S.k - ox(), y: (ev.clientY - r.top) / S.k }; }
   /** in the whole-cover view: the side under the pointer becomes the one being edited; the spine opens its settings */
   function pickSide(clientX) {
+    if (isSpineV()) { select(null); openPanel('spine'); return false; }
     if (!isWrap()) return true;
     var r = el$.canvas.getBoundingClientRect(), sd = sideAt((clientX - r.left) / S.k);
-    if (sd === 'spine') { select(null); openPanel('spine'); return false; }
+    if (sd === 'spine') { select(null); S.cview = 'spine'; S.cur = -1; fit(); ctxBar(); drawStripSel(); openPanel('spine'); hint('This is your spine, shown big. Change its words, font, size and colour here.'); return false; }
     if (sd !== S.cur) { S.cur = sd; S.sel = null; S.crop = false; S.target = null; draw(); drawStripSel(); ctxBar(); if (S.panel && S.panel !== 'photos' && S.panel !== 'stickers') openPanel(S.panel, false); }
     return true;
   }
@@ -882,7 +919,7 @@
     if (name === 'photos') P.querySelectorAll('img[data-src]').forEach(function (im) { thumbUrl(im.getAttribute('data-src')).then(function (u) { if (u) im.src = u; }); });
   }
   function rasterNote(t) {
-    if (S.p.cover.edited) return '<p class="pe-note">' + (S.p.cover.layered ? 'Type a new title below. Tap the artwork on the cover to move, resize or replace it.' : 'Type a new title or subtitle below. The artwork stays as it is.') + '</p><div class="pe-row"><button class="btn btn--ghost btn--sm" data-act="orig">Back to the original</button></div>';
+    if (S.p.cover.edited) return '<p class="pe-note">' + (S.p.cover.layered ? 'Tap the words or the artwork on the cover to move, resize or replace them. Type new words below.' : 'Type a new title or subtitle below. The artwork stays as it is.') + '</p><div class="pe-row"><button class="btn btn--ghost btn--sm" data-act="orig">Back to the original</button></div>';
     if (t.editable) return '<div class="pe-sub"><h4>Customise this cover</h4><p class="pe-note">' + (t.layered ? 'Change the place name, add a year, move or replace the artwork, change the colour.' : 'Change the place name or add a year.') + '</p><button class="btn btn--dark btn--sm" data-act="edittitle">' + I.edit + ' Customise</button></div>';
     return '<p class="pe-note">This cover’s lettering is part of its artwork and can’t be changed. You can still add stickers, text or a photo.</p>';
   }
@@ -1029,7 +1066,7 @@
     else if (a === 'bgall') { var c = doc().bg; S.p.pages.forEach(function (p) { p.bg = c; }); commit(); renderAll(); toast('Every page now uses this colour.'); }
     else if (a === 'change') PBK.pick(C.TPL[S.p.tpl] ? C.TPL[S.p.tpl].cat : 'all', changeCover);
     else if (a === 'edittitle') { ensureEditable(); go(-1); var te = S.p.cover.els.filter(function (x) { return x.role === 'title'; })[0]; if (te) select(te.id); openPanel('text'); }
-    else if (a === 'orig') { var t = C.TPL[S.p.tpl]; var nd = C.rasterDoc(t, false); nd.els = nd.els.concat(S.p.cover.els.filter(function (x) { return x.role !== 'title' && x.role !== 'sub' && x.role !== 'year' && x.id !== 'art'; })); S.p.cover = nd; select(null); commit(); renderAll(); }
+    else if (a === 'orig') { var t = C.TPL[S.p.tpl]; var nd = C.rasterDoc(t, !!t.layered); nd.els = nd.els.concat(S.p.cover.els.filter(function (x) { return x.role !== 'title' && x.role !== 'sub' && x.role !== 'year' && x.id !== 'art'; })); S.p.cover = nd; select(null); commit(); renderAll(); }
     else if (a === 'covphoto') { go(-1); var d = S.p.cover; var has = d.els.filter(function (x) { return x.t === 'photo'; }).length; if (has >= MAXPH) { toast('The cover holds up to ' + MAXPH + ' photos.'); return; } var e2 = { id: uid('ph'), t: 'photo', x: 330, y: ay(500), w: 640, h: ay(800), photo: null, crop: { z: 1, cx: .5, cy: .5 }, border: 14, borderColor: '#ffffff' }; d.els.push(e2); commit(); select(e2.id); S.target = e2.id; draw(); openPanel('photos'); }
   }
   function replaceWith(props, ar) {
@@ -1123,8 +1160,10 @@
   function go(i) {
     i = Math.max(-1, Math.min(S.p.pages.length, i));
     if (i === S.cur) return;
-    var was = isWrap(), wasCov = isCoverIdx();
+    var was = isWrap(), wasCov = isCoverIdx(), wasSp = isSpineV();
+    if (S.cview === 'spine') S.cview = 'wrap';
     S.cur = i; S.sel = null; S.crop = false; S.target = null;
+    if (wasSp) { fit(); ctxBar(); drawStripSel(); return; }
     if (was !== isWrap() || wasCov !== isCoverIdx()) fit(); else draw();
     ctxBar(); drawStripSel();
     if (S.panel && S.panel !== 'photos' && S.panel !== 'stickers') openPanel(S.panel, false);
@@ -1221,6 +1260,7 @@
     if (!confirm('Delete “' + (S.p.name || 'this book') + '” and its photos from this device? This can’t be undone.')) return;
     clearTimeout(saveT);
     var id = S.p.id; S.p = null;
+    try { var lb = JSON.parse(localStorage.getItem('pbk_last') || 'null'); if (lb && lb.id === id) localStorage.removeItem('pbk_last'); } catch (e) { }
     try { (CIEL.cart.pbItems ? CIEL.cart.pbItems() : []).forEach(function (i) { if (i.pb.p === id) CIEL.cart.remove(i.id); }); } catch (e) { }
     ST.deleteProject(id).then(function () { PBK.go(BASE + '/my-books'); }, function () { PBK.go(BASE + '/my-books'); });
   }
@@ -1258,7 +1298,6 @@
     if (!odlg) { odlg = document.createElement('dialog'); odlg.className = 'pe-or'; document.body.appendChild(odlg); odlg.addEventListener('click', function (e) { if (e.target === odlg) odlg.close(); }); }
     var n = S.p.pages.length, c = checks(), t = C.TPL[S.p.tpl], Sh = window.PBKShop, st = { product: 'print' };
     var pPrint = Sh.unit('print', n), pPdf = Sh.unit('digital', n);
-    var msg = 'Hello Ciel Africa, I’d like to order a photo book.\nBook: ' + S.p.name + '\nCover: ' + (t ? t.name : 'Blank cover') + '\nPages: ' + n + '\nSize: ' + (BOOK.size || '21 × 29.7 cm (A4)') + ' portrait hardcover';
     odlg.innerHTML = '<div class="pe-or__in"><header><h3>Order your book</h3><button class="pe-ib" data-x aria-label="Close">' + I.x + '</button></header>' +
       '<div class="pe-or__body"><canvas width="440" height="550" id="orCov"></canvas><div>' +
       '<p class="pe-or__name"><b>' + esc(S.p.name) + '</b><span>' + n + ' pages · A4 hardcover</span></p>' +
@@ -1269,13 +1308,15 @@
       '<div class="pe-or__exact">' + I.eye + '<span><b>Printed exactly as you designed it.</b> Every page, the cover and the spine come out just as you see them in the preview.</span></div>' +
       '<div class="pe-or__back"><button class="btn btn--ghost btn--sm" data-prev>' + I.eye + ' Preview my book</button><button class="btn btn--ghost btn--sm" data-x>' + I.left + ' Keep editing</button></div>' +
       '<div class="pe-or__acts"><button class="btn btn--p" data-buy>Checkout</button><button class="btn btn--ghost" data-cart>Add to cart</button></div>' +
-      '<a class="pe-or__wa" target="_blank" rel="noopener" href="https://wa.me/254706549703?text=' + encodeURIComponent(msg) + '">Or order on WhatsApp</a><div id="orPaid"></div></div></div></div>';
+      '<button type="button" class="pe-or__wa" data-wa>Or order on WhatsApp</button><div id="orPaid"></div></div></div></div>';
     odlg.querySelectorAll('[name=prod]').forEach(function (r) { r.onchange = function () { st.product = r.value; odlg.querySelectorAll('.pe-or__opt').forEach(function (l) { l.classList.toggle('is-on', l.contains(r)); }); }; });
     odlg.onclick = function (e) {
       if (e.target.closest('[data-x]')) odlg.close();
       if (e.target.closest('[data-prev]')) { odlg.close(); preview(); return; }
       if (e.target.closest('[data-cart]')) Sh.add(S.p, st.product).then(function () { odlg.close(); });
       if (e.target.closest('[data-buy]')) Sh.add(S.p, st.product, { silent: true }).then(function () { odlg.close(); PBK.go(BASE + '/checkout'); });
+      /* WhatsApp orders go through checkout too: we need their name and number, and the order shows in Ciel Admin */
+      if (e.target.closest('[data-wa]')) Sh.add(S.p, st.product, { silent: true }).then(function () { odlg.close(); PBK.go(BASE + '/checkout?wa=1'); });
     };
     Sh.purchases(S.p.id).then(function (l) {
       var pdfs = l.filter(function (x) { return x.product === 'digital'; }), prints = l.filter(function (x) { return x.product === 'print'; });

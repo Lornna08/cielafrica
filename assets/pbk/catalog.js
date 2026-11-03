@@ -114,7 +114,7 @@
     t.mock = function (pi) { return '/assets/pbk/c/m/' + v[0] + '-' + v[1] + '-' + (pi || 0) + '.webp?v=' + VER; };
     TPL[t.id] = t; ORDER.push(t.id);
   });
-  var VER = '2';
+  var VER = '3';
 
   /* Raster travel covers (from covers.js) */
   var COVERS = (root.PBK_COVERS || []);
@@ -180,7 +180,8 @@
   function customDoc(id, pi, cu) {
     cu = cu || {};
     var t = TPL[id], any = cu.title != null || cu.sub != null || cu.bg || cu.tc || cu.sc || cu.sh != null;
-    var doc = t && t.kind === 'raster' ? rasterDoc(t, !!any && t.editable) : docFor(id, pi);
+    /* travel covers built in layers open ready to edit: words and artwork can be moved straight away */
+    var doc = t && t.kind === 'raster' ? rasterDoc(t, t.editable && (t.layered || !!any)) : docFor(id, pi);
     if (!doc) return null;
     if (cu.bg && !doc.img) doc.bg = cu.bg;
     (doc.els || []).forEach(function (e) {
