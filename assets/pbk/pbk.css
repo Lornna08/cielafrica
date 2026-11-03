@@ -1164,7 +1164,7 @@ body.pbk-editing .pk{background:#efeae2}
 .pf__h b{color:#1b1714}
 .pf__lbl{color:#6b625a}
 .pf__x{background:#fff;color:#1b1714;box-shadow:0 1px 2px rgba(0,0,0,.08),0 0 0 1px #e6dfd3}
-.pf__x:hover{background:#1b1714;color:#fff}
+@media (hover:hover){.pf__x:hover{background:#1b1714;color:#fff}}
 .pf__board{box-shadow:0 26px 50px -12px rgba(60,40,20,.38),0 8px 16px rgba(60,40,20,.12)}
 .pf__nav{background:#fff;color:#1b1714;box-shadow:0 4px 14px rgba(60,40,20,.14),0 0 0 1px #ece5da}
 .pf__nav:hover:not(:disabled){background:#ff5a1f;color:#fff}
@@ -1192,3 +1192,6 @@ body.pbk-editing .pk{background:#efeae2}
 .pf.is-rot .pf__nav--l{left:8px}.pf.is-rot .pf__nav--r{right:8px}
 .pf.is-rot .pf__stage{padding-top:52px}
 .pf.is-rot .pf__h .pf__lbl{display:inline}
+
+.pf__rot{background:#fff;color:#1b1714}
+.pf.is-rot .pf__rot{background:#1b1714;color:#fff}
