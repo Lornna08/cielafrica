@@ -53,7 +53,7 @@
     var save=function(){ try{ sessionStorage.setItem(KEY, String(scrollY)); }catch(e){} };
     addEventListener('pagehide', save); addEventListener('beforeunload', save);
     var st; addEventListener('scroll', function(){ clearTimeout(st); st=setTimeout(save,150); }, {passive:true});
-    var restore=function(){ try{ var y=sessionStorage.getItem(KEY); if(y!==null){ var n=parseInt(y,10)||0; requestAnimationFrame(function(){requestAnimationFrame(function(){ scrollTo(0,n); });}); } }catch(e){} };
+    var restore=function(){ try{ if(/^\/photobooks\/(design|checkout|track|my-books)/.test(location.pathname)) return; var y=sessionStorage.getItem(KEY); if(y!==null){ var n=parseInt(y,10)||0; requestAnimationFrame(function(){requestAnimationFrame(function(){ scrollTo(0,n); });}); } }catch(e){} };
     if(document.readyState==='complete') restore(); else addEventListener('load', restore);
     addEventListener('pageshow', function(e){ if(e.persisted) restore(); });
   }catch(e){}
@@ -65,12 +65,13 @@
   var el=null, cssOn=false;
   function check(){ try{
     if(el&&el.isConnected) return;
+    if(/^\/(checkout|thanks)(\.html)?$/.test(location.pathname)) return;
     var b=JSON.parse(localStorage.getItem('pbk_last')||'null'); if(!b||!(b.id||b.ref)) return;
     var order=b.kind==='order';
     var x=+localStorage.getItem('pbk_last_x')||0; if(x>=b.at) return;
     if(Date.now()-b.at>(order?120:60)*864e5) return;
     var css='.ciel-mybk{position:fixed;left:clamp(.8rem,3vw,1.4rem);bottom:calc(clamp(.9rem,3vw,1.5rem) + env(safe-area-inset-bottom,0px));z-index:79;display:flex;align-items:center;gap:.6rem;max-width:calc(100vw - 6.5rem);background:#1b1714;color:#fff;border-radius:16px;padding:.45rem .45rem .45rem .5rem;box-shadow:0 14px 34px -8px rgba(20,12,6,.45),0 3px 10px rgba(20,12,6,.2);font:600 .9rem/1.2 Inter,system-ui,-apple-system,sans-serif;transform:translateY(140%);transition:transform .35s cubic-bezier(.2,.8,.2,1)}'+
-      '.ciel-mybk.is-on{transform:none}.pbk-editing .ciel-mybk{display:none}'+
+      '.ciel-mybk.is-on{transform:none}.pbk-editing .ciel-mybk,.pbk-checkout .ciel-mybk{display:none}'+
       '.ciel-mybk a{display:flex;align-items:center;gap:.65rem;color:inherit;text-decoration:none;min-width:0}'+
       '.ciel-mybk img,.ciel-mybk i{flex:none;width:34px;height:46px;border-radius:3px;object-fit:cover;background:#ff5a1f;box-shadow:0 2px 6px rgba(0,0,0,.35)}'+
       '.ciel-mybk span{display:flex;flex-direction:column;min-width:0}.ciel-mybk small{font-weight:500;font-size:.76rem;color:#cfc6bc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw}'+

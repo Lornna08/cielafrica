@@ -63,13 +63,25 @@
     if (path === BASE + '/index') path = BASE;
     var seg = path.slice(BASE.length).replace(/^\//, '');
     document.body.classList.remove('pbk-editing');
-    if (seg === 'design') { if (window.PBKEditor) PBKEditor.open(main); return; }
+    document.documentElement.classList.toggle('pbk-checkout', seg === 'checkout');
+    if (seg === 'design') { if (window.PBKEditor) PBKEditor.open(main); else waitFor('PBKEditor', function () { PBKEditor.open(main); }); return; }
     if (seg === 'my-books') myBooks();
     else if (seg === 'track') track();
-    else if (seg === 'checkout') { if (window.PBKShop) PBKShop.checkout(main); }
+    else if (seg === 'checkout') { if (window.PBKShop) PBKShop.checkout(main); else waitFor('PBKShop', function () { PBKShop.checkout(main); }); }
     else if (C.cat(seg) || seg === 'blank') category(seg);
     else return landing();
     backBar(seg);
+  }
+  /* a part of the page whose script hasn't arrived yet: wait for it, and say so if it never comes */
+  function waitFor(name, go) {
+    main.innerHTML = '<div class="pe-err wrap"><p class="pk-empty">Opening…</p></div>';
+    var t0 = Date.now(), at = location.href;
+    (function tick() {
+      if (location.href !== at) return;
+      if (window[name]) return go();
+      if (Date.now() - t0 > 15000) { main.innerHTML = '<div class="pe-err wrap"><h2>This page didn’t load properly</h2><p>Check your connection, then try again. Your books are safe on this device.</p><button class="btn btn--p" onclick="location.reload()">Try again</button></div>'; return; }
+      setTimeout(tick, 150);
+    })();
   }
   /* "Back" above the category circles on every page except the landing page (the editor has its own) */
   var inApp = 0;
@@ -571,7 +583,8 @@
   }
 
   /* the footer waits until the page itself is drawn, so a refresh never opens on the footer */
-  function first() { try { route(); } finally { document.documentElement.classList.add('pbk-on'); } syncLast(); }
+  var started = false;
+  function first() { if (started) return; started = true; try { route(); } finally { document.documentElement.classList.add('pbk-on'); } syncLast(); }
   function ordered() { try { return JSON.parse(localStorage.getItem('pbk_ordered') || '{}'); } catch (e) { return {}; } }
   /* books made before "Back to my book" existed: point it at the latest book (or order) on this device */
   function syncLast() {
@@ -588,5 +601,8 @@
       window.dispatchEvent(new Event('pbk-last'));
     }).catch(function () { });
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', first); else setTimeout(first, 0);
+  /* start once every script is in (the editor and checkout load after this file): starting earlier on a slow
+     connection used to leave the page empty with only the footer showing */
+  if (document.readyState === 'complete') setTimeout(first, 0);
+  else { document.addEventListener('DOMContentLoaded', first); window.addEventListener('load', first); }
 })();

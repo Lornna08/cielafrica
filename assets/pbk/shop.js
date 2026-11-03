@@ -259,6 +259,8 @@
     main.innerHTML = '<section class="pkco wrap"><div class="crumb"><a data-go href="' + BASE + '">Photo Books</a> <span class="brk">‹</span> Checkout</div><h1>Checkout</h1><div class="pkco__grid"><div class="pkco__main" id="coMain"><p class="pk-empty">Loading your cart…</p></div><aside class="pkco__side" id="coSide"></aside></div></section>';
     var st = { delivery: null, f: {} }; /* the customer picks the delivery (and sees its price) themselves */
     try { Object.assign(st.f, JSON.parse(localStorage.getItem('pbk_details') || '{}')); } catch (e) { }
+    /* a country typed (or auto-filled) into County isn't a county */
+    if (st.f.county && /^(kenya|ke|uganda|tanzania|rwanda|burundi)$/i.test(String(st.f.county).trim())) st.f.county = '';
     Promise.all([sync(), caps()]).then(function (r) {
       var rows = r[0], cp = r[1];
       if (!rows.length) { document.getElementById('coMain').innerHTML = '<div class="pk-empty"><p>No photo books in your cart yet.</p><a class="btn btn--p" data-go href="' + BASE + '">Create a photo book</a></div>'; document.getElementById('coSide').innerHTML = ''; return; }
@@ -288,7 +290,7 @@
         }).join('') +
         '<h2 class="pkco__h">Your details</h2><div class="pkco__form">' +
         fld('name', 'Full name', 'text', 'name', '', true) + fld('phone', 'Mobile number', 'tel', 'tel', '0712 345 678', true) + fld('email', 'Email (for your receipt)', 'email', 'email', '', true) + '</div>' +
-        (anyPrint ? '<h2 class="pkco__h">Delivery address</h2><div class="pkco__form">' + fld('line1', 'Street address or building', 'text', 'address-line1', '', true) + fld('area', 'Area / estate', 'text', 'address-line2', '', true) + fld('town', 'Town', 'text', 'address-level2', '', true) + fld('county', 'County', 'text', 'address-level1', '', true) +
+        (anyPrint ? '<h2 class="pkco__h">Delivery address</h2><div class="pkco__form">' + fld('line1', 'Street address or building', 'text', 'address-line1', '', true) + fld('area', 'Area / estate', 'text', 'address-line2', '', true) + fld('town', 'Town', 'text', 'address-level2', '', true) + fld('county', 'County', 'text', 'off', 'e.g. Nairobi', true) +
           '<label class="pkco__f"><span>Country <i class="pkco__req">*</i></span><select id="coCtry" autocomplete="country-name"' + (reg === 'pick' ? ' class="is-bad"' : '') + '>' + (reg === 'pick' ? '<option value="" selected>Choose your country</option>' : '') + COUNTRIES.concat(['Another country']).map(function (c) { return '<option' + (c === st.f.country ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') + '</select></label>' +
           (st.f.country === 'Another country' ? fld('ctryo', 'Which country?', 'text', 'country-name', '', true) : '') + fld('notes', 'Delivery notes (optional)', 'text', 'off') + '</div>' : '') +
         (anyPrint ? (reg === 'pick' ? '<h2 class="pkco__h">Delivery</h2><div class="pkco__intl"><b>Delivery outside Kenya</b><span>Choose your country above. East Africa: ' + money((DEL.filter(function (d) { return d.id === 'eastafrica'; })[0] || {}).price || 0) + ' by courier. Further away, we’ll send you the delivery cost on WhatsApp.</span></div>'

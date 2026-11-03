@@ -1175,3 +1175,20 @@ body.pbk-editing .pk{background:#efeae2}
 .pf__btn--n{box-shadow:0 4px 14px rgba(255,90,31,.3)}
 .pf__f input{accent-color:#ff5a1f}
 .pf__tip{color:#8a8178}
+/* preview: "Turn" lays the book sideways on a phone held upright */
+.pf__rot{display:none}
+@media (orientation:portrait) and (max-width:900px){.pf__rot{display:flex}}
+.pf.is-rot .pf__rot{display:flex;background:#1b1714;color:#fff}
+.pf.is-rot .pf__in{position:fixed;top:0;left:0;width:100dvh;height:100vw;max-width:none;max-height:none;transform-origin:top left;transform:rotate(90deg) translateY(-100%)}
+.pf.is-rot .pf__tip{display:none}
+.pf__h{gap:.6rem}
+@media (max-width:480px){.pf__h .pf__lbl{display:none}.pf__x{padding:.5rem .8rem .5rem .65rem}}
+.pf.is-rot .pf__in *{max-width:none}
+.pf.is-rot .pf__in{grid-template-rows:1fr}
+.pf.is-rot .pf__h{position:absolute;top:0;left:0;right:0;z-index:6;padding:.5rem .8rem;background:linear-gradient(#f7f3eecc,#f7f3ee00)}
+.pf.is-rot .pf__f{display:none}
+.pf.is-rot .pf__stage{padding:6px 60px}
+.pf.is-rot .pf__nav{display:grid;width:44px;height:44px}
+.pf.is-rot .pf__nav--l{left:8px}.pf.is-rot .pf__nav--r{right:8px}
+.pf.is-rot .pf__stage{padding-top:52px}
+.pf.is-rot .pf__h .pf__lbl{display:inline}
