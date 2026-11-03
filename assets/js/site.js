@@ -65,9 +65,10 @@
   var el=null, cssOn=false;
   function check(){ try{
     if(el&&el.isConnected) return;
-    var b=JSON.parse(localStorage.getItem('pbk_last')||'null'); if(!b||!b.id) return;
+    var b=JSON.parse(localStorage.getItem('pbk_last')||'null'); if(!b||!(b.id||b.ref)) return;
+    var order=b.kind==='order';
     var x=+localStorage.getItem('pbk_last_x')||0; if(x>=b.at) return;
-    if(Date.now()-b.at>60*864e5) return;
+    if(Date.now()-b.at>(order?120:60)*864e5) return;
     var css='.ciel-mybk{position:fixed;left:clamp(.8rem,3vw,1.4rem);bottom:calc(clamp(.9rem,3vw,1.5rem) + env(safe-area-inset-bottom,0px));z-index:79;display:flex;align-items:center;gap:.6rem;max-width:calc(100vw - 6.5rem);background:#1b1714;color:#fff;border-radius:16px;padding:.45rem .45rem .45rem .5rem;box-shadow:0 14px 34px -8px rgba(20,12,6,.45),0 3px 10px rgba(20,12,6,.2);font:600 .9rem/1.2 Inter,system-ui,-apple-system,sans-serif;transform:translateY(140%);transition:transform .35s cubic-bezier(.2,.8,.2,1)}'+
       '.ciel-mybk.is-on{transform:none}.pbk-editing .ciel-mybk{display:none}'+
       '.ciel-mybk a{display:flex;align-items:center;gap:.65rem;color:inherit;text-decoration:none;min-width:0}'+
@@ -77,11 +78,29 @@
       '.ciel-mybk button{flex:none;border:0;background:rgba(255,255,255,.1);color:#fff;width:30px;height:30px;border-radius:50%;font-size:1.05rem;line-height:1;cursor:pointer}.ciel-mybk button:hover{background:rgba(255,255,255,.22)}';
     if(!cssOn){ var st=document.createElement('style'); st.textContent=css; document.head.appendChild(st); cssOn=true; }
     el=document.createElement('div'); el.className='ciel-mybk'; el.setAttribute('role','complementary'); el.setAttribute('aria-label','Your photo book');
-    var name=String(b.name||'My photo book').replace(/[<>&"]/g,'');
-    el.innerHTML='<a href="/photobooks/design?p='+encodeURIComponent(b.id)+'" data-go>'+(b.img&&/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(b.img)?'<img alt="" src="'+b.img+'">':'<i></i>')+'<span><b>Back to my book</b><small>'+name+'</small></span></a><button type="button" aria-label="Hide this">×</button>';
+    var name=String(b.name||'My photo book').replace(/[<>&"]/g,''), ref=String(b.ref||'').replace(/[^\w-]/g,'');
+    el.innerHTML='<a href="'+(order?'/photobooks/track?ref='+encodeURIComponent(ref):'/photobooks/design?p='+encodeURIComponent(b.id))+'" data-go>'+(b.img&&/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(b.img)?'<img alt="" src="'+b.img+'">':'<i></i>')+'<span><b>'+(order?'Track my order':'Back to my book')+'</b><small>'+(order?'Order '+ref+' · ':'')+name+'</small></span></a><button type="button" aria-label="Hide this">×</button>';
     el.querySelector('button').onclick=function(){ try{localStorage.setItem('pbk_last_x',String(Date.now()));}catch(e){} el.classList.remove('is-on'); setTimeout(function(){el.remove();},400); };
     document.body.appendChild(el); setTimeout(function(){el.classList.add('is-on');},600);
   }catch(e){} }
-  function start(){ check(); try{ new MutationObserver(function(){ if(!document.body.classList.contains('pbk-editing')) setTimeout(check,300); }).observe(document.body,{attributes:true,attributeFilter:['class']}); }catch(e){} }
+  /* books made before this button existed: find the latest one on this device (only if the photo book store already exists) */
+  function fromDevice(){ try{
+    if(localStorage.getItem('pbk_last')||!window.indexedDB||!indexedDB.databases) return;
+    indexedDB.databases().then(function(l){
+      if(!l.some(function(d){return d.name==='ciel-photobooks';})) return;
+      var r=indexedDB.open('ciel-photobooks'); r.onsuccess=function(){ var db=r.result; try{
+        if(!db.objectStoreNames.contains('projects')){ db.close(); return; }
+        var hasP=db.objectStoreNames.contains('purchases'), tx=db.transaction(hasP?['projects','purchases']:['projects'],'readonly'), bought={};
+        if(hasP){ var pq=tx.objectStore('purchases').getAll(); pq.onsuccess=function(){ (pq.result||[]).forEach(function(x){ bought[x.projectId]=1; }); }; }
+        var q=tx.objectStore('projects').getAll(); tx.oncomplete=function(){
+          var od={}; try{ od=JSON.parse(localStorage.getItem('pbk_ordered')||'{}'); }catch(e){} Object.keys(bought).forEach(function(k){ od[k]=1; });
+          var ps=(q.result||[]).filter(function(p){ return p.app==='pbk'&&!od[p.id]; }).sort(function(a,b){ return (b.updatedAt||0)-(a.updatedAt||0); });
+          db.close(); if(!ps.length||localStorage.getItem('pbk_last')) return;
+          localStorage.setItem('pbk_last',JSON.stringify({kind:'book',id:ps[0].id,name:ps[0].name||'My photo book',at:ps[0].updatedAt||Date.now()})); check();
+        };
+      }catch(e){ db.close(); } };
+    }).catch(function(){});
+  }catch(e){} }
+  function start(){ check(); fromDevice(); addEventListener('pbk-last',function(){ if(el){ el.remove(); el=null; } check(); }); try{ new MutationObserver(function(){ if(!document.body.classList.contains('pbk-editing')) setTimeout(check,300); }).observe(document.body,{attributes:true,attributeFilter:['class']}); }catch(e){} }
   if(document.body) start(); else addEventListener('DOMContentLoaded',start);
 })();

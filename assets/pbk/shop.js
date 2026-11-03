@@ -221,7 +221,7 @@
       }
       return retry(function () { return up('book', 0, new Blob([JSON.stringify(bookInfo)], { type: 'application/octet-stream' })); }).then(step).then(function () {
         return api('pbk-upload-done', { receipt: pu.receipt });
-      }).then(function () { done = total; if (onProgress) onProgress(total, total); pu.done = true; pu.sentAt = Date.now(); try { var lb = JSON.parse(localStorage.getItem('pbk_last') || 'null'); if (lb && lb.id === pu.projectId) localStorage.removeItem('pbk_last'); } catch (e) { } return save(); });
+      }).then(function () { done = total; if (onProgress) onProgress(total, total); pu.done = true; pu.sentAt = Date.now(); return save(); });
     });
   }
   /** purchases saved on this device */
@@ -268,7 +268,7 @@
     function draw(rows, cp) {
       var test = rows.some(function (r) { return r.item.pb.test; });
       var anyPrint = rows.some(function (r) { return r.item.pb.product === 'print'; }), missing = rows.filter(function (r) { return !r.project; });
-      if (!st.f.country) st.f.country = 'Kenya';
+      if (!st.f.country && !st.abroad) st.f.country = 'Kenya';
       var reg = region(), dl = reg === 'ke' ? DEL.filter(function (d) { return d.id !== 'eastafrica'; }) : reg === 'ea' ? DEL.filter(function (d) { return d.id === 'eastafrica'; }) : [];
       if (st.delivery && !dl.some(function (d) { return d.id === st.delivery; })) st.delivery = null;
       var del = dl.filter(function (d) { return d.id === st.delivery; })[0] || null;
@@ -289,10 +289,11 @@
         '<h2 class="pkco__h">Your details</h2><div class="pkco__form">' +
         fld('name', 'Full name', 'text', 'name', '', true) + fld('phone', 'Mobile number', 'tel', 'tel', '0712 345 678', true) + fld('email', 'Email (for your receipt)', 'email', 'email', '', true) + '</div>' +
         (anyPrint ? '<h2 class="pkco__h">Delivery address</h2><div class="pkco__form">' + fld('line1', 'Street address or building', 'text', 'address-line1', '', true) + fld('area', 'Area / estate', 'text', 'address-line2', '', true) + fld('town', 'Town', 'text', 'address-level2', '', true) + fld('county', 'County', 'text', 'address-level1', '', true) +
-          '<label class="pkco__f"><span>Country <i class="pkco__req">*</i></span><select id="coCtry" autocomplete="country-name">' + COUNTRIES.concat(['Another country']).map(function (c) { return '<option' + (c === st.f.country ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') + '</select></label>' +
+          '<label class="pkco__f"><span>Country <i class="pkco__req">*</i></span><select id="coCtry" autocomplete="country-name"' + (reg === 'pick' ? ' class="is-bad"' : '') + '>' + (reg === 'pick' ? '<option value="" selected>Choose your country</option>' : '') + COUNTRIES.concat(['Another country']).map(function (c) { return '<option' + (c === st.f.country ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') + '</select></label>' +
           (st.f.country === 'Another country' ? fld('ctryo', 'Which country?', 'text', 'country-name', '', true) : '') + fld('notes', 'Delivery notes (optional)', 'text', 'off') + '</div>' : '') +
-        (anyPrint ? (reg === 'world' ? '<h2 class="pkco__h">Delivery</h2><div class="pkco__intl"><b>Delivery outside East Africa</b><span>We’ll get in touch with the delivery cost and how to pay.</span></div>'
-          : '<h2 class="pkco__h">Delivery</h2><div class="pkco__del">' + dl.map(function (d) { return '<label class="pkco__opt' + (d.id === st.delivery ? ' is-on' : '') + '"><input type="radio" name="del" value="' + d.id + '"' + (d.id === st.delivery ? ' checked' : '') + '><span>' + esc(d.name) + '</span>' + (d.id === st.delivery ? '<b>' + (d.id === 'uber' ? 'Pay rider' : d.price && !test ? money(d.price) : 'Free') + '</b>' : '') + '</label>'; }).join('') + '</div><p class="pkco__note">' + (del && del.note ? esc(del.note) + ' ' : '') + 'Delivered within 1–3 working days of dispatch.</p>') : '') +
+        (anyPrint ? (reg === 'pick' ? '<h2 class="pkco__h">Delivery</h2><div class="pkco__intl"><b>Delivery outside Kenya</b><span>Choose your country above. East Africa: ' + money((DEL.filter(function (d) { return d.id === 'eastafrica'; })[0] || {}).price || 0) + ' by courier. Further away, we’ll send you the delivery cost on WhatsApp.</span></div>'
+          : reg === 'world' ? '<h2 class="pkco__h">Delivery</h2><div class="pkco__intl"><b>Delivery outside East Africa</b><span>We’ll get in touch with the delivery cost and how to pay.</span></div>'
+          : '<h2 class="pkco__h">Delivery</h2><div class="pkco__del">' + dl.map(function (d) { return '<label class="pkco__opt' + (d.id === st.delivery ? ' is-on' : '') + '"><input type="radio" name="del" value="' + d.id + '"' + (d.id === st.delivery ? ' checked' : '') + '><span>' + esc(d.name) + '</span>' + (d.id === st.delivery ? '<b>' + (d.id === 'uber' ? 'Pay rider' : d.price && !test ? money(d.price) : 'Free') + '</b>' : '') + '</label>'; }).join('') + (reg === 'ke' ? '<label class="pkco__opt"><input type="radio" name="del" value="abroad"><span>Outside Kenya</span></label>' : '') + '</div><p class="pkco__note">' + (del && del.note ? esc(del.note) + ' ' : '') + 'Delivered within 1–3 working days of dispatch.</p>') : '') +
         '<label class="pkco__giftck"><input type="checkbox" id="coGift"' + (st.gift ? ' checked' : '') + '><span>This is a gift 🎁</span></label>' +
         (st.gift ? '<div class="pkco__form pkco__form--gift">' + fld('gto', 'Who is it for?', 'text', 'off', 'Their name', true) + (anyPrint ? fld('gphone', 'Their phone (for delivery)', 'tel', 'off', 'Optional') : '') + '<label class="pkco__f pkco__f--full"><span>Gift message (optional)</span><textarea data-f="gnote" rows="3" maxlength="400" placeholder="Write a short message">' + esc(st.f.gnote || '') + '</textarea></label></div>' : '');
       var oldN = document.querySelector('.pkco__notes'); if (oldN) oldN.remove();
@@ -315,10 +316,44 @@
         el.querySelectorAll('[data-q]').forEach(function (b) { b.onclick = function () { var it = CIEL.cart.items().filter(function (x) { return x.id === id; })[0]; CIEL.cart.setQty(id, Math.min(CFG.maxQuantity || 10, it.qty + +b.getAttribute('data-q'))); refresh(); }; });
         var rm = el.querySelector('[data-rm]'); rm.onclick = function () { CIEL.cart.remove(id); refresh(); };
       });
-      M.querySelectorAll('[name=del]').forEach(function (r2) { r2.onchange = function () { keep(); st.delivery = r2.value; try { localStorage.setItem('pbk_delivery', r2.value); } catch (e) { } draw(rows.map(function (x) { return { item: CIEL.cart.items().filter(function (y) { return y.id === x.item.id; })[0] || x.item, project: x.project }; }), cp); }; });
+      M.querySelectorAll('[name=del]').forEach(function (r2) { r2.onchange = function () { keep();
+        if (r2.value === 'abroad') { st.abroad = true; st.f.country = ''; st.delivery = null; draw(rows, cp); var cs2 = document.getElementById('coCtry'); if (cs2) { cs2.scrollIntoView({ block: 'center', behavior: 'smooth' }); cs2.focus({ preventScroll: true }); } return; }
+        st.delManual = true; st.delivery = r2.value; try { localStorage.setItem('pbk_delivery', r2.value); } catch (e) { } draw(rows.map(function (x) { return { item: CIEL.cart.items().filter(function (y) { return y.id === x.item.id; })[0] || x.item, project: x.project }; }), cp); }; });
       M.querySelectorAll('[data-f]').forEach(function (i) { i.addEventListener('input', keep); });
       var gk = document.getElementById('coGift'); if (gk) gk.onchange = function () { keep(); st.gift = gk.checked; draw(rows, cp); };
-      var cs = document.getElementById('coCtry'); if (cs) cs.onchange = function () { keep(); st.f.country = cs.value; draw(rows, cp); };
+      var cs = document.getElementById('coCtry'); if (cs) cs.onchange = function () { keep(); st.f.country = cs.value; st.abroad = !!cs.value && cs.value !== 'Kenya'; draw(rows, cp); };
+      /* Kenyan addresses: the county is checked (and corrected), and delivery follows it: Nairobi or the rest of Kenya */
+      var ci = M.querySelector('[data-f=county]');
+      if (ci && region() === 'ke') {
+        ci.setAttribute('list', 'coCounties');
+        if (!document.getElementById('coCounties')) M.insertAdjacentHTML('beforeend', '<datalist id="coCounties">' + COUNTIES.map(function (c) { return '<option value="' + esc(c) + '">'; }).join('') + '</datalist>');
+        var fixBox = document.createElement('p'); fixBox.className = 'pkco__fix'; fixBox.id = 'coFix'; ci.closest('.pkco__form').insertAdjacentElement('afterend', fixBox);
+        if (st.fix) { fixBox.innerHTML = st.fix; fixBox.classList.toggle('is-err', !!st.fixErr); if (st.fixErr) ci.classList.add('is-bad'); }
+        ['town', 'area', 'county'].forEach(function (k) { var inp = M.querySelector('[data-f="' + k + '"]'); if (!inp) return; var v0 = inp.value;
+          inp.addEventListener('focus', function () { v0 = inp.value; });
+          inp.addEventListener('blur', function (e) { if (inp.value.trim() !== String(v0 || '').trim()) place(k, e.relatedTarget); }); });
+      }
+      function place(src, nextEl) {
+        keep(); var f = st.f, msg = [], err = false, before = f.county + '|' + st.delivery;
+        var cc = f.county ? countyOf(f.county) : null, tc = townCounty(f.town), ac = townCounty(f.area), county = null;
+        if (src === 'town' && tc && f.county && tc !== cc) { county = tc; msg.push('<b>' + esc(f.town) + '</b> is in <b>' + esc(tc) + '</b> County, so we updated the county.'); }
+        else if (cc) { county = cc; if (cc !== f.county) msg.push('We corrected the county to <b>' + esc(cc) + '</b>.'); }
+        else if (f.county) { if (tc || ac) { county = tc || ac; msg.push('“' + esc(f.county) + '” isn’t a Kenyan county, so we used <b>' + esc(county) + '</b> from your ' + (tc ? 'town' : 'area') + '.'); } else { err = true; msg.push('“' + esc(f.county) + '” isn’t a Kenyan county. Pick one from the list.'); } }
+        else if (tc || ac) { county = tc || ac; msg.push('County set to <b>' + esc(county) + '</b> from your ' + (tc ? 'town' : 'area') + '.'); }
+        if (county) f.county = county;
+        var want = f.county === 'Nairobi' ? (st.delivery === 'uber' ? 'uber' : 'nairobi') : (county || cc) ? 'kenya' : st.delivery;
+        if (want && DEL.some(function (d) { return d.id === want && d.enabled !== false; })) st.delivery = want;
+        if (st.delivery !== (before.split('|')[1] || null) && (want === 'nairobi' || want === 'kenya')) msg.push('Delivery: <b>' + esc((DEL.filter(function (d) { return d.id === st.delivery; })[0] || {}).name || '') + '</b>.');
+        st.fix = msg.join(' '); st.fixErr = err;
+        try { localStorage.setItem('pbk_delivery', st.delivery || ''); } catch (e) { }
+        if (f.county + '|' + st.delivery === before && !msg.length) { var fb = document.getElementById('coFix'); if (fb) fb.innerHTML = ''; return; }
+        /* redraw, keeping the cursor where the person was going next */
+        var next = nextEl && nextEl.getAttribute ? nextEl.getAttribute('data-f') : null;
+        /* tapping a button or option: let that tap finish first, then redraw */
+        if (nextEl && !next) { setTimeout(function () { draw(rows, cp); }, 250); return; }
+        draw(rows, cp);
+        if (next) setTimeout(function () { var n2 = document.querySelector('[data-f="' + next + '"]'); if (n2) n2.focus({ preventScroll: true }); }, 0);
+      }
       var ms = document.getElementById('coMpSame'); if (ms) ms.onchange = function () { keep(); st.mpOther = !ms.checked; draw(rows, cp); };
       var cg = document.getElementById('coCpnGo'), ci = document.getElementById('coCpn');
       if (cg) { cg.onclick = function () { var code = (ci.value || '').trim(); if (!code) return; cg.disabled = true; var cm2 = document.getElementById('coCpnMsg'); cm2.textContent = 'Checking…'; cm2.className = 'pkco__cpnmsg';
@@ -335,7 +370,7 @@
           delivery: del ? del.id : null, name: f.name, phone: f.phone, email: f.email, coupon: st.coupon ? st.coupon.code : undefined,
           address: anyPrint && f.line1 ? { line1: f.line1, area: f.area, town: f.town, county: f.county, country: countryName(), notes: f.notes } : null,
           gift: st.gift ? { is: true, to: f.gto, phone: f.gphone, note: f.gnote } : null };
-        api('pbk-wa', body).then(function (r) { open(r.ref); if (r.receipts && r.receipts.length) sendViews(r.receipts); }, function (e) {
+        api('pbk-wa', body).then(function (r) { open(r.ref); if (r.ref) markOrdered(r.ref, rows); if (r.receipts && r.receipts.length) sendViews(r.receipts); }, function (e) {
           if (e && /name|phone/.test(e.code || '')) { if (w) w.close(); status(esc(e.message), 'is-err'); return; }
           open(null);
         });
@@ -394,7 +429,7 @@
       btn.disabled = true; status('<span class="pkco__spin"></span> Placing your order…');
       api('pbk-manual', body).then(function (r) {
         var pend = { ref: r.ref, intent: r.intent, at: Date.now(), total: r.amount, items: rows.map(function (x) { return { projectId: x.item.pb.p, name: x.item.name, product: x.item.pb.product, pages: x.item.pb.pages, thumb: x.item.thumb }; }) };
-        manualSave(pend);
+        manualSave(pend); markOrdered(r.ref, rows);
         return savePurchases(r.ref, r.receipts || [], rows, true).then(function () {
           rows.forEach(function (x) { CIEL.cart.remove(x.item.id); });
           history.replaceState({}, '', BASE + '/checkout?sent=' + encodeURIComponent(r.ref) + '&manual=1');
@@ -403,18 +438,40 @@
       }).catch(function (e) { status(esc(e.message), 'is-err'); btn.disabled = false; });
     }
     var COUNTRIES = ['Kenya', 'Uganda', 'Tanzania', 'Rwanda', 'Burundi', 'South Sudan', 'Ethiopia', 'Somalia', 'DR Congo'];
+    /* Kenya's 47 counties, and towns people often type instead (town → county) */
+    var COUNTIES = ['Baringo', 'Bomet', 'Bungoma', 'Busia', 'Elgeyo-Marakwet', 'Embu', 'Garissa', 'Homa Bay', 'Isiolo', 'Kajiado', 'Kakamega', 'Kericho', 'Kiambu', 'Kilifi', 'Kirinyaga', 'Kisii', 'Kisumu', 'Kitui', 'Kwale', 'Laikipia', 'Lamu', 'Machakos', 'Makueni', 'Mandera', 'Marsabit', 'Meru', 'Migori', 'Mombasa', 'Murang’a', 'Nairobi', 'Nakuru', 'Nandi', 'Narok', 'Nyamira', 'Nyandarua', 'Nyeri', 'Samburu', 'Siaya', 'Taita-Taveta', 'Tana River', 'Tharaka-Nithi', 'Trans Nzoia', 'Turkana', 'Uasin Gishu', 'Vihiga', 'Wajir', 'West Pokot'];
+    var TOWNS = { nairobi: 'Nairobi', westlands: 'Nairobi', karen: 'Nairobi', kilimani: 'Nairobi', kileleshwa: 'Nairobi', lavington: 'Nairobi', parklands: 'Nairobi', embakasi: 'Nairobi', kasarani: 'Nairobi', langata: 'Nairobi', 'south b': 'Nairobi', 'south c': 'Nairobi', donholm: 'Nairobi', umoja: 'Nairobi', eastleigh: 'Nairobi', runda: 'Nairobi', gigiri: 'Nairobi', kahawa: 'Nairobi', roysambu: 'Nairobi', 'thika road': 'Nairobi', cbd: 'Nairobi',
+      mombasa: 'Mombasa', nyali: 'Mombasa', bamburi: 'Mombasa', likoni: 'Mombasa', kisumu: 'Kisumu', nakuru: 'Nakuru', naivasha: 'Nakuru', gilgil: 'Nakuru', molo: 'Nakuru', eldoret: 'Uasin Gishu', thika: 'Kiambu', ruiru: 'Kiambu', juja: 'Kiambu', kikuyu: 'Kiambu', limuru: 'Kiambu', kiambu: 'Kiambu', ruaka: 'Kiambu', kiambaa: 'Kiambu', githunguri: 'Kiambu', banana: 'Kiambu', 'banana hill': 'Kiambu',
+      kitengela: 'Kajiado', ongata: 'Kajiado', rongai: 'Kajiado', 'ongata rongai': 'Kajiado', ngong: 'Kajiado', kiserian: 'Kajiado', kajiado: 'Kajiado', isinya: 'Kajiado', syokimau: 'Machakos', mlolongo: 'Machakos', 'athi river': 'Machakos', machakos: 'Machakos', kangundo: 'Machakos', tala: 'Machakos', malindi: 'Kilifi', watamu: 'Kilifi', kilifi: 'Kilifi', mtwapa: 'Kilifi', diani: 'Kwale', ukunda: 'Kwale', kwale: 'Kwale',
+      nyeri: 'Nyeri', karatina: 'Nyeri', meru: 'Meru', maua: 'Meru', embu: 'Embu', kakamega: 'Kakamega', kisii: 'Kisii', kericho: 'Kericho', nanyuki: 'Laikipia', nyahururu: 'Laikipia', kitale: 'Trans Nzoia', bungoma: 'Bungoma', webuye: 'Bungoma', busia: 'Busia', narok: 'Narok', voi: 'Taita-Taveta', garissa: 'Garissa', lamu: 'Lamu', isiolo: 'Isiolo', kitui: 'Kitui', murang: 'Murang’a', 'muranga': 'Murang’a', kerugoya: 'Kirinyaga', kutus: 'Kirinyaga', 'homa bay': 'Homa Bay', migori: 'Migori', siaya: 'Siaya', bondo: 'Siaya', kapsabet: 'Nandi', iten: 'Elgeyo-Marakwet', kabarnet: 'Baringo', bomet: 'Bomet', nyamira: 'Nyamira', vihiga: 'Vihiga', mbale: 'Vihiga', makueni: 'Makueni', wote: 'Makueni', 'ol kalou': 'Nyandarua', chuka: 'Tharaka-Nithi', lodwar: 'Turkana', maralal: 'Samburu', kapenguria: 'West Pokot', marsabit: 'Marsabit', wajir: 'Wajir', mandera: 'Mandera', hola: 'Tana River' };
+    function norm(x) { return String(x || '').toLowerCase().replace(/[’'`]/g, '').replace(/\bcounty\b/g, '').replace(/[^a-z ]+/g, ' ').replace(/\s+/g, ' ').trim(); }
+    function lev(a, b) { var m = a.length, n = b.length, d = [], i, j; for (i = 0; i <= m; i++) d[i] = [i]; for (j = 0; j <= n; j++) d[0][j] = j; for (i = 1; i <= m; i++) for (j = 1; j <= n; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); return d[m][n]; }
+    /** the county someone meant: exact, a town in it, or the closest spelling; null if nothing is close */
+    function countyOf(x) {
+      var v = norm(x); if (!v) return null;
+      var hit = COUNTIES.filter(function (c) { return norm(c) === v; })[0]; if (hit) return hit;
+      if (TOWNS[v]) return TOWNS[v];
+      var best = null, bd = 9; COUNTIES.forEach(function (c) { var dd = lev(v, norm(c)); if (dd < bd) { bd = dd; best = c; } });
+      if (best && bd <= Math.max(1, Math.round(norm(best).length / 3))) return best;
+      var tb = null, td = 9; Object.keys(TOWNS).forEach(function (t) { var dd = lev(v, t); if (dd < td) { td = dd; tb = t; } });
+      return tb && td <= Math.max(1, Math.round(tb.length / 4)) ? TOWNS[tb] : null;
+    }
+    function townCounty(x) { var v = norm(x); if (!v) return null; if (TOWNS[v]) return TOWNS[v]; var c = COUNTIES.filter(function (k) { return norm(k) === v; })[0]; if (c) return c; var tb = null, td = 9; Object.keys(TOWNS).forEach(function (t) { var dd = lev(v, t); if (dd < td) { td = dd; tb = t; } }); return tb && td <= Math.max(1, Math.round(tb.length / 4)) ? TOWNS[tb] : null; }
     function countryName() { return st.f.country === 'Another country' ? (st.f.ctryo || '') : (st.f.country || 'Kenya'); }
     /** ke = Kenya, ea = elsewhere in East Africa, world = outside (delivery and payment arranged with the customer) */
-    function region() { var c = countryName().trim().toLowerCase(); if (!c || c === 'kenya') return 'ke'; return COUNTRIES.some(function (x) { return x.toLowerCase() === c; }) || /^(uganda|tanzania|rwanda|burundi|south sudan|ethiopia|somalia|d\.?r\.? ?congo|congo)/.test(c) ? 'ea' : 'world'; }
+    function region() { if (!st.f.country && st.abroad) return 'pick'; var c = countryName().trim().toLowerCase(); if (!c || c === 'kenya') return 'ke'; return COUNTRIES.some(function (x) { return x.toLowerCase() === c; }) || /^(uganda|tanzania|rwanda|burundi|south sudan|ethiopia|somalia|d\.?r\.? ?congo|congo)/.test(c) ? 'ea' : 'world'; }
     function fld(k, label, type, ac, ph, req) { return '<label class="pkco__f"><span>' + label + (req ? ' <i class="pkco__req">*</i>' : '') + '</span><input data-f="' + k + '" type="' + type + '" autocomplete="' + ac + '" value="' + esc(st.f[k] || '') + '"' + (ph ? ' placeholder="' + ph + '"' : '') + (req ? ' required' : '') + '></label>'; }
     /** everything but the delivery notes (and the gift message) must be filled in */
     function check(rows, del, intl) {
       keep(); var f = st.f, anyPrint = rows.some(function (r) { return r.item.pb.product === 'print'; }), miss = [];
+      if (anyPrint && region() === 'pick') { status('Choose your country for delivery.', 'is-err'); var cs3 = document.getElementById('coCtry'); if (cs3) { cs3.scrollIntoView({ block: 'center', behavior: 'smooth' }); cs3.focus({ preventScroll: true }); } return false; }
       if (anyPrint && !del && !intl) { status('Choose how you’d like your book delivered.', 'is-err'); var dl = document.querySelector('.pkco__del'); if (dl) dl.scrollIntoView({ block: 'center', behavior: 'smooth' }); return false; }
       var need = ['name', 'phone', 'email'].concat(anyPrint && (intl || (del && del.needsAddress)) ? ['line1', 'area', 'town', 'county'] : []).concat(anyPrint && f.country === 'Another country' ? ['ctryo'] : []).concat(st.gift ? ['gto'] : []).concat(!intl && st.method === 'stk' && st.mpOther ? ['mpesa'] : []);
       document.querySelectorAll('[data-f]').forEach(function (i) { i.classList.remove('is-bad'); });
       need.forEach(function (k) { if (!f[k] || String(f[k]).trim().length < 2) { miss.push(k); var i = document.querySelector('[data-f="' + k + '"]'); if (i) i.classList.add('is-bad'); } });
       if (miss.length) { status('Please fill in all the details marked *.', 'is-err'); var b = document.querySelector('[data-f].is-bad'); if (b) { b.scrollIntoView({ block: 'center', behavior: 'smooth' }); b.focus({ preventScroll: true }); } return false; }
+      if (anyPrint && region() === 'ke' && f.county && !countyOf(f.county)) { var cb = document.querySelector('[data-f="county"]'); if (cb) { cb.classList.add('is-bad'); cb.scrollIntoView({ block: 'center', behavior: 'smooth' }); } status('“' + esc(f.county) + '” isn’t a Kenyan county. Pick one from the list.', 'is-err'); return false; }
+      if (anyPrint && region() === 'ke' && f.county) f.county = countyOf(f.county);
       return true;
     }
     function keep() { document.querySelectorAll('[data-f]').forEach(function (i) { st.f[i.getAttribute('data-f')] = i.value.trim(); }); try { var s = Object.assign({}, st.f); delete s.gto; delete s.gphone; delete s.gnote; localStorage.setItem('pbk_details', JSON.stringify(s)); } catch (e) { } }
@@ -438,6 +495,7 @@
       }).catch(function (e) { status(esc(e.message), 'is-err'); btn.disabled = false; });
     }
     function paid(s, rows) {
+      markOrdered(s.ref, rows);
       savePurchases(s.ref, s.receipts, rows).then(function () {
         rows.forEach(function (r) { CIEL.cart.remove(r.item.id); });
         history.replaceState({}, '', BASE + '/checkout?sent=' + encodeURIComponent(s.ref));
@@ -468,6 +526,19 @@
       if (s.status === 'rejected') manualDone(m.ref);
       return s;
     });
+  }
+  /* once a book is ordered, "Back to my book" becomes "Track my order" (assets/js/site.js) and the
+     landing page stops offering to continue it */
+  function markOrdered(ref, rows) {
+    try {
+      var ids = rows.map(function (r) { return r.item ? r.item.pb.p : r.projectId; }), first = rows[0] || {}, it = first.item || first;
+      var done = JSON.parse(localStorage.getItem('pbk_ordered') || '{}'); ids.forEach(function (id) { if (id) done[id] = ref; });
+      localStorage.setItem('pbk_ordered', JSON.stringify(done));
+      var old = JSON.parse(localStorage.getItem('pbk_last') || 'null');
+      localStorage.setItem('pbk_last', JSON.stringify({ kind: 'order', ref: ref, name: it.name || 'Photo book', img: old && ids.indexOf(old.id) >= 0 ? old.img : undefined, at: Date.now() }));
+      localStorage.removeItem('pbk_last_x');
+      window.dispatchEvent(new Event('pbk-last'));
+    } catch (e) { }
   }
   /* after payment: thank-you, send printed books, download PDFs */
   function afterPay(main, ref) {
@@ -534,5 +605,5 @@
     });
   }
 
-  window.PBKShop = { manualList: manualList, manualCheck: manualCheck, spineOf: spineOf, renderSpine: renderSpine, wrapPage: wrapPage, bleed: bleed, isTest: isTest, backDoc: backDoc, add: add, unit: unit, checkout: checkout, purchases: purchases, pdf: pdf, sendPages: sendPages, resumeBanner: resumeBanner, caps: caps, docs: docs, renderPage: renderPage, photoSource: photoSource };
+  window.PBKShop = { markOrdered: markOrdered, manualList: manualList, manualCheck: manualCheck, spineOf: spineOf, renderSpine: renderSpine, wrapPage: wrapPage, bleed: bleed, isTest: isTest, backDoc: backDoc, add: add, unit: unit, checkout: checkout, purchases: purchases, pdf: pdf, sendPages: sendPages, resumeBanner: resumeBanner, caps: caps, docs: docs, renderPage: renderPage, photoSource: photoSource };
 })();

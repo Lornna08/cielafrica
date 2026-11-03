@@ -107,7 +107,8 @@
   var lastT;
   function remember() {
     if (!S || !S.p) return;
-    var p = S.p, o = { id: p.id, name: p.name || 'My photo book', at: Date.now() };
+    var p = S.p, o = { kind: 'book', id: p.id, name: p.name || 'My photo book', at: Date.now() };
+    try { if (JSON.parse(localStorage.getItem('pbk_ordered') || '{}')[p.id]) return; } catch (e) { }
     try { var old = JSON.parse(localStorage.getItem('pbk_last') || 'null'); if (old && old.id === p.id && old.img) o.img = old.img; localStorage.setItem('pbk_last', JSON.stringify(o)); } catch (e) { }
     clearTimeout(lastT);
     lastT = setTimeout(function () {
@@ -138,7 +139,9 @@
   function isSpineV() { return isCoverIdx() && S.cview === 'spine'; }
   function spU() { return R.spineUnits(S.p.pages.length); }
   /** the hinge (the groove where the cover bends) each side of the spine, and everything between back and front */
-  function hgU() { return R.hingeUnits(); }
+  /* the hinges are a printing detail (the case-cover file adds them from the cover's edges): the editor shows
+     back · spine · front, so the whole space between the spine's folds is the spine */
+  function hgU() { return 0; }
   function midU() { return spU() + 2 * hgU(); }
   /** where the side being edited starts inside the whole-cover view (document units) */
   function ox() { return isWrap() ? (S.cur < 0 ? W + midU() : 0) : 0; }
@@ -190,6 +193,7 @@
     }).then(function () {
       build(main);
       ST.persist();
+      remember();
     }).catch(function (e) {
       if (e && e.message === 'sent') return;
       main.innerHTML = '<div class="pe-err wrap"><h2>We couldn’t open that book</h2><p>' + (e && e.message === 'missing' ? 'It isn’t saved in this browser. Books are stored on the device where they were made.' : esc(e && e.message || 'Something went wrong.')) + '</p><a class="btn btn--p" data-go href="' + BASE + '">Back to Photo Books</a></div>';
@@ -228,7 +232,6 @@
       if (v === 'front' || v === 'spine') S.cur = -1; else if (v === 'back') S.cur = S.p.pages.length;
       if (v === 'spine') { fit(); ctxBar(); drawStripSel(); openPanel('spine'); return; }
       fit(); ctxBar(); drawStripSel(); if (S.panel && S.panel !== 'photos' && S.panel !== 'stickers') openPanel(S.panel, false);
-      if (v === 'wrap') hint('Tap the front, the back or the spine to change it.');
     });
     R.loadFonts().then(function () { renderAll(); });
     renderAll();
@@ -238,7 +241,10 @@
     if (S.go === 'cover') setTimeout(function () { hint('Tap anything on the cover to change it: words, colours, artwork. CIEL AFRICA stays.'); }, 700);
     else if (!S.order.length) setTimeout(function () { hint('Add as many photos as you like: we’ll arrange them for you.'); }, 900);
   }
-  function hint(t) { if (window.CielNote) return CielNote(t, { kind: 'tip' }); var h = el$.hint; if (!h) return; h.textContent = t; h.classList.add('is-on'); clearTimeout(h._t); h._t = setTimeout(function () { h.classList.remove('is-on'); }, 6000); }
+  /* tips show once per device: after that people know how it works */
+  function seenTip(t) { try { var k = 'pbk_tips', l = JSON.parse(localStorage.getItem(k) || '[]'); if (l.indexOf(t) >= 0) return true; l.push(t); localStorage.setItem(k, JSON.stringify(l.slice(-60))); } catch (e) { } return false; }
+  function tip(t) { if (!seenTip(t)) toast(t, 'tip'); }
+  function hint(t) { if (seenTip(t)) return; if (window.CielNote) return CielNote(t, { kind: 'tip' }); var h = el$.hint; if (!h) return; h.textContent = t; h.classList.add('is-on'); clearTimeout(h._t); h._t = setTimeout(function () { h.classList.remove('is-on'); }, 6000); }
 
   function bindTop() {
     $('#peName').addEventListener('input', function () { S.p.name = this.value.slice(0, 60); save(); });
@@ -268,8 +274,8 @@
     var mk = cov && innerWidth >= 900 ? 210 : 0, mob = cov && wrapV && innerWidth < 900 ? 150 : 0;
     var aw = st.clientWidth - pad * 2 - mk, ah = st.clientHeight - pad * 2 - (innerWidth < 700 ? 0 : 10) - (cov ? 44 : 0) - mob;
     var w = Math.max(160, Math.min(aw, ah * TW / H)), h = w * H / TW;
-    if (isSpineV()) { w = Math.max(160, st.clientWidth - pad * 2 - mk); h = w * spU() / H; var mn = innerWidth < 700 ? 56 : 48; if (h < mn) { h = mn; w = h * H / spU(); if (!S.spHint) { S.spHint = 1; setTimeout(function () { hint('Slide sideways to see the whole spine, top to bottom.'); }, 300); } } }
-    S.k = w / (isSpineV() ? H : TW);
+    if (isSpineV()) { var cs0 = getComputedStyle(st), vis = st.clientHeight - (parseFloat(cs0.paddingTop) || 0) - (parseFloat(cs0.paddingBottom) || 0) - pad - 44; h = Math.max(200, Math.min(ah, vis)); w = h * spU() / H; }
+    S.k = isSpineV() ? h / H : w / TW;
     el$.wrap.style.width = w + 'px'; el$.wrap.style.height = h + 'px';
     el$.wrap.classList.toggle('is-wrap', wrapV); el$.wrap.style.marginRight = mk ? mk + 'px' : ''; el$.wrap.style.marginBottom = mob ? mob + 'px' : ''; st.classList.toggle('is-wrapv', wrapV); st.classList.toggle('is-covv', cov); el$.wrap.style.marginTop = cov ? '34px' : '';
     var tabs = $('#peCvTabs'); tabs.hidden = !cov;
@@ -293,8 +299,8 @@
         Promise.all([R.loadFonts(), R.loadSpine(so2)]).then(function () {
           if (!isSpineV()) return;
           g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, el$.canvas.width, el$.canvas.height);
-          /* turned a quarter to the left: the top of the book is on the left, the words read left to right */
-          g.setTransform(0, -k2, k2, 0, 0, su2 * k2); R.drawSpine(g, so2, su2);
+          /* upright, as it stands on a shelf: the whole spine, top to bottom */
+          g.setTransform(k2, 0, 0, k2, 0, 0); R.drawSpine(g, so2, su2);
           g.setTransform(1, 0, 0, 1, 0, 0); el$.sel.hidden = true;
         });
       } else if (isWrap()) {
@@ -306,14 +312,13 @@
           var hg = hgU(), cv = el$.canvas, ph = cv.height;
           R.draw(g, back, { scale: kk, photo: photoUrl, empty: S.cur < 0 ? 'soft' : 'editor' });
           /* hinges: the cover's edge carries on into the groove, as it does in print */
-          g.setTransform(1, 0, 0, 1, 0, 0); var bx = Math.round(W * kk); g.drawImage(cv, bx - 2, 0, 1, ph, bx, 0, Math.ceil(hg * kk) + 1, ph);
+          g.setTransform(1, 0, 0, 1, 0, 0); var bx = Math.round(W * kk); if (hg) g.drawImage(cv, bx - 2, 0, 1, ph, bx, 0, Math.ceil(hg * kk) + 1, ph);
           g.setTransform(kk, 0, 0, kk, (W + hg) * kk, 0); R.drawSpine(g, so, sp);
           g.setTransform(1, 0, 0, 1, (W + midU()) * kk, 0); R.draw(g, front, { scale: kk, photo: photoUrl, empty: S.cur < 0 ? 'editor' : 'soft' });
-          g.setTransform(1, 0, 0, 1, 0, 0); var fx = Math.round((W + midU()) * kk); g.drawImage(cv, fx + 1, 0, 1, ph, Math.floor((W + hg + sp) * kk), 0, fx - Math.floor((W + hg + sp) * kk) + 1, ph);
+          g.setTransform(1, 0, 0, 1, 0, 0); var fx = Math.round((W + midU()) * kk); if (hg) g.drawImage(cv, fx + 1, 0, 1, ph, Math.floor((W + hg + sp) * kk), 0, fx - Math.floor((W + hg + sp) * kk) + 1, ph);
           /* folds: the spine edges (dashed) and the hinge edges (dotted) */
           g.setTransform(kk, 0, 0, kk, 0, 0); g.save(); g.lineWidth = 2 / S.k; g.strokeStyle = 'rgba(27,23,20,.35)';
           g.setLineDash([10, 8]); [W + hg, W + hg + sp].forEach(function (x) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); });
-          g.strokeStyle = 'rgba(27,23,20,.18)'; g.setLineDash([3, 6]); [W, W + midU()].forEach(function (x) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); });
           g.restore();
           g.setTransform(1, 0, 0, 1, 0, 0);
           placeSel();
@@ -389,7 +394,7 @@
     if (isSpineV()) { select(null); openPanel('spine'); return false; }
     if (!isWrap()) return true;
     var r = el$.canvas.getBoundingClientRect(), sd = sideAt((clientX - r.left) / S.k);
-    if (sd === 'spine') { select(null); S.cview = 'spine'; S.cur = -1; fit(); ctxBar(); drawStripSel(); openPanel('spine'); hint('This is your spine, shown big. Change its words, font, size and colour here.'); return false; }
+    if (sd === 'spine') { select(null); openPanel('spine'); return false; }
     if (sd !== S.cur) { S.cur = sd; S.sel = null; S.crop = false; S.target = null; draw(); drawStripSel(); ctxBar(); if (S.panel && S.panel !== 'photos' && S.panel !== 'stickers') openPanel(S.panel, false); }
     return true;
   }
@@ -540,9 +545,9 @@
       var b = ev.target.closest('[data-a]'); if (!b) return; var a = b.getAttribute('data-a'), e = selEl(); if (!e) return;
       if (a === 'crop') { S.crop = true; placeSel(); ctxBar(); hint('Drag the photo to move it inside the frame. Use the slider to zoom.'); }
       else if (a === 'edit-photo') editPhoto(e);
-      else if (a === 'lock') { e.lock = true; S.crop = false; commit(); placeSel(); ctxBar(); toast('Locked: it won’t move until you unlock it.'); }
+      else if (a === 'lock') { e.lock = true; S.crop = false; commit(); placeSel(); ctxBar(); tip('Locked: it won’t move until you unlock it.'); }
       else if (a === 'phundo') { var st2 = S.phist[e.id], prev = st2 && st2.pop(); if (prev) { Object.assign(e, prev); ['fx', 'mask', 'rect'].forEach(function (k) { if (prev[k] == null) delete e[k]; }); R.load(doc(), { photo: photoUrl }).then(function () { commit(); draw(); drawThumb(S.cur); placeSel(); ctxBar(); }); } }
-      else if (a === 'phreset') { pushPh(e); var m0 = S.photos[e.photo]; delete e.fx; delete e.mask; delete e.rect; e.crop = { z: 1, cx: 0.5, cy: 0.5 }; if (e.t === 'img' && m0 && m0.w) { var cy0 = e.y + e.h / 2; e.h = e.w * m0.h / m0.w; e.y = cy0 - e.h / 2; } commit(); draw(); drawThumb(S.cur); placeSel(); ctxBar(); toast('Back to the original photo. Tap Undo edit to go back.'); }
+      else if (a === 'phreset') { pushPh(e); var m0 = S.photos[e.photo]; delete e.fx; delete e.mask; delete e.rect; e.crop = { z: 1, cx: 0.5, cy: 0.5 }; if (e.t === 'img' && m0 && m0.w) { var cy0 = e.y + e.h / 2; e.h = e.w * m0.h / m0.w; e.y = cy0 - e.h / 2; } commit(); draw(); drawThumb(S.cur); placeSel(); ctxBar(); tip('Back to the original photo. Tap Undo edit to go back.'); }
       else if (a === 'done') { S.crop = false; placeSel(); ctxBar(); }
       else if (a === 'replace') askPhoto(e.id, true);
       else if (a === 'swap') { S.replaceArt = e.id; openPanel('stickers'); hint('Pick a sticker, emoji or artwork to put in its place.'); }
@@ -677,7 +682,7 @@
     var e = S.cur < 0 || isBack() ? { x: 330, y: ay(500), w: 640, h: ay(800), border: 14, borderColor: '#ffffff' } : n ? { x: 300, y: ay(860), w: 600, h: 600 } : { x: 90, y: 90, w: 1020, h: H - 270 };
     e = Object.assign({ id: uid('ph'), t: 'photo', photo: null, crop: { z: 1, cx: 0.5, cy: 0.5 } }, e);
     d.els.push(e); commit(); select(e.id); draw(); drawThumb(S.cur);
-    toast('Photo frame added. Tap it to choose a photo.');
+    tip('Photo frame added. Tap it to choose a photo.');
   }
   function removeSel() {
     var d = doc(), e = selEl(); if (!e) return;
@@ -735,7 +740,7 @@
         if (prog) prog.textContent = '';
         if (added.length && target) { placePhoto(added[0], target); added = added.slice(1); }
         if (added.length > 1) arrangeAsk(added.length);
-        else if (added.length) toast('Photo added. Tap it to place it, or drag it onto a frame.');
+        else if (added.length) tip('Photo added. Tap it to place it, or drag it onto a frame.');
         if (bad.length) toast(bad.length + ' file' + (bad.length === 1 ? '' : 's') + ' skipped: ' + bad[0]);
         if (S.panel === 'photos') openPanel('photos', true);
         return;
@@ -1053,7 +1058,7 @@
     else if (a === 'frame') addFrame();
     else if (a === 'delbook') deleteBook();
     else if (a === 'page1') go(0);
-    else if (a === 'resetback') { delete S.p.back; backDoc(); select(null); commit(); draw(); drawThumb(S.p.pages.length); toast('Back cover reset.'); }
+    else if (a === 'resetback') { delete S.p.back; backDoc(); select(null); commit(); draw(); drawThumb(S.p.pages.length); }
     else if (a === 'gocover') go(-1);
     else if (a === 'addpages') addPages();
     else if (a === 'delpage') delPage();
@@ -1063,7 +1068,7 @@
     else if (a === 'spinepic') { S.p.spine = S.p.spine || {}; S.p.spine.noPic = !S.p.spine.noPic; commit(); if (!isCoverIdx()) go(-1); draw(); mockSoon(); openPanel('spine', true); }
     else if (a === 'shadow') { var e = selEl(); if (e) { e.shadow = e.shadow ? 0 : 1; commit(); draw(); drawThumb(S.cur); } }
     else if (a === 'covshadow') { ensureEditable(); var on = !(S.p.cover.els.filter(function (x) { return x.role === 'title' || x.role === 'year'; })[0] || {}).shadow; S.p.cover.els.forEach(function (x) { if (x.t === 'text' && (x.role === 'title' || x.role === 'sub' || x.role === 'year')) x.shadow = on ? 1 : 0; }); if (S.cur !== -1) go(-1); commit(); draw(); drawThumb(-1); mockSoon(); }
-    else if (a === 'bgall') { var c = doc().bg; S.p.pages.forEach(function (p) { p.bg = c; }); commit(); renderAll(); toast('Every page now uses this colour.'); }
+    else if (a === 'bgall') { var c = doc().bg; S.p.pages.forEach(function (p) { p.bg = c; }); commit(); renderAll(); }
     else if (a === 'change') PBK.pick(C.TPL[S.p.tpl] ? C.TPL[S.p.tpl].cat : 'all', changeCover);
     else if (a === 'edittitle') { ensureEditable(); go(-1); var te = S.p.cover.els.filter(function (x) { return x.role === 'title'; })[0]; if (te) select(te.id); openPanel('text'); }
     else if (a === 'orig') { var t = C.TPL[S.p.tpl]; var nd = C.rasterDoc(t, !!t.layered); nd.els = nd.els.concat(S.p.cover.els.filter(function (x) { return x.role !== 'title' && x.role !== 'sub' && x.role !== 'year' && x.id !== 'art'; })); S.p.cover = nd; select(null); commit(); renderAll(); }
@@ -1133,7 +1138,7 @@
         S.photos[r.meta.id] = r.meta; S.stickers.push(r.meta.id);
         urls[r.meta.id] = URL.createObjectURL(r.blobs.prev); thumbs[r.meta.id] = URL.createObjectURL(r.blobs.thumb);
         addImg({ photo: r.meta.id }, r.meta.w / r.meta.h);
-        toast('Sticker added. Drag the corners to resize it.');
+        tip('Sticker added. Drag the corners to resize it.');
       });
     }).catch(function (e) { toast(e.message || 'That file could not be used.'); });
   }
@@ -1201,7 +1206,7 @@
   }
   function delPage() {
     if (S.cur < 0) return;
-    if (isBack()) { toast('The back cover stays. You can change everything on it.'); return; }
+    if (isBack()) { tip('The back cover stays. You can change everything on it.'); return; }
     if (S.p.pages.length - 1 < BOOK.pages.min) { toast('A book needs at least ' + BOOK.pages.min + ' pages. Add pages first, or leave this one blank.'); return; }
     S.p.pages.splice(S.cur, 1);
     if (S.p.pages.length % 2) S.p.pages.push(pageDoc('one'));

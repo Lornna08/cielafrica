@@ -268,8 +268,18 @@
   /* "continue your book" when a draft is saved on this device */
   function continueCard() {
     if (!window.PBStore) return;
-    PBStore.projects().then(function (l) {
-      l = l.filter(function (p) { return p.app === 'pbk'; }); if (!l.length) return;
+    var last = null; try { last = JSON.parse(localStorage.getItem('pbk_last') || 'null'); } catch (e) { }
+    Promise.all([PBStore.projects(), window.PBKShop ? PBKShop.purchases() : []]).then(function (r) {
+      var od = ordered(), bought = {}; (r[1] || []).forEach(function (pu) { bought[pu.projectId] = 1; });
+      var all = r[0].filter(function (p) { return p.app === 'pbk'; }), l = all.filter(function (p) { return !od[p.id] && !bought[p.id]; });
+      /* the latest thing on this device is an order: offer to track it instead */
+      if (last && last.kind === 'order' && last.ref && (!l.length || (last.at || 0) >= (l[0].updatedAt || 0))) {
+        var tb = document.createElement('div'); tb.className = 'pk-cont wrap';
+        tb.innerHTML = '<div class="pk-cont__in"><span class="pk-cont__dot"></span><div><b>Your order ' + esc(last.ref) + '</b><span>' + esc(last.name || 'Photo book') + (all.length ? ' · <a data-go href="' + BASE + '/my-books">My books</a>' : '') + '</span></div><a data-go class="btn btn--dark btn--sm" href="' + BASE + '/track?ref=' + encodeURIComponent(last.ref) + '">Track my order</a></div>';
+        var st2 = main.querySelector('.pk-cats'); if (st2) st2.insertAdjacentElement('afterend', tb);
+        return;
+      }
+      if (!l.length) return;
       var p = l[0], box = document.createElement('div'); box.className = 'pk-cont wrap';
       var mins = Math.round((Date.now() - (p.updatedAt || Date.now())) / 60000);
       var ago = mins < 1 ? 'just now' : mins < 60 ? mins + ' min ago' : mins < 1440 ? Math.round(mins / 60) + ' h ago' : new Date(p.updatedAt).toLocaleDateString();
@@ -447,6 +457,10 @@
     }
     f.addEventListener('submit', function (e) { e.preventDefault(); go(false); });
     if (ref && tok) go(true);
+    else if (ref) { /* from "Track my order": the phone saved at checkout on this device */
+      var d = {}; try { d = JSON.parse(localStorage.getItem('pbk_details') || '{}'); } catch (e) { }
+      var c = d.phone || d.email; if (c) { document.getElementById('tkC').value = c; go(false); }
+    }
   }
 
   /* ---------------- template chooser (modal) ---------------- */
@@ -556,5 +570,23 @@
     });
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', route); else setTimeout(route, 0);
+  /* the footer waits until the page itself is drawn, so a refresh never opens on the footer */
+  function first() { try { route(); } finally { document.documentElement.classList.add('pbk-on'); } syncLast(); }
+  function ordered() { try { return JSON.parse(localStorage.getItem('pbk_ordered') || '{}'); } catch (e) { return {}; } }
+  /* books made before "Back to my book" existed: point it at the latest book (or order) on this device */
+  function syncLast() {
+    if (!window.PBStore) return;
+    var cur = null; try { cur = JSON.parse(localStorage.getItem('pbk_last') || 'null'); } catch (e) { }
+    if (cur) return;
+    Promise.all([PBStore.projects(), window.PBKShop ? PBKShop.purchases() : []]).then(function (r) {
+      var od = ordered(), bought = {}; (r[1] || []).forEach(function (pu) { bought[pu.projectId] = pu; });
+      var book = (r[0] || []).filter(function (p) { return p.app === 'pbk' && !od[p.id] && !bought[p.id]; })[0];
+      var pu = (r[1] || []).slice().sort(function (a, b) { return (b.at || 0) - (a.at || 0); })[0];
+      var o = pu && (!book || (pu.at || 0) > (book.updatedAt || 0)) ? { kind: 'order', ref: pu.ref, name: pu.name || 'Photo book', at: pu.at || Date.now() } : book ? { kind: 'book', id: book.id, name: book.name || 'My photo book', at: book.updatedAt || Date.now() } : null;
+      if (!o) return;
+      try { localStorage.setItem('pbk_last', JSON.stringify(o)); } catch (e) { }
+      window.dispatchEvent(new Event('pbk-last'));
+    }).catch(function () { });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', first); else setTimeout(first, 0);
 })();
