@@ -201,6 +201,69 @@
       return up('book', 0, new Blob([JSON.stringify(info)], { type: 'application/octet-stream' })).then(next);
     });
   }
+  /* ---------- pages uploaded in the background while the book is being made ----------
+     Once a book has photos, finished pages are rendered and uploaded quietly (one at a time, when the
+     customer pauses) to a private draft area. At checkout, pages that haven't changed since are copied
+     into the order on the server instead of being sent again, so sending takes seconds. A page is known
+     by a fingerprint of its design; changing a page makes a new one. Deleting the book deletes its drafts.
+     Skipped on Data Saver / 2G connections. */
+  var BGV = 'p1', bgBusy = {}, bgHold = {};
+  function hashOf(doc) {
+    if (!(window.crypto && crypto.subtle && window.TextEncoder)) return Promise.resolve(null);
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(BGV + '|' + TRIM.w + 'x' + TRIM.h + '|' + JSON.stringify(R.coverCfg ? R.coverCfg() : 0) + '|' + JSON.stringify(doc)))
+      .then(function (b) { return Array.prototype.map.call(new Uint8Array(b).slice(0, 16), function (x) { return ('0' + x.toString(16)).slice(-2); }).join(''); }, function () { return null; });
+  }
+  function bgGet(pid) { try { return JSON.parse(localStorage.getItem('pbk_bg_' + pid) || 'null'); } catch (e) { return null; } }
+  function bgPut(pid, st) { try { if (st) localStorage.setItem('pbk_bg_' + pid, JSON.stringify(st)); else localStorage.removeItem('pbk_bg_' + pid); } catch (e) { } }
+  function bgOk() { var c = navigator.connection; if (c && (c.saveData || /2g/.test(c.effectiveType || ''))) return false; return navigator.onLine !== false; }
+  function bgUp(t, kind, h, blob) {
+    return fetch('/api/photobooks?route=pbk-draft-up&kind=' + kind + '&h=' + h, { method: 'POST', headers: { 'Content-Type': 'application/octet-stream', 'X-Requested-With': 'ciel', 'X-Draft': t }, body: blob })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok || !j.ok) { var e = new Error(j.error || 'Upload failed'); e.code = j.code; throw e; } }); });
+  }
+  /** opt.pause() → true while the customer is busy (stops after the current page) */
+  function bgSync(pid, opt) {
+    opt = opt || {};
+    if (!pid || bgBusy[pid] || bgHold[pid] || !bgOk()) return Promise.resolve();
+    bgBusy[pid] = true;
+    return caps().then(function (cp) {
+      if (!cp.uploads) return;
+      return ST.project(pid).then(function (p) {
+        if (!p || !(p.pages || []).some(function (d) { return (d.els || []).some(function (e) { return e.photo; }); })) return;
+        var st = bgGet(pid);
+        return (st && st.t ? Promise.resolve(st) : api('pbk-draft-new', {}).then(function (r) { st = { t: r.t, print: {}, view: {} }; bgPut(pid, st); return st; })).then(function () {
+          var list = docs(p), src = photoSource('orig'), srcV = photoSource('prev'), px = Math.round(TRIM.w / 25.4 * DPI), bpx = Math.round(BLEED / 25.4 * DPI), i = 0;
+          return Promise.all(list.map(hashOf)).then(function (hs) {
+            if (hs.some(function (h) { return !h; })) return;
+            var live = {}; hs.forEach(function (h) { live[h] = 1; });
+            var stale = Object.keys(st.print).concat(Object.keys(st.view)).filter(function (h) { return !live[h]; });
+            function stop() { return bgHold[pid] || (opt.pause && opt.pause()) || !bgOk(); }
+            function next() {
+              if (i >= list.length || stop()) {
+                src.done(); srcV.done();
+                /* pages that changed since: their old uploads are removed */
+                if (stale.length && i >= list.length) return api('pbk-draft-delete', { t: st.t, keep: hs }).then(function () { stale.forEach(function (h) { delete st.print[h]; delete st.view[h]; }); bgPut(pid, st); }, function () { });
+                return;
+              }
+              var k = i++, h = hs[k];
+              if (st.print[h] && st.view[h]) return next();
+              return (st.view[h] ? Promise.resolve() : renderPage(list[k], srcV, 700, 0).then(function (c) { return jpeg(c, 0.8); }).then(function (b) { return bgUp(st.t, 'view', h, b); }).then(function () { st.view[h] = 1; bgPut(pid, st); srcV.done(); }))
+                .then(function () { if (st.print[h] || stop()) return; return renderPage(list[k], src, px, bpx).then(function (c) { return jpegUnder(c, 4.3 * 1024 * 1024); }).then(function (b) { return bgUp(st.t, 'print', h, b); }).then(function () { st.print[h] = 1; bgPut(pid, st); src.done(); }); })
+                .then(function () { return new Promise(function (ok) { setTimeout(ok, 300); }); }).then(next);
+            }
+            return next();
+          });
+        });
+      });
+    }).catch(function (e) { if (e && e.code === 'draft') bgPut(pid, null); }).then(function () { bgBusy[pid] = false; });
+  }
+  /** the book was deleted: its background uploads go too */
+  function bgDelete(pid) {
+    var st = bgGet(pid); bgPut(pid, null);
+    if (st && st.t) return api('pbk-draft-delete', { t: st.t }).catch(function () { });
+    return Promise.resolve();
+  }
+  if (ST && ST.deleteProject && !ST.deleteProject._bg) { var delP = ST.deleteProject; ST.deleteProject = function (id) { bgDelete(id); return delP.apply(ST, arguments); }; ST.deleteProject._bg = true; }
+
   /* ---------- sending a paid printed book to Ciel Africa ---------- */
   /* fix = a correction Ciel Africa opened (pu.fix): pages go to a new version, the first one is kept */
   function sendPages(pu, onProgress, fix) {
@@ -213,7 +276,16 @@
       function up(kind, i, blob) { var h = { 'Content-Type': 'application/octet-stream', 'X-Requested-With': 'ciel', 'X-Receipt': pu.receipt }; if (fix) h['X-Edit'] = fix.t; return fetch('/api/photobooks?route=pbk-upload&kind=' + kind + '&i=' + i, { method: 'POST', headers: h, body: blob }).then(function (r) { return r.json().then(function (j) { if (!r.ok || !j.ok) { var e = new Error(j.error || 'Upload failed'); e.final = r.status === 403 || r.status === 409 || r.status === 410; throw e; } }); }); }
       function retry(fn) { var n = 0; function go() { return fn().catch(function (e) { if (e.final || ++n > 3) throw e; return new Promise(function (ok) { setTimeout(ok, 1500 * n); }).then(go); }); } return go(); }
       function save() { if (fix) { fix.sent = sent; pu.fix = fix; } else pu.sent = sent; return ST.savePurchase(pu); }
-      var so = spineOf(p);
+      var so = spineOf(p), bg = bgGet(pu.projectId), hs = [];
+      bgHold[pu.projectId] = true;
+      /* a page already uploaded in the background is copied on the server instead of sent again */
+      function copy(kind, i, h) {
+        if (!bg || !bg.t || !h || !bg[kind][h]) return Promise.resolve(false);
+        var hd = { 'X-Requested-With': 'ciel', 'X-Receipt': pu.receipt, 'X-Draft': bg.t }; if (fix) hd['X-Edit'] = fix.t;
+        return fetch('/api/photobooks?route=pbk-upload-copy&kind=' + kind + '&i=' + i + '&h=' + h, { method: 'POST', headers: hd }).then(function (r) {
+          return r.json().catch(function () { return {}; }).then(function (j) { if (r.ok && j.ok) return true; if (r.status === 409 || r.status === 410 || (r.status === 403 && j.code !== 'draft')) { var e = new Error(j.error || 'Upload failed'); e.final = true; throw e; } delete bg[kind][h]; return false; });
+        }, function () { return false; });
+      }
       var bookInfo = { name: p.name, template: p.tpl, colour: p.pal, size: TRIM.w + ' × ' + TRIM.h + ' mm', trimW: TRIM.w, trimH: TRIM.h, bleed: BLEED + ' mm', bleedMm: BLEED, dpi: DPI, spineMm: so.mm, cover: R.coverCfg(), files: '000 = front cover, 001–' + String(p.pages.length).padStart(3, '0') + ' = pages, ' + String(p.pages.length + 1).padStart(3, '0') + ' = back cover; spine/000 = spine (' + so.mm + ' mm wide)', spine: so };
       var i = 0;
       function step() {
@@ -224,14 +296,21 @@
         }
         var k = i++;
         var needP = sent.print.indexOf(k) < 0, needV = sent.view.indexOf(k) < 0;
-        return (needV ? renderPage(list[k], srcV, 700, 0).then(function (c) { return jpeg(c, 0.8); }).then(function (b) { return retry(function () { return up('view', k, b); }); }).then(function () { sent.view.push(k); srcV.done(); }) : Promise.resolve())
-          .then(function () { done++; if (onProgress) onProgress(done, total); if (!needP) return; return renderPage(list[k], src, px, bpx).then(function (c) { return jpegUnder(c, 4.3 * 1024 * 1024); }).then(function (b) { return retry(function () { return up('print', k, b); }); }).then(function () { sent.print.push(k); src.done(); }); })
+        return (needV ? copy('view', k, hs[k]).then(function (ok) { if (ok) return; return renderPage(list[k], srcV, 700, 0).then(function (c) { return jpeg(c, 0.8); }).then(function (b) { return retry(function () { return up('view', k, b); }); }).then(function () { srcV.done(); }); }).then(function () { sent.view.push(k); }) : Promise.resolve())
+          .then(function () { done++; if (onProgress) onProgress(done, total); if (!needP) return; return copy('print', k, hs[k]).then(function (ok) { if (ok) return; return renderPage(list[k], src, px, bpx).then(function (c) { return jpegUnder(c, 4.3 * 1024 * 1024); }).then(function (b) { return retry(function () { return up('print', k, b); }); }).then(function () { src.done(); }); }).then(function () { sent.print.push(k); }); })
           .then(function () { done++; return save(); }).then(step);
       }
-      return retry(function () { return up('book', 0, new Blob([JSON.stringify(bookInfo)], { type: 'application/octet-stream' })); }).then(step).then(function () {
+      return Promise.all(list.map(hashOf)).then(function (h) { hs = h; return retry(function () { return up('book', 0, new Blob([JSON.stringify(bookInfo)], { type: 'application/octet-stream' })); }); }).then(step).then(function () {
         return api('pbk-upload-done', fix ? { receipt: pu.receipt, edit: fix.t } : { receipt: pu.receipt });
-      }).then(function () { done = total; if (onProgress) onProgress(total, total); if (fix) fix.sentAt = Date.now(); else { pu.done = true; pu.sentAt = Date.now(); } return save(); });
-    });
+      }).then(function (r) {
+        done = total; if (onProgress) onProgress(total, total);
+        if (fix) fix.sentAt = Date.now(); else { pu.done = true; pu.sentAt = Date.now(); }
+        /* a few minutes to change the book after sending it */
+        var se = r && r.selfEdit;
+        if (!fix && se && se.t) pu.fix = { t: se.t, round: se.round, until: se.until, self: true, note: '', sent: { print: [], view: [] } };
+        return ST.savePurchase(pu);
+      });
+    }).then(function (x) { if (pu && pu.projectId) bgHold[pu.projectId] = false; return x; }, function (e) { if (pu && pu.projectId) bgHold[pu.projectId] = false; throw e; });
   }
   /* ---------- corrections Ciel Africa opened after an order ---------- */
   function fixActive(pu) { return !!(pu && pu.fix && !pu.fix.sentAt && pu.fix.until > Date.now()); }
@@ -601,13 +680,26 @@
             var left = '', done = d - d0; if (done > 1) { var s2 = (Date.now() - t0) / done * (t - d) / 1000; left = s2 > 90 ? ' About ' + Math.round(s2 / 60) + ' min left.' : ' Less than ' + Math.max(1, Math.ceil(s2 / 60)) + ' min left.'; }
             msg.textContent = 'Sending page ' + Math.min(Math.ceil(t / 2), Math.ceil(d / 2) + 1) + ' of ' + Math.ceil(t / 2) + '… keep this page open.' + left;
           })
-            .then(function () { sending = false; window.removeEventListener('beforeunload', warn); if (sb) sb.remove(); })
+            .then(function () { sending = false; window.removeEventListener('beforeunload', warn); if (sb) sb.remove(); selfEdit(); })
             .catch(function (e) {
               sending = false; window.removeEventListener('beforeunload', warn); if (sb) sb.disabled = false;
               if (!navigator.onLine) { if (msg) msg.textContent = 'Your connection dropped. Sending continues by itself when you’re back online; everything sent so far is kept.'; window.addEventListener('online', send, { once: true }); return; }
               if (msg) msg.textContent = (e.message || 'Sending stopped.') + ' Tap “Send my book now” to continue from where it stopped. You can also come back later: My books → Send now, on this device.';
             });
         }
+        /* sent: the book can still be changed for a few minutes */
+        function selfEdit() {
+          if (!fixActive(pu) || !pu.fix.self || el.querySelector('[data-self]')) return;
+          var d = document.createElement('p'); d.className = 'pkco__small pkco__self'; d.setAttribute('data-self', '');
+          el.querySelector('div').appendChild(d);
+          var a = '<a class="btn btn--ghost btn--sm" data-go href="' + BASE + '/design?p=' + encodeURIComponent(pu.projectId) + '">Edit my book</a>';
+          (function tick() {
+            var left = pu.fix.until - Date.now(); if (left <= 0 || pu.fix.sentAt) { d.remove(); return; }
+            d.innerHTML = 'Spotted a mistake? You can still change your book for <b>' + Math.ceil(left / 60000) + ' min</b>, then send it again. ' + a;
+            setTimeout(tick, 15000);
+          })();
+        }
+        if (pu.done) selfEdit();
         function warn(ev) { ev.preventDefault(); ev.returnValue = 'Your book is still sending. Leave anyway?'; return ev.returnValue; }
         if (sb) { sb.onclick = send; if (!pu.done) send(); }
         var pb = el.querySelector('[data-pdf]');
@@ -631,5 +723,5 @@
     });
   }
 
-  window.PBKShop = { markOrdered: markOrdered, manualList: manualList, manualCheck: manualCheck, spineOf: spineOf, renderSpine: renderSpine, wrapPage: wrapPage, bleed: bleed, isTest: isTest, backDoc: backDoc, add: add, unit: unit, checkout: checkout, purchases: purchases, pdf: pdf, fixOpen: fixOpen, fixActive: fixActive, sendPages: sendPages, resumeBanner: resumeBanner, caps: caps, docs: docs, renderPage: renderPage, photoSource: photoSource };
+  window.PBKShop = { bgSync: bgSync, bgDelete: bgDelete, markOrdered: markOrdered, manualList: manualList, manualCheck: manualCheck, spineOf: spineOf, renderSpine: renderSpine, wrapPage: wrapPage, bleed: bleed, isTest: isTest, backDoc: backDoc, add: add, unit: unit, checkout: checkout, purchases: purchases, pdf: pdf, fixOpen: fixOpen, fixActive: fixActive, sendPages: sendPages, resumeBanner: resumeBanner, caps: caps, docs: docs, renderPage: renderPage, photoSource: photoSource };
 })();

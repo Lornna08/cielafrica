@@ -83,15 +83,17 @@
     }
     function draw(url, emailed) {
       var h = '<h2 style="margin-top:1.2rem">Corrections</h2>';
-      if (e && e.review) h += '<div class="ao__pay"><b>Corrected book received</b><span>Check the new version under Books before printing. The earlier version is kept.</span><div class="ao__acts"><button class="btn btn--p btn--sm" data-rv>Mark as reviewed</button></div></div>';
-      if (e && e.open && e.until > Date.now()) {
+      if (e && e.review) h += '<div class="ao__pay"><b>' + (e.self ? 'The customer changed their book after sending it' : 'Corrected book received') + '</b><span>Check the new version under Books before printing. The earlier version is kept.</span><div class="ao__acts"><button class="btn btn--p btn--sm" data-rv>Mark as reviewed</button></div></div>';
+      if (e && e.self && e.open && e.until > Date.now()) {
+        h += '<div class="ao__pay is-wait"><b>The customer can still change this book until ' + when(e.until) + '</b><span>Everyone gets ' + 10 + ' minutes after sending their book. You’ll be notified if they send a new version. Wait before printing.</span><div class="ao__acts"><button class="btn btn--ghost btn--sm" data-close>End it now</button></div></div>';
+      } else if (e && e.open && e.until > Date.now()) {
         h += '<div class="ao__pay is-wait"><b>Open for corrections until ' + when(e.until) + '</b><span>Correction ' + e.round + (e.note ? ' · “' + esc(e.note) + '”' : '') + (prints.length > 1 ? ' · ' + Object.keys(e.done || {}).length + ' of ' + e.pids.length + ' books sent back' : '') + '</span>' +
           (url ? share(url) + (emailed ? '<span>✓ Emailed to ' + esc(o.customer.email) + '</span>' : '') : '<span>Lost the link? Open corrections again to make a new one (the old link stops working).</span>') +
           '<div class="ao__acts"><button class="btn btn--ghost btn--sm" data-close>Close corrections</button></div></div>';
       } else if (/^(dispatched|delivered|cancelled|refunded|ready_collection)$/.test(o.status)) {
         h += '<p class="ao__msg">This order is ' + esc(LABEL[o.status] || o.status) + ', so it can’t be reopened.</p>';
       }
-      if (!(e && e.open && e.until > Date.now()) && !/^(dispatched|delivered|cancelled|refunded|ready_collection)$/.test(o.status)) {
+      if (!(e && e.open && e.until > Date.now() && !e.self) && !(e && e.self && e.open && e.until > Date.now()) && !/^(dispatched|delivered|cancelled|refunded|ready_collection)$/.test(o.status)) {
         h += '<p class="ao__msg">Saw a problem, or pages missing? Let the customer open this book again, fix it and send it back. Nothing else in their order changes, and the version you have now is kept.</p>' +
           (prints.length > 1 ? '<div class="ao__acts">' + prints.map(function (it) { return '<label class="ao__chk"><input type="checkbox" data-fp value="' + esc(it.projectId) + '" checked> ' + esc(it.name) + '</label>'; }).join('') + '</div>' : '') +
           '<textarea id="fxn" rows="2" maxlength="600" placeholder="What should they fix? e.g. Page 7 is blank and the photo on page 12 is cut off. (They see this.)"></textarea>' +

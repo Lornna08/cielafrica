@@ -128,8 +128,18 @@
     el$.saved.textContent = 'Saving…';
     clearTimeout(saveT);
     saveT = setTimeout(function () {
-      ST.saveProject(S.p).then(function () { remember(); var t = new Date(); el$.saved.textContent = 'Saved ' + t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); el$.saved.classList.add('is-ok'); }, function (e) { el$.saved.textContent = 'Not saved'; toast(e.message || 'Could not save'); });
+      ST.saveProject(S.p).then(function () { remember(); bgLater(); var t = new Date(); el$.saved.textContent = 'Saved ' + t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); el$.saved.classList.add('is-ok'); }, function (e) { el$.saved.textContent = 'Not saved'; toast(e.message || 'Could not save'); });
     }, 500);
+  }
+  /* finished pages upload quietly in the background once the customer pauses (see PBKShop.bgSync),
+     so ordering later is quick */
+  var bgT, lastEdit = 0;
+  function bgLater() {
+    lastEdit = Date.now(); clearTimeout(bgT);
+    bgT = setTimeout(function () {
+      if (!S.p || S.ro || !window.PBKShop || !PBKShop.bgSync) return;
+      PBKShop.bgSync(S.p.id, { pause: function () { return Date.now() - lastEdit < 5000; } });
+    }, 15000);
   }
   /* ---------- earlier versions of the whole book ---------- */
   function checkpoint(label) { if (!S.p || !S.last) return; var vs = S.p.versions = S.p.versions || []; vs.push({ at: Date.now(), label: label, pages: S.p.pages.length, data: S.last }); while (vs.length > 12) vs.shift(); }
@@ -183,21 +193,24 @@
   /* ---------- corrections Ciel Africa opened for a placed order ---------- */
   function fixMode() {
     var pu = FIX, b = $('#peOrder');
-    b.textContent = 'Send corrected book'; b.classList.add('pe-fixbtn');
+    var self = !!pu.fix.self;
+    b.textContent = self ? 'Send my changes' : 'Send corrected book'; b.classList.add('pe-fixbtn');
     var n = document.createElement('div'); n.className = 'pe-fixnote'; n.setAttribute('role', 'status');
-    n.innerHTML = '<div><b>Correcting order ' + esc(pu.ref) + '</b>' + (pu.fix.note ? '<span>“' + esc(pu.fix.note) + '”</span>' : '<span>Make your changes, then tap Send corrected book.</span>') + '<small>Keep ' + pu.pages + ' pages · open until ' + new Date(pu.fix.until).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' }) + '</small></div><button aria-label="Hide">×</button>';
+    n.innerHTML = self ? '<div><b>Changing order ' + esc(pu.ref) + '</b><span>Make your changes, then tap Send my changes before ' + new Date(pu.fix.until).toLocaleTimeString('en-KE', { hour: 'numeric', minute: '2-digit' }) + '.</span><small>Keep ' + pu.pages + ' pages</small></div><button aria-label="Hide">×</button>'
+      : '<div><b>Correcting order ' + esc(pu.ref) + '</b>' + (pu.fix.note ? '<span>“' + esc(pu.fix.note) + '”</span>' : '<span>Make your changes, then tap Send corrected book.</span>') + '<small>Keep ' + pu.pages + ' pages · open until ' + new Date(pu.fix.until).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' }) + '</small></div><button aria-label="Hide">×</button>';
     n.querySelector('button').onclick = function () { n.remove(); };
     $('#pe').appendChild(n);
     b.addEventListener('click', function () {
       if (S.p.pages.length !== pu.pages) { toast('Your order is for ' + pu.pages + ' pages. This book has ' + S.p.pages.length + ': add or remove pages first.'); return; }
-      if (!confirm('Send the corrected book to Ciel Africa now? After this it can’t be changed again unless we reopen it.')) return;
+      if (pu.fix.until < Date.now()) { toast('The time for changes has passed. WhatsApp us on +254 706 549 703 if you still need a change.'); return; }
+      if (!confirm(self ? 'Send your changed book to Ciel Africa now? It replaces the version you sent.' : 'Send the corrected book to Ciel Africa now? After this it can’t be changed again unless we reopen it.')) return;
       clearTimeout(saveT);
       var ov = document.createElement('div'); ov.className = 'pe-fixsend'; ov.innerHTML = '<div><b>Sending your corrected book</b><p id="fxP">Preparing pages…</p><div class="pe-fixbar"><i id="fxB"></i></div><p class="pe-fixsend__m">Keep this page open until it finishes.</p></div>';
       document.body.appendChild(ov);
       ST.saveProject(S.p).then(function () {
         return PBKShop.sendPages(pu, function (d, t) { $('#fxP', ov).textContent = 'Sending ' + Math.min(d, t) + ' of ' + t + '…'; $('#fxB', ov).style.width = Math.round(d / t * 100) + '%'; }, pu.fix);
       }).then(function () {
-        ov.innerHTML = '<div><b>Corrected book sent ✓</b><p>Thank you! Ciel Africa will check it before printing. Your first version is kept too.</p><a class="btn btn--p" data-go href="' + BASE + '/track?ref=' + encodeURIComponent(pu.ref) + '">Track my order</a></div>';
+        ov.innerHTML = '<div><b>' + (self ? 'Changes sent ✓' : 'Corrected book sent ✓') + '</b><p>' + (self ? 'Thank you! We’ll print this new version.' : 'Thank you! Ciel Africa will check it before printing. Your first version is kept too.') + '</p><a class="btn btn--p" data-go href="' + BASE + '/track?ref=' + encodeURIComponent(pu.ref) + '">Track my order</a></div>';
         ov.querySelector('a').addEventListener('click', function () { ov.remove(); });
       }, function (e) {
         ov.innerHTML = '<div><b>Not sent yet</b><p>' + esc(e.message || 'Something went wrong.') + '</p><p class="pe-fixsend__m">Pages already sent are kept: tap Send corrected book again to finish.</p><button class="btn btn--p">OK</button></div>';

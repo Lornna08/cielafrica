@@ -148,15 +148,15 @@
     });
     return js;
   }
-  /** p = { tiers:{pages:price}, cover:{paperGsm,paperBulk,boardMm,hingeMm,wrapMm}, delivery:{id:price} }
+  /** p = { tiers:{pages:price}, extraPage (KES a page above a size; 0 = pay the next size up), cover:{paperGsm,paperBulk,boardMm,hingeMm,wrapMm}, delivery:{id:price} }
       (older drafts: { printBase, printPage, pdfBase, pdfPage, delivery }) */
   function setPhotoBooks(js, p) {
     var n = function (v) { return Math.max(0, Math.round(+v || 0)); }, d1 = function (v) { return Math.max(0, Math.round((+v || 0) * 100) / 100); };
     if (p.tiers && typeof p.tiers === 'object') {
       var t = Object.keys(p.tiers).map(Number).filter(function (k) { return k >= 2 && k <= 400 && k % 2 === 0; }).sort(function (a, b) { return a - b; });
       if (t.length) {
-        var lit = 'price: { tiers: { ' + t.map(function (k) { return k + ': ' + n(p.tiers[k]); }).join(', ') + ' } }';
-        if (/price: \{ tiers: \{[^}]*\} \}/.test(js)) js = js.replace(/price: \{ tiers: \{[^}]*\} \}/, lit);
+        var lit = 'price: { tiers: { ' + t.map(function (k) { return k + ': ' + n(p.tiers[k]); }).join(', ') + ' }, extraPage: ' + n(p.extraPage) + ' }';
+        if (/price: \{ tiers: \{[^}]*\}(, extraPage: \d+)? \}/.test(js)) js = js.replace(/price: \{ tiers: \{[^}]*\}(, extraPage: \d+)? \}/, lit);
         else js = js.replace(/price: \{ base: \d+, includedPages: \d+, perExtraPage: \d+ \}/, lit);
       }
     } else if (p.printBase != null) js = js.replace(/(price: \{ base: )\d+(, includedPages: \d+, perExtraPage: )\d+/, '$1' + n(p.printBase) + '$2' + n(p.printPage));
@@ -169,13 +169,13 @@
     return js;
   }
   function readPhotoBooks(js) {
-    var d = {}, tiers = null, cover = null, m = /price: \{ tiers: \{([^}]*)\} \}/.exec(js);
+    var d = {}, tiers = null, cover = null, m = /price: \{ tiers: \{([^}]*)\}(?:, extraPage: (\d+))? \}/.exec(js), extra = m && m[2] ? +m[2] : 0;
     if (m) { tiers = {}; m[1].replace(/(\d+)\s*:\s*(\d+)/g, function (_, k, v) { tiers[k] = +v; }); }
     else { var a = /price: \{ base: (\d+), includedPages: (\d+), perExtraPage: (\d+)/.exec(js); if (a) { tiers = {}; [24, 36, 48, 60, 80, 100].forEach(function (k) { tiers[k] = +a[1] + Math.max(0, k - +a[2]) * +a[3]; }); } }
     var cm = /cover: \{ paperGsm: ([\d.]+), paperBulk: ([\d.]+), boardMm: ([\d.]+), hingeMm: ([\d.]+), wrapMm: ([\d.]+) \}/.exec(js);
     cover = cm ? { paperGsm: +cm[1], paperBulk: +cm[2], boardMm: +cm[3], hingeMm: +cm[4], wrapMm: +cm[5] } : { paperGsm: 170, paperBulk: 1, boardMm: 3, hingeMm: 8, wrapMm: 15 };
     js.replace(/\{ id: '([a-z]+)', name: '([^']*)', price: (\d+)/g, function (_, id, name, pr) { d[id] = { name: name, price: +pr }; });
-    return { tiers: tiers || {}, cover: cover, delivery: d };
+    return { tiers: tiers || {}, extraPage: extra, cover: cover, delivery: d };
   }
   return { extract: extract, apply: apply, setItems: setItems, setPhotoBooks: setPhotoBooks, readPhotoBooks: readPhotoBooks, splitMain: splitMain, esc: esc };
 });

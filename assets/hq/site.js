@@ -173,8 +173,9 @@
     var pb = W.pb; pb.tiers = pb.tiers || {}; pb.cover = pb.cover || { paperGsm: 170, paperBulk: 1, boardMm: 3, hingeMm: 8, wrapMm: 15 };
     var sizes = Object.keys(pb.tiers).map(Number).sort(function (a, b) { return a - b; });
     function spineAt(n) { var c = pb.cover; return Math.round(((+c.paperGsm || 0) * (+c.paperBulk || 0) * Math.ceil(n / 2) / 1000 + 2 * (+c.boardMm || 0)) * 10) / 10; }
-    f.innerHTML = '<section class="card"><div class="card__h"><h2>Photo Books · printed hardcover</h2><span class="muted" style="font-size:.8rem">The price for each book size. A book between sizes pays the next size up.</span></div><div class="card__b ws-4" id="pbTiers">' +
-      sizes.map(function (k) { return inp(k + ' pages (KES)', pb.tiers[k], 'type="number" min="0" step="50" data-k="tiers.' + k + '"'); }).join('') + '</div></section>' +
+    f.innerHTML = '<section class="card"><div class="card__h"><h2>Photo Books · printed hardcover</h2><span class="muted" style="font-size:.8rem">The price for each book size.</span></div><div class="card__b ws-4" id="pbTiers">' +
+      sizes.map(function (k) { return inp(k + ' pages (KES)', pb.tiers[k], 'type="number" min="0" step="50" data-k="tiers.' + k + '"'); }).join('') + '</div>' +
+      '<div class="card__b ws-4" style="padding-top:0">' + inp('Each additional page (KES)', pb.extraPage || 0, 'type="number" min="0" step="5" data-k="extraPage"') + '<p class="muted" id="pbExtra" style="font-size:.82rem;grid-column:span 3;align-self:end"></p></div></section>' +
       '<section class="card"><div class="card__h"><h2>Delivery prices</h2></div><div class="card__b ws-4">' +
       Object.keys(pb.delivery).map(function (id) { return inp(esc(pb.delivery[id].name), pb.delivery[id].price, 'type="number" min="0" data-k="delivery.' + id + '.price"'); }).join('') + '</div></section>' +
       '<section class="card"><div class="card__h"><h2>Hardcover case (for the printer)</h2><span class="muted" style="font-size:.8rem">Ask your printer for these. They set the spine width and the full-cover file.</span></div><div class="card__b ws-4" id="pbCase">' +
@@ -184,8 +185,15 @@
       '</div><p class="muted" id="pbSpines" style="font-size:.82rem;padding:0 1.2rem 1rem"></p></section>' +
       '<section class="card"><div class="card__h"><h2>Photo book coupons</h2><span class="muted" style="font-size:.8rem">Saved straight away (no publishing). Codes stay private.</span></div><div class="card__b" id="cpBox"><p class="empty">Loading coupons…</p></div></section>';
     function spines() { var el = document.getElementById('pbSpines'); if (el) el.innerHTML = 'Spine width: ' + sizes.map(function (k) { return '<b>' + k + ' pages ' + spineAt(k) + ' mm</b>'; }).join(' · ') + '. Full cover for 24 pages: ' + Math.round((2 * (+pb.cover.wrapMm) + 2 * 210 + 2 * (+pb.cover.hingeMm) + spineAt(24)) * 10) / 10 + ' × ' + (297 + 2 * (+pb.cover.wrapMm)) + ' mm.'; }
-    f.querySelectorAll('section.card').forEach(function (sec, i) { if (i < 3) bindInputs(sec, function (k, v) { var p = k.split('.'); if (p[0] === 'delivery') pb.delivery[p[1]].price = +v; else if (p[0] === 'tiers') pb.tiers[p[1]] = +v; else if (p[0] === 'cover') { pb.cover[p[1]] = +v; spines(); } }); });
-    spines(); coupons(document.getElementById('cpBox'));
+    f.querySelectorAll('section.card').forEach(function (sec, i) { if (i < 3) bindInputs(sec, function (k, v) { var p = k.split('.'); if (p[0] === 'delivery') pb.delivery[p[1]].price = +v; else if (p[0] === 'extraPage') { pb.extraPage = Math.max(0, +v || 0); extraNote(); } else if (p[0] === 'tiers') { pb.tiers[p[1]] = +v; extraNote(); } else if (p[0] === 'cover') { pb.cover[p[1]] = +v; spines(); } }); });
+    function extraNote() {
+      var el = document.getElementById('pbExtra'); if (!el || !sizes.length) return;
+      var lo = sizes[0], hi = sizes[1], at = lo + 6, fm = function (v) { return 'KES ' + String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); };
+      if (!(+pb.extraPage > 0)) { el.textContent = 'Off: a book between sizes pays the next size up (e.g. ' + at + ' pages = the ' + (hi || lo) + '-page price).'; return; }
+      var v = +pb.tiers[lo] + 6 * +pb.extraPage; if (hi) v = Math.min(v, +pb.tiers[hi]);
+      el.textContent = 'Pages above a size cost this much each, never more than the next size. E.g. ' + at + ' pages = ' + fm(pb.tiers[lo]) + ' + 6 × ' + fm(pb.extraPage) + ' = ' + fm(v) + '. Pages come in twos.';
+    }
+    spines(); extraNote(); coupons(document.getElementById('cpBox'));
   }
   function formPrices(f) {
     function rowsFor(list, key, unit) {

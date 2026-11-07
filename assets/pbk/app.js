@@ -16,7 +16,13 @@
   /** a price rule: a price for each book size (a book between sizes pays the next size up), or base + extra pages */
   PBK.rule = function (r, pages) {
     if (!r) return null;
-    if (r.tiers) { var t = Object.keys(r.tiers).map(Number).filter(function (n) { return n > 0 && r.tiers[n] != null; }).sort(function (a, b) { return a - b; }); if (!t.length) return null; var k = t.filter(function (n) { return n >= pages; })[0] || t[t.length - 1]; return Math.round(+r.tiers[k]); }
+    if (r.tiers) {
+      var t = Object.keys(r.tiers).map(Number).filter(function (n) { return n > 0 && r.tiers[n] != null; }).sort(function (a, b) { return a - b; }); if (!t.length) return null;
+      var k = t.filter(function (n) { return n >= pages; })[0], lo = t.filter(function (n) { return n <= pages; }).pop();
+      /* extra pages above a size: that size's price + a price per page (never more than the next size) */
+      if (+r.extraPage > 0 && lo != null && lo < pages) { var v = +r.tiers[lo] + (pages - lo) * +r.extraPage; if (k != null) v = Math.min(v, +r.tiers[k]); return Math.round(v); }
+      return Math.round(+r.tiers[k != null ? k : t[t.length - 1]]);
+    }
     if (r.base == null || r.perExtraPage == null) return null;
     return Math.round(r.base + Math.max(0, pages - (r.includedPages || BOOK.pages.min)) * r.perExtraPage);
   };
@@ -210,7 +216,7 @@
   function trust() {
     return '<ul class="pk-trust"><li>' + ICON.book + '<span><b>Portrait hardcover</b>' + esc(BOOK.size || '21 × 29.7 cm (A4)') + ', ' + BOOK.pages.min + '–' + BOOK.pages.max + ' pages</span></li>' +
       '<li>' + ICON.phone + '<span><b>Design on your phone</b>or on a computer, no app to install</span></li>' +
-      '<li>' + ICON.lock + '<span><b>Your photos stay private</b>they stay on your device while you design</span></li>' +
+      '<li>' + ICON.lock + '<span><b>Your photos stay private</b>never public, used only to make your book</span></li>' +
       '<li>' + ICON.eye + '<span><b>Preview every page</b>flip through the whole book before ordering</span></li></ul>';
   }
   function faq() {
@@ -219,7 +225,7 @@
       ['How many pages can I have?', 'From ' + BOOK.pages.min + ' up to ' + BOOK.pages.max + ' pages. Add or remove pages any time while you design. The price depends on the number of pages.'],
       ['How many photos fit on a page?', 'As many as you like. Add photos straight onto a page, or pick a layout, then move, resize, crop and align each one.'],
       ['Can I change the words on a cover?', 'Yes. Change the title and subtitle on the illustrated covers and on most travel covers, or start from a blank cover with your own colours, text and stickers.'],
-      ['Where are my photos stored?', 'In your browser, on this device. Nothing is uploaded while you design, so use the same phone or computer to come back to your book.'],
+      ['Where are my photos stored?', 'In your browser, on this device, so use the same phone or computer to come back to your book. To make ordering quick, the finished pages of your book are uploaded in the background to private storage while you design. They’re deleted when you delete the book, and after 30 days if it’s never ordered.'],
       ['How much does it cost?', price(BOOK.pages.min) == null ? 'Prices are being finalised and will be shown here before ordering opens. You can design and save your book now.' : 'From ' + priceLabel(BOOK.pages.min) + ' for ' + BOOK.pages.min + ' pages. More pages cost more; the price updates as you add pages.']
     ];
     return '<section class="pk-faq wrap"><div class="pk-head"><span class="eyebrow"><span class="brk">‹</span> Questions</span><h2>Good to know</h2></div><div class="pk-faq__list">' + q.map(function (x) { return '<details><summary>' + esc(x[0]) + '</summary><p>' + esc(x[1]) + '</p></details>'; }).join('') + '</div></section>';
@@ -571,7 +577,7 @@
         wrap.innerHTML = '<h3>My orders</h3>' + os.map(function (o) {
           var wa = 'https://wa.me/254706549703?text=' + encodeURIComponent('Hello Ciel Africa, I need help with my photo book order ' + o.ref);
           return '<div class="pk-mo__o"><div><b>' + esc(o.ref) + (o.test ? ' <small>(test)</small>' : '') + '</b><span>' + o.items.map(function (i) { return esc(i.name) + ' · ' + (i.product === 'print' ? 'printed' + (i.qty > 1 ? ' ×' + i.qty : '') : 'PDF') + ' · ' + i.pages + ' pages'; }).join('<br>') + '</span><small>Ordered ' + new Date(o.createdAt).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' }) + '</small></div>' +
-            '<div class="pk-mo__s"><span class="pk-mo__st' + (/delivered|ready_collection/.test(o.status) ? ' is-done' : /cancel|refund|failed/.test(o.status) ? ' is-off' : '') + '">' + esc(o.fixOpen ? 'Open for your corrections' : o.label) + '</span><a class="btn btn--sm btn--dark" data-go href="' + esc(o.track) + '">Track</a><a class="btn btn--sm btn--ghost" target="_blank" rel="noopener" href="' + wa + '">Help</a></div></div>';
+            '<div class="pk-mo__s"><span class="pk-mo__st' + (/delivered|ready_collection/.test(o.status) ? ' is-done' : /cancel|refund|failed/.test(o.status) ? ' is-off' : '') + '">' + esc(o.fixOpen ? (o.fixSelf ? 'You can still change it (10 min)' : 'Open for your corrections') : o.label) + '</span><a class="btn btn--sm btn--dark" data-go href="' + esc(o.track) + '">Track</a><a class="btn btn--sm btn--ghost" target="_blank" rel="noopener" href="' + wa + '">Help</a></div></div>';
         }).join('');
       }, function () { wrap.remove(); });
     });
@@ -615,7 +621,7 @@
           var info = document.createElement('div'); info.className = 'pk-myb__paid' + (pu.product === 'print' && !pu.done ? ' is-todo' : '');
           if (PBKShop.fixActive(pu)) {
             info.className = 'pk-myb__paid is-todo';
-            info.innerHTML = '<b>Open for corrections</b> · order ' + esc(pu.ref) + (pu.fix.note ? '<br><i>“' + esc(pu.fix.note) + '”</i>' : '') + '<br><a class="btn btn--p btn--sm" data-go href="' + BASE + '/design?p=' + esc(pu.projectId) + '">Edit book</a>';
+            info.innerHTML = '<b>' + (pu.fix.self ? 'You can still change this book (' + Math.max(1, Math.ceil((pu.fix.until - Date.now()) / 60000)) + ' min left)' : 'Open for corrections') + '</b> · order ' + esc(pu.ref) + (pu.fix.note ? '<br><i>“' + esc(pu.fix.note) + '”</i>' : '') + '<br><a class="btn btn--p btn--sm" data-go href="' + BASE + '/design?p=' + esc(pu.projectId) + '">Edit book</a>';
             card.querySelector('div').appendChild(info); var dl0 = card.querySelector('[data-del]'); if (dl0) dl0.remove(); return;
           }
           info.innerHTML = pu.product === 'print' ? (pu.done ? '✓ Order ' + esc(pu.ref) + ': pages sent to Ciel Africa. <a data-go href="' + BASE + '/track?ref=' + encodeURIComponent(pu.ref) + '">Track order</a>' : 'Order ' + esc(pu.ref) + ' is paid, but its pages haven’t finished sending. <a class="btn btn--p btn--sm" data-go href="' + BASE + '/checkout?sent=' + encodeURIComponent(pu.ref) + '">Send now</a>') : '✓ PDF paid (' + esc(pu.ref) + ')';
