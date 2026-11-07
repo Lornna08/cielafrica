@@ -113,7 +113,7 @@
     return '<nav class="pk-cats" aria-label="Photo book categories"><div class="pk-cats__in">' + C.CATS.map(function (c) {
       var t = catHero(c.id);
       return '<a data-go href="' + BASE + '/' + c.id + '" class="pk-cat' + (active === c.id ? ' is-on' : '') + '" aria-label="' + esc(c.name) + ' covers"><span class="pk-cat__ring"><span class="pk-cat__img" style="--tint:' + TINT[c.id] + '"><img src="' + mockSrc(t, 0) + '" alt="" loading="lazy"' + IMGWH + '></span></span><span class="pk-cat__n">' + esc(c.name) + '</span></a>';
-    }).join('') + '</div></nav>';
+    }).join('') + '<a data-go href="' + BASE + '/blank" class="pk-cat pk-cat--blank' + (active === 'blank' ? ' is-on' : '') + '" aria-label="Blank book: design your own cover"><span class="pk-cat__ring"><span class="pk-cat__img" style="--tint:' + TINT.blank + '"><img src="' + mockSrc('blank', 4) + '" alt="" loading="lazy"' + IMGWH + '></span></span><span class="pk-cat__n">Blank</span></a></div></nav>';
   }
   /* ---------------- stories: a category's covers, one after another ---------------- */
   var sdlg;
@@ -218,7 +218,7 @@
       ['What size is the book?', 'Every book is portrait, ' + (BOOK.size || '21 × 29.7 cm (A4)') + ', with a hardcover. Every cover is designed for that size.'],
       ['How many pages can I have?', 'From ' + BOOK.pages.min + ' up to ' + BOOK.pages.max + ' pages. Add or remove pages any time while you design. The price depends on the number of pages.'],
       ['How many photos fit on a page?', 'One or two. Pick a layout, then move, resize and crop each photo until it looks right.'],
-      ['Can I change the words on a cover?', 'Yes. Change the title and subtitle on the illustrated covers and on most travel covers, or start from a blank cover with your own colours, text and stickers. The small CIEL AFRICA mark always stays at the bottom.'],
+      ['Can I change the words on a cover?', 'Yes. Change the title and subtitle on the illustrated covers and on most travel covers, or start from a blank cover with your own colours, text and stickers.'],
       ['Where are my photos stored?', 'In your browser, on this device. Nothing is uploaded while you design, so use the same phone or computer to come back to your book.'],
       ['How much does it cost?', price(BOOK.pages.min) == null ? 'Prices are being finalised and will be shown here before ordering opens. You can design and save your book now.' : 'From ' + priceLabel(BOOK.pages.min) + ' for ' + BOOK.pages.min + ' pages. More pages cost more; the price updates as you add pages.']
     ];
@@ -246,7 +246,7 @@
       '</div></section>' +
       steps() + openBooks() +
       '<section class="pk-mq" aria-label="Cover designs"><div class="pk-mq__row"><div class="pk-mq__track">' + row(rowA, 0) + '</div></div><div class="pk-mq__row pk-mq__row--b"><div class="pk-mq__track">' + row(rowB, 1) + '</div></div></section>' +
-      '<section class="pk-kenya"><div class="wrap pk-kenya__in"><div class="pk-kenya__copy"><span class="eyebrow"><span class="brk">‹</span> New</span><h2>Made for <span class="pk-hl">Kenya</span></h2><p>Nairobi, Mombasa, the Serengeti plains and a Kenya cover for every trip home. Same minimal style, same CIEL AFRICA mark, every word editable.</p><a data-go href="' + BASE + '/kenya" class="btn btn--dark">See the Kenya covers ' + ICON.arrow + '</a></div>' +
+      '<section class="pk-kenya"><div class="wrap pk-kenya__in"><div class="pk-kenya__copy"><span class="eyebrow"><span class="brk">‹</span> New</span><h2>Made for <span class="pk-hl">Kenya</span></h2><p>Nairobi, Mombasa, the Serengeti plains and a Kenya cover for every trip home. Same minimal style, every word editable.</p><a data-go href="' + BASE + '/kenya" class="btn btn--dark">See the Kenya covers ' + ICON.arrow + '</a></div>' +
       '<div class="pk-kenya__books">' + C.byCat('kenya').slice(0, 4).map(function (t, i) { return '<a data-go href="' + coverLink(t.id, 0) + '"><img src="' + mockSrc(t, 0) + '" alt="' + esc(t.name) + ' cover" loading="lazy"' + IMGWH + '></a>'; }).join('') + '</div></div></section>' +
       '<section class="pk-spec wrap"><div class="pk-spec__card"><div><span class="eyebrow"><span class="brk">‹</span> The book</span><h2>Price by pages</h2><p>Start with ' + BOOK.pages.min + ' pages and add more as you go: the price depends on the number of pages.</p></div>' +
       '<div class="pk-calc"><label for="pkPages">Pages <output id="pkPagesOut">' + BOOK.pages.default + '</output></label><input type="range" id="pkPages" min="' + BOOK.pages.min + '" max="' + BOOK.pages.max + '" step="' + BOOK.pages.step + '" value="' + BOOK.pages.default + '"><div class="pk-calc__price" id="pkPrice">' + esc(priceLabel(BOOK.pages.default)) + '</div>' + (price(BOOK.pages.min) == null ? '<p class="pk-calc__note">Prices are being finalised. You can design and save your book now.</p>' : '') + '</div></div></section>' +
@@ -307,7 +307,7 @@
 
   /* ---------------- category page ---------------- */
   function category(catId) {
-    var cat = C.cat(catId) || { id: 'blank', name: 'Blank', title: 'Blank cover photo book', blurb: 'Design your own cover: colours, words and stickers. The CIEL AFRICA mark stays small at the bottom.', cta: 'Start my book' };
+    var cat = C.cat(catId) || { id: 'blank', name: 'Blank', title: 'Blank cover photo book', blurb: 'Design your own cover: colours, words and stickers.', cta: 'Start my book' };
     document.title = cat.title + ' — Ciel Africa';
     var list = catId === 'blank' ? [] : C.byCat(catId);
     var st = { t: list[0] ? list[0].id : 'blank', c: 0, pages: BOOK.pages.default, q: '', cu: {} };

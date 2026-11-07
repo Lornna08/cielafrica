@@ -111,6 +111,67 @@
     }
     draw();
   }
+  /* ---------- printing partner: choose what to share, review it, send it ---------- */
+  var PRN = null;
+  function printerBox(o, r) {
+    var el = document.getElementById('pr'); if (!el) return;
+    var prints = (o.items || []).filter(function (i) { return i.product === 'print'; }); if (!prints.length) { el.innerHTML = ''; return; }
+    var ready = prints.every(function (i) { return o.files && o.files[i.projectId] && o.files[i.projectId].complete; });
+    (PRN ? Promise.resolve(PRN) : api('pbk-printer-get').then(function (x) { return (PRN = x.printer); })).then(function (P) { draw(P); }, function (e) { el.innerHTML = '<p class="ao__msg">' + esc(e.message) + '</p>'; });
+    function q(s2) { return el.querySelector(s2); }
+    function opts() { return { ref: o.ref, include: { name: q('#prN').checked, phone: q('#prP').checked, gift: !!(q('#prG') && q('#prG').checked) }, delivery: q('[name=prD]:checked').value, notes: q('#prT').value }; }
+    function packBooks(text) {
+      return prints.map(function (it) {
+        var b = r.books[it.projectId] || { print: [], spine: [] };
+        return { name: it.name, pages: it.pages, qty: it.qty, spine: it.pages >= 37, files: b.print.length, info: b.book || {}, print: function (i) { return file(b.print[i].path).then(function (bl) { delete fileCache[b.print[i].path]; return bl; }); }, spineFile: function () { return b.spine && b.spine[0] ? file(b.spine[0].path) : Promise.resolve(null); } };
+      });
+    }
+    function draw(P) {
+      var sh = (o.printer && o.printer.shares) || [], ack = o.printer && o.printer.ack, pf = P.prefs || {};
+      var h = '<h2 style="margin-top:1.2rem">Printing partner</h2>';
+      if (!P.name && !P.email && !P.phone) h += '<p class="ao__msg">Save your printer’s contact once; it’s used for every order.</p>';
+      h += '<details class="ao__prc"' + (P.name || P.email || P.phone ? '' : ' open') + '><summary>' + (P.name ? esc(P.name) : 'Printer contact') + (P.email ? ' · ' + esc(P.email) : '') + (P.phone ? ' · +' + esc(P.phone) : '') + '</summary><div class="ao__prf"><input id="pcN" placeholder="Printer name" value="' + esc(P.name) + '"><input id="pcE" type="email" placeholder="Email" value="' + esc(P.email) + '"><input id="pcP" type="tel" placeholder="WhatsApp number, e.g. 0712 345 678" value="' + esc(P.phone ? '+' + P.phone : '') + '"><button class="btn btn--ghost btn--sm" id="pcS">Save printer</button></div></details>';
+      if (ack) h += '<div class="ao__pay"><b>Printer: ' + (ack.status === 'received' ? 'files received' : ack.status === 'printed' ? 'printed' : 'reported a problem') + '</b><span>' + when(ack.at) + (ack.note ? ' · “' + esc(ack.note) + '”' : '') + '</span></div>';
+      if (!ready) h += '<p class="ao__msg">The print pages haven’t all arrived yet, so this order can’t go to the printer.</p>';
+      else {
+        h += '<p class="ao__msg">The printer gets the files and only what you tick. Prices and payment details are never shared.</p>' +
+          '<div class="ao__prs"><label class="ao__chk"><input type="checkbox" id="prN"' + (pf.name !== false ? ' checked' : '') + '> Customer name</label><label class="ao__chk"><input type="checkbox" id="prP"' + (pf.phone ? ' checked' : '') + '> Customer phone</label>' + (o.gift ? '<label class="ao__chk"><input type="checkbox" id="prG"> Gift recipient</label>' : '') + '</div>' +
+          '<div class="ao__prs"><label class="ao__chk"><input type="radio" name="prD" value="self"' + (pf.delivery !== 'printer' || !o.address ? ' checked' : '') + '> I’ll handle delivery</label><label class="ao__chk"><input type="radio" name="prD" value="printer"' + (pf.delivery === 'printer' && o.address ? ' checked' : '') + (o.address ? '' : ' disabled') + '> Printer delivers to the customer' + (o.address ? '' : ' (no address)') + '</label></div>' +
+          '<textarea id="prT" rows="2" maxlength="600" placeholder="Production notes for the printer (optional)"></textarea>' +
+          '<div class="ao__acts"><button class="btn btn--dark btn--sm" id="prV">Review what will be sent</button><button class="btn btn--ghost btn--sm" id="prZ">Download the files (.zip)</button></div><p class="ao__msg" id="prM"></p><div id="prR"></div>';
+      }
+      if (sh.length) h += '<p class="ao__msg"><b>Shared</b><br>' + sh.slice().reverse().map(function (x) { return when(x.at) + ' · ' + (x.via === 'email' ? 'email to ' + esc(x.to || '') : x.via === 'whatsapp' ? 'WhatsApp' : 'link') + ' · ' + (x.delivery === 'printer' ? 'printer delivers' : 'you deliver') + (x.include && x.include.phone ? ' · phone' : '') + (x.include && x.include.name ? ' · name' : ''); }).join('<br>') + '</p>';
+      el.innerHTML = h;
+      q('#pcS').onclick = function () { api('pbk-printer-save', { name: q('#pcN').value, email: q('#pcE').value, phone: q('#pcP').value }).then(function (x) { PRN = x.printer; draw(PRN); }, function (e) { alert(e.message); }); };
+      if (!ready) return;
+      q('#prZ').onclick = function () {
+        var bt = q('#prZ'), m = q('#prM'); bt.disabled = true;
+        api('pbk-printer-share', Object.assign(opts(), { preview: true })).then(function (x) {
+          return PBKPack.build({ ref: o.ref, text: x.text, books: packBooks(), progress: function (s2) { if (s2) m.textContent = s2; } });
+        }).then(function (z) { PBKPack.save(z.blob, z.name); m.textContent = 'Downloaded ' + z.name + ' (' + Math.round(z.blob.size / 1048576) + ' MB).'; }, function (e) { m.textContent = e.message; }).then(function () { bt.disabled = false; });
+      };
+      q('#prV').onclick = function () {
+        var o1 = opts();
+        api('pbk-printer-share', Object.assign({}, o1, { preview: true })).then(function (x) {
+          var P2 = x.printer;
+          q('#prR').innerHTML = '<div class="ao__pay"><b>This is what the printer will get</b><pre class="ao__pre">' + esc(x.text) + '</pre><span>Plus a link to download: front and back cover (A4 PDFs), ' + (prints.some(function (i) { return i.pages >= 37; }) ? 'the spine (PNG), ' : '') + 'and the pages (one A4 PDF).' + (prints.some(function (i) { return i.pages < 37; }) ? ' Books of 36 pages or fewer have no printed spine.' : '') + '</span>' +
+            '<div class="ao__acts">' + (P2.email ? '<button class="btn btn--p btn--sm" data-via="email">Send by email to ' + esc(P2.email) + '</button>' : '') + (P2.phone ? '<button class="btn btn--dark btn--sm" data-via="whatsapp">Send on WhatsApp</button>' : '') + '<button class="btn btn--ghost btn--sm" data-via="link">Just make the link</button></div>' + (!P2.email && !P2.phone ? '<span>Save the printer’s email or WhatsApp number above to send directly.</span>' : '') + '</div>';
+          q('#prR').querySelectorAll('[data-via]').forEach(function (b) {
+            b.onclick = function () {
+              var via = b.getAttribute('data-via'), w = via === 'whatsapp' ? window.open('', '_blank') : null; b.disabled = true;
+              api('pbk-printer-share', Object.assign({}, o1, { via: via })).then(function (y) {
+                o = y.order; all = all.map(function (z) { return z.ref === o.ref ? o : z; });
+                api('pbk-printer-save', { prefs: { name: o1.include.name, phone: o1.include.phone, delivery: o1.delivery } }).then(function (z) { PRN = z.printer; }).catch(function () { });
+                if (w) w.location = 'https://wa.me/' + y.printer.phone + '?text=' + encodeURIComponent(y.text);
+                draw(PRN || P);
+                q('#prM').innerHTML = (via === 'email' ? '✓ Emailed to ' + esc(y.printer.email) + '. ' : via === 'whatsapp' ? '✓ WhatsApp opened with the message. ' : '') + 'Link: <a href="' + esc(y.url) + '" target="_blank" rel="noopener">open the printer’s page</a>';
+              }, function (e) { if (w) w.close(); b.disabled = false; alert(e.message); });
+            };
+          });
+        }, function (e) { q('#prM').textContent = e.message; });
+      };
+    }
+  }
   function detail(ref) {
     root.innerHTML = top() + '<button class="ao__back" id="bk">‹ All orders</button><p class="ao__msg">Loading ' + esc(ref) + '…</p>'; wireTop();
     document.getElementById('bk').onclick = drawList;
@@ -126,7 +187,7 @@
         (g ? '<dt>Gift</dt><dd>🎁 For ' + esc(g.to || '—') + (g.phone ? ' · ' + esc(g.phone) : '') + (g.note ? '<br>“' + esc(g.note) + '”' : '') + '</dd>' : '') +
         '<dt>Lines</dt><dd>' + (o.lines || []).map(function (l) { return esc(l.label) + (l.qty > 1 ? ' × ' + l.qty : '') + ' — ' + money(l.amount * (l.qty || 1)); }).join('<br>') + '</dd></dl>' +
         '<h2 style="margin-top:1.2rem">Status</h2><div class="ao__acts"><select id="ss">' + SET.map(function (k) { return '<option value="' + k + '"' + (o.status === k ? ' selected' : '') + '>' + LABEL[k] + '</option>'; }).join('') + '</select></div><textarea id="sn" rows="2" placeholder="Note (optional)" style="margin-top:.4rem"></textarea><label style="display:flex;gap:.4rem;align-items:center;font-size:.86rem;margin-top:.4rem"><input type="checkbox" id="se" checked> Email the customer</label><button class="btn btn--dark btn--sm" id="sb" style="margin-top:.4rem">Update status</button>' +
-        '<div id="fx"></div><ul class="ao__hist">' + (o.history || []).slice().reverse().map(function (h) { return '<li><b>' + esc(LABEL[h.status] || h.status) + '</b> · ' + when(h.at) + (h.note ? ' — ' + esc(h.note) : '') + '</li>'; }).join('') + '</ul></div>' +
+        '<div id="fx"></div><div id="pr"></div><ul class="ao__hist">' + (o.history || []).slice().reverse().map(function (h) { return '<li><b>' + esc(LABEL[h.status] || h.status) + '</b> · ' + when(h.at) + (h.note ? ' — ' + esc(h.note) : '') + '</li>'; }).join('') + '</ul></div>' +
         '<div class="ao__card"><h2>Books</h2>' + (o.items || []).map(function (it) {
           var b = r.books[it.projectId] || { print: [], view: [], spine: [] }, bk = b.book || {}, tr = trim(bk);
           return '<div class="ao__book" data-pid="' + esc(it.projectId) + '"><img data-cov alt=""><div><b>' + esc(it.name) + '</b>' + (b.dir && b.dir !== it.projectId ? ' <span class="ao__b ao__b--fix">Corrected version ' + esc(b.dir.split('-r').pop()) + '</span>' : '') + (b.incoming ? '<span class="ao__msg">Correction ' + b.incoming.round + ' arriving: ' + b.incoming.print + ' of ' + (it.pages + 2) + ' files so far.</span>' : '') + (b.earlier && b.earlier.length ? '<span class="ao__msg">Earlier version' + (b.earlier.length > 1 ? 's' : '') + ' kept: ' + b.earlier.map(function (v) { return '<button class="ao__lnk" data-old="' + esc(v.dir) + '">' + (v.round ? 'correction ' + v.round : 'first version') + '</button>'; }).join(', ') + '</span>' : '') + '<span class="ao__msg">' + (it.product === 'print' ? 'Printed hardcover × ' + it.qty : 'Print-ready PDF (customer downloads it)') + ' · ' + it.pages + ' pages · ' + tr.w / 10 + ' × ' + tr.h / 10 + ' cm' + (tr.h === 297 ? ' (A4)' : '') + '</span>' +
@@ -135,7 +196,7 @@
             (b.view.length ? '<div class="ao__acts"><button class="btn btn--p btn--sm" data-prev>Preview book</button>' + (b.print.length ? '<button class="btn btn--dark btn--sm" data-pdf>Download print PDF</button><button class="btn btn--dark btn--sm" data-wrap>Download full cover</button><button class="btn btn--ghost btn--sm" data-pages>Show pages</button>' : '') + '</div><div class="ao__pages" data-grid hidden></div><span class="ao__msg" data-msg></span>' : (it.product === 'print' ? '<span class="ao__msg">The pages haven’t arrived yet. They send from the customer’s device after payment.</span>' : '')) + '</div></div>';
         }).join('') + '<p class="ao__msg">Print files: 000 = front cover, then the pages in order, last = back cover, each its own page at ' + ((BOOK.trimW || 210) + 6) + ' × ' + ((BOOK.trimH || 297) + 6) + ' mm (3 mm bleed) at 300 dpi; the PDF’s TrimBox is ' + (BOOK.trimW || 210) + ' × ' + (BOOK.trimH || 297) + ' mm. <b>Full cover</b> is the hardcover case in one piece: wrap · back · hinge · spine · hinge · front · wrap, sized for that book’s page count (numbers from Ciel Admin → Prices → Hardcover case).</p></div></div>';
       wireTop(); document.getElementById('bk').onclick = drawList;
-      fixBox(o, r);
+      fixBox(o, r); printerBox(o, r);
       var pyok = document.getElementById('pyok'), pyno = document.getElementById('pyno');
       if (pyok) pyok.onclick = function () { if (!confirm('Confirm that ' + money(o.total) + ' (code ' + o.payment.code + ') reached Paybill ' + o.payment.paybill + '?')) return; pyok.disabled = true; api('pbk-admin-confirm', { ref: o.ref, ok: true }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { pyok.disabled = false; alert(e.message); }); };
       if (pyno) pyno.onclick = function () { var note = prompt('Payment not found. A short note for the customer (optional):', ''); if (note === null) return; api('pbk-admin-confirm', { ref: o.ref, ok: false, note: note }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { alert(e.message); }); };
