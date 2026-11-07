@@ -32,6 +32,8 @@
     polaroid: { n: 'Framed', f: [[170, 200, 860, 1060]], border: 40 },
     wide: { n: 'Wide, edge to edge', f: [[0, 300, 1200, 900]] },
     twop: { n: 'Two portraits', f: [[90, 500, 495, 660], [615, 500, 495, 660]] },
+    twost: { n: 'Two tall, staggered', f: [[90, 90, 610, 813], [500, 794, 610, 813]], border: 14 },
+    twost2: { n: 'Two tall, staggered (other way)', f: [[500, 90, 610, 813], [90, 794, 610, 813]], border: 14 },
     lp: { n: 'Wide and tall', f: [[90, 90, 1020, 700], [308, 820, 583, 777]] },
     threel: { n: 'Three wide', f: [[90, 260, 1020, 765], [90, 1055, 495, 371], [615, 1055, 495, 371]] },
     threep: { n: 'Three tall', f: [[90, 443, 600, 800], [720, 443, 390, 385], [720, 858, 390, 385]] },
@@ -45,7 +47,10 @@
   function uid(p) { return (p || 'x') + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
   function $(s, r) { return (r || document).querySelector(s); }
-  function toast(msg, kind) { if (window.CielNote) return CielNote(msg, kind ? { kind: kind } : null); var t = el$.toast; t.textContent = msg; t.classList.add('is-on'); clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove('is-on'); }, 2600); }
+  /* only what the customer needs to know: something didn't work, or can't be done and why. Confirmations
+     ("Saved", "Moved", "Grouped"…) aren't announced: the change on the page says it. */
+  var IMPORTANT = /can[’']t|couldn|could not|not be used|up to|at least|already has|maximum|locked|only the first|your order is for|time for changes|holds up to|didn[’']t fit|not saved|isn[’']t|stopped|first:|too many|try again/i;
+  function toast(msg, kind) { if (kind !== 'err' && !IMPORTANT.test(String(msg || ''))) return; if (window.CielNote) return CielNote(msg, kind ? { kind: kind } : null); var t = el$.toast; t.textContent = msg; t.classList.add('is-on'); clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove('is-on'); }, 2600); }
 
   var I = {
     back: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
@@ -88,6 +93,49 @@
     down: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>',
     grid: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>'
   };
+
+  /* the item toolbar: one consistent line-icon set (24 grid, 1.75 stroke, round ends) */
+  (function () {
+    function ic(inner) { return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + inner + '</svg>'; }
+    function P(d) { return '<path d="' + d + '"/>'; }
+    function Rc(x, y, w, h, r) { return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="' + (r == null ? 1.5 : r) + '"/>'; }
+    var N = {
+      wand: ic(P('M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1') + '<circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>'),
+      crop: ic(P('M6 2v14a2 2 0 0 0 2 2h14M18 22V8a2 2 0 0 0-2-2H2')),
+      swap: ic(P('M3 12a9 9 0 0 1 15.3-6.4L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.3 6.4L3 16M3 21v-5h5')),
+      x: ic(Rc(3, 4, 18, 16, 2) + P('M4 5l16 14')),
+      dup: ic(Rc(8, 8, 13, 13, 2) + P('M4 16V5a1 1 0 0 1 1-1h11')),
+      copy: ic(Rc(8, 2, 8, 4, 1) + P('M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2')),
+      paste: ic(Rc(8, 2, 8, 4, 1) + P('M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M9 14l2 2 4-4')),
+      align: ic(P('M12 2v20') + Rc(5, 6, 14, 4) + Rc(8, 14, 8, 4)),
+      selmore: ic(P('M4 3l6.5 17 2.4-6.6L19.5 11zM18 16v6M15 19h6')),
+      brush: ic(P('M18.4 2.6a2.1 2.1 0 0 1 3 3L12 15l-3-3zM7.1 14.1c-1.7 0-3.1 1.4-3.1 3.1 0 1.2-.9 1.9-2 1.9 1 1.2 2.6 1.9 4.1 1.9 2.3 0 4-1.8 4-4 0-1.6-1.4-2.9-3-2.9z')),
+      fill: ic(P('M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3')),
+      up: ic(Rc(9, 3, 12, 12, 2) + P('M5 9v10a2 2 0 0 0 2 2h10')),
+      down: ic(Rc(3, 9, 12, 12, 2) + P('M9 5V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-1')),
+      lockb: ic(Rc(5, 11, 14, 10, 2) + P('M8 11V7a4 4 0 0 1 8 0v4')),
+      unlock: ic(Rc(5, 11, 14, 10, 2) + P('M8 11V7a4 4 0 0 1 7.8-1.3')),
+      trash: ic(P('M3 6h18M8 6V4.5A1.5 1.5 0 0 1 9.5 3h5A1.5 1.5 0 0 1 16 4.5V6M18.5 6l-.9 13.2A2 2 0 0 1 15.6 21H8.4a2 2 0 0 1-2-1.8L5.5 6M10 11v6M14 11v6')),
+      edit: ic(P('M16.9 3.6a2.4 2.4 0 0 1 3.5 3.5L8 19.5 3 21l1.5-5z')),
+      flip: ic(P('M12 3v2M12 9v2M12 15v2M12 21v-1M9 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M15 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4')),
+      undo: ic(P('M3 7v6h6M21 17a9 9 0 0 0-15.3-6.4L3 13')),
+      reset: ic(P('M3 12a9 9 0 1 0 2.6-6.4L3 8M3 3v5h5')),
+      group: ic(P('M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2') + Rc(7, 7, 7, 5, 1) + Rc(10, 12, 7, 5, 1)),
+      ungroup: ic(Rc(3, 3, 9, 7, 1.5) + Rc(12, 14, 9, 7, 1.5)),
+      check: ic(P('M20 6L9 17l-5-5')),
+      alch: ic(P('M12 2v20') + Rc(6, 5, 12, 5) + Rc(8, 14, 8, 5)),
+      alcv: ic(P('M2 12h20') + Rc(5, 6, 5, 12) + Rc(14, 8, 5, 8)),
+      all: ic(P('M4 2v20') + Rc(8, 5, 12, 5) + Rc(8, 14, 7, 5)),
+      alr: ic(P('M20 2v20') + Rc(4, 5, 12, 5) + Rc(9, 14, 7, 5)),
+      alt: ic(P('M2 4h20') + Rc(5, 8, 5, 12) + Rc(14, 8, 5, 7)),
+      alb: ic(P('M2 20h20') + Rc(5, 4, 5, 12) + Rc(14, 9, 5, 7)),
+      alpc: ic(Rc(3, 3, 18, 18, 2) + Rc(8.5, 8.5, 7, 7, 1) + P('M12 3v3M12 18v3M3 12h3M18 12h3')),
+      aldh: ic(P('M4 3v18M20 3v18') + Rc(9, 7, 6, 10, 1)),
+      aldv: ic(P('M3 4h18M3 20h18') + Rc(7, 9, 10, 6, 1)),
+      more: ic('<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>')
+    };
+    Object.keys(N).forEach(function (k) { I[k] = N[k]; });
+  })();
 
   /* ---------------- project ---------------- */
   function pageDoc(layout) {
@@ -348,7 +396,7 @@
   /* tips show once per device: after that people know how it works */
   function seenTip(t) { try { var k = 'pbk_tips', l = JSON.parse(localStorage.getItem(k) || '[]'); if (l.indexOf(t) >= 0) return true; l.push(t); localStorage.setItem(k, JSON.stringify(l.slice(-60))); } catch (e) { } return false; }
   function tip(t) { if (!seenTip(t)) toast(t, 'tip'); }
-  function hint(t) { if (seenTip(t)) return; if (window.CielNote) return CielNote(t, { kind: 'tip' }); var h = el$.hint; if (!h) return; h.textContent = t; h.classList.add('is-on'); clearTimeout(h._t); h._t = setTimeout(function () { h.classList.remove('is-on'); }, 6000); }
+  function hint(t) { return; /* tips are no longer popped up while editing */ if (seenTip(t)) return; if (window.CielNote) return CielNote(t, { kind: 'tip' }); var h = el$.hint; if (!h) return; h.textContent = t; h.classList.add('is-on'); clearTimeout(h._t); h._t = setTimeout(function () { h.classList.remove('is-on'); }, 6000); }
 
   function bindTop() {
     $('#peName').addEventListener('input', function () { S.p.name = this.value.slice(0, 60); save(); });
@@ -721,7 +769,7 @@
     var style = (e.t === 'photo' || e.t === 'img') && e.photo ? '<button data-a="cstyle">' + I.brush + '<span>Copy edits</span></button>' + (S.style ? '<button data-a="pstyle">' + I.brush + '<span>Paste edits</span></button>' : '') : '';
     var fixes = (hist ? '<button data-a="phundo">' + I.undo + '<span>Undo edit</span></button>' : '') + (edited ? '<button data-a="phreset">' + I.reset + '<span>Original</span></button>' : '');
     if (e.t === 'photo') {
-      if (S.crop) h = '<label class="pe-zoom">Zoom <input type="range" id="peZoom" min="1" max="4" step="0.01" value="' + ((e.crop && e.crop.z) || 1) + '"></label><button data-a="done" class="pe-done">Done</button>';
+      if (S.crop) h = '<label class="pe-zoom">Zoom <input type="range" id="peZoom" min="1" max="4" step="0.01" value="' + ((e.crop && e.crop.z) || 1) + '"></label><button data-a="done" class="pe-done">' + I.check + '<span>Done</span></button>';
       else h = (e.photo ? '<button data-a="edit-photo" class="pe-hl">' + I.wand + '<span>Edit photo</span></button>' + fixes + '<button data-a="crop">' + I.crop + '<span>Move &amp; zoom</span></button><button data-a="replace">' + I.swap + '<span>Replace</span></button>' : '<button data-a="replace" class="pe-hl">' + I.photo + '<span>Add photo</span></button>') +
         (e.photo ? '<button data-a="clear">' + I.x + '<span>Remove photo</span></button>' : '') + '<button data-a="dup">' + I.dup + '<span>Duplicate</span></button>' + more + style + '<button data-a="fill">' + I.fill + '<span>Fill page</span></button><button data-a="front">' + I.up + '<span>To front</span></button><button data-a="back">' + I.down + '<span>To back</span></button><button data-a="lock">' + I.lockb + '<span>Lock</span></button><button data-a="del" class="pe-del">' + I.trash + '<span>' + (e.photo ? 'Delete' : 'Delete frame') + '</span></button>';
     } else if (e.t === 'shape') {
@@ -740,7 +788,7 @@
       if (innerWidth <= 900) { kids.filter(function (x) { return PRI.indexOf(x.getAttribute('data-a')) < 0 && x.getAttribute('data-a') !== 'del'; }).concat(kids.filter(function (x) { return x.getAttribute('data-a') === 'del'; })).forEach(function (x) { tpl.appendChild(x); }); }
       else if (sec.length > 1) {
         kids.forEach(function (x) { var isP = PRI.indexOf(x.getAttribute('data-a')) >= 0; if (S.more ? isP : !isP) x.remove(); });
-        tpl.insertAdjacentHTML(S.more ? 'afterbegin' : 'beforeend', S.more ? '<button data-a="less">' + I.left + '<span>Back</span></button>' : '<button data-a="more"><span>More ⋯</span></button>');
+        tpl.insertAdjacentHTML(S.more ? 'afterbegin' : 'beforeend', S.more ? '<button data-a="less">' + I.left + '<span>Back</span></button>' : '<button data-a="more">' + I.more + '<span>More</span></button>');
         if (!S.more) tpl.insertBefore(tpl.querySelector('[data-a="del"]') || document.createTextNode(''), null);
       }
       h = tpl.innerHTML;
@@ -948,8 +996,8 @@
   function alignBar(bar) {
     var l = selEls(), many = l.length > 1;
     bar.innerHTML = '<span class="pe-lockmsg">Align ' + (many ? 'to each other' : 'on the page') + '</span>' +
-      [['ch', 'Centre ↔'], ['cv', 'Centre ↕'], ['l', 'Left'], ['r', 'Right'], ['t', 'Top'], ['b', 'Bottom']].map(function (x) { return '<button data-al="' + x[0] + '"><span>' + x[1] + '</span></button>'; }).join('') +
-      (many ? '<button data-al="pc"><span>Centre on page</span></button>' : '') + (l.length > 2 ? '<button data-al="dh"><span>Space evenly ↔</span></button><button data-al="dv"><span>Space evenly ↕</span></button>' : '') + '<button data-al="x">' + I.x + '<span>Done</span></button>';
+      [['ch', 'Centre', I.alch], ['cv', 'Middle', I.alcv], ['l', 'Left', I.all], ['r', 'Right', I.alr], ['t', 'Top', I.alt], ['b', 'Bottom', I.alb]].map(function (x) { return '<button data-al="' + x[0] + '">' + x[2] + '<span>' + x[1] + '</span></button>'; }).join('') +
+      (many ? '<button data-al="pc">' + I.alpc + '<span>Page centre</span></button>' : '') + (l.length > 2 ? '<button data-al="dh">' + I.aldh + '<span>Space ↔</span></button><button data-al="dv">' + I.aldv + '<span>Space ↕</span></button>' : '') + '<button data-al="x" class="pe-hl">' + I.check + '<span>Done</span></button>';
     bar.hidden = false; ctxPos();
     bar.onclick = function (ev) { var b = ev.target.closest('[data-al]'); if (!b) return; var a = b.getAttribute('data-al'); if (a === 'x') { S.alignOpen = false; ctxBar(); return; } align(a); };
   }
@@ -1206,7 +1254,12 @@
         d.els = d.els.filter(function (e) { return e.t !== 'photo'; });
         applyLayout(d, pl.layout);
         var fr = d.els.filter(function (e) { return e.t === 'photo'; });
-        pl.ids.forEach(function (id, x) { if (fr[x]) { fr[x].photo = id; fr[x].crop = pl.crops[x]; placed++; } });
+        pl.ids.forEach(function (id, x) {
+          if (!fr[x]) return;
+          fr[x].photo = id; fr[x].crop = pl.crops[x]; placed++;
+          /* simple pages: the frame takes the photo's own shape and sits in the middle of the page */
+          var rc = pl.rects && pl.rects[x]; if (rc) { fr[x].x = rc[0]; fr[x].y = rc[1]; fr[x].w = rc[2]; fr[x].h = rc[3]; }
+        });
       });
       if (all) {
         for (var r = plan.length; r < slots.length; r++) { var d2 = pages[slots[r]]; if (!d2.els.some(function (e) { return e.t !== 'photo'; })) { var L0 = pageDoc('one'); d2.els = L0.els; d2.layout = 'one'; } }

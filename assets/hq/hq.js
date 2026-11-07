@@ -62,7 +62,7 @@
     search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
     menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>'
   };
-  var NAV = [['overview', 'Overview', I.home, 'Main'], ['analytics', 'Analytics', I.chart], ['orders', 'Orders', I.orders, 'Commerce'], ['payments', 'Payments', I.card], ['products', 'Products', I.box], ['templates', 'Website templates', I.web], ['inbox', 'Inbox', I.inbox, 'Customers & sales'], ['leads', 'Leads', I.target], ['customers', 'Customers', I.people], ['projects', 'Projects', I.folder], ['website', 'Website editor', I.globe, 'Website'], ['content', 'Content library', I.image], ['calendar', 'Calendar', I.cal, 'Operations'], ['tasks', 'Tasks', I.tasks], ['activity', 'Activity log', I.act, 'System'], ['settings', 'Setup', I.gear]];
+  var NAV = [['overview', 'Overview', I.home, 'Main'], ['analytics', 'Analytics', I.chart], ['orders', 'Orders', I.orders, 'Commerce'], ['photobooks', 'Photo Books', I.book], ['payments', 'Payments', I.card], ['products', 'Products', I.box], ['templates', 'Website templates', I.web], ['inbox', 'Inbox', I.inbox, 'Customers & sales'], ['leads', 'Leads', I.target], ['customers', 'Customers', I.people], ['projects', 'Projects', I.folder], ['website', 'Website editor', I.globe, 'Website'], ['content', 'Content library', I.image], ['calendar', 'Calendar', I.cal, 'Operations'], ['tasks', 'Tasks', I.tasks], ['activity', 'Activity log', I.act, 'System'], ['settings', 'Setup', I.gear]];
 
   /* ---------- order sources, normalised ---------- */
   var KIND = { photobook: ['Photo book', '#ff5a1f'], shop: ['Shop', '#1f4fb5'], domain: ['Domain', '#5b3fd1'], whatsapp: ['WhatsApp', '#1fa855'] };
@@ -101,20 +101,32 @@
   function start() {
     api('/api/hq?route=me').then(function (m) { S.setup = m.setup; if (!m.signedIn) return login(m.setup); boot(); }, function () { login({}); });
   }
+  /* the logo: dark artwork on light screens, the white one on dark screens (never a colour-inverted copy) */
+  var LOGO = '<img class="lg lg--d" src="/assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa"><img class="lg lg--l" src="/assets/img/logo-light.png?v=20261108" alt="" aria-hidden="true">';
   function login(setup) {
     root.className = '';
-    root.innerHTML = '<div class="hq-login"><div class="hq-login__art"><img src="/assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa"><div><h1>Run all of Ciel Africa from one place.</h1><p>Orders from the shop, Photo Books and Ciel Domains, your calendar, tasks and customers.</p><ul><li>Orders</li><li>Calendar</li><li>Tasks</li><li>Customers</li><li>Website</li></ul></div><small style="color:#8a8076">Ciel Admin</small></div>' +
-      '<div class="hq-login__f"><form id="lf"><div class="hq-login__brand"><img src="/assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa"><span>Admin</span></div><h2>Sign in</h2><p>Use your admin password. You’ll stay signed in on this device for 30 days.</p>' + (setup && setup.adminPassword === false ? '<div class="hq-setup"><b>Set your admin password first.</b><br>In Vercel open the cielafrica project → Settings → Environment Variables → add <b>ADMIN_PASSWORD</b> with a strong password → Save → Deployments → Redeploy. Then sign in here with it.</div>' : '') +
-      '<input class="hq-in" type="password" id="pw" placeholder="Admin password" autocomplete="current-password" required><button class="b b--p" style="justify-content:center;padding:.8rem">Sign in</button><p class="hq-err" id="le"></p></form></div></div>';
+    var eye = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+    var eyeOff = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M10.6 5.1A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.1M6.6 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7a9.8 9.8 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+    root.innerHTML = '<div class="hq-login"><div class="hq-login__card"><div class="hq-login__logo">' + LOGO + '</div>' +
+      '<h1 class="hq-login__h">Welcome back</h1><p class="hq-login__sub">Sign in to Ciel Admin to manage orders, Photo Books, messages and the website.</p>' +
+      (setup && setup.adminPassword === false ? '<div class="hq-setup"><b>Set your admin password first.</b><br>In Vercel open the cielafrica project → Settings → Environment Variables → add <b>ADMIN_PASSWORD</b> with a strong password → Save → Deployments → Redeploy. Then sign in here with it.</div>' : '') +
+      '<form id="lf" class="hq-login__form" novalidate><label class="hq-login__lab" for="pw">Password</label><div class="hq-login__pw"><input type="password" id="pw" autocomplete="current-password" required autofocus><button type="button" id="pwv" aria-label="Show password" title="Show password">' + eye + '</button></div>' +
+      '<button class="hq-login__go" id="lgo" type="submit">Sign in</button><p class="hq-err" id="le" role="alert"></p></form>' +
+      '<p class="hq-login__note">You’ll stay signed in on this device for 30 days.</p></div>' +
+      '<a class="hq-login__back" href="/">← Back to cielafrica.com</a></div>';
+    var pw = document.getElementById('pw'), pv = document.getElementById('pwv'), go = document.getElementById('lgo');
+    pv.onclick = function () { var show = pw.type === 'password'; pw.type = show ? 'text' : 'password'; pv.innerHTML = show ? eyeOff : eye; pv.setAttribute('aria-label', show ? 'Hide password' : 'Show password'); pw.focus(); };
     document.getElementById('lf').onsubmit = function (e) {
-      e.preventDefault(); var le = document.getElementById('le'); le.textContent = 'Checking…';
-      api('/api/hq?route=login', { password: document.getElementById('pw').value }).then(function () { try { localStorage.setItem('pbk_admin', '1'); } catch (er) { } boot(); }, function (er) { le.textContent = er.message; });
+      e.preventDefault(); var le = document.getElementById('le'); le.textContent = '';
+      if (!pw.value) { le.textContent = 'Enter your password.'; pw.focus(); return; }
+      go.disabled = true; go.textContent = 'Signing in…';
+      api('/api/hq?route=login', { password: pw.value }).then(function () { try { localStorage.setItem('pbk_admin', '1'); } catch (er) { } boot(); }, function (er) { go.disabled = false; go.textContent = 'Sign in'; le.textContent = er.message; pw.select(); });
     };
   }
   function boot() {
     try { localStorage.setItem('pbk_admin', '1'); } catch (e) { }
     root.className = 'hq';
-    root.innerHTML = '<aside class="hq-side"><div class="hq-side__brand"><img src="/assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa"><span class="hq-side__tag">Admin</span></div><nav class="hq-nav" id="nav"></nav><div class="hq-side__foot"><a href="/" target="_blank" rel="noopener">cielafrica.com ↗</a><button id="lo">Sign out</button></div></aside>' +
+    root.innerHTML = '<aside class="hq-side"><div class="hq-side__brand">' + LOGO + '<span class="hq-side__tag">Admin</span></div><nav class="hq-nav" id="nav"></nav><div class="hq-side__foot"><a href="/" target="_blank" rel="noopener">cielafrica.com ↗</a><button id="lo">Sign out</button></div></aside>' +
       '<div class="hq-main"><header class="hq-top"><button class="hq-burger" id="burger" aria-label="Open menu">' + I.menu + '</button><button class="hq-srch" id="sk" title="Search (Ctrl+K)">' + I.search + '<span>Search everything…</span><kbd>Ctrl K</kbd></button><span class="hq-live" id="lv" title="Live">Live</span><button class="b b--sm" id="inst" hidden>Install app</button><button class="b b--sm" id="thm" title="Light or dark"></button><button class="b b--sm hq-bell" id="nb" title="Notifications">' + I.bell + '<i id="nbc" hidden></i></button><button class="b b--sm" id="rf" title="Refresh">' + I.ref + '<span>Refresh</span></button></header><div class="hq-ph"><h1 id="ttl"></h1><div id="topx"></div></div><main class="hq-body" id="body"><p class="muted">Loading…</p></main></div><nav class="hq-mnav" id="mnav"></nav>';
     document.getElementById('lo').onclick = function () { api('/api/hq?route=logout', {}).then(function () { try { localStorage.removeItem('pbk_admin'); } catch (e) { } login(S.setup || {}); }); };
     document.getElementById('rf').onclick = function () { refresh(true); };
@@ -221,7 +233,7 @@
     if (!NAV.some(function (n) { return n[0] === v; })) v = 'overview';
     document.querySelectorAll('.drawer,.modal').forEach(function (x) { x.remove(); });
     S.view = v; navs();
-    var titles = { overview: 'Good ' + (new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening') + ', Lorna', orders: 'Orders', calendar: 'Calendar', tasks: 'Tasks', customers: 'Customers', website: 'Website', settings: 'Setup', inbox: 'Inbox', content: 'Content library', activity: 'Activity log', payments: 'Payments', products: 'Products', templates: 'Website templates', leads: 'Leads', projects: 'Projects', analytics: 'Analytics' };
+    var titles = { overview: 'Good ' + (new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening') + ', Lorna', orders: 'Orders', calendar: 'Calendar', tasks: 'Tasks', customers: 'Customers', website: 'Website', settings: 'Setup', inbox: 'Inbox', content: 'Content library', activity: 'Activity log', payments: 'Payments', products: 'Products', templates: 'Website templates', photobooks: 'Photo Books', leads: 'Leads', projects: 'Projects', analytics: 'Analytics' };
     document.getElementById('ttl').innerHTML = esc(titles[v]) + '<small>' + new Date().toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + '</small>';
     document.getElementById('topx').innerHTML = v === 'calendar' ? '<button class="b b--p b--sm" data-newev>' + I.plus + '<span>Event</span></button>' : v === 'tasks' ? '<button class="b b--p b--sm" data-newtk>' + I.plus + '<span>Task</span></button>' : '';
     var tb = document.querySelector('[data-newev]'); if (tb) tb.onclick = function () { eventModal({ date: today() }); };
@@ -232,6 +244,8 @@
     else if (v === 'projects' && window.HQCrm) HQCrm.projects(h[1]);
     else if (v === 'customers' && window.HQCrm) HQCrm.customers();
     else if (v === 'analytics' && window.HQAnalytics) HQAnalytics.render();
+    else if (v === 'photobooks' && h[1] === 'prices' && window.HQSite) HQSite.renderCatalog('photobooks');
+    else if (v === 'photobooks') photobooks();
     else ({ overview: overview, orders: orders, inbox: inbox, calendar: calendar, tasks: tasks, customers: customers, content: content, activity: activity, payments: payments, settings: settings })[v]();
     if (v === 'orders' && h[1]) { var o = S.orders.filter(function (x) { return x.ref === h[1]; })[0]; if (o) orderDrawer(o); }
     if (v === 'inbox' && h[1]) { S.itab = 'web'; inbox(); var m = S.inbox.filter(function (x) { return x.id === h[1]; })[0]; if (m) msgDrawer(m); }
@@ -567,6 +581,45 @@
   function activity() {
     var b = body('<div class="card"><div class="card__h"><h2>Activity log</h2><span class="muted" style="font-size:.8rem">Sign-ins and website publishing</span></div><div id="al"><p class="empty">Loading…</p></div></div>');
     api('/api/hq?route=activity').then(function (r) { b.querySelector('#al').innerHTML = r.items.length ? '<table class="tbl"><thead><tr><th>When</th><th>What</th><th>Details</th></tr></thead><tbody>' + r.items.map(function (x) { return '<tr><td>' + dt(x.at) + '</td><td><b>' + esc(x.action) + '</b></td><td><small>' + esc(x.detail || '') + '</small></td></tr>'; }).join('') + '</tbody></table>' : '<p class="empty">Nothing recorded yet.</p>'; }, function (e) { b.querySelector('#al').innerHTML = '<p class="empty">' + esc(e.message) + '</p>'; });
+  }
+  /* ---------- Photo Books: orders, the customer side (editor, My books), prices ---------- */
+  function photobooks() {
+    var pb = S.orders.filter(function (o) { return o.kind === 'photobook'; }).sort(function (a, b) { return b.at - a.at; });
+    var real = pb.filter(function (o) { return !o.test; }), tests = pb.filter(function (o) { return o.test; });
+    var open = real.filter(function (o) { return o.paid && !CLOSED.test(o.status); });
+    var waiting = real.filter(function (o) { return o.paid && /^(paid|preparing)$/.test(o.status); });
+    var ready = real.filter(function (o) { return o.status === 'ready'; });
+    var tiles = [
+      ['frame', I.book, 'Orders & print files', 'Every page at print size, the spine as PNG, the print and cover PDFs (with a preview first), corrections and storage clean-up.', '/photobooks/orders?embed=1'],
+      ['tab', I.pen, 'Make a book as a customer', 'Opens the Photo Books store the way customers see it: pick a cover, add photos, let it arrange the pages, edit and order.', '/photobooks'],
+      ['tab', I.folder, 'My books', 'Books saved on this device, and orders placed from it. Open a book file (.cielbook) here to load a ready-made book.', '/photobooks/my-books'],
+      ['prices', I.card, 'Prices & pages', 'Book prices by page count, the price of each additional page and delivery.', '#photobooks/prices'],
+      ['tab', I.globe, 'Track an order', 'The page customers use to follow their order with its code.', '/photobooks/track']
+    ];
+    var row = function (o) { return '<tr data-o="' + esc(o.ref) + '" style="cursor:pointer"><td><b>' + esc(o.ref) + '</b>' + (o.test ? ' <span class="chip">TEST</span>' : '') + '<br><small class="muted">' + dt(o.at) + '</small></td><td>' + esc(o.customer.name || '') + '<br><small class="muted">' + esc(o.summary) + '</small></td><td><b>' + (o.test ? '<span class="muted">not paid</span>' : money(o.total)) + '</b></td><td><span class="chip">' + esc(o.label) + '</span></td></tr>'; };
+    var b = body(
+      '<div class="kpis"><div class="card kpi"><span>Open orders</span><b>' + open.length + '</b><small>paid and not delivered yet</small></div>' +
+      '<div class="card kpi"><span>Waiting for pages</span><b>' + waiting.length + '</b><small>paid, pages still uploading</small></div>' +
+      '<div class="card kpi"><span>Ready to print</span><b>' + ready.length + '</b><small>pages received</small></div>' +
+      '<div class="card kpi"><span>Test orders</span><b>' + tests.length + '</b><small>no payment · never counted</small></div></div>' +
+      '<div class="cards3" style="margin-top:1rem">' + tiles.map(function (t, i) { return '<button class="card tile" data-t="' + i + '"><span class="ico">' + t[1] + '</span><h3>' + t[2] + (t[0] === 'tab' ? ' <small class="muted" style="font-weight:500">↗</small>' : '') + '</h3><p>' + t[3] + '</p></button>'; }).join('') + '</div>' +
+      '<div class="card" style="margin-top:1rem"><div class="card__h"><h2>Try it as a customer</h2></div><div class="card__b" style="display:grid;gap:.55rem;line-height:1.55">' +
+      '<p>1. Open <b>Make a book as a customer</b>. Everything works as it does for a customer: covers, adding photos, automatic arranging, the editor and checkout.</p>' +
+      '<p>2. Your books are saved in this browser and appear in <b>My books</b> on this device. To open the Serengeti or Dubai test books, use <b>My books → Open a book file</b> and pick the .cielbook file.</p>' +
+      '<p>3. At checkout you’ll see <b>Place test order (no payment)</b>, because you’re signed in to Ciel Admin on this device. It creates a real order code, uploads the pages and shows up here and in Orders marked <b>TEST</b>. No money is taken and it never counts as revenue.</p>' +
+      '<p class="muted">Customers never see the test-order button. To pay for real you’d go through M-Pesa like any customer.</p></div></div>' +
+      '<div class="card" style="margin-top:1rem"><div class="card__h"><h2>Photo Book orders</h2><a class="b b--sm" href="#orders">All orders</a></div>' +
+      (pb.length ? '<div style="overflow:auto"><table class="tbl"><thead><tr><th>Order</th><th>Customer · book</th><th>Total</th><th>Status</th></tr></thead><tbody>' + pb.slice(0, 30).map(row).join('') + '</tbody></table></div>' : '<p class="empty">' + (S.sources && S.sources.photobook && S.sources.photobook !== 'ok' ? esc(S.sources.photobook) : 'No Photo Book orders yet.') + '</p>') + '</div>'
+    );
+    b.querySelectorAll('[data-t]').forEach(function (x) {
+      x.onclick = function () {
+        var t = tiles[+x.getAttribute('data-t')];
+        if (t[0] === 'frame') frame(t[2], t[4]);
+        else if (t[0] === 'prices') location.hash = t[4];
+        else window.open(t[4], '_blank', 'noopener');
+      };
+    });
+    b.querySelectorAll('[data-o]').forEach(function (x) { x.onclick = function () { location.hash = '#orders/' + x.getAttribute('data-o'); }; });
   }
   function website() {
     var tiles = [
