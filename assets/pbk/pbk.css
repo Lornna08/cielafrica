@@ -1253,3 +1253,11 @@ body.pbk-editing .pk{background:#efeae2}
 .pe-vers{display:grid;gap:.4rem;max-height:50vh;overflow:auto;margin-top:.6rem}.pe-vers>div{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.55rem .7rem;border:1px solid #eee3d4;border-radius:10px}.pe-vers b{display:block;font-size:.9rem}.pe-vers small{color:#8a7c6c;font-size:.78rem}
 .pe-ro{position:fixed;z-index:60;left:50%;top:calc(var(--pe-top) + 10px);transform:translateX(-50%);width:min(560px,calc(100vw - 24px));display:flex;gap:.8rem;align-items:center;padding:.8rem 1rem;border-radius:14px;background:#fffbea;border:1px solid #f3e1a0;box-shadow:0 10px 30px rgba(0,0,0,.15);font-size:.86rem;line-height:1.4}.pe-ro b{display:block}.pe-ro>div{flex:1}
 .pe.is-moving .pe-canvaswrap:not(.is-wrap)::after{content:"";position:absolute;inset:1.68% 2.38%;border:1px dashed rgba(232,54,143,.45);pointer-events:none;z-index:3}
+.pe-shapes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;margin-top:.6rem}
+.pe-shapes button{display:flex;flex-direction:column;align-items:center;gap:.3rem;padding:.55rem .2rem;border:1px solid #eee3d4;border-radius:12px;background:#fff;cursor:pointer;font-size:.72rem;color:#3d3833}
+.pe-shapes button:hover{border-color:#ff5a1f}.pe-shapes svg{width:34px;height:34px;color:#1b1714}
+.pe-tpls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem;margin:.5rem 0}
+.pe-tpl{position:relative}.pe-tpl>button:first-child{width:100%;display:flex;flex-direction:column;align-items:center;gap:.25rem;border:1px solid #eee3d4;border-radius:10px;background:#fff;padding:.35rem;cursor:pointer;font-size:.72rem}
+.pe-tpl canvas{width:100%;height:auto;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.pe-tpl__x{position:absolute;top:4px;right:4px;width:22px;height:22px;display:grid;place-items:center;border:0;border-radius:50%;background:rgba(27,23,20,.8);color:#fff;cursor:pointer;padding:0}.pe-tpl__x svg{width:12px;height:12px}
+.pe-sw2{width:26px;height:26px;flex:none;border-radius:50%;border:2px solid rgba(255,255,255,.6);background:var(--c);cursor:pointer;padding:0;margin:0 2px}.pe-sw2.is-on{outline:2px solid #ff5a1f;outline-offset:2px}

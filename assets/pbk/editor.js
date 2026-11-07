@@ -23,7 +23,13 @@
     twov: { n: 'Two, stacked', f: [[90, 90, 1020, 735], [90, 865, 1020, 735]] },
     twoh: { n: 'Two, side by side', f: [[90, ay(330), 495, 900], [615, ay(330), 495, 900]] },
     collage: { n: 'Two, overlapping', f: [[90, 110, 690, 935], [430, 880, 680, 720]], border: 14 },
-    bigsmall: { n: 'Big and small', f: [[0, 0, 1200, 1075], [640, 1125, 470, 470]] }
+    bigsmall: { n: 'Big and small', f: [[0, 0, 1200, 1075], [640, 1125, 470, 470]] },
+    three: { n: 'Three', f: [[90, 90, 1020, 760], [90, 880, 495, 727], [615, 880, 495, 727]] },
+    threev: { n: 'Three, stacked', f: [[90, 90, 1020, 487], [90, 605, 1020, 487], [90, 1120, 1020, 487]] },
+    four: { n: 'Four', f: [[90, 90, 495, 744], [615, 90, 495, 744], [90, 864, 495, 744], [615, 864, 495, 744]] },
+    six: { n: 'Six', f: [[90, 90, 495, 485], [615, 90, 495, 485], [90, 605, 495, 485], [615, 605, 495, 485], [90, 1120, 495, 485], [615, 1120, 495, 485]] },
+    fullduo: { n: 'Two, full bleed', f: [[0, 0, 1200, 846], [0, 851, 1200, 846]] },
+    polaroid: { n: 'Framed', f: [[170, 200, 860, 1060]], border: 40 }
   };
   var COLORS = ['#ffffff', '#faf6ef', '#f4ecdf', '#fbd3dc', '#ffe27a', '#86d6e8', '#c8e6c9', '#cfe8ff', '#e5383b', '#ff4f9a', '#ff7a2e', '#2f80ed', '#0f5c3a', '#1f3c74', '#3b2314', '#141414'];
 
@@ -488,7 +494,7 @@
     if (sd !== S.cur) { S.cur = sd; S.sel = null; S.crop = false; S.target = null; draw(); drawStripSel(); ctxBar(); if (S.panel && S.panel !== 'photos' && S.panel !== 'stickers') openPanel(S.panel, false); }
     return true;
   }
-  function select(id) { if (id !== S.sel) { S.more = false; S.alignOpen = false; } S.sel = id; S.multi = null; if (!id) { S.crop = false; S.pick = false; } placeSel(); ctxBar(); }
+  function select(id) { if (id !== S.sel) { S.more = false; S.alignOpen = false; S.colorOpen = false; } S.sel = id; S.multi = null; if (!id) { S.crop = false; S.pick = false; } placeSel(); ctxBar(); }
   /** several elements selected at once (shift/ctrl click, "Select more", or a group) */
   function selectMany(ids) { ids = ids.filter(function (v, i) { return ids.indexOf(v) === i; }); if (ids.length < 2) return select(ids[0] || null); S.sel = ids[ids.length - 1]; S.multi = ids; S.crop = false; placeSel(); ctxBar(); }
   function selEls() { var d = doc(); if (S.multi) return (d.els || []).filter(function (e) { return S.multi.indexOf(e.id) >= 0; }); var e = selEl(); return e ? [e] : []; }
@@ -578,7 +584,7 @@
       } else if (drag.mode === 'resize') {
         el$.pe.classList.add('is-moving');
         var b0 = drag.b, ax = drag.h.indexOf('w') >= 0 ? b0.x + b0.w : b0.x, ay = drag.h.indexOf('n') >= 0 ? b0.y + b0.h : b0.y;
-        var keep = e.t !== 'photo' || ev.shiftKey;
+        var keep = (e.t !== 'photo' && e.t !== 'shape') || ev.shiftKey;
         var nw = Math.abs(p.x - ax), nh = Math.abs(p.y - ay);
         if (keep) { var sc = Math.max(nw / b0.w, nh / b0.h); sc = Math.max(0.1, sc); nw = b0.w * sc; nh = b0.h * sc; }
         nw = Math.max(60, nw); nh = Math.max(40, nh);
@@ -641,6 +647,7 @@
     var h = '';
     if (S.multi) { multiBar(bar); return; }
     if (S.alignOpen) { alignBar(bar); return; }
+    if (S.colorOpen && e.t === 'shape') { colorBar(bar); return; }
     if (e.lock) {
       bar.innerHTML = '<span class="pe-lockmsg">' + I.lockb + ' Locked</span><button data-a="unlock" class="pe-hl">' + I.unlock + '<span>Unlock</span></button>'; bar.hidden = false; ctxPos();
       bar.onclick = function (ev) { if (ev.target.closest('[data-a="unlock"]')) { var x = selEl(); if (x) { delete x.lock; commit(); placeSel(); ctxBar(); } } };
@@ -653,7 +660,9 @@
     if (e.t === 'photo') {
       if (S.crop) h = '<label class="pe-zoom">Zoom <input type="range" id="peZoom" min="1" max="4" step="0.01" value="' + ((e.crop && e.crop.z) || 1) + '"></label><button data-a="done" class="pe-done">Done</button>';
       else h = (e.photo ? '<button data-a="edit-photo" class="pe-hl">' + I.wand + '<span>Edit photo</span></button>' + fixes + '<button data-a="crop">' + I.crop + '<span>Move &amp; zoom</span></button><button data-a="replace">' + I.swap + '<span>Replace</span></button>' : '<button data-a="replace" class="pe-hl">' + I.photo + '<span>Add photo</span></button>') +
-        (e.photo ? '<button data-a="clear">' + I.x + '<span>Remove photo</span></button>' : '') + '<button data-a="dup">' + I.dup + '<span>Duplicate</span></button>' + more + style + '<button data-a="front">' + I.up + '<span>To front</span></button><button data-a="lock">' + I.lockb + '<span>Lock</span></button><button data-a="del" class="pe-del">' + I.trash + '<span>' + (e.photo ? 'Delete' : 'Delete frame') + '</span></button>';
+        (e.photo ? '<button data-a="clear">' + I.x + '<span>Remove photo</span></button>' : '') + '<button data-a="dup">' + I.dup + '<span>Duplicate</span></button>' + more + style + '<button data-a="fill"><span>Fill page</span></button><button data-a="front">' + I.up + '<span>To front</span></button><button data-a="back">' + I.up + '<span>To back</span></button><button data-a="lock">' + I.lockb + '<span>Lock</span></button><button data-a="del" class="pe-del">' + I.trash + '<span>' + (e.photo ? 'Delete' : 'Delete frame') + '</span></button>';
+    } else if (e.t === 'shape') {
+      h = '<button data-a="color" class="pe-hl"><span>Colour</span></button><button data-a="dup">' + I.dup + '<span>Duplicate</span></button><button data-a="align">' + I.align + '<span>Align</span></button>' + more + '<button data-a="front">' + I.up + '<span>To front</span></button><button data-a="back">' + I.up + '<span>To back</span></button><button data-a="lock">' + I.lockb + '<span>Lock</span></button><button data-a="del" class="pe-del">' + I.trash + '<span>Delete</span></button>';
     } else if (e.t === 'text') {
       h = '<button data-a="edit">' + I.edit + '<span>Edit text</span></button><button data-a="dup">' + I.dup + '<span>Duplicate</span></button>' + more + '<button data-a="front">' + I.up + '<span>To front</span></button><button data-a="lock">' + I.lockb + '<span>Lock</span></button><button data-a="del" class="pe-del">' + I.trash + '<span>Delete</span></button>';
     } else {
@@ -663,7 +672,7 @@
     /* the most used actions first; the rest behind More */
     if (!S.crop && !S.pick) {
       var tpl = document.createElement('div'); tpl.innerHTML = h;
-      var PRI = ['edit-photo', 'phundo', 'phreset', 'crop', 'replace', 'dup', 'align', 'del', 'edit', 'swap'];
+      var PRI = ['edit-photo', 'phundo', 'phreset', 'crop', 'replace', 'dup', 'align', 'del', 'edit', 'swap', 'color'];
       var kids = [].slice.call(tpl.children), sec = kids.filter(function (x) { return PRI.indexOf(x.getAttribute('data-a')) < 0; });
       if (sec.length > 1) {
         kids.forEach(function (x) { var isP = PRI.indexOf(x.getAttribute('data-a')) >= 0; if (S.more ? isP : !isP) x.remove(); });
@@ -693,6 +702,9 @@
       else if (a === 'copy') copySel();
       else if (a === 'paste') paste();
       else if (a === 'align') { S.alignOpen = true; ctxBar(); }
+      else if (a === 'color') { S.colorOpen = true; ctxBar(); }
+      else if (a === 'back') { var d2 = doc(); d2.els.splice(d2.els.indexOf(e), 1); d2.els.unshift(e); commit(); draw(); }
+      else if (a === 'fill') { pushPh(e); e.x = 0; e.y = 0; e.w = W; e.h = S.cur < 0 ? BRAND_TOP : H; e.rot = 0; delete e.border; commit(); draw(); placeSel(); toast('The photo now fills the page to the edges (full bleed).'); }
       else if (a === 'pick') { S.pick = true; S.more = false; ctxBar(); }
       else if (a === 'cstyle') { S.style = { fx: e.fx ? clone(e.fx) : null, rot: e.rot || 0, border: e.border || 0, borderColor: e.borderColor || null, flip: !!e.flip, z: e.crop && e.crop.z || 1, mask: null }; toast('Edits copied. Select another photo and tap Paste edits.'); ctxBar(); }
       else if (a === 'pstyle') pasteStyle();
@@ -1178,6 +1190,9 @@
       else h = head('Page layout', 'Start from a layout, or add photos straight onto the page. You can move, resize and align everything.') + '<div class="pe-row"><button class="btn btn--dark btn--sm" data-act="frame">' + I.frame + ' Add a photo frame</button></div><div class="pe-layouts">' + Object.keys(LAYOUTS).map(function (k) {
         var L = LAYOUTS[k]; return '<button class="pe-lay' + (doc().layout === k ? ' is-on' : '') + '" data-lay="' + k + '" title="' + L.n + '"><svg viewBox="0 0 120 ' + Math.round(H / 10) + '">' + L.f.map(function (f) { return '<rect x="' + f[0] / 10 + '" y="' + f[1] / 10 + '" width="' + f[2] / 10 + '" height="' + f[3] / 10 + '" rx="1.5"/>'; }).join('') + '</svg><span>' + L.n + '</span></button>';
       }).join('') + '</div>' +
+        '<div class="pe-sub"><h4>Use on more pages</h4><div class="pe-row"><button class="btn btn--ghost btn--sm" data-act="layall"' + (doc().layout ? '' : ' disabled') + '>Use this layout on every empty page</button></div>' +
+        '<h4>My page designs</h4><p class="pe-note">Save this page’s arrangement (frames, words, shapes) and reuse it on any page. Photos aren’t copied: the frames wait for new ones.</p><div class="pe-row"><button class="btn btn--ghost btn--sm" data-act="tplsave">' + I.plus + ' Save this page’s design</button></div>' +
+        ((S.p.tpls || []).length ? '<div class="pe-tpls">' + S.p.tpls.map(function (t, i) { return '<div class="pe-tpl"><button data-act="tpluse:' + i + '"><canvas width="90" height="127" data-tpl="' + i + '"></canvas><span>' + esc(t.name) + '</span></button><button class="pe-tpl__x" data-act="tpldel:' + i + '" aria-label="Delete this design">' + I.x + '</button></div>'; }).join('') + '</div>' : '') + '</div>' +
         '<div class="pe-sub"><h4>Pages</h4><div class="pe-row"><button class="btn btn--ghost btn--sm" data-act="addpages">' + I.plus + ' Add 2 pages</button><button class="btn btn--ghost btn--sm" data-act="delpage">' + I.trash + ' Remove this page</button></div><div class="pe-row"><button class="btn btn--ghost btn--sm" data-act="mvl">' + I.left + ' Move earlier</button><button class="btn btn--ghost btn--sm" data-act="mvr">Move later ' + I.right + '</button></div></div>';
     } else if (name === 'text') {
       var e = selEl(), isText = e && e.t === 'text';
@@ -1196,11 +1211,11 @@
         if (S.cur < 0) { var t = C.TPL[S.p.tpl]; if (t && t.kind === 'raster') h += rasterNote(t); }
       }
     } else if (name === 'stickers') {
-      var tab = S.stab || 'all'; if (['all', 'classic', 'stickers', 'emoji', 'words', 'mine'].indexOf(tab) < 0) tab = S.stab = 'all';
+      var tab = S.stab || 'all'; if (['all', 'classic', 'stickers', 'emoji', 'words', 'shapes', 'mine'].indexOf(tab) < 0) tab = S.stab = 'all';
       h = head(S.replaceArt ? 'Replace artwork' : 'Stickers', S.replaceArt ? 'Choose what goes in its place.' : 'Tap to add, then drag and resize.') +
         '<label class="pe-q"><input type="search" id="peSq" placeholder="Search: Paris, safari, beach, flowers…"></label>' +
-        '<div class="pe-tabs">' + [['all', 'All'], ['classic', 'Stickers'], ['stickers', 'Travel art'], ['emoji', 'Emoji'], ['words', 'Words'], ['mine', 'My uploads']].map(function (x) { return '<button data-stab="' + x[0] + '"' + (tab === x[0] ? ' class="is-on"' : '') + '>' + x[1] + '</button>'; }).join('') + '</div>' +
-        '<div id="peStk">' + stickerGrid('', tab) + '</div>';
+        '<div class="pe-tabs">' + [['all', 'All'], ['classic', 'Stickers'], ['stickers', 'Travel art'], ['emoji', 'Emoji'], ['words', 'Words'], ['shapes', 'Shapes'], ['mine', 'My uploads']].map(function (x) { return '<button data-stab="' + x[0] + '"' + (tab === x[0] ? ' class="is-on"' : '') + '>' + x[1] + '</button>'; }).join('') + '</div>' +
+        '<div id="peStk">' + (tab === 'shapes' ? shapeGrid() : stickerGrid('', tab)) + '</div>';
     } else if (name === 'colors') {
       var d = doc(), isCov = S.cur < 0, tt = isCov && C.TPL[S.p.tpl];
       h = head(isCov ? 'Cover colours' : 'Page colour');
@@ -1357,7 +1372,8 @@
     }
     var ts = $('#peTs', P);
     if (ts) { ts.addEventListener('input', function () { var e = selEl(); if (!e) return; var v = +ts.value; if (e.cap) e.cap = v; else e.size = v / 0.7; if (e.align === 'fill' && e.cap) e.w = Math.max(e.w, 200); clampEl(e); draw(); }); ts.addEventListener('change', function () { commit(); drawThumb(S.cur); }); }
-    var sq = $('#peSq', P); if (sq) sq.addEventListener('input', function () { $('#peStk').innerHTML = stickerGrid(sq.value, S.stab || 'all'); loadMine(); });
+    var sq = $('#peSq', P); if (sq) sq.addEventListener('input', function () { $('#peStk').innerHTML = stickerGrid(sq.value, (S.stab === 'shapes' ? 'all' : S.stab) || 'all'); loadMine(); });
+    P.querySelectorAll('canvas[data-tpl]').forEach(function (cv) { var t = (S.p.tpls || [])[+cv.getAttribute('data-tpl')]; if (!t) return; var d = { bg: t.bg, els: t.els }; R.load(d, { photo: photoUrl }).then(function () { var g = cv.getContext('2d'); R.draw(g, d, { scale: cv.width / W, scaleY: cv.height / H, photo: photoUrl, empty: 'soft' }); }); });
     if (name === 'stickers') loadMine();
     P.querySelectorAll('[data-spf]').forEach(function (b) { b.onclick = function () { S.p.spine = S.p.spine || {}; S.p.spine.font = b.getAttribute('data-spf'); R.loadFam && R.loadFam(S.p.spine.font); R.loadAllFonts(); commit(); if (!isCoverIdx()) go(-1); draw(); mockSoon(); openPanel('spine', true); setTimeout(draw, 400); }; });
     var spz = $('#peSpSz', P); if (spz) { spz.addEventListener('input', function () { S.p.spine = S.p.spine || {}; S.p.spine.scale = +spz.value / 100; draw(); }); spz.addEventListener('change', function () { commit(); mockSoon(); }); }
@@ -1381,6 +1397,11 @@
     S.p.cover = nd; commit();
   }
   function doAct(a) {
+    if (a.indexOf('shape:') === 0) return addShape(a.slice(6));
+    if (a === 'layall') { var key = doc().layout, n = 0; if (!LAYOUTS[key]) return; S.p.pages.forEach(function (d, i) { if (i !== S.cur && blankDoc(d)) { applyLayout(d, key); n++; drawThumb(i); } }); commit(); toast(n ? 'Layout used on ' + n + ' empty page' + (n === 1 ? '' : 's') + '.' : 'There are no empty pages.'); return; }
+    if (a === 'tplsave') { var d0 = doc(), nm = prompt('Name this design', 'Design ' + (((S.p.tpls || []).length) + 1)); if (nm === null) return; var els = clone(d0.els || []).map(function (e) { if (e.t === 'photo') { e.photo = null; delete e.fx; delete e.mask; delete e.rect; e.crop = { z: 1, cx: .5, cy: .5 }; } return e; }); S.p.tpls = (S.p.tpls || []).concat([{ name: (nm || 'My design').slice(0, 30), bg: d0.bg, els: els }]).slice(-12); commit(); openPanel('layouts', true); toast('Saved. Tap it on any page to use it.'); return; }
+    if (a.indexOf('tpluse:') === 0) { var t = (S.p.tpls || [])[+a.slice(7)]; if (!t) return; var d1 = doc(), keep = d1.els.filter(function (e) { return e.t === 'photo' && e.photo; }).map(function (e) { return e.photo; }), ne = clone(t.els).map(function (e) { e.id = uid(e.t === 'photo' ? 'ph' : e.t); return e; }); ne.filter(function (e) { return e.t === 'photo'; }).forEach(function (e, k) { if (keep[k]) e.photo = keep[k]; }); var lost = Math.max(0, keep.length - ne.filter(function (e) { return e.t === 'photo'; }).length); d1.els = ne; if (t.bg) d1.bg = t.bg; delete d1.layout; select(null); commit(); draw(); toast(lost ? 'Design used. ' + lost + ' photo' + (lost === 1 ? '' : 's') + ' didn’t fit and went back to your library.' : 'Design used on this page.'); return; }
+    if (a.indexOf('tpldel:') === 0) { if (!confirm('Delete this saved design? Pages already using it stay as they are.')) return; S.p.tpls.splice(+a.slice(7), 1); commit(); openPanel('layouts', true); return; }
     if (a === 'add') { S.importTarget = S.target || null; el$.file.click(); }
     else if (a === 'retry') { var bl = (S.importBad || []).map(function (x) { return x.file; }); S.importBad = null; importFiles(bl, true); }
     else if (a === 'badok') { S.importBad = null; openPanel('photos', true); }
@@ -1473,6 +1494,36 @@
         tip('Sticker added. Drag the corners to resize it.');
       });
     }).catch(function (e) { toast(e.message || 'That file could not be used.'); });
+  }
+  var SHAPES = [['rect', 'Rectangle'], ['round', 'Rounded'], ['circle', 'Circle'], ['line', 'Line'], ['frame', 'Border'], ['ring', 'Ring'], ['pageborder', 'Page border'], ['band', 'Colour band']];
+  function shapeGrid() {
+    return '<p class="pe-note">Simple shapes for a clean, designed look. Change the colour from the toolbar.</p><div class="pe-shapes">' + SHAPES.map(function (x) {
+      var k = x[0], svg = k === 'circle' ? '<circle cx="24" cy="24" r="16"/>' : k === 'ring' ? '<circle cx="24" cy="24" r="15" fill="none" stroke-width="4"/>' : k === 'line' ? '<rect x="6" y="22" width="36" height="4" rx="1"/>' : k === 'frame' ? '<rect x="9" y="9" width="30" height="30" fill="none" stroke-width="4"/>' : k === 'pageborder' ? '<rect x="12" y="6" width="24" height="36" fill="none" stroke-width="2.5"/>' : k === 'band' ? '<rect x="6" y="30" width="36" height="10"/>' : k === 'round' ? '<rect x="8" y="12" width="32" height="24" rx="8"/>' : '<rect x="8" y="12" width="32" height="24"/>';
+      return '<button data-act="shape:' + k + '"><svg viewBox="0 0 48 48" fill="currentColor" stroke="currentColor">' + svg + '</svg><span>' + x[1] + '</span></button>';
+    }).join('') + '</div>';
+  }
+  function addShape(k) {
+    var d = doc(), c = '#1b1714', e = { id: uid('shape'), t: 'shape', color: c };
+    if (k === 'rect') Object.assign(e, { shape: 'rect', x: 400, y: ay(700), w: 400, h: 280, r: 0 });
+    else if (k === 'round') Object.assign(e, { shape: 'rect', x: 400, y: ay(700), w: 400, h: 280, r: 40 });
+    else if (k === 'circle') Object.assign(e, { shape: 'circle', x: 450, y: ay(700), w: 300, h: 300 });
+    else if (k === 'ring') Object.assign(e, { shape: 'ring', x: 450, y: ay(700), w: 300, h: 300, lw: 12 });
+    else if (k === 'line') Object.assign(e, { shape: 'rect', x: 300, y: ay(800), w: 600, h: 8, r: 0 });
+    else if (k === 'frame') Object.assign(e, { shape: 'frame', x: 300, y: ay(560), w: 600, h: 600, lw: 14 });
+    else if (k === 'pageborder') Object.assign(e, { shape: 'frame', x: 50, y: 50, w: W - 100, h: H - 100, lw: 8, color: '#b08d57' });
+    else if (k === 'band') Object.assign(e, { shape: 'rect', x: 0, y: H - 260, w: W, h: 260, r: 0, color: '#f3ece0' });
+    d.els.push(e); commit(); select(e.id); draw(); if (innerWidth < 900) openPanel(null);
+  }
+  var SWATCH = ['#1b1714', '#ffffff', '#ff5a1f', '#b08d57', '#f3ece0', '#c4512b', '#0f5c3a', '#1e4fae', '#e8a5b4', '#ffd36b', '#7a5a46', '#9aa5b1'];
+  function colorBar(bar) {
+    var e = selEl();
+    bar.innerHTML = '<span class="pe-lockmsg">Colour</span>' + SWATCH.map(function (c) { return '<button class="pe-sw2' + (e && e.color === c ? ' is-on' : '') + '" data-c="' + c + '" style="--c:' + c + '" aria-label="' + c + '"></button>'; }).join('') + (e && (e.shape === 'frame' || e.shape === 'ring') ? '<button data-lw="-"><span>Thinner</span></button><button data-lw="+"><span>Thicker</span></button>' : '') + '<button data-c="x">' + I.x + '<span>Done</span></button>';
+    bar.hidden = false; ctxPos();
+    bar.onclick = function (ev) {
+      var b = ev.target.closest('[data-c],[data-lw]'), x = selEl(); if (!b || !x) return;
+      if (b.hasAttribute('data-lw')) { x.lw = Math.max(2, Math.min(60, (x.lw || 12) + (b.getAttribute('data-lw') === '+' ? 4 : -4))); commit(); draw(); return; }
+      var c = b.getAttribute('data-c'); if (c === 'x') { S.colorOpen = false; ctxBar(); return; } x.color = c; commit(); draw(); colorBar(bar);
+    };
   }
   function addArt(id) {
     if (S.replaceArt) { var a0 = A.all[id], b0 = a0.b.split(' ').map(Number); return replaceWith({ t: 'art', art: id }, b0[0] / b0[1]); }
