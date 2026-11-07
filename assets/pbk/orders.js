@@ -277,14 +277,22 @@
         var pg = el.querySelector('[data-pages]'), grid = el.querySelector('[data-grid]');
         if (pg) pg.onclick = function () {
           grid.hidden = !grid.hidden; if (grid.innerHTML) return;
-          grid.innerHTML = b.print.map(function (f, i) { var v = b.view[i]; return '<button data-f="' + esc(f.path) + '" title="Download ' + esc(f.path.split('/').pop()) + '"><img data-v="' + esc(v ? v.path : '') + '" alt="">' + (i === 0 ? 'Cover' : i === b.print.length - 1 ? 'Back' : 'Page ' + i) + '</button>'; }).join('');
-          grid.querySelectorAll('img[data-v]').forEach(function (im) { var p = im.getAttribute('data-v'); if (p) file(p).then(function (bl) { im.src = URL.createObjectURL(bl); }); });
-          grid.querySelectorAll('[data-f]').forEach(function (bt) { bt.onclick = function () { var p = bt.getAttribute('data-f'); file(p).then(function (bl) { save(bl, o.ref + '-' + it.projectId + '-' + p.split('/').pop()); }); }; });
+          var lbl = function (i) { return i === 0 ? 'Cover' : i === b.print.length - 1 ? 'Back' : 'Page ' + i; }, thumbs = [], spThumb = null;
+          grid.innerHTML = b.print.map(function (f, i) { var v = b.view[i]; return '<button data-f="' + esc(f.path) + '" data-k="' + i + '" title="Preview ' + esc(lbl(i)) + ' (then download it)"><img data-v="' + esc(v ? v.path : '') + '" data-k="' + i + '" alt="">' + lbl(i) + '</button>'; }).join('');
+          grid.querySelectorAll('img[data-v]').forEach(function (im) { var p = im.getAttribute('data-v'); if (p) file(p).then(function (bl) { im.src = thumbs[+im.getAttribute('data-k')] = URL.createObjectURL(bl); }); });
+          /* a page opens large first (like the PDF preview); Download is in the preview */
+          var viewer = function (k) {
+            var items = b.print.map(function (f, i) { return { label: lbl(i), thumb: thumbs[i] || null, name: o.ref + '-' + it.projectId + '-' + f.path.split('/').pop(), note: 'print file', full: function () { return file(f.path); } }; });
+            items.push({ label: 'Spine', clear: true, thumb: spThumb, note: 'no background', name: o.ref + '-' + it.projectId + '-spine-' + spineMm(it.pages) + 'mm.png', full: function () { return spineCanvas(b, it, true).then(function (c) { if (!c) throw new Error('no spine design'); return new Promise(function (ok) { c.toBlob(ok, 'image/png'); }); }); } });
+            if (window.PBKImgView) PBKImgView.open(items, k, { title: it.name + ' · ' + o.ref });
+            else items[k].full().then(function (bl) { save(bl, items[k].name); });
+          };
+          grid.querySelectorAll('[data-f]').forEach(function (bt) { bt.onclick = function () { viewer(+bt.getAttribute('data-k')); }; });
           /* the spine, always, whatever the page count (the printer decides whether it prints) */
-          grid.insertAdjacentHTML('beforeend', '<button data-spine title="Download the spine as a PNG with a transparent background: just the words, the picture and CIEL AFRICA"><canvas data-spc width="40" height="300" style="height:120px;width:auto;margin:0 auto;display:block;background:repeating-conic-gradient(#e6e1d9 0 25%,#fff 0 50%) 0 0/10px 10px"></canvas>Spine (PNG, no background)</button>');
+          grid.insertAdjacentHTML('beforeend', '<button data-spine title="Preview the spine (PNG with a transparent background: just the words, the picture and CIEL AFRICA)"><canvas data-spc width="40" height="300" style="height:120px;width:auto;margin:0 auto;display:block;background:repeating-conic-gradient(#e6e1d9 0 25%,#fff 0 50%) 0 0/10px 10px"></canvas>Spine (PNG, no background)</button>');
           var spb = grid.querySelector('[data-spine]');
-          spineCanvas(b, it, true).then(function (c) { var t = spb.querySelector('canvas'); if (!c) { spb.innerHTML = 'No spine design'; return; } t.width = Math.max(4, Math.round(c.width * 300 / c.height)); t.height = 300; t.getContext('2d').drawImage(c, 0, 0, t.width, t.height); });
-          spb.onclick = function () { spineCanvas(b, it, true).then(function (c) { if (!c) return; c.toBlob(function (bl) { save(bl, o.ref + '-' + it.projectId + '-spine-' + spineMm(it.pages) + 'mm.png'); }, 'image/png'); }); };
+          spineCanvas(b, it, true).then(function (c) { var t = spb.querySelector('canvas'); if (!c) { spb.innerHTML = 'No spine design'; return; } t.width = Math.max(4, Math.round(c.width * 300 / c.height)); t.height = 300; t.getContext('2d').drawImage(c, 0, 0, t.width, t.height); try { spThumb = t.toDataURL('image/png'); } catch (e) { } });
+          spb.onclick = function () { viewer(b.print.length); };
         };
         var pd = el.querySelector('[data-pdf]');
         if (pd) pd.onclick = function () {
