@@ -28,11 +28,11 @@
     n.querySelector('p').textContent = text;
     n.querySelector('.cnote__x').onclick = function () { close(n); };
     box.insertBefore(n, box.firstChild);
-    while (box.children.length > 3) close(box.lastChild, true);
+    while (box.children.length > (innerWidth < 700 ? 1 : 3)) close(box.lastChild, true);
     requestAnimationFrame(function () { n.classList.add('is-on'); });
     n._h = setTimeout(function () { close(n); }, o.ms || (kind === 'err' ? 6000 : kind === 'tip' ? 6500 : 4200));
     return n;
   }
-  function close(n, now) { if (!n || n._gone) return; n._gone = 1; clearTimeout(n._h); n.classList.remove('is-on'); setTimeout(function () { n.remove(); }, now ? 0 : 260); }
+  function close(n, now) { if (!n) return; if (now) { clearTimeout(n._h); n.remove(); return; } if (n._gone) return; n._gone = 1; clearTimeout(n._h); n.classList.remove('is-on'); setTimeout(function () { n.remove(); }, 260); }
   window.CielNote = note;
 })();

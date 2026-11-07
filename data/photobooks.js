@@ -28,7 +28,7 @@
     book: {
       name: 'Portrait photo book', size: '21 × 29.7 cm (A4)', trimW: 210, trimH: 297, binding: 'Hardcover',
       pages: { min: 24, max: 100, step: 2, default: 24 },
-      maxPhotosPerPage: 2,
+      maxPhotosPerPage: 12,
       /* printed hardcover (KES) for each book size; a book between sizes pays the next size up. Edited in Ciel Admin → Website → Prices. */
       price: { tiers: { 24: 4500, 36: 4900, 48: 6100, 60: 7300, 80: 9300, 100: 11300 } },
       digital: { base: 1600, includedPages: 24, perExtraPage: 25 },  /* print-ready PDF (KES) */

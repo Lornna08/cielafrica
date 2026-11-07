@@ -26,6 +26,7 @@
     dlg.innerHTML = '<div class="pf__in"><header class="pf__h"><b>' + esc(o.title || 'Your book') + '</b><span class="pf__lbl" id="pfLbl">Cover</span><button class="pf__x pf__rot" data-rot aria-label="Turn the book sideways" title="Turn the book sideways">' + I.rot + '<span>Turn</span></button><button class="pf__x" data-x aria-label="Close preview">' + I.x + '<span>Close</span></button></header>' +
       '<div class="pf__stage" id="pfStage"><button class="pf__nav pf__nav--l" data-p aria-label="Previous page">' + I.l + '</button><div class="pf__book" id="pfBook" style="--board:' + (o.board || '#3b2f26') + '"><div class="pf__board"></div><div class="pf__stack pf__stack--l"></div><div class="pf__stack pf__stack--r"></div><div class="pf__flip" id="pfFlip"></div></div><button class="pf__nav pf__nav--r" data-n aria-label="Next page">' + I.r + '</button><div class="pf__load" id="pfLoad"><span></span></div></div>' +
       '<footer class="pf__f"><button class="pf__btn" data-p>' + I.l + '<span>Back</span></button><input type="range" id="pfR" min="0" max="' + (total - 1) + '" value="0" step="1" aria-label="Go to page"><button class="pf__btn pf__btn--n" data-n><span>Next</span>' + I.r + '</button></footer>' +
+      (o.onEdit ? '<div class="pf__edit" id="pfEd"></div>' : '') +
       '<p class="pf__tip" id="pfTip">' + (innerWidth < 760 && innerHeight > innerWidth ? 'Swipe to turn the page. Tap Turn at the top for a bigger book.' : 'Drag a page corner, swipe, or tap the arrows to turn the page.') + '</p></div>';
     dlg.showModal();
     var stage = dlg.querySelector('#pfStage'), book = dlg.querySelector('#pfBook'), host = dlg.querySelector('#pfFlip'), lbl = dlg.querySelector('#pfLbl'), range = dlg.querySelector('#pfR');
@@ -49,8 +50,17 @@
       var names = [L, Rr].filter(function (p) { return p >= 1 && p <= o.count; });
       return names.length ? (names.length === 2 ? 'Pages ' + names[0] + '–' + names[1] : 'Page ' + names[0]) + ' of ' + o.count : 'Inside cover';
     }
+    /* "Edit page" buttons for what's showing: tap to jump into the editor on that page */
+    function edits(i) {
+      var box = dlg.querySelector('#pfEd'); if (!box) return;
+      var l = [];
+      if (i === 0) l.push([-1, 'Edit the cover']);
+      else if (i >= total - 1) l.push([o.count, 'Edit the back cover']);
+      else { var s2 = sizes(), a2 = s2.spread ? (i % 2 ? i : i - 1) : i, ps = s2.spread ? [a2 - 1, a2] : [i - 1]; ps.forEach(function (p) { if (p >= 1 && p <= o.count) l.push([p - 1, 'Edit page ' + p]); }); }
+      box.innerHTML = l.map(function (x) { return '<button class="pf__btn" data-ed="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('');
+    }
     function state(i) {
-      lbl.textContent = label(i); range.value = i;
+      lbl.textContent = label(i); range.value = i; edits(i);
       var closedF = i === 0, closedB = i >= total - 1, p = i / (total - 1);
       book.classList.toggle('is-closed', closedF || closedB); book.classList.toggle('is-back', closedB);
       book.style.setProperty('--l', (closedF ? 0 : 2 + p * 12).toFixed(1) + 'px'); book.style.setProperty('--r', (closedB ? 0 : 2 + (1 - p) * 12).toFixed(1) + 'px');
@@ -83,7 +93,7 @@
       var k = 0; (function idle() { if (!dlg.open) return; while (k < total && urls[k]) k++; if (k >= total) return; want(k).then(function () { setTimeout(idle, 30); }); })();
     });
     }
-    build(0);
+    build(o.start || 0); cur = o.start || 0;
     var rt, lastW = innerWidth, lastH = innerHeight;
     function onResize() { if (!dlg.open) return; if (dlg.classList.contains('is-rot') && innerWidth > innerHeight) { dlg.classList.remove('is-rot'); lastW = 0; } if (Math.abs(innerWidth - lastW) < 40 && Math.abs(innerHeight - lastH) < 120) return; lastW = innerWidth; lastH = innerHeight; clearTimeout(rt); rt = setTimeout(function () { build(cur); }, 250); }
     window.addEventListener('resize', onResize);
@@ -95,6 +105,7 @@
     dlg.addEventListener('dblclick', function (e) { e.preventDefault(); });
     dlg.onclick = function (e) {
       if (e.target.closest('[data-x]')) return close();
+      var ed = e.target.closest('[data-ed]'); if (ed && o.onEdit) { var at = cur; close(); o.onEdit(+ed.getAttribute('data-ed'), at); return; }
       if (e.target.closest('[data-rot]')) { dlg.classList.toggle('is-rot'); var tp = dlg.querySelector('#pfTip'); if (tp) tp.classList.add('is-off'); dlg.querySelector('#pfLoad').hidden = false; setTimeout(function () { build(cur); }, 30); return; }
       if (!pf) return;
       if (e.target.closest('[data-p]')) pf.flipPrev('top');

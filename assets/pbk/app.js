@@ -217,7 +217,7 @@
     var q = [
       ['What size is the book?', 'Every book is portrait, ' + (BOOK.size || '21 × 29.7 cm (A4)') + ', with a hardcover. Every cover is designed for that size.'],
       ['How many pages can I have?', 'From ' + BOOK.pages.min + ' up to ' + BOOK.pages.max + ' pages. Add or remove pages any time while you design. The price depends on the number of pages.'],
-      ['How many photos fit on a page?', 'One or two. Pick a layout, then move, resize and crop each photo until it looks right.'],
+      ['How many photos fit on a page?', 'As many as you like. Add photos straight onto a page, or pick a layout, then move, resize, crop and align each one.'],
       ['Can I change the words on a cover?', 'Yes. Change the title and subtitle on the illustrated covers and on most travel covers, or start from a blank cover with your own colours, text and stickers.'],
       ['Where are my photos stored?', 'In your browser, on this device. Nothing is uploaded while you design, so use the same phone or computer to come back to your book.'],
       ['How much does it cost?', price(BOOK.pages.min) == null ? 'Prices are being finalised and will be shown here before ordering opens. You can design and save your book now.' : 'From ' + priceLabel(BOOK.pages.min) + ' for ' + BOOK.pages.min + ' pages. More pages cost more; the price updates as you add pages.']
