@@ -95,7 +95,7 @@
         h += '<p class="ao__msg">Saw a problem, or pages missing? Let the customer open this book again, fix it and send it back. Nothing else in their order changes, and the version you have now is kept.</p>' +
           (prints.length > 1 ? '<div class="ao__acts">' + prints.map(function (it) { return '<label class="ao__chk"><input type="checkbox" data-fp value="' + esc(it.projectId) + '" checked> ' + esc(it.name) + '</label>'; }).join('') + '</div>' : '') +
           '<textarea id="fxn" rows="2" maxlength="600" placeholder="What should they fix? e.g. Page 7 is blank and the photo on page 12 is cut off. (They see this.)"></textarea>' +
-          '<div class="ao__acts"><select id="fxd"><option value="3">Open for 3 days</option><option value="7" selected>Open for 7 days</option><option value="14">Open for 14 days</option></select><label class="ao__chk"><input type="checkbox" id="fxe"' + (o.customer.email ? ' checked' : ' disabled') + '> Email the link to the customer</label><button class="btn btn--p btn--sm" data-open>Allow corrections</button></div>';
+          '<div class="ao__acts"><select id="fxd"><option value="1">Open for 1 day</option><option value="3">Open for 3 days</option><option value="7" selected>Open for 7 days</option><option value="14">Open for 14 days</option></select><label class="ao__chk"><input type="checkbox" id="fxe"' + (o.customer.email ? ' checked' : ' disabled') + '> Email the link to the customer</label><button class="btn btn--p btn--sm" data-open>Allow corrections</button></div>';
       }
       el.innerHTML = h;
       var q = function (s2) { return el.querySelector(s2); };
@@ -226,6 +226,11 @@
           grid.innerHTML = b.print.map(function (f, i) { var v = b.view[i]; return '<button data-f="' + esc(f.path) + '" title="Download ' + esc(f.path.split('/').pop()) + '"><img data-v="' + esc(v ? v.path : '') + '" alt="">' + (i === 0 ? 'Cover' : i === b.print.length - 1 ? 'Back' : 'Page ' + i) + '</button>'; }).join('');
           grid.querySelectorAll('img[data-v]').forEach(function (im) { var p = im.getAttribute('data-v'); if (p) file(p).then(function (bl) { im.src = URL.createObjectURL(bl); }); });
           grid.querySelectorAll('[data-f]').forEach(function (bt) { bt.onclick = function () { var p = bt.getAttribute('data-f'); file(p).then(function (bl) { save(bl, o.ref + '-' + it.projectId + '-' + p.split('/').pop()); }); }; });
+          /* the spine, always, whatever the page count (the printer decides whether it prints) */
+          grid.insertAdjacentHTML('beforeend', '<button data-spine title="Download the spine as PNG"><canvas data-spc width="40" height="300" style="height:120px;width:auto;margin:0 auto;display:block"></canvas>Spine (PNG)</button>');
+          var spb = grid.querySelector('[data-spine]');
+          spineCanvas(b, it).then(function (c) { var t = spb.querySelector('canvas'); if (!c) { spb.innerHTML = 'No spine design'; return; } t.width = Math.max(4, Math.round(c.width * 300 / c.height)); t.height = 300; t.getContext('2d').drawImage(c, 0, 0, t.width, t.height); });
+          spb.onclick = function () { spineCanvas(b, it).then(function (c) { if (!c) return; c.toBlob(function (bl) { save(bl, o.ref + '-' + it.projectId + '-spine-' + spineMm(it.pages) + 'mm.png'); }, 'image/png'); }); };
         };
         var pd = el.querySelector('[data-pdf]');
         if (pd) pd.onclick = function () {
@@ -291,6 +296,14 @@
         };
       });
     }).catch(function (e) { if (e.status === 401) return login(); root.innerHTML = top() + '<p class="ao__msg">' + esc(e.message) + '</p>'; wireTop(); });
+  }
+  /** the spine at 300 dpi: drawn from the book's spine settings, or the uploaded spine file */
+  function spineCanvas(b, it) {
+    var bk = b.book || {}, tr = trim(bk), sp = spineMm(it.pages), R = window.PBKR, so = bk.spine || null;
+    function fromFile() { if (!(b.spine && b.spine[0])) return Promise.resolve(null); return file(b.spine[0].path).then(function (bl) { return new Promise(function (ok) { var im = new Image(); im.onload = function () { var c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight; c.getContext('2d').drawImage(im, 0, 0); ok(c); }; im.onerror = function () { ok(null); }; im.src = URL.createObjectURL(bl); }); }); }
+    if (!so || !R) return fromFile();
+    if (so.artImg && !/^(\/assets\/|https:\/\/cielafrica\.com\/)/.test(so.artImg)) { so = Object.assign({}, so); delete so.artImg; }
+    return Promise.all([R.loadFonts(), R.loadSpine(so)]).then(function () { var w = Math.max(8, Math.round(sp / 25.4 * 300)), h = Math.round((tr.h + 6) / 25.4 * 300), c = document.createElement('canvas'); c.width = w; c.height = h; var x = c.getContext('2d'), su = R.spineUnits(it.pages), bp = 3 / 25.4 * 300; x.fillStyle = so.bg || '#fff'; x.fillRect(0, 0, w, h); x.setTransform(w / su, 0, 0, (h - 2 * bp) / R.H, 0, bp); R.drawSpine(x, so, su); return c; }).catch(fromFile);
   }
   /** a book's trim size (mm): from the files it sent; books before the A4 switch were 210 × 280 */
   function trim(bk) {

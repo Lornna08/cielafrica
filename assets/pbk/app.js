@@ -363,7 +363,7 @@
       }
       if (!canT && !canC) h += '<p class="pk-opt__note">This cover’s lettering is part of its artwork, so it’s used as it is. Add photos, text and stickers inside, or pick a cover marked ✎.</p>';
       else if (t && t.kind === 'raster' && !t.layered) h += '<p class="pk-opt__note">Change the words here. This cover’s colours are part of its artwork.</p>';
-      else h += '<p class="pk-opt__note">More in the editor: move or swap the artwork, fonts, stickers and photos. CIEL AFRICA always stays small at the bottom.</p>';
+      else h += '<p class="pk-opt__note">More in the editor: move or swap the artwork, fonts, stickers and photos.</p>';
       make.innerHTML = h;
       document.getElementById('pkReset').hidden = !dirty();
       var ti = document.getElementById('pkTi'), su = document.getElementById('pkSu');

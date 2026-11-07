@@ -115,7 +115,23 @@
     satisfy: { css: '"PBK Satisfy", cursive', w: 400, name: 'Brush script' },
     kaushan: { css: '"PBK Kaushan Script", cursive', w: 400, name: 'Bold brush' },
     marker: { css: '"PBK Permanent Marker", cursive', w: 400, name: 'Marker' },
-    amatic: { css: '"PBK Amatic SC", cursive', w: 700, name: 'Hand-drawn' }
+    amatic: { css: '"PBK Amatic SC", cursive', w: 700, name: 'Hand-drawn' },
+    raleway: { css: '"PBK Raleway", sans-serif', w: 600, name: 'Raleway' },
+    lora: { css: '"PBK Lora", serif', w: 600, name: 'Lora' },
+    merriweather: { css: '"PBK Merriweather", serif', w: 700, name: 'Merriweather' },
+    cinzel: { css: '"PBK Cinzel", serif', w: 700, name: 'Roman caps' },
+    nunito: { css: '"PBK Nunito", sans-serif', w: 700, name: 'Friendly' },
+    quicksand: { css: '"PBK Quicksand", sans-serif', w: 600, name: 'Soft' },
+    comfortaa: { css: '"PBK Comfortaa", sans-serif', w: 700, name: 'Bubbly' },
+    sacramento: { css: '"PBK Sacramento", cursive', w: 400, name: 'Thin script' },
+    parisienne: { css: '"PBK Parisienne", cursive', w: 400, name: 'Parisienne' },
+    allura: { css: '"PBK Allura", cursive', w: 400, name: 'Calligraphy' },
+    alexbrush: { css: '"PBK Alex Brush", cursive', w: 400, name: 'Ink brush' },
+    yellowtail: { css: '"PBK Yellowtail", cursive', w: 400, name: 'Vintage script' },
+    baskerville: { css: '"PBK Libre Baskerville", serif', w: 400, name: 'Book serif' },
+    garamond: { css: '"PBK EB Garamond", serif', w: 500, name: 'Garamond' },
+    anton: { css: '"PBK Anton", sans-serif', w: 400, name: 'Poster' },
+    bodoni: { css: '"PBK Bodoni Moda", serif', w: 700, name: 'Magazine' }
   };
   var FONT_FILES = [
     ['PBK Spartan', '/assets/fonts/pbk/spartan.woff2', { weight: '100 900' }],
@@ -144,7 +160,23 @@
     ['PBK Satisfy', '/assets/fonts/pbk/satisfy.woff2', { weight: '400' }],
     ['PBK Kaushan Script', '/assets/fonts/pbk/kaushan.woff2', { weight: '400' }],
     ['PBK Permanent Marker', '/assets/fonts/pbk/marker.woff2', { weight: '400' }],
-    ['PBK Amatic SC', '/assets/fonts/pbk/amatic.woff2', { weight: '700' }]
+    ['PBK Amatic SC', '/assets/fonts/pbk/amatic.woff2', { weight: '700' }],
+    ['PBK Raleway', '/assets/fonts/pbk/raleway.woff2', { weight: '600' }],
+    ['PBK Lora', '/assets/fonts/pbk/lora.woff2', { weight: '600' }],
+    ['PBK Merriweather', '/assets/fonts/pbk/merriweather.woff2', { weight: '700' }],
+    ['PBK Cinzel', '/assets/fonts/pbk/cinzel.woff2', { weight: '700' }],
+    ['PBK Nunito', '/assets/fonts/pbk/nunito.woff2', { weight: '700' }],
+    ['PBK Quicksand', '/assets/fonts/pbk/quicksand.woff2', { weight: '600' }],
+    ['PBK Comfortaa', '/assets/fonts/pbk/comfortaa.woff2', { weight: '700' }],
+    ['PBK Sacramento', '/assets/fonts/pbk/sacramento.woff2', { weight: '400' }],
+    ['PBK Parisienne', '/assets/fonts/pbk/parisienne.woff2', { weight: '400' }],
+    ['PBK Allura', '/assets/fonts/pbk/allura.woff2', { weight: '400' }],
+    ['PBK Alex Brush', '/assets/fonts/pbk/alexbrush.woff2', { weight: '400' }],
+    ['PBK Yellowtail', '/assets/fonts/pbk/yellowtail.woff2', { weight: '400' }],
+    ['PBK Libre Baskerville', '/assets/fonts/pbk/baskerville.woff2', { weight: '400' }],
+    ['PBK EB Garamond', '/assets/fonts/pbk/garamond.woff2', { weight: '500' }],
+    ['PBK Anton', '/assets/fonts/pbk/anton.woff2', { weight: '400' }],
+    ['PBK Bodoni Moda', '/assets/fonts/pbk/bodoni.woff2', { weight: '700' }]
   ];
   /* fonts load on demand: the two cover fonts first, the others when a page uses them */
   var famP = {};

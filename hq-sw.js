@@ -16,8 +16,12 @@ self.addEventListener('push', function (e) {
 self.addEventListener('notificationclick', function (e) {
   e.notification.close();
   var url = (e.notification.data && e.notification.data.url) || '/admin';
+  /* always open inside the app (never a separate browser view you can't close) */
+  if (url.indexOf('/admin') !== 0) url = '/admin';
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (cs) {
-    for (var i = 0; i < cs.length; i++) { if (cs[i].url.indexOf('/admin') >= 0) { cs[i].navigate(url); return cs[i].focus(); } }
+    for (var i = 0; i < cs.length; i++) {
+      if (cs[i].url.indexOf('/admin') >= 0) { cs[i].postMessage({ type: 'hq-go', url: url }); return cs[i].focus(); }
+    }
     return self.clients.openWindow(url);
   }));
 });

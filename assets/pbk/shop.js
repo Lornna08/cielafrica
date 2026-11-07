@@ -32,6 +32,13 @@
   function thumb(p) {
     return R.toCanvas(p.cover, 160, { photo: function () { return null; } }).then(function (c) { return c.toDataURL('image/jpeg', 0.7); }).catch(function () { return ''; });
   }
+  /** the cover (with its photos) as a small picture, so order emails show the book; never delays the order more than 2 s */
+  function withCover(body, rows) {
+    var id = rows && rows[0] && rows[0].item && rows[0].item.pb && rows[0].item.pb.p;
+    if (!id) return Promise.resolve(body);
+    var shot = ST.project(id).then(function (p) { if (!p) return null; var src = photoSource('prev'); return src.load(p.cover).then(function () { return R.toCanvas(p.cover, 480, { photo: src.url, empty: 'none' }); }).then(function (c) { src.done && src.done(); return c.toDataURL('image/jpeg', 0.82); }); }).catch(function () { return null; });
+    return Promise.race([shot, new Promise(function (ok) { setTimeout(function () { ok(null); }, 2000); })]).then(function (c) { if (c && c.length < 280000) body.cover = c; return body; });
+  }
   function isTest(p) { var t = C.TPL[p.tpl]; return !!(t && t.test); }
   function add(p, product, opts) {
     var n = p.pages.length, test = isTest(p), price = test ? (BOOK.testPrice || 5) : unit(product, n);
@@ -389,7 +396,7 @@
           delivery: del ? del.id : null, name: f.name, phone: f.phone, email: f.email, coupon: st.coupon ? st.coupon.code : undefined,
           address: anyPrint && f.line1 ? { line1: f.line1, area: f.area, town: f.town, county: f.county, country: countryName(), notes: f.notes } : null,
           gift: st.gift ? { is: true, to: f.gto, phone: f.gphone, note: f.gnote } : null };
-        api('pbk-wa', body).then(function (r) { open(r.ref); if (r.ref) markOrdered(r.ref, rows); if (r.receipts && r.receipts.length) sendViews(r.receipts); }, function (e) {
+        withCover(body, rows).then(function (bd) { return api('pbk-wa', bd); }).then(function (r) { open(r.ref); if (r.ref) markOrdered(r.ref, rows); if (r.receipts && r.receipts.length) sendViews(r.receipts); }, function (e) {
           if (e && /name|phone/.test(e.code || '')) { if (w) w.close(); status(esc(e.message), 'is-err'); return; }
           open(null);
         });
@@ -446,7 +453,7 @@
       if (msg.trim().length < 10) { status('Paste the confirmation message M-Pesa sent you after paying (it starts with a code like SKL4ABC12D).', 'is-err'); return; }
       var body = { items: rows.map(function (r) { return { projectId: r.item.pb.p, name: r.item.name, product: r.item.pb.product, pages: r.item.pb.pages, qty: r.item.qty, test: r.item.pb.test || undefined }; }), delivery: del ? del.id : null, name: f.name, phone: f.phone, email: f.email, address: { line1: f.line1, area: f.area, town: f.town, county: f.county, country: countryName(), notes: f.notes }, coupon: st.coupon ? st.coupon.code : undefined, gift: st.gift ? { is: true, to: f.gto, phone: f.gphone, note: f.gnote } : null, message: msg.trim() };
       btn.disabled = true; status('<span class="pkco__spin"></span> Placing your order…');
-      api('pbk-manual', body).then(function (r) {
+      withCover(body, rows).then(function (bd) { return api('pbk-manual', bd); }).then(function (r) {
         var pend = { ref: r.ref, intent: r.intent, at: Date.now(), total: r.amount, items: rows.map(function (x) { return { projectId: x.item.pb.p, name: x.item.name, product: x.item.pb.product, pages: x.item.pb.pages, thumb: x.item.thumb }; }) };
         manualSave(pend); markOrdered(r.ref, rows);
         return savePurchases(r.ref, r.receipts || [], rows, true).then(function () {
@@ -499,7 +506,7 @@
       var f = st.f, btn = document.getElementById('coPay');
       var body = { items: rows.map(function (r) { return { projectId: r.item.pb.p, name: r.item.name, product: r.item.pb.product, pages: r.item.pb.pages, qty: r.item.qty, test: r.item.pb.test || undefined }; }), delivery: del ? del.id : null, name: f.name, phone: st.mpOther && f.mpesa ? f.mpesa : f.phone, mobile: f.phone, email: f.email, address: { line1: f.line1, area: f.area, town: f.town, county: f.county, country: countryName(), notes: f.notes }, coupon: st.coupon ? st.coupon.code : undefined, gift: st.gift ? { is: true, to: f.gto, phone: f.gphone, note: f.gnote } : null };
       btn.disabled = true; status('<span class="pkco__spin"></span> Sending the payment request…');
-      api('pbk-pay', body).then(function (r) {
+      withCover(body, rows).then(function (bd) { return api('pbk-pay', bd); }).then(function (r) {
         status('<span class="pkco__spin"></span> <b>Check your phone.</b> Enter your M-Pesa PIN to pay ' + money(r.amount) + '. Order ' + esc(r.ref) + '.');
         var t0 = Date.now();
         (function poll() {

@@ -104,7 +104,7 @@
   function login(setup) {
     root.className = '';
     root.innerHTML = '<div class="hq-login"><div class="hq-login__art"><img src="/assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa"><div><h1>Run all of Ciel Africa from one place.</h1><p>Orders from the shop, Photo Books and Ciel Domains, your calendar, tasks and customers.</p><ul><li>Orders</li><li>Calendar</li><li>Tasks</li><li>Customers</li><li>Website</li></ul></div><small style="color:#8a8076">Ciel Admin</small></div>' +
-      '<div class="hq-login__f"><form id="lf"><h2>Sign in</h2><p>Use your admin password.</p>' + (setup && setup.adminPassword === false ? '<div class="hq-setup"><b>Set your admin password first.</b><br>In Vercel open the cielafrica project → Settings → Environment Variables → add <b>ADMIN_PASSWORD</b> with a strong password → Save → Deployments → Redeploy. Then sign in here with it.</div>' : '') +
+      '<div class="hq-login__f"><form id="lf"><div class="hq-login__brand"><img src="/assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa"><span>Admin</span></div><h2>Sign in</h2><p>Use your admin password. You’ll stay signed in on this device for 30 days.</p>' + (setup && setup.adminPassword === false ? '<div class="hq-setup"><b>Set your admin password first.</b><br>In Vercel open the cielafrica project → Settings → Environment Variables → add <b>ADMIN_PASSWORD</b> with a strong password → Save → Deployments → Redeploy. Then sign in here with it.</div>' : '') +
       '<input class="hq-in" type="password" id="pw" placeholder="Admin password" autocomplete="current-password" required><button class="b b--p" style="justify-content:center;padding:.8rem">Sign in</button><p class="hq-err" id="le"></p></form></div></div>';
     document.getElementById('lf').onsubmit = function (e) {
       e.preventDefault(); var le = document.getElementById('le'); le.textContent = 'Checking…';
@@ -177,6 +177,7 @@
   var installEv = null;
   window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); installEv = e; var b = document.getElementById('inst'); if (b) b.hidden = false; });
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/hq-sw.js', { scope: '/admin' }).catch(function () { });
+  if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function (ev) { var d = ev.data || {}; if (d.type === 'hq-go' && d.url) { var h = d.url.split('#')[1]; if (h) { if (location.hash === '#' + h) route(); else location.hash = h; } else location.hash = 'overview'; } });
   function standalone() { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone; }
   function isIOS() { return /iphone|ipad|ipod/i.test(navigator.userAgent); }
   function b64u(s) { var p = '='.repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')), a = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; }

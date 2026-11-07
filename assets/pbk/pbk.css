@@ -1265,3 +1265,26 @@ body.pbk-editing .pk{background:#efeae2}
 .pk-mo__o{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;background:#fff;border:1px solid #eee3d4;border-radius:14px;padding:.9rem 1rem;margin-bottom:.6rem}
 .pk-mo__o b{display:block}.pk-mo__o span{display:block;font-size:.86rem;color:#5c554e;margin:.15rem 0}.pk-mo__o small{color:#8a7c6c;font-size:.76rem}
 .pk-mo__s{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}.pk-mo__st{font-size:.78rem;font-weight:700;padding:.3rem .6rem;border-radius:999px;background:#fff4ec;color:#c4512b}.pk-mo__st.is-done{background:#e8f6ee;color:#1d7a46}.pk-mo__st.is-off{background:#f3f0ec;color:#8a7c6c}
+.pe-brand{display:none!important}
+/* fonts: one scrolling list, each name shown in its own font */
+.pe-fonts{grid-template-columns:1fr;max-height:340px;gap:.3rem;border:1px solid #eee3d4;border-radius:12px;padding:.35rem}
+.pe-fonts button{text-align:left;font-size:1.15rem;padding:.6rem .8rem;border-color:transparent}
+.pe-fonts button.is-on{border-color:#ff5a1f}
+.pe-spf{max-height:260px;overflow-y:auto}
+.pe-swap{position:absolute;border:3px solid #ff5a1f;background:rgba(255,90,31,.18);display:grid;place-items:center;pointer-events:none;border-radius:2px}
+.pe-swap span{background:#ff5a1f;color:#fff;font:600 .75rem Inter,sans-serif;padding:.3rem .6rem;border-radius:999px}
+/* phones: like Canva, a selected item swaps the bottom tool rail for its own tools */
+@media(max-width:900px){
+  .pe.has-sel:not(.has-panel) .pe-rail{visibility:hidden}
+  .pe.has-sel:not(.has-panel) .pe-ctx:not([hidden]){position:fixed;left:0!important;right:0;top:auto!important;bottom:0;transform:none;max-width:none;width:auto;height:auto;min-height:64px;border-radius:0;background:#fff;color:#1b1714;box-shadow:0 -6px 20px rgba(0,0,0,.08);border-top:1px solid #e6dfd3;padding:.3rem .3rem calc(.3rem + env(safe-area-inset-bottom));z-index:9;gap:0;overflow-x:auto;scrollbar-width:none;justify-content:flex-start}
+  .pe.has-sel:not(.has-panel) .pe-ctx::-webkit-scrollbar{display:none}
+  .pe.has-sel:not(.has-panel) .pe-ctx button{flex:none;flex-direction:column;gap:.2rem;min-width:66px;color:#3d3833;padding:.35rem .3rem;border-radius:10px}
+  .pe.has-sel:not(.has-panel) .pe-ctx button svg{width:22px;height:22px}
+  .pe.has-sel:not(.has-panel) .pe-ctx button span{font-size:.66rem;font-weight:600}
+  .pe.has-sel:not(.has-panel) .pe-ctx button.pe-hl{background:#fff1ea;color:#ff5a1f}
+  .pe.has-sel:not(.has-panel) .pe-ctx .pe-del{color:#c0392b}
+  .pe.has-sel:not(.has-panel) .pe-ctx .pe-lockmsg{color:#8a7c6c;align-self:center;padding:0 .6rem;white-space:nowrap;font-size:.75rem}
+  .pe.has-sel:not(.has-panel) .pe-ctx .pe-zoom{color:#3d3833;padding:0 .8rem;display:flex;align-items:center;gap:.5rem;flex:1}
+  .pe.has-sel:not(.has-panel) .pe-ctx .pe-sw2{border-color:#e6dfd3;width:30px;height:30px;align-self:center;margin:0 4px}
+  .pe.has-sel:not(.has-panel) .pe-ctx [data-al]{min-width:auto;padding:.5rem .7rem}
+}
