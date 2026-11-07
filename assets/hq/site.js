@@ -329,9 +329,11 @@
       '<div class="ws-2">' + inp(tpl ? 'Price from (KES)' : 'Price (KES)', p.price || 0, 'id="ePrice" type="number" min="0"') + inp('Was (KES, for a sale)', p.was || '', 'id="eWas" type="number" min="0" placeholder="—"') + '</div>' +
       (tpl ? '' : '<label class="field"><span>Badge</span><select class="hq-in" id="eBadge">' + [['', 'None'], ['new', 'New'], ['popular', 'Popular']].map(function (o) { return '<option value="' + o[0] + '"' + ((p.badge || '') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>') +
       '<label class="check"><input type="checkbox" id="eShow"' + (p.hidden ? '' : ' checked') + '> Shown on cielafrica.com</label></div></div>' +
+      '<div class="cat-file" id="eFile">' + (isNew ? '<b>Download file</b><p class="muted">Publish this ' + (tpl ? 'template' : 'product') + ' first, then add the file customers download after paying.</p>' : '<p class="muted">Loading the download file…</p>') + '</div>' +
       '<div class="row" style="margin-top:14px">' + (isNew ? '' : '<button class="b b--sm" id="eDup">Duplicate</button><button class="b b--sm b--ghost" id="eDel" style="color:var(--r)">Delete</button>') + '<span style="flex:1"></span><button class="b" data-x>Cancel</button><button class="b b--p" id="eSave">' + (isNew ? 'Add to draft' : 'Save to draft') + '</button></div></div>');
     m.classList.add('cat-modal');
     var pic = null;
+    if (!isNew) fileBox(m.querySelector('#eFile'), p);
     m.querySelector('#eUp').onchange = function () {
       var f = this.files[0]; if (!f) return; var rd = new FileReader();
       rd.onload = function () { var im = new Image(); im.onload = function () { var w = Math.min(1200, im.width), h = Math.round(im.height * w / im.width), c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(im, 0, 0, w, h); var url = c.toDataURL('image/webp', 0.86); pic = url.split(',')[1]; var el = m.querySelector('#ePic'); if (el.tagName !== 'IMG') { var n = document.createElement('img'); n.id = 'ePic'; el.replaceWith(n); el = n; } el.src = url; }; im.src = rd.result; };
@@ -349,5 +351,24 @@
     var del = m.querySelector('#eDel'); if (del) del.onclick = function () { if (!confirm('Delete “' + p.name + '” from the website? It is removed when you publish. Past orders are not affected.')) return; var c = (W.items[kind] || {})[p.id]; if (c && c.create) { delete W.items[kind][p.id]; changed(); } else setItem(kind, p.id, { delete: true }); m.remove(); drawCatalog(kind); };
   }
 
+  /* ---- the file a customer downloads after paying (private storage; link sent after M-Pesa confirms) ---- */
+  function fileBox(el, p) {
+    function size(n) { return n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
+    function draw(f, note) {
+      el.innerHTML = '<b>Download file</b>' + (f ? '<p><span class="tag">' + esc(f.name) + '</span> <span class="muted">' + size(f.size || 0) + ' · added ' + H.d2(f.at) + '</span></p>' : '<p class="muted">No file yet. Customers who buy this get a download link only once a file is added here.</p>') +
+        '<div class="row"><label class="b b--sm">' + (f ? 'Replace file' : 'Add file') + '<input type="file" id="fUp" hidden></label>' + (f ? '<button class="b b--sm b--ghost" id="fRm" style="color:var(--r)">Remove</button>' : '') + '<span class="muted" id="fMsg">' + (note || '') + '</span></div>';
+      el.querySelector('#fUp').onchange = function () { var file = this.files[0]; if (file) up(file); };
+      var rm = el.querySelector('#fRm'); if (rm) rm.onclick = function () { if (!confirm('Remove this file? Customers who already bought it will see that it is being prepared.')) return; H.api('/api/hq?route=pf-remove', { id: p.id }).then(function () { draw(null, 'Removed.'); }, function (e) { H.toast(e.message); }); };
+    }
+    function lib() { return window.CielBlobUpload ? Promise.resolve(window.CielBlobUpload) : new Promise(function (ok, no) { var sc = document.createElement('script'); sc.src = '/assets/vendor/vercel-blob-client-2.8.2.min.js'; sc.onload = function () { ok(window.CielBlobUpload); }; sc.onerror = function () { no(new Error('Couldn’t load the uploader.')); }; document.head.appendChild(sc); }); }
+    function up(file) {
+      var msg = el.querySelector('#fMsg'); msg.textContent = 'Preparing…';
+      Promise.all([lib(), H.api('/api/hq?route=pf-key', { id: p.id, name: file.name })]).then(function (r) {
+        return r[0](r[1].path, file, { access: 'private', handleUploadUrl: '/api/hq?route=pf-upload', multipart: file.size > 20 * 1048576, contentType: file.type || 'application/octet-stream', onUploadProgress: function (e) { msg.textContent = 'Uploading ' + Math.round(e.percentage || 0) + '%'; } })
+          .then(function () { msg.textContent = 'Saving…'; return H.api('/api/hq?route=pf-attach', { id: p.id, path: r[1].path, name: file.name }); });
+      }).then(function (x) { draw(x.file, 'Saved ✓ Buyers can download it.'); }, function (e) { msg.textContent = (e && e.message) || 'Upload failed.'; });
+    }
+    H.api('/api/hq?route=pf-list').then(function (x) { if (!x.storage) { el.innerHTML = '<b>Download file</b><p class="muted">File storage isn’t connected to this deployment.</p>'; return; } draw(x.files[p.id] || null); }, function (e) { el.innerHTML = '<p class="muted">' + esc(e.message) + '</p>'; });
+  }
   window.HQSite = { init: function (h) { H = h; }, render: render, renderCatalog: renderCatalog, reload: function () { W.loaded = false; } };
 })();

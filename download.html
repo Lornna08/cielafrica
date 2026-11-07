@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Your downloads — Ciel Africa</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png?v=20261021i">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/base.css?v=20261026a">
+<style>
+body{background:#faf8f4;color:#17130f;font-family:Inter,system-ui,sans-serif;margin:0}
+.dl{max-width:680px;margin:0 auto;padding:1.4rem 1rem 3rem}
+.dl__top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.6rem}.dl__top img{height:30px}
+.dl h1{font:700 1.7rem/1.15 "Space Grotesk",sans-serif;margin:0 0 .4rem}
+.dl__card{background:#fff;border:1px solid #efe5d6;border-radius:18px;padding:1.2rem;margin-top:1rem}
+.dl__i{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding:.8rem 0;border-top:1px solid #f1e9dd}.dl__i:first-child{border-top:0}
+.dl__i b{display:block}.dl__i small{color:#8a7c6c}
+.dl .btn{border-radius:999px}
+.dl__muted{color:#6b635b;font-size:.92rem;line-height:1.55}
+.dl__err{background:#fff4f0;border-color:#ffd3c2}
+</style>
+</head>
+<body>
+<main class="dl" id="dl"><div class="dl__top"><a href="/"><img src="/assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa"></a></div><p class="dl__muted">Loading your downloads…</p></main>
+<script>
+(function () {
+  var root = document.getElementById('dl'), q = new URLSearchParams(location.search), o = q.get('o') || '', k = q.get('k') || '';
+  var head = root.querySelector('.dl__top').outerHTML;
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function size(n) { return n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
+  var help = '<p class="dl__muted">Need help? <a href="mailto:hello@cielafrica.com">hello@cielafrica.com</a> or <a href="https://wa.me/254706549703" target="_blank" rel="noopener">WhatsApp +254 706 549 703</a>.</p>';
+  fetch('/api/hq?route=dl-info', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'ciel' }, body: JSON.stringify({ o: o, k: k }) })
+    .then(function (r) { return r.json(); }).then(function (j) {
+      if (!j.ok) { root.innerHTML = head + '<h1>We couldn’t open this link</h1><div class="dl__card dl__err"><p>' + esc(j.error || 'This link is not valid.') + '</p></div>' + help; return; }
+      var until = new Date(j.until).toLocaleDateString('en-KE', { day: 'numeric', month: 'long', year: 'numeric' });
+      root.innerHTML = head + '<h1>Your downloads</h1><p class="dl__muted">' + (j.name ? 'Thank you, ' + esc(j.name.split(' ')[0]) + '. ' : '') + 'Order ' + esc(j.ref) + '. ' + (j.expired ? '<b>This link expired on ' + until + '.</b> Contact us and we’ll send a new one.' : 'This link works until ' + until + '.') + '</p>' +
+        '<div class="dl__card">' + j.items.map(function (it) {
+          return '<div class="dl__i"><div><b>' + esc(it.name) + (it.qty > 1 ? ' × ' + it.qty : '') + '</b><small>' + (it.file ? esc(it.file.name) + ' · ' + size(it.file.size) + (it.left < 20 ? ' · ' + it.left + ' downloads left' : '') : 'Your file is being prepared. We’ll email you as soon as it’s ready.') + '</small></div>' +
+            (it.file && !j.expired && it.left > 0 ? '<a class="btn btn--p btn--sm" href="/api/hq?route=dl&o=' + encodeURIComponent(o) + '&k=' + encodeURIComponent(k) + '&f=' + encodeURIComponent(it.id) + '">Download</a>' : '') + '</div>';
+        }).join('') + '</div>' + help;
+    }, function () { root.innerHTML = head + '<div class="dl__card dl__err"><p>We couldn’t load your downloads. Check your connection and refresh.</p></div>' + help; });
+})();
+</script>
+</body>
+</html>

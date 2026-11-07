@@ -46,7 +46,11 @@ module.exports = async function handler(req, res){
 
   const body = await readBody(req);
   const phone  = normalizePhone(body.phone);
-  const amount = Math.max(1, Math.round(Number(body.amount)||0));
+  /* prices come from the published catalogue, not from the browser */
+  let priced = Array.isArray(body.items) ? require('../lib/hq/delivery').price(body.items) : null;
+  /* anything not in the published catalogue: the order still goes through, but nothing is delivered automatically */
+  if (priced && !priced.ok) priced = null;
+  const amount = priced ? priced.total : Math.max(1, Math.round(Number(body.amount)||0));
   const ref    = (body.reference || 'Ciel Africa').toString().slice(0,12);
   if (phone.length < 12 || !amount) return res.status(400).json({ ok:false, error:'Valid phone and amount required' });
 
@@ -89,8 +93,8 @@ module.exports = async function handler(req, res){
     });
     const data = await stk.json();
     if (data.ResponseCode === '0') {
-      try { await require('../lib/hq/shop').started(data.CheckoutRequestID, Object.assign({}, body, { phone }), amount); } catch (e) { console.error('stkpush record error', e && e.message); }
-      return res.status(200).json({ ok:true, checkoutRequestID: data.CheckoutRequestID, message:'STK push sent — check your phone.' });
+      try { await require('../lib/hq/shop').started(data.CheckoutRequestID, Object.assign({}, body, { phone }), amount, priced); } catch (e) { console.error('stkpush record error', e && e.message); }
+      return res.status(200).json({ ok:true, checkoutRequestID: data.CheckoutRequestID, amount, message:'STK push sent — check your phone.' });
     }
     return res.status(400).json({ ok:false, error: data.errorMessage || data.ResponseDescription || 'STK push failed' });
   } catch (e) {

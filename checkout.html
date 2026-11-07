@@ -138,16 +138,18 @@
           btn.disabled=false; btn.style.opacity=1; btn.textContent='Pay again';
           if(C){C.clear();setTimeout(paint,400);}
         }
-        function demo(){ setTimeout(function(){ success('&#10003; <b>Payment received (demo).</b> M-Pesa isn\'t fully configured yet. Once live, this confirms the real payment and emails your download link.'); },3000); }
+        /* never pretend a payment went through */
+        function demo(){ fail('Online payment isn\'t available right now. Please <a href="https://wa.me/254706549703?text='+encodeURIComponent('Hello Ciel Africa, I\'d like to buy: '+orderList)+'" style="color:inherit;text-decoration:underline">order on WhatsApp</a> and we\'ll send you an M-Pesa request.'); }
 
 
 
         /* 1) Send the STK push */
-        var meta={phone:phone, customerName:cname, customerEmail:cemail, order:orderList, total:'KES '+fmt(amount)};
+        var meta={phone:phone, customerName:cname, customerEmail:cemail, order:orderList, total:'KES '+fmt(amount), items:items.map(function(i){return {id:i.id, qty:i.qty};})};
         fetch('/api/stkpush',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({amount:amount,reference:ref},meta))})
           .then(function(r){return r.json().catch(function(){return {demo:true};});})
           .then(function(res){
             if(res&&res.demo){ demo(); return; }
+            if(res&&res.amount&&res.amount!==amount){ document.getElementById('payAmt').textContent=fmt(res.amount); document.getElementById('coTotal').textContent=fmt(res.amount); }
             if(!res||!res.ok){ fail('Payment could not start: '+((res&&res.error)||'please try again')+'.'); return; }
             st.innerHTML='<span class="co__spin"></span>Request sent to '+phone+'. Enter your M-Pesa PIN on your phone to complete payment…';
             /* 2) Poll for the result — wait first so we don't query before the user has acted */
@@ -157,7 +159,7 @@
               fetch('/api/stkquery',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({checkoutRequestID:crid},meta))})
                 .then(function(r){return r.json().catch(function(){return {status:'pending'};});})
                 .then(function(q){
-                  if(q&&q.status==='paid'){ success('&#10003; <b>Payment confirmed — thank you!</b> Your receipt and download link are on their way to '+(cemail||'your email')+'.'); }
+                  if(q&&q.status==='paid'){ success('&#10003; <b>Payment confirmed — thank you!</b> '+(q.download?'<a href="'+q.download+'" style="color:inherit;font-weight:700;text-decoration:underline">Open your downloads</a>. We\'ve also emailed the link to '+(cemail||'you')+' (it works for 30 days).':'We\'ll be in touch on '+(cemail||phone)+' to deliver your order.')); }
                   else if(q&&q.status==='failed'){ fail('Payment was not completed (cancelled, wrong PIN, or timed out). Your cart is still here — you can try again.'); }
                   else if(tries>=max){ fail('We haven\'t received confirmation yet. If you completed payment, email hello@cielafrica.com with your M-Pesa message — we\'ll sort it out. Your cart is kept.'); }
                   else { setTimeout(poll,5000); }
@@ -166,7 +168,7 @@
             }
             setTimeout(poll,8000);
           })
-          .catch(function(){ demo(); });
+          .catch(function(){ fail('We couldn\'t reach the payment service. Check your connection and try again.'); });
       });
     })();</script><script src="/assets/js/wa-track.js?v=1" defer></script>
 <script defer src="/_vercel/insights/script.js"></script>

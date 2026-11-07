@@ -4,6 +4,23 @@
   "trailingSlash": false,
   "headers": [
     {
+      "source": "/download",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        }
+      ]
+    },
+    {
       "source": "/photobooks/printer",
       "headers": [
         {
@@ -422,7 +439,17 @@
   ],
   "functions": {
     "api/hq.js": {
-      "maxDuration": 60
+      "maxDuration": 60,
+      "includeFiles": "data/{products,templates}.js"
+    },
+    "api/stkpush.js": {
+      "includeFiles": "data/{products,templates}.js"
+    },
+    "api/stkquery.js": {
+      "includeFiles": "data/{products,templates}.js"
+    },
+    "api/mpesa-callback.js": {
+      "includeFiles": "data/{products,templates}.js"
     }
   }
 }

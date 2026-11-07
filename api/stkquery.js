@@ -85,8 +85,9 @@ module.exports = async function handler(req, res){
         );
       }
       // keep a record for Ciel HQ (/admin), once per payment
-      try { await require('../lib/hq/shop').paid(checkoutRequestID, body); } catch (e) { console.error('stkquery record error', e && e.message); }
-      return res.status(200).json({ ok:true, status:'paid', desc: data.ResultDesc });
+      let download = null;
+      try { const shop = require('../lib/hq/shop'); await shop.paid(checkoutRequestID, body); download = await shop.downloadLink(checkoutRequestID); } catch (e) { console.error('stkquery record error', e && e.message); }
+      return res.status(200).json({ ok:true, status:'paid', desc: data.ResultDesc, download });
     }
 
     // Decide between FAILED and PENDING.

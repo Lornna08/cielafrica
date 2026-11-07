@@ -681,3 +681,4 @@ html[data-theme="dark"] .mx2-it:hover{background:#18181c}html[data-theme="dark"]
 [data-theme=dark] .cnote{background:#231e1a;color:#f3ede6;border-color:#3a322b}
 [data-theme=dark] .cnote__i{background:#2f2823}
 [data-theme=dark] .cnote__x:hover{background:#2f2823;color:#fff}
+.cat-file{margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}.cat-file p{margin:.35rem 0;font-size:.85rem}.cat-file .tag{font-weight:600}
