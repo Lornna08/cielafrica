@@ -29,7 +29,14 @@
     four: { n: 'Four', f: [[90, 90, 495, 744], [615, 90, 495, 744], [90, 864, 495, 744], [615, 864, 495, 744]] },
     six: { n: 'Six', f: [[90, 90, 495, 485], [615, 90, 495, 485], [90, 605, 495, 485], [615, 605, 495, 485], [90, 1120, 495, 485], [615, 1120, 495, 485]] },
     fullduo: { n: 'Two, full bleed', f: [[0, 0, 1200, 846], [0, 851, 1200, 846]] },
-    polaroid: { n: 'Framed', f: [[170, 200, 860, 1060]], border: 40 }
+    polaroid: { n: 'Framed', f: [[170, 200, 860, 1060]], border: 40 },
+    wide: { n: 'Wide, edge to edge', f: [[0, 300, 1200, 900]] },
+    twop: { n: 'Two portraits', f: [[90, 500, 495, 660], [615, 500, 495, 660]] },
+    lp: { n: 'Wide and tall', f: [[90, 90, 1020, 700], [308, 820, 583, 777]] },
+    threel: { n: 'Three wide', f: [[90, 260, 1020, 765], [90, 1055, 495, 371], [615, 1055, 495, 371]] },
+    threep: { n: 'Three tall', f: [[90, 443, 600, 800], [720, 443, 390, 385], [720, 858, 390, 385]] },
+    fourl: { n: 'Four wide', f: [[90, 408, 495, 420], [615, 408, 495, 420], [90, 858, 495, 420], [615, 858, 495, 420]] },
+    five: { n: 'Five', f: [[90, 90, 1020, 520], [90, 640, 495, 462], [615, 640, 495, 462], [90, 1132, 495, 462], [615, 1132, 495, 462]] }
   };
   var COLORS = ['#ffffff', '#faf6ef', '#f4ecdf', '#fbd3dc', '#ffe27a', '#86d6e8', '#c8e6c9', '#cfe8ff', '#e5383b', '#ff4f9a', '#ff7a2e', '#2f80ed', '#0f5c3a', '#1f3c74', '#3b2314', '#141414'];
 
@@ -1155,70 +1162,52 @@
   }
   function arrangeAsk(n) {
     var d = document.createElement('dialog'); d.className = 'pe-ask';
-    d.innerHTML = '<div class="pe-ask__in"><h3>' + n + ' photos added</h3><p>Shall we lay them out for you? Landscape photos are paired two to a page, portraits get a page of their own, with a few full-page and collage pages for variety. You can change any page afterwards.</p>' +
+    d.innerHTML = '<div class="pe-ask__in"><h3>' + n + ' photos added</h3><p>Shall we design the pages for you? We group your photos into moments by when and where they were taken and how they look, open each moment with its best shot, and fit every photo into a frame of its own shape, centred on the people in it. You can change any page afterwards.</p>' +
       '<div class="pe-ask__acts"><button class="btn btn--p" data-a="empty">Arrange them for me</button><button class="btn btn--ghost" data-a="all">Rearrange the whole book</button><button class="btn btn--ghost" data-a="no">I’ll place them myself</button></div></div>';
     document.body.appendChild(d); d.showModal();
     d.addEventListener('click', function (e) { var b = e.target.closest('[data-a]'); if (!b && e.target !== d) return; var a = b ? b.getAttribute('data-a') : 'no'; d.close(); d.remove(); if (a === 'empty') arrange(false); else if (a === 'all') arrange(true); });
   }
-  /** Lays photos out across pages. all = rebuild every page from every photo; otherwise fill empty pages and frames. */
+  /** Lays photos out across pages like a designer would (see arrange.js): moments by time, place and mood, an
+      opening photo per moment, every photo in a frame of its own shape, crops centred on the subject.
+      all = rebuild every page from every photo; otherwise fill the empty pages. */
   function arrange(all) {
+    var AR = window.PBKArrange;
     var used = all ? {} : usedMap();
     var free = S.order.filter(function (id) { return !used[id]; });
     if (!free.length) { toast(S.order.length ? 'All your photos are already in the book.' : 'Add some photos first.'); return; }
-    var shape = function (id) { var m = S.photos[id]; if (!m) return 'p'; var r = m.w / m.h; return r > 1.15 ? 'l' : r < 0.87 ? 'p' : 's'; };
-    // plan pages
-    var plan = [], q = free.slice(), k = 0;
-    while (q.length) {
-      var a = shape(q[0]), b = q[1] ? shape(q[1]) : null, n = plan.length;
-      if (a === 'l' && b === 'l') plan.push(['twov', q.splice(0, 2)]);
-      else if (a === 'p' && b === 'p' && n % 3 === 1) plan.push(['twoh', q.splice(0, 2)]);
-      else if (a !== b && b && n % 4 === 3) plan.push([a === 'l' ? 'bigsmall' : 'collage', q.splice(0, 2)]);
-      else if (a === 'l') plan.push([n % 5 === 4 ? 'full' : 'land', q.splice(0, 1)]);
-      else if (a === 's') plan.push(['square', q.splice(0, 1)]);
-      else plan.push([n % 4 === 2 ? 'full' : 'one', q.splice(0, 1)]);
-      k++;
-    }
+    if (S.arranging) return; S.arranging = true;
     var pages = S.p.pages, slots = [];
-    if (all) { for (var i = 0; i < pages.length; i++) slots.push(i); }
-    else pages.forEach(function (d, i) { var fr = d.els.filter(function (e) { return e.t === 'photo'; }); if (!d.els.some(function (e) { return e.t !== 'photo'; }) && !fr.some(function (f) { return f.photo; })) slots.push(i); });
-    var need = plan.length - slots.length, added = 0;
-    while (need > 0 && pages.length < BOOK.pages.max) { pages.push(pageDoc('one')); slots.push(pages.length - 1); need--; added++; }
-    if (pages.length % 2) { if (pages.length < BOOK.pages.max) { pages.push(pageDoc('one')); added++; } }
-    var placed = 0;
-    plan.forEach(function (pl, j) {
-      if (j >= slots.length) return;
-      var d = pages[slots[j]];
-      if (all) { d.els = d.els.filter(function (e) { return e.t !== 'photo'; }); }
-      applyLayout(d, pl[0]);
-      var fr = d.els.filter(function (e) { return e.t === 'photo'; });
-      pl[1].forEach(function (id, x) { if (fr[x]) { fr[x].photo = id; fr[x].crop = { z: 1, cx: 0.5, cy: 0.5 }; placed++; } });
-    });
-    if (all) for (var r = plan.length; r < slots.length; r++) { var d2 = pages[slots[r]]; if (!d2.els.some(function (e) { return e.t !== 'photo'; })) { var L = pageDoc('one'); d2.els = L.els; d2.layout = 'one'; } }
-    commit(); S.cur = Math.max(0, slots[0] || 0); if (innerWidth < 900) S.panel = null; renderAll(); if (innerWidth < 900) openPanel(null);
-    var left = free.length - placed;
-    toast(placed + ' photo' + (placed === 1 ? '' : 's') + ' arranged' + (added ? ', ' + added + ' page' + (added === 1 ? '' : 's') + ' added' : '') + (left > 0 ? '. ' + left + ' didn’t fit: the book is at ' + BOOK.pages.max + ' pages.' : '.'));
+    function busy(t) { var pr = $('#peProg'); if (pr) pr.textContent = t || ''; }
+    busy('Looking at your photos…'); toast('Arranging ' + free.length + ' photo' + (free.length === 1 ? '' : 's') + '…');
+    AR.features(free.map(function (id) { return S.photos[id]; }), thumbUrl, function (i, n) { busy('Looking at your photos… ' + Math.round(i / n * 100) + '%'); }).then(function (items) {
+      if (all) { for (var i = 0; i < pages.length; i++) slots.push(i); }
+      else pages.forEach(function (d, i) { var fr = d.els.filter(function (e) { return e.t === 'photo'; }); if (!d.els.some(function (e) { return e.t !== 'photo'; }) && !fr.some(function (f) { return f.photo; })) slots.push(i); });
+      var plan = AR.plan(items, { layouts: LAYOUTS, slots: slots.length, max: slots.length + (BOOK.pages.max - pages.length) });
+      var need = plan.length - slots.length, added = 0;
+      while (need > 0 && pages.length < BOOK.pages.max) { pages.push(pageDoc('one')); slots.push(pages.length - 1); need--; added++; }
+      if (pages.length % 2 && pages.length < BOOK.pages.max) { pages.push(pageDoc('one')); added++; }
+      var placed = 0;
+      plan.forEach(function (pl, j) {
+        if (j >= slots.length) return;
+        var d = pages[slots[j]];
+        d.els = d.els.filter(function (e) { return e.t !== 'photo'; });
+        applyLayout(d, pl.layout);
+        var fr = d.els.filter(function (e) { return e.t === 'photo'; });
+        pl.ids.forEach(function (id, x) { if (fr[x]) { fr[x].photo = id; fr[x].crop = pl.crops[x]; placed++; } });
+      });
+      if (all) {
+        for (var r = plan.length; r < slots.length; r++) { var d2 = pages[slots[r]]; if (!d2.els.some(function (e) { return e.t !== 'photo'; })) { var L0 = pageDoc('one'); d2.els = L0.els; d2.layout = 'one'; } }
+        /* empty pages left at the end beyond the minimum are taken out (in twos, so spreads stay whole) */
+        var cut = 0;
+        while (pages.length - 2 >= BOOK.pages.min && [pages[pages.length - 1], pages[pages.length - 2]].every(function (d) { return !d.els.some(function (e) { return e.t !== 'photo' || e.photo; }); })) { pages.splice(pages.length - 2, 2); cut += 2; }
+        if (cut) added -= cut;
+      }
+      commit(); S.cur = Math.max(0, Math.min(pages.length - 1, slots[0] || 0)); if (innerWidth < 900) S.panel = null; renderAll(); if (innerWidth < 900) openPanel(null);
+      var left = free.length - placed;
+      toast(placed + ' photo' + (placed === 1 ? '' : 's') + ' arranged on ' + Math.min(plan.length, slots.length) + ' page' + (plan.length === 1 ? '' : 's') + (added > 0 ? ', ' + added + ' page' + (added === 1 ? '' : 's') + ' added' : added < 0 ? ', ' + (-added) + ' empty pages taken out' : '') + (left > 0 ? '. ' + left + ' didn’t fit: the book is at ' + BOOK.pages.max + ' pages.' : '. Tap ↶ to undo.'));
+    }).catch(function (e) { toast('Couldn’t arrange the photos: ' + ((e && e.message) || 'please try again') + '.'); }).then(function () { S.arranging = false; busy(''); });
   }
   function autofill() { arrange(false); }
-  function autofillOld() {
-    var used = usedMap(), free = S.order.filter(function (id) { return !used[id]; });
-    if (!free.length) { toast(S.order.length ? 'All your photos are already in the book.' : 'Add some photos first.'); return; }
-    var n = 0;
-    for (var i = 0; i < S.p.pages.length && free.length; i++) {
-      var d = S.p.pages[i];
-      var frames = d.els.filter(function (e) { return e.t === 'photo'; });
-      if (frames.some(function (f) { return f.photo; })) { frames.forEach(function (f) { if (!f.photo && free.length) { f.photo = free.shift(); n++; } }); continue; }
-      if (!frames.length && d.els.length) continue;
-      if (frames.length && (d.layout !== 'one' || d.els.some(function (e) { return e.t !== 'photo'; }))) { frames.forEach(function (f) { if (free.length) { f.photo = free.shift(); n++; } }); continue; }
-      var a = S.photos[free[0]], b = S.photos[free[1]];
-      var landA = a && a.w > a.h * 1.1, landB = b && b.w > b.h * 1.1;
-      if (landA && landB) applyLayout(d, 'twov');
-      else if (landA) applyLayout(d, 'land');
-      else applyLayout(d, i % 5 === 2 ? 'full' : 'one');
-      d.els.filter(function (e) { return e.t === 'photo'; }).forEach(function (f) { if (free.length) { f.photo = free.shift(); n++; } });
-    }
-    commit(); if (innerWidth < 900) S.panel = null; renderAll(); if (innerWidth < 900) openPanel(null);
-    toast(n + ' photo' + (n === 1 ? '' : 's') + ' placed' + (free.length ? '. ' + free.length + ' left: add pages to fit them.' : '.'));
-  }
 
   /* ---------------- panels ---------------- */
   function bindRail() {

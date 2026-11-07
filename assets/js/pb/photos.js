@@ -18,14 +18,14 @@
     return file.type || 'unknown';
   }
 
-  /** minimal EXIF reader: Orientation and DateTimeOriginal from a JPEG */
+  /** minimal EXIF reader: Orientation, DateTimeOriginal and GPS position from a JPEG */
   function exif(buf) {
     var v = new DataView(buf), out = { orientation: 1, taken: null };
     if (v.byteLength < 4 || v.getUint16(0) !== 0xFFD8) return out;
     var off = 2;
     while (off + 4 < v.byteLength) {
       var marker = v.getUint16(off), len = v.getUint16(off + 2);
-      if (marker === 0xFFE1 && v.getUint32(off + 4) === 0x45786966) { parse(off + 10); break; }
+      if (marker === 0xFFE1 && v.getUint32(off + 4) === 0x45786966) { try { parse(off + 10); } catch (e) { } break; }
       if ((marker & 0xFF00) !== 0xFF00 || marker === 0xFFDA) break;
       off += 2 + len;
     }
@@ -33,8 +33,16 @@
       var le = v.getUint16(t) === 0x4949;
       function u16(o) { return v.getUint16(o, le); } function u32(o) { return v.getUint32(o, le); }
       function ifd(o, cb) { if (o + 2 > v.byteLength) return; var n = u16(o); for (var i = 0; i < n; i++) { var e = o + 2 + i * 12; if (e + 12 > v.byteLength) return; cb(u16(e), e); } }
-      var first = t + u32(t + 4), exifPtr = null;
-      ifd(first, function (tag, e) { if (tag === 0x0112) out.orientation = u16(e + 8); if (tag === 0x8769) exifPtr = t + u32(e + 8); });
+      var first = t + u32(t + 4), exifPtr = null, gpsPtr = null;
+      ifd(first, function (tag, e) { if (tag === 0x0112) out.orientation = u16(e + 8); if (tag === 0x8769) exifPtr = t + u32(e + 8); if (tag === 0x8825) gpsPtr = t + u32(e + 8); });
+      if (gpsPtr) {
+        var g = {};
+        ifd(gpsPtr, function (tag, e) {
+          if (tag === 1 || tag === 3) g[tag] = String.fromCharCode(v.getUint8(e + 8));
+          if (tag === 2 || tag === 4) { var p = t + u32(e + 8), r = function (k) { var dn = u32(p + k * 8 + 4); return dn ? u32(p + k * 8) / dn : 0; }; if (p + 24 <= v.byteLength) g[tag] = r(0) + r(1) / 60 + r(2) / 3600; }
+        });
+        if (g[2] != null && g[4] != null && (g[2] || g[4])) out.gps = { lat: +(g[1] === 'S' ? -g[2] : g[2]).toFixed(5), lng: +(g[3] === 'W' ? -g[4] : g[4]).toFixed(5) };
+      }
       if (exifPtr) ifd(exifPtr, function (tag, e) {
         if (tag === 0x9003 || (tag === 0x9004 && !out.taken)) {
           var p = t + u32(e + 8), s = ''; for (var i = 0; i < 19 && p + i < v.byteLength; i++) s += String.fromCharCode(v.getUint8(p + i));
@@ -131,7 +139,7 @@
           if (!w || !h) throw new Error(file.name + ' could not be read.');
           return Promise.all([scaled(img, 1600, 0.86), scaled(img, 420, 0.8)]).then(function (d) {
             if (img.close) img.close();
-            var meta = { id: ctx.uid('ph'), projectId: ctx.projectId, name: String(file.name || 'photo').slice(0, 120), type: type, size: buf.byteLength, converted: src.converted || undefined, w: w, h: h, orient: ex.orientation || 1, taken: ex.taken, hash: hash, added: Date.now(), low: Math.min(w, h) < lim.minPhotoPx };
+            var meta = { id: ctx.uid('ph'), projectId: ctx.projectId, name: String(file.name || 'photo').slice(0, 120), type: type, size: buf.byteLength, converted: src.converted || undefined, w: w, h: h, orient: ex.orientation || 1, taken: ex.taken, gps: ex.gps || undefined, hash: hash, added: Date.now(), low: Math.min(w, h) < lim.minPhotoPx };
             return { meta: meta, blobs: { orig: blob, prev: d[0], thumb: d[1] } };
           });
         });
