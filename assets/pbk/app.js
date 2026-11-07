@@ -560,12 +560,29 @@
       });
     });
   }
+  /** the orders placed from this device, with their live status */
+  function myOrders(box) {
+    if (!window.PBKShop) return;
+    PBKShop.purchases().then(function (l) {
+      var rc = l.map(function (pu) { return pu.receipt; }).filter(Boolean); if (!rc.length) return;
+      var wrap = document.createElement('div'); wrap.className = 'pk-mo'; wrap.innerHTML = '<h3>My orders</h3><p class="pk-empty">Loading…</p>'; box.parentNode.insertBefore(wrap, box);
+      fetch('/api/photobooks?route=pbk-mine', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'ciel' }, body: JSON.stringify({ receipts: rc }) }).then(function (r) { return r.json(); }).then(function (j) {
+        var os = (j && j.orders) || []; if (!os.length) { wrap.remove(); return; }
+        wrap.innerHTML = '<h3>My orders</h3>' + os.map(function (o) {
+          var wa = 'https://wa.me/254706549703?text=' + encodeURIComponent('Hello Ciel Africa, I need help with my photo book order ' + o.ref);
+          return '<div class="pk-mo__o"><div><b>' + esc(o.ref) + (o.test ? ' <small>(test)</small>' : '') + '</b><span>' + o.items.map(function (i) { return esc(i.name) + ' · ' + (i.product === 'print' ? 'printed' + (i.qty > 1 ? ' ×' + i.qty : '') : 'PDF') + ' · ' + i.pages + ' pages'; }).join('<br>') + '</span><small>Ordered ' + new Date(o.createdAt).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' }) + '</small></div>' +
+            '<div class="pk-mo__s"><span class="pk-mo__st' + (/delivered|ready_collection/.test(o.status) ? ' is-done' : /cancel|refund|failed/.test(o.status) ? ' is-off' : '') + '">' + esc(o.fixOpen ? 'Open for your corrections' : o.label) + '</span><a class="btn btn--sm btn--dark" data-go href="' + esc(o.track) + '">Track</a><a class="btn btn--sm btn--ghost" target="_blank" rel="noopener" href="' + wa + '">Help</a></div></div>';
+        }).join('');
+      }, function () { wrap.remove(); });
+    });
+  }
   /* ---------------- my books ---------------- */
   function myBooks() {
     document.title = 'My photo books — Ciel Africa';
     main.innerHTML = catStrip() + '<section class="pk-my wrap"><div class="pk-head"><span class="eyebrow"><span class="brk">‹</span> Saved on this device</span><h2>My books</h2><p>Books are saved in this browser. Use the same phone or computer to continue.</p></div>' + orderBox() + '<div class="pk-my__grid" id="pkMy"><p class="pk-empty">Loading…</p></div></section>';
     bindOrderBox();
     var box = document.getElementById('pkMy');
+    myOrders(box);
     /* a correction link from Ciel Africa: reopen the matching book on this device */
     var fixT = new URLSearchParams(location.search).get('fix');
     if (fixT && window.PBKShop) {
