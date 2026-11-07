@@ -18,3 +18,7 @@ All from [Unsplash](https://unsplash.com/?utm_source=ciel_africa&utm_medium=refe
 - pf6.webp — Dwayne joe (@spliff_dj_joe)
 - pf7.webp — Prince Akachi (@princearkman)
 - pf8.webp — James Balensiefen (@balensiefenphoto)
+- sf1.webp — Twende Africa Tours (@twendeafricatours) · Unsplash photo oLrY_JjulI0
+- sf2.webp — Ultimate Safaris Namibia · Unsplash photo 82Tv-EZkwas
+- sf3.webp — Mona Bernhardsen · Unsplash photo 8lq2QGuxKJQ
+- sf4.webp — Denice Alex (@denisi_z) · Unsplash photo JjximVe_6tQ

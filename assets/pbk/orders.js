@@ -195,7 +195,7 @@
           return '<div class="ao__book" data-pid="' + esc(it.projectId) + '"><img data-cov alt=""><div><b>' + esc(it.name) + '</b>' + (b.dir && b.dir !== it.projectId ? ' <span class="ao__b ao__b--fix">Corrected version ' + esc(b.dir.split('-r').pop()) + '</span>' : '') + (b.incoming ? '<span class="ao__msg">Correction ' + b.incoming.round + ' arriving: ' + b.incoming.print + ' of ' + (it.pages + 2) + ' files so far.</span>' : '') + (b.earlier && b.earlier.length ? '<span class="ao__msg">Earlier version' + (b.earlier.length > 1 ? 's' : '') + ' kept: ' + b.earlier.map(function (v) { return '<button class="ao__lnk" data-old="' + esc(v.dir) + '">' + (v.round ? 'correction ' + v.round : 'first version') + '</button>'; }).join(', ') + '</span>' : '') + '<span class="ao__msg">' + (it.product === 'print' ? 'Printed hardcover × ' + it.qty : 'Print-ready PDF (customer downloads it)') + ' · ' + it.pages + ' pages · ' + tr.w / 10 + ' × ' + tr.h / 10 + ' cm' + (tr.h === 297 ? ' (A4)' : '') + '</span>' +
             (o.channel === 'whatsapp' ? '<span class="ao__msg"><b>WhatsApp order request.</b> ' + (b.view.length ? 'These are previews of what they designed (not print files).' : 'No preview yet: it sends from their device right after they tap Order on WhatsApp.') + '</span>' : '') +
             (it.product === 'print' ? '<span class="ao__msg">' + b.print.length + ' of ' + (it.pages + 2) + ' print files received' + (bk.spine ? ' · Spine ' + (bk.spineMm || spineMm(it.pages)) + ' mm: “' + esc(bk.spine.hideTitle ? '(no words)' : bk.spine.title || '') + '” on ' + esc(bk.spine.bg || '') : '') + '</span>' : '') +
-            (b.view.length ? '<div class="ao__acts"><button class="btn btn--p btn--sm" data-prev>Preview book</button>' + (b.print.length ? '<button class="btn btn--dark btn--sm" data-pdf>Download print PDF</button><button class="btn btn--dark btn--sm" data-wrap>Download full cover</button><button class="btn btn--ghost btn--sm" data-pages>Show pages</button>' : '') + '</div><div class="ao__pages" data-grid hidden></div><span class="ao__msg" data-msg></span>' : (it.product === 'print' ? '<span class="ao__msg">The pages haven’t arrived yet. They send from the customer’s device after payment.</span>' : '')) + '</div></div>';
+            (b.view.length ? '<div class="ao__acts"><button class="btn btn--p btn--sm" data-prev>Preview book</button>' + (b.print.length ? '<button class="btn btn--dark btn--sm" data-pdf>Print PDF</button><button class="btn btn--dark btn--sm" data-wrap>Full cover PDF</button><button class="btn btn--ghost btn--sm" data-pages>Show pages</button>' : '') + '</div><div class="ao__pages" data-grid hidden></div><span class="ao__msg" data-msg></span>' : (it.product === 'print' ? '<span class="ao__msg">The pages haven’t arrived yet. They send from the customer’s device after payment.</span>' : '')) + '</div></div>';
         }).join('') + '<p class="ao__msg">Print files: 000 = front cover, then the pages in order, last = back cover, each its own page at ' + ((BOOK.trimW || 210) + 6) + ' × ' + ((BOOK.trimH || 297) + 6) + ' mm (3 mm bleed) at 300 dpi; the PDF’s TrimBox is ' + (BOOK.trimW || 210) + ' × ' + (BOOK.trimH || 297) + ' mm. <b>Full cover</b> is the hardcover case in one piece: wrap · back · hinge · spine · hinge · front · wrap, sized for that book’s page count (numbers from Ciel Admin → Prices → Hardcover case).</p></div></div>';
       wireTop(); document.getElementById('bk').onclick = drawList;
       fixBox(o, r); printerBox(o, r);
@@ -253,7 +253,7 @@
               }
               return next();
             });
-          }).then(function (bytes) { save(new Blob([bytes], { type: 'application/pdf' }), o.ref + '-' + it.name.replace(/[^\w-]+/g, '-') + '-print.pdf'); msg.textContent = 'Downloaded.'; }, function (e) { msg.textContent = e.message; }).then(function () { pd.disabled = false; });
+          }).then(function (bytes) { pdfOut(new Blob([bytes], { type: 'application/pdf' }), o.ref + '-' + it.name.replace(/[^\w-]+/g, '-') + '-print.pdf', it.name + ' · print PDF', b.print.length + ' files · A4 with 3 mm bleed'); msg.textContent = ''; }, function (e) { msg.textContent = e.message; }).then(function () { pd.disabled = false; });
         };
         var wb = el.querySelector('[data-wrap]');
         if (wb) wb.onclick = function () {
@@ -292,12 +292,18 @@
                   });
                 });
               });
-            }).then(function (bytes) { save(new Blob([bytes], { type: 'application/pdf' }), o.ref + '-' + it.name.replace(/[^\w-]+/g, '-') + '-case-' + Math.round(cv.widthMm) + 'x' + Math.round(cv.heightMm) + 'mm-spine' + sp + 'mm.pdf');
-              msg.innerHTML = 'Full cover downloaded: <b>' + (Math.round(cv.widthMm * 10) / 10) + ' × ' + cv.heightMm + ' mm</b>. Back ' + tr.w + ' · hinge ' + cv.hingeMm + ' · spine ' + sp + ' · hinge ' + cv.hingeMm + ' · front ' + tr.w + ' mm, with ' + cv.wrapMm + ' mm wrap all round (' + cv.dpi + ' dpi).'; });
+            }).then(function (bytes) { pdfOut(new Blob([bytes], { type: 'application/pdf' }), o.ref + '-' + it.name.replace(/[^\w-]+/g, '-') + '-case-' + Math.round(cv.widthMm) + 'x' + Math.round(cv.heightMm) + 'mm-spine' + sp + 'mm.pdf', it.name + ' · full cover', (Math.round(cv.widthMm * 10) / 10) + ' × ' + cv.heightMm + ' mm · page 2 shows the folds');
+              msg.innerHTML = 'Full cover: <b>' + (Math.round(cv.widthMm * 10) / 10) + ' × ' + cv.heightMm + ' mm</b>. Back ' + tr.w + ' · hinge ' + cv.hingeMm + ' · spine ' + sp + ' · hinge ' + cv.hingeMm + ' · front ' + tr.w + ' mm, with ' + cv.wrapMm + ' mm wrap all round (' + cv.dpi + ' dpi).'; });
           }).catch(function (e) { msg.textContent = e.message || 'Couldn’t make the cover.'; }).then(function () { wb.disabled = false; });
         };
       });
     }).catch(function (e) { if (e.status === 401) return login(); root.innerHTML = top() + '<p class="ao__msg">' + esc(e.message) + '</p>'; wireTop(); });
+  }
+  /** a PDF made here: shown first (pages drawn in the browser), with Download in the preview */
+  function pdfOut(blob, name, title, note) {
+    function go() { if (window.PBKPdfView) return window.PBKPdfView.open(blob, { name: name, title: title, note: note }); save(blob, name); }
+    if (window.PBKPdfView) return go();
+    var s = document.createElement('script'); s.src = '/assets/pbk/pdfview.js?v=1'; s.onload = go; s.onerror = function () { save(blob, name); }; document.head.appendChild(s);
   }
   /** the spine at 300 dpi: drawn from the book's spine settings, or the uploaded spine file */
   function spineCanvas(b, it) {

@@ -225,3 +225,14 @@
 .hob--a{flex-direction:column-reverse}
 @media(min-width:901px){.hob{width:min(76%,480px)}}
 .hero{overflow-x:clip}
+
+/* the cover shelf: three real hardcovers from the catalogue, fanned out */
+.hob--shelf .hob__books{position:relative;width:100%;aspect-ratio:420/297;display:flex;align-items:flex-end;justify-content:center}
+.hob__books a{position:relative;display:block;width:44%;margin:0 -7%;transition:transform .45s cubic-bezier(.2,.7,.2,1);filter:drop-shadow(0 14px 18px rgba(60,40,20,.22))}
+.hob__books a:nth-child(1){transform:rotate(-7deg) translateY(4%);z-index:1}
+.hob__books a:nth-child(2){transform:translateY(-6%);z-index:3;width:48%}
+.hob__books a:nth-child(3){transform:rotate(6deg) translateY(5%);z-index:2}
+.hob__books a:hover{transform:translateY(-10%) rotate(0);z-index:4}
+.hob__books img{display:block;width:100%;height:auto;user-select:none;-webkit-user-drag:none}
+.hob--shelf:hover{transform:rotate(2.5deg)}
+@media(prefers-reduced-motion:reduce){.hob__books a{transition:none}}
