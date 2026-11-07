@@ -1290,3 +1290,15 @@ body.pbk-editing .pk{background:#efeae2}
 }
 
 .pkco__adm{margin-top:1rem;padding:.8rem 1rem;border:1px dashed #c9b9a6;border-radius:12px;display:flex;flex-direction:column;gap:.4rem;font-size:.85rem;color:#6b5f52}.pkco__adm b{color:#1b1714}.pkco__adm .btn{align-self:flex-start}
+
+/* My books: card actions that fit the card (Open on its own row, the rest two by two) */
+.pk-myb>div{display:flex;flex-direction:column;min-width:0}
+.pk-myb__a{display:grid!important;grid-template-columns:1fr 1fr;gap:.45rem;margin-top:.7rem}
+.pk-myb__a .btn{min-width:0;width:100%;justify-content:center;white-space:nowrap;padding:.5rem .6rem;font-size:.82rem;line-height:1.2;border-radius:999px;height:auto;aspect-ratio:auto}
+.pk-myb__a .btn--dark,.pk-myb__a .btn--p{grid-column:1/-1}
+.pk-myb__a [data-del]{color:#b42318}
+.pk-myb__paid{margin-top:.7rem}
+/* admin-only test books */
+.pk-samp{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.8rem 1.2rem;background:#fff;border:1px dashed var(--pk-line);border-radius:16px;padding:1rem 1.2rem;margin:0 0 1.2rem}
+.pk-samp>div:first-child{flex:1 1 20rem;min-width:0}.pk-samp b{display:block}.pk-samp span{font-size:.86rem;color:var(--pk-soft)}
+.pk-samp__b{display:flex;flex-wrap:wrap;gap:.5rem}.pk-samp__s{flex-basis:100%;margin:0;font-size:.85rem;color:var(--pk-soft)}.pk-samp__s:empty{display:none}

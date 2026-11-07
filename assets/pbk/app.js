@@ -594,7 +594,32 @@
       });
     });
   }
-  PBK.exportBook = exportBook; PBK.importBook = importBook;
+  /** a ready-made test book (admin only): its layout comes from /assets/pbk/samples, its photos from Unsplash at full size */
+  function loadSample(key, onStep) {
+    var ST = window.PBStore, nid = function (p) { return p + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
+    function get(u) { return fetch(u, { mode: 'cors' }).then(function (r) { if (!r.ok) throw new Error('a photo didn’t download (' + r.status + ')'); return r.blob(); }); }
+    return fetch('/assets/pbk/samples/' + encodeURIComponent(key) + '.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error('test book not found'); return r.json(); }).then(function (h) {
+      var p = h.project, map = {}, newId = nid('pb'), n = (h.photos || []).length, i = 0;
+      return (h.photos || []).reduce(function (chain, e) {
+        return chain.then(function () {
+          i++; if (onStep) onStep(i, n);
+          var m = e.meta || {}, nm = Object.assign({}, m, { id: nid('ph'), projectId: newId, added: Date.now() });
+          map[m.id] = nm.id;
+          return Promise.all([get(e.src + '&w=' + (m.w || 3600)), get(e.src + '&w=1600'), get(e.src + '&w=420')]).then(function (bl) {
+            nm.size = bl[0].size; nm.type = 'image/jpeg';
+            return ST.savePhoto(nm, { orig: bl[0], prev: bl[1], thumb: bl[2] });
+          });
+        });
+      }, Promise.resolve()).then(function () {
+        function fix(d) { (d && d.els || []).forEach(function (e) { if (e.photo && map[e.photo]) e.photo = map[e.photo]; if (e.mask && map[e.mask]) e.mask = map[e.mask]; }); }
+        [p.cover, p.back].concat(p.pages || []).forEach(fix);
+        if (Array.isArray(p.photoOrder)) p.photoOrder = p.photoOrder.map(function (id) { return map[id] || id; });
+        p.id = newId; delete p.lastPage; p.createdAt = p.updatedAt = Date.now();
+        return ST.saveProject(p).then(function () { return p; });
+      });
+    });
+  }
+  PBK.exportBook = exportBook; PBK.importBook = importBook; PBK.loadSample = loadSample;
   /** a full copy of a book (its own photos too), to make another version without starting again */
   function dupBook(pid) {
     var ST = window.PBStore, nid = function (p) { return p + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
@@ -634,7 +659,7 @@
   /* ---------------- my books ---------------- */
   function myBooks() {
     document.title = 'My photo books — Ciel Africa';
-    main.innerHTML = catStrip() + '<section class="pk-my wrap"><div class="pk-head"><span class="eyebrow"><span class="brk">‹</span> Saved on this device</span><h2>My books</h2><p>Books are saved in this browser. Use the same phone or computer to continue, or <b>Save as file</b> and open it on another device. <label class="pk-imp"><input type="file" id="pkImp" accept=".cielbook" hidden><span class="btn btn--sm btn--ghost">Open a book file</span></label></p></div>' + orderBox() + '<div class="pk-my__grid" id="pkMy"><p class="pk-empty">Loading…</p></div></section>';
+    main.innerHTML = catStrip() + '<section class="pk-my wrap"><div class="pk-head"><span class="eyebrow"><span class="brk">‹</span> Saved on this device</span><h2>My books</h2><p>Books are saved in this browser. Use the same phone or computer to continue, or <b>Save as file</b> and open it on another device. <label class="pk-imp"><input type="file" id="pkImp" accept=".cielbook" hidden><span class="btn btn--sm btn--ghost">Open a book file</span></label></p></div>' + (window.PBK_ADMIN ? '<div class="pk-samp" id="pkSamp"><div><b>Test books</b><span>Ready-made books for trying the editor and a test order. They’re added to My books on this device. Only you see this, because you’re signed in to Ciel Admin.</span></div><div class="pk-samp__b"><button class="btn btn--sm btn--dark" data-samp="serengeti">Add “Serengeti”</button><button class="btn btn--sm btn--dark" data-samp="dubai">Add “Dubai”</button></div><p class="pk-samp__s" id="pkSampS" aria-live="polite"></p></div>' : '') + orderBox() + '<div class="pk-my__grid" id="pkMy"><p class="pk-empty">Loading…</p></div></section>';
     bindOrderBox();
     var box = document.getElementById('pkMy'), imp = document.getElementById('pkImp');
     if (imp) imp.onchange = function () {
@@ -643,6 +668,16 @@
       importBook(f).then(function (p) { PBK.go(BASE + '/design?p=' + encodeURIComponent(p.id)); }, function (e) { lb.textContent = 'Open a book file'; alert(e.message || 'Couldn’t open that file.'); });
     };
     myOrders(box);
+    var sp = document.getElementById('pkSamp');
+    if (sp) sp.querySelectorAll('[data-samp]').forEach(function (b) {
+      b.onclick = function () {
+        var st = document.getElementById('pkSampS'), all = sp.querySelectorAll('[data-samp]');
+        all.forEach(function (x) { x.disabled = true; });
+        loadSample(b.getAttribute('data-samp'), function (i, n) { st.textContent = 'Adding ' + b.textContent.replace(/^Add /, '') + '… photo ' + i + ' of ' + n; }).then(function (pr) {
+          st.textContent = 'Added. Opening it…'; PBK.go(BASE + '/design?p=' + encodeURIComponent(pr.id));
+        }, function (e) { all.forEach(function (x) { x.disabled = false; }); st.textContent = 'Couldn’t add the book: ' + ((e && e.message) || 'please try again') + '.'; });
+      };
+    });
     /* a correction link from Ciel Africa: reopen the matching book on this device */
     var fixT = new URLSearchParams(location.search).get('fix');
     if (fixT && window.PBKShop) {

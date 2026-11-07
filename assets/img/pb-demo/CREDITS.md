@@ -18,7 +18,8 @@ All from [Unsplash](https://unsplash.com/?utm_source=ciel_africa&utm_medium=refe
 - pf6.webp — Dwayne joe (@spliff_dj_joe)
 - pf7.webp — Prince Akachi (@princearkman)
 - pf8.webp — James Balensiefen (@balensiefenphoto)
-- af1.webp — Brian Kungu · Unsplash photo mkWCgTpixMg
-- af2.webp — Michael Kyule · Unsplash photo 8-73uoBqp_s
-- af3.webp — Brian Kungu · Unsplash photo sZOODCzlyn8
-- af4.webp — Dwayne joe (@spliff_dj_joe) · Unsplash photo VeS_l3sakjg
+- sf1.webp — Xiaoqian Shen (@shenxq0825) · Unsplash photo so7uqDbqDQ8
+- sf2.webp — Laura Seaman (@lauraseaman) · Unsplash photo P0932ANXT0g
+- sf3.webp — Carlos Torres (@elcarito) · Unsplash photo 2buV9JU4jaI
+- sf4.webp — Jan Canty (@jcanty123) · Unsplash photo FimojAWVm3o
+- Test books (assets/pbk/samples): photos load from Unsplash (unsplash.com) under the Unsplash License.

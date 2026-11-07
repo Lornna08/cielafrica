@@ -592,7 +592,7 @@
     var tiles = [
       ['frame', I.book, 'Orders & print files', 'Every page at print size, the spine as PNG, the print and cover PDFs (with a preview first), corrections and storage clean-up.', '/photobooks/orders?embed=1'],
       ['tab', I.pen, 'Make a book as a customer', 'Opens the Photo Books store the way customers see it: pick a cover, add photos, let it arrange the pages, edit and order.', '/photobooks'],
-      ['tab', I.folder, 'My books', 'Books saved on this device, and orders placed from it. Open a book file (.cielbook) here to load a ready-made book.', '/photobooks/my-books'],
+      ['tab', I.folder, 'My books', 'Books saved on this device, orders placed from it, and the Serengeti and Dubai test books (Test books → Add).', '/photobooks/my-books'],
       ['prices', I.card, 'Prices & pages', 'Book prices by page count, the price of each additional page and delivery.', '#photobooks/prices'],
       ['tab', I.globe, 'Track an order', 'The page customers use to follow their order with its code.', '/photobooks/track']
     ];
@@ -605,7 +605,7 @@
       '<div class="cards3" style="margin-top:1rem">' + tiles.map(function (t, i) { return '<button class="card tile" data-t="' + i + '"><span class="ico">' + t[1] + '</span><h3>' + t[2] + (t[0] === 'tab' ? ' <small class="muted" style="font-weight:500">↗</small>' : '') + '</h3><p>' + t[3] + '</p></button>'; }).join('') + '</div>' +
       '<div class="card" style="margin-top:1rem"><div class="card__h"><h2>Try it as a customer</h2></div><div class="card__b" style="display:grid;gap:.55rem;line-height:1.55">' +
       '<p>1. Open <b>Make a book as a customer</b>. Everything works as it does for a customer: covers, adding photos, automatic arranging, the editor and checkout.</p>' +
-      '<p>2. Your books are saved in this browser and appear in <b>My books</b> on this device. To open the Serengeti or Dubai test books, use <b>My books → Open a book file</b> and pick the .cielbook file.</p>' +
+      '<p>2. Your books are saved in this browser and appear in <b>My books</b> on this device. The Serengeti and Dubai test books are in <b>My books → Test books</b>: tap <b>Add “Serengeti”</b> or <b>Add “Dubai”</b> and the full book (24 pages, all photos) is added to this device and opens in the editor. This box only shows on a phone or computer where you’re signed in to Ciel Admin.</p>' +
       '<p>3. At checkout you’ll see <b>Place test order (no payment)</b>, because you’re signed in to Ciel Admin on this device. It creates a real order code, uploads the pages and shows up here and in Orders marked <b>TEST</b>. No money is taken and it never counts as revenue.</p>' +
       '<p class="muted">Customers never see the test-order button. To pay for real you’d go through M-Pesa like any customer.</p></div></div>' +
       '<div class="card" style="margin-top:1rem"><div class="card__h"><h2>Photo Book orders</h2><a class="b b--sm" href="#orders">All orders</a></div>' +
