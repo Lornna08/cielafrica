@@ -68,6 +68,49 @@
     document.getElementById('as').onchange = function () { filt.s = this.value; drawList(); };
     root.querySelectorAll('[data-ref]').forEach(function (b) { b.onclick = function () { detail(b.getAttribute('data-ref')); }; });
   }
+  /* ---------- corrections: let the customer fix their book after ordering ---------- */
+  function fixBox(o, r) {
+    var el = document.getElementById('fx'); if (!el) return;
+    var prints = (o.items || []).filter(function (i) { return i.product === 'print'; }), e = o.edit;
+    if (!prints.length) { el.innerHTML = ''; return; }
+    var phone = String(o.customer.phone || '').replace(/\D/g, ''), first = (o.customer.name || '').split(' ')[0] || 'there';
+    function share(url) {
+      var msg = 'Hello ' + first + ', this is Ciel Africa about your photo book order ' + o.ref + '. ' + (e && e.note ? e.note + ' ' : '') + 'Please open this link on the phone or computer you made the book on, make the change, then tap "Send corrected book": ' + url;
+      return '<div class="ao__fxl"><input readonly value="' + esc(url) + '"><button class="btn btn--ghost btn--sm" data-copy>Copy link</button>' + (phone ? '<a class="btn btn--dark btn--sm" target="_blank" rel="noopener" href="https://wa.me/' + esc(phone) + '?text=' + encodeURIComponent(msg) + '">Send on WhatsApp</a>' : '') + '</div>';
+    }
+    function done(x, url) {
+      o = x.order; all = all.map(function (y) { return y.ref === o.ref ? o : y; }); e = o.edit; draw(url, x.emailed);
+    }
+    function draw(url, emailed) {
+      var h = '<h2 style="margin-top:1.2rem">Corrections</h2>';
+      if (e && e.review) h += '<div class="ao__pay"><b>Corrected book received</b><span>Check the new version under Books before printing. The earlier version is kept.</span><div class="ao__acts"><button class="btn btn--p btn--sm" data-rv>Mark as reviewed</button></div></div>';
+      if (e && e.open && e.until > Date.now()) {
+        h += '<div class="ao__pay is-wait"><b>Open for corrections until ' + when(e.until) + '</b><span>Correction ' + e.round + (e.note ? ' · “' + esc(e.note) + '”' : '') + (prints.length > 1 ? ' · ' + Object.keys(e.done || {}).length + ' of ' + e.pids.length + ' books sent back' : '') + '</span>' +
+          (url ? share(url) + (emailed ? '<span>✓ Emailed to ' + esc(o.customer.email) + '</span>' : '') : '<span>Lost the link? Open corrections again to make a new one (the old link stops working).</span>') +
+          '<div class="ao__acts"><button class="btn btn--ghost btn--sm" data-close>Close corrections</button></div></div>';
+      } else if (/^(dispatched|delivered|cancelled|refunded|ready_collection)$/.test(o.status)) {
+        h += '<p class="ao__msg">This order is ' + esc(LABEL[o.status] || o.status) + ', so it can’t be reopened.</p>';
+      }
+      if (!(e && e.open && e.until > Date.now()) && !/^(dispatched|delivered|cancelled|refunded|ready_collection)$/.test(o.status)) {
+        h += '<p class="ao__msg">Saw a problem, or pages missing? Let the customer open this book again, fix it and send it back. Nothing else in their order changes, and the version you have now is kept.</p>' +
+          (prints.length > 1 ? '<div class="ao__acts">' + prints.map(function (it) { return '<label class="ao__chk"><input type="checkbox" data-fp value="' + esc(it.projectId) + '" checked> ' + esc(it.name) + '</label>'; }).join('') + '</div>' : '') +
+          '<textarea id="fxn" rows="2" maxlength="600" placeholder="What should they fix? e.g. Page 7 is blank and the photo on page 12 is cut off. (They see this.)"></textarea>' +
+          '<div class="ao__acts"><select id="fxd"><option value="3">Open for 3 days</option><option value="7" selected>Open for 7 days</option><option value="14">Open for 14 days</option></select><label class="ao__chk"><input type="checkbox" id="fxe"' + (o.customer.email ? ' checked' : ' disabled') + '> Email the link to the customer</label><button class="btn btn--p btn--sm" data-open>Allow corrections</button></div>';
+      }
+      el.innerHTML = h;
+      var q = function (s2) { return el.querySelector(s2); };
+      if (q('[data-copy]')) q('[data-copy]').onclick = function () { var i = q('.ao__fxl input'); i.select(); (navigator.clipboard ? navigator.clipboard.writeText(i.value) : Promise.reject()).then(function () { q('[data-copy]').textContent = 'Copied ✓'; }, function () { document.execCommand('copy'); }); };
+      if (q('[data-rv]')) q('[data-rv]').onclick = function () { api('pbk-admin-reopen', { ref: o.ref, reviewed: true }).then(function (x) { done(x, url); }, function (er) { alert(er.message); }); };
+      if (q('[data-close]')) q('[data-close]').onclick = function () { if (!confirm('Close corrections? The customer’s link stops working.')) return; api('pbk-admin-reopen', { ref: o.ref, close: true }).then(function (x) { done(x); }, function (er) { alert(er.message); }); };
+      if (q('[data-open]')) q('[data-open]').onclick = function () {
+        var pids = [].slice.call(el.querySelectorAll('[data-fp]')).filter(function (c) { return c.checked; }).map(function (c) { return c.value; });
+        if (prints.length > 1 && !pids.length) return alert('Choose at least one book.');
+        var btn = q('[data-open]'); btn.disabled = true; btn.textContent = 'Opening…';
+        api('pbk-admin-reopen', { ref: o.ref, note: q('#fxn').value, days: +q('#fxd').value, notify: q('#fxe').checked, pids: pids.length ? pids : undefined }).then(function (x) { done(x, x.url); }, function (er) { btn.disabled = false; btn.textContent = 'Allow corrections'; alert(er.message); });
+      };
+    }
+    draw();
+  }
   function detail(ref) {
     root.innerHTML = top() + '<button class="ao__back" id="bk">‹ All orders</button><p class="ao__msg">Loading ' + esc(ref) + '…</p>'; wireTop();
     document.getElementById('bk').onclick = drawList;
@@ -83,15 +126,16 @@
         (g ? '<dt>Gift</dt><dd>🎁 For ' + esc(g.to || '—') + (g.phone ? ' · ' + esc(g.phone) : '') + (g.note ? '<br>“' + esc(g.note) + '”' : '') + '</dd>' : '') +
         '<dt>Lines</dt><dd>' + (o.lines || []).map(function (l) { return esc(l.label) + (l.qty > 1 ? ' × ' + l.qty : '') + ' — ' + money(l.amount * (l.qty || 1)); }).join('<br>') + '</dd></dl>' +
         '<h2 style="margin-top:1.2rem">Status</h2><div class="ao__acts"><select id="ss">' + SET.map(function (k) { return '<option value="' + k + '"' + (o.status === k ? ' selected' : '') + '>' + LABEL[k] + '</option>'; }).join('') + '</select></div><textarea id="sn" rows="2" placeholder="Note (optional)" style="margin-top:.4rem"></textarea><label style="display:flex;gap:.4rem;align-items:center;font-size:.86rem;margin-top:.4rem"><input type="checkbox" id="se" checked> Email the customer</label><button class="btn btn--dark btn--sm" id="sb" style="margin-top:.4rem">Update status</button>' +
-        '<ul class="ao__hist">' + (o.history || []).slice().reverse().map(function (h) { return '<li><b>' + esc(LABEL[h.status] || h.status) + '</b> · ' + when(h.at) + (h.note ? ' — ' + esc(h.note) : '') + '</li>'; }).join('') + '</ul></div>' +
+        '<div id="fx"></div><ul class="ao__hist">' + (o.history || []).slice().reverse().map(function (h) { return '<li><b>' + esc(LABEL[h.status] || h.status) + '</b> · ' + when(h.at) + (h.note ? ' — ' + esc(h.note) : '') + '</li>'; }).join('') + '</ul></div>' +
         '<div class="ao__card"><h2>Books</h2>' + (o.items || []).map(function (it) {
           var b = r.books[it.projectId] || { print: [], view: [], spine: [] }, bk = b.book || {}, tr = trim(bk);
-          return '<div class="ao__book" data-pid="' + esc(it.projectId) + '"><img data-cov alt=""><div><b>' + esc(it.name) + '</b><span class="ao__msg">' + (it.product === 'print' ? 'Printed hardcover × ' + it.qty : 'Print-ready PDF (customer downloads it)') + ' · ' + it.pages + ' pages · ' + tr.w / 10 + ' × ' + tr.h / 10 + ' cm' + (tr.h === 297 ? ' (A4)' : '') + '</span>' +
+          return '<div class="ao__book" data-pid="' + esc(it.projectId) + '"><img data-cov alt=""><div><b>' + esc(it.name) + '</b>' + (b.dir && b.dir !== it.projectId ? ' <span class="ao__b ao__b--fix">Corrected version ' + esc(b.dir.split('-r').pop()) + '</span>' : '') + (b.incoming ? '<span class="ao__msg">Correction ' + b.incoming.round + ' arriving: ' + b.incoming.print + ' of ' + (it.pages + 2) + ' files so far.</span>' : '') + (b.earlier && b.earlier.length ? '<span class="ao__msg">Earlier version' + (b.earlier.length > 1 ? 's' : '') + ' kept: ' + b.earlier.map(function (v) { return '<button class="ao__lnk" data-old="' + esc(v.dir) + '">' + (v.round ? 'correction ' + v.round : 'first version') + '</button>'; }).join(', ') + '</span>' : '') + '<span class="ao__msg">' + (it.product === 'print' ? 'Printed hardcover × ' + it.qty : 'Print-ready PDF (customer downloads it)') + ' · ' + it.pages + ' pages · ' + tr.w / 10 + ' × ' + tr.h / 10 + ' cm' + (tr.h === 297 ? ' (A4)' : '') + '</span>' +
             (o.channel === 'whatsapp' ? '<span class="ao__msg"><b>WhatsApp order request.</b> ' + (b.view.length ? 'These are previews of what they designed (not print files).' : 'No preview yet: it sends from their device right after they tap Order on WhatsApp.') + '</span>' : '') +
             (it.product === 'print' ? '<span class="ao__msg">' + b.print.length + ' of ' + (it.pages + 2) + ' print files received' + (bk.spine ? ' · Spine ' + (bk.spineMm || spineMm(it.pages)) + ' mm: “' + esc(bk.spine.hideTitle ? '(no words)' : bk.spine.title || '') + '” on ' + esc(bk.spine.bg || '') : '') + '</span>' : '') +
             (b.view.length ? '<div class="ao__acts"><button class="btn btn--p btn--sm" data-prev>Preview book</button>' + (b.print.length ? '<button class="btn btn--dark btn--sm" data-pdf>Download print PDF</button><button class="btn btn--dark btn--sm" data-wrap>Download full cover</button><button class="btn btn--ghost btn--sm" data-pages>Show pages</button>' : '') + '</div><div class="ao__pages" data-grid hidden></div><span class="ao__msg" data-msg></span>' : (it.product === 'print' ? '<span class="ao__msg">The pages haven’t arrived yet. They send from the customer’s device after payment.</span>' : '')) + '</div></div>';
         }).join('') + '<p class="ao__msg">Print files: 000 = front cover, then the pages in order, last = back cover, each its own page at ' + ((BOOK.trimW || 210) + 6) + ' × ' + ((BOOK.trimH || 297) + 6) + ' mm (3 mm bleed) at 300 dpi; the PDF’s TrimBox is ' + (BOOK.trimW || 210) + ' × ' + (BOOK.trimH || 297) + ' mm. <b>Full cover</b> is the hardcover case in one piece: wrap · back · hinge · spine · hinge · front · wrap, sized for that book’s page count (numbers from Ciel Admin → Prices → Hardcover case).</p></div></div>';
       wireTop(); document.getElementById('bk').onclick = drawList;
+      fixBox(o, r);
       var pyok = document.getElementById('pyok'), pyno = document.getElementById('pyno');
       if (pyok) pyok.onclick = function () { if (!confirm('Confirm that ' + money(o.total) + ' (code ' + o.payment.code + ') reached Paybill ' + o.payment.paybill + '?')) return; pyok.disabled = true; api('pbk-admin-confirm', { ref: o.ref, ok: true }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { pyok.disabled = false; alert(e.message); }); };
       if (pyno) pyno.onclick = function () { var note = prompt('Payment not found. A short note for the customer (optional):', ''); if (note === null) return; api('pbk-admin-confirm', { ref: o.ref, ok: false, note: note }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { alert(e.message); }); };
@@ -100,6 +144,11 @@
       (o.items || []).forEach(function (it) {
         var b = r.books[it.projectId], el = root.querySelector('[data-pid="' + it.projectId + '"]'); if (!b || !el) return;
         var msg = el.querySelector('[data-msg]');
+        el.querySelectorAll('[data-old]').forEach(function (bt) { bt.onclick = function () {
+          var v = b.earlier.filter(function (x) { return x.dir === bt.getAttribute('data-old'); })[0]; if (!v || !v.view.length) return alert('No preview pages were kept for that version.');
+          var n = v.view.length - 2, tr = trim(b.book || {});
+          PBKFlip.open({ title: it.name + ' · ' + (v.round ? 'correction ' + v.round : 'first version'), count: n, board: '#3b2f26', ratio: tr.h / tr.w, page: function (i) { var k = i === 0 ? 0 : i === n + 3 ? n + 1 : (i === 1 || i === n + 2) ? -1 : i - 1; if (k < 0 || !v.view[k]) return null; return file(v.view[k].path).then(function (bl) { return URL.createObjectURL(bl); }); } });
+        }; });
         if (b.view[0]) file(b.view[0].path).then(function (bl) { el.querySelector('[data-cov]').src = URL.createObjectURL(bl); });
         var pv = el.querySelector('[data-prev]');
         if (pv) pv.onclick = function () {

@@ -546,6 +546,21 @@
     main.innerHTML = catStrip() + '<section class="pk-my wrap"><div class="pk-head"><span class="eyebrow"><span class="brk">‹</span> Saved on this device</span><h2>My books</h2><p>Books are saved in this browser. Use the same phone or computer to continue.</p></div>' + orderBox() + '<div class="pk-my__grid" id="pkMy"><p class="pk-empty">Loading…</p></div></section>';
     bindOrderBox();
     var box = document.getElementById('pkMy');
+    /* a correction link from Ciel Africa: reopen the matching book on this device */
+    var fixT = new URLSearchParams(location.search).get('fix');
+    if (fixT && window.PBKShop) {
+      var fb = document.createElement('div'); fb.className = 'pk-fix'; fb.innerHTML = '<p>Checking your correction link…</p>'; box.parentNode.insertBefore(fb, box);
+      PBKShop.fixOpen(fixT).then(function (r) {
+        var wa = 'https://wa.me/254706549703?text=' + encodeURIComponent('Hello Ciel Africa, about the correction for my photo book order ' + r.ref);
+        var note = r.note ? '<p class="pk-fix__note">“' + esc(r.note) + '”</p>' : '';
+        var till = '<small>Open until ' + new Date(r.until).toLocaleDateString('en-KE', { day: 'numeric', month: 'long' }) + '.</small>';
+        if (!r.pids.length) { fb.innerHTML = '<b>Order ' + esc(r.ref) + '</b><p>We’ve received your corrected book. Thank you! We’ll check it and print it.</p>'; return; }
+        if (!r.mine.length) { fb.className = 'pk-fix is-warn'; fb.innerHTML = '<b>Order ' + esc(r.ref) + ' is open for corrections</b>' + note + '<p>Your book is saved on the phone or computer you made it on, not in this browser. Open this same link there to edit it.</p>' + till + '<p><a class="btn btn--sm btn--ghost" target="_blank" rel="noopener" href="' + wa + '">Ask on WhatsApp</a></p>'; return; }
+        if (r.mine.length === 1 && !r.done.length) { PBK.go(BASE + '/design?p=' + encodeURIComponent(r.mine[0].projectId)); return; }
+        fb.innerHTML = '<b>Order ' + esc(r.ref) + ' is open for corrections</b>' + note + '<p>Open a book below, make your changes, then tap <b>Send corrected book</b>.</p>' + till;
+        history.replaceState({}, '', BASE + '/my-books');
+      }, function (e) { fb.className = 'pk-fix is-warn'; fb.innerHTML = '<b>Correction link</b><p>' + esc(e.message) + '</p>'; });
+    }
     if (!window.PBStore) { box.innerHTML = '<p class="pk-empty">Storage is not available in this browser.</p>'; return; }
     PBStore.projects().then(function (list) {
       list = list.filter(function (p) { return p.app === 'pbk'; });
@@ -561,6 +576,11 @@
         pl.forEach(function (pu) {
           var card = box.querySelector('canvas[data-p="' + pu.projectId + '"]'); card = card && card.closest('.pk-myb'); if (!card) return;
           var info = document.createElement('div'); info.className = 'pk-myb__paid' + (pu.product === 'print' && !pu.done ? ' is-todo' : '');
+          if (PBKShop.fixActive(pu)) {
+            info.className = 'pk-myb__paid is-todo';
+            info.innerHTML = '<b>Open for corrections</b> · order ' + esc(pu.ref) + (pu.fix.note ? '<br><i>“' + esc(pu.fix.note) + '”</i>' : '') + '<br><a class="btn btn--p btn--sm" data-go href="' + BASE + '/design?p=' + esc(pu.projectId) + '">Edit book</a>';
+            card.querySelector('div').appendChild(info); var dl0 = card.querySelector('[data-del]'); if (dl0) dl0.remove(); return;
+          }
           info.innerHTML = pu.product === 'print' ? (pu.done ? '✓ Order ' + esc(pu.ref) + ': pages sent to Ciel Africa. <a data-go href="' + BASE + '/track?ref=' + encodeURIComponent(pu.ref) + '">Track order</a>' : 'Order ' + esc(pu.ref) + ' is paid, but its pages haven’t finished sending. <a class="btn btn--p btn--sm" data-go href="' + BASE + '/checkout?sent=' + encodeURIComponent(pu.ref) + '">Send now</a>') : '✓ PDF paid (' + esc(pu.ref) + ')';
           card.querySelector('div').appendChild(info);
           if (pu.product === 'print' && (pu.done || (pu.sent && pu.sent.print && pu.sent.print.length))) {

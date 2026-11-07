@@ -195,15 +195,17 @@
     });
   }
   /* ---------- sending a paid printed book to Ciel Africa ---------- */
-  function sendPages(pu, onProgress) {
+  /* fix = a correction Ciel Africa opened (pu.fix): pages go to a new version, the first one is kept */
+  function sendPages(pu, onProgress, fix) {
     return ST.project(pu.projectId).then(function (p) {
       if (!p) throw new Error('This book isn’t saved on this device, so its pages can’t be sent from here.');
-      var list = docs(p), total = list.length * 2 + 2, done = 0, sent = pu.sent || { print: [], view: [] };
+      if (fix && pu.pages && p.pages.length !== pu.pages) throw new Error('Your order is for ' + pu.pages + ' pages, but this book now has ' + p.pages.length + '. Add or remove pages so it has ' + pu.pages + ', then send again.');
+      var list = docs(p), total = list.length * 2 + 2, done = 0, sent = fix ? (fix.sent || { print: [], view: [] }) : (pu.sent || { print: [], view: [] });
       var src = photoSource('orig'), srcV = photoSource('prev');
       var px = Math.round(TRIM.w / 25.4 * DPI), bpx = Math.round(BLEED / 25.4 * DPI);
-      function up(kind, i, blob) { return fetch('/api/photobooks?route=pbk-upload&kind=' + kind + '&i=' + i, { method: 'POST', headers: { 'Content-Type': 'application/octet-stream', 'X-Requested-With': 'ciel', 'X-Receipt': pu.receipt }, body: blob }).then(function (r) { return r.json().then(function (j) { if (!r.ok || !j.ok) throw new Error(j.error || 'Upload failed'); }); }); }
-      function retry(fn) { var n = 0; function go() { return fn().catch(function (e) { if (++n > 3) throw e; return new Promise(function (ok) { setTimeout(ok, 1500 * n); }).then(go); }); } return go(); }
-      function save() { pu.sent = sent; return ST.savePurchase(pu); }
+      function up(kind, i, blob) { var h = { 'Content-Type': 'application/octet-stream', 'X-Requested-With': 'ciel', 'X-Receipt': pu.receipt }; if (fix) h['X-Edit'] = fix.t; return fetch('/api/photobooks?route=pbk-upload&kind=' + kind + '&i=' + i, { method: 'POST', headers: h, body: blob }).then(function (r) { return r.json().then(function (j) { if (!r.ok || !j.ok) { var e = new Error(j.error || 'Upload failed'); e.final = r.status === 403 || r.status === 409 || r.status === 410; throw e; } }); }); }
+      function retry(fn) { var n = 0; function go() { return fn().catch(function (e) { if (e.final || ++n > 3) throw e; return new Promise(function (ok) { setTimeout(ok, 1500 * n); }).then(go); }); } return go(); }
+      function save() { if (fix) { fix.sent = sent; pu.fix = fix; } else pu.sent = sent; return ST.savePurchase(pu); }
       var so = spineOf(p);
       var bookInfo = { name: p.name, template: p.tpl, colour: p.pal, size: TRIM.w + ' × ' + TRIM.h + ' mm', trimW: TRIM.w, trimH: TRIM.h, bleed: BLEED + ' mm', bleedMm: BLEED, dpi: DPI, spineMm: so.mm, cover: R.coverCfg(), files: '000 = front cover, 001–' + String(p.pages.length).padStart(3, '0') + ' = pages, ' + String(p.pages.length + 1).padStart(3, '0') + ' = back cover; spine/000 = spine (' + so.mm + ' mm wide)', spine: so };
       var i = 0;
@@ -220,8 +222,23 @@
           .then(function () { done++; return save(); }).then(step);
       }
       return retry(function () { return up('book', 0, new Blob([JSON.stringify(bookInfo)], { type: 'application/octet-stream' })); }).then(step).then(function () {
-        return api('pbk-upload-done', { receipt: pu.receipt });
-      }).then(function () { done = total; if (onProgress) onProgress(total, total); pu.done = true; pu.sentAt = Date.now(); return save(); });
+        return api('pbk-upload-done', fix ? { receipt: pu.receipt, edit: fix.t } : { receipt: pu.receipt });
+      }).then(function () { done = total; if (onProgress) onProgress(total, total); if (fix) fix.sentAt = Date.now(); else { pu.done = true; pu.sentAt = Date.now(); } return save(); });
+    });
+  }
+  /* ---------- corrections Ciel Africa opened after an order ---------- */
+  function fixActive(pu) { return !!(pu && pu.fix && !pu.fix.sentAt && pu.fix.until > Date.now()); }
+  /** checks a correction link and marks the matching books on this device as editable again */
+  function fixOpen(t) {
+    return api('pbk-fix', { t: t }).then(function (r) {
+      return purchases().then(function (l) {
+        var mine = l.filter(function (pu) { return pu.ref === r.ref && pu.product === 'print' && r.pids.indexOf(pu.projectId) >= 0; });
+        return Promise.all(mine.map(function (pu) {
+          if (!pu.fix || pu.fix.round !== r.round) pu.fix = { t: t, round: r.round, note: r.note, until: r.until, sent: { print: [], view: [] } };
+          else { pu.fix.t = t; pu.fix.note = r.note; pu.fix.until = r.until; }
+          return ST.savePurchase(pu);
+        })).then(function () { r.mine = mine; return r; });
+      });
     });
   }
   /** purchases saved on this device */
@@ -607,5 +624,5 @@
     });
   }
 
-  window.PBKShop = { markOrdered: markOrdered, manualList: manualList, manualCheck: manualCheck, spineOf: spineOf, renderSpine: renderSpine, wrapPage: wrapPage, bleed: bleed, isTest: isTest, backDoc: backDoc, add: add, unit: unit, checkout: checkout, purchases: purchases, pdf: pdf, sendPages: sendPages, resumeBanner: resumeBanner, caps: caps, docs: docs, renderPage: renderPage, photoSource: photoSource };
+  window.PBKShop = { markOrdered: markOrdered, manualList: manualList, manualCheck: manualCheck, spineOf: spineOf, renderSpine: renderSpine, wrapPage: wrapPage, bleed: bleed, isTest: isTest, backDoc: backDoc, add: add, unit: unit, checkout: checkout, purchases: purchases, pdf: pdf, fixOpen: fixOpen, fixActive: fixActive, sendPages: sendPages, resumeBanner: resumeBanner, caps: caps, docs: docs, renderPage: renderPage, photoSource: photoSource };
 })();

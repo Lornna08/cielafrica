@@ -1195,3 +1195,10 @@ body.pbk-editing .pk{background:#efeae2}
 
 .pf__rot{background:#fff;color:#1b1714}
 .pf.is-rot .pf__rot{background:#1b1714;color:#fff}
+/* corrections opened by Ciel Africa */
+.pk-fix{margin:0 0 1.2rem;padding:1rem 1.2rem;border-radius:14px;background:#fff4ec;border:1px solid #ffd7c2;line-height:1.5}.pk-fix b{display:block;font-size:1.02rem}.pk-fix p{margin:.35rem 0}.pk-fix small{color:#7a6f66}.pk-fix.is-warn{background:#fffbea;border-color:#f3e1a0}.pk-fix__note{font-style:italic}
+.pe-fixnote{position:fixed;z-index:30;top:calc(var(--pe-top) + 10px);left:50%;transform:translateX(-50%);width:min(560px,calc(100vw - 24px));display:flex;gap:.6rem;align-items:flex-start;padding:.75rem .9rem;border-radius:14px;background:#1b1714;color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.2);font-size:.86rem;line-height:1.4}
+.pe-fixnote>div{flex:1;min-width:0}.pe-fixnote b{display:block}.pe-fixnote span{display:block;margin:.15rem 0;color:#f2ebe3;overflow-wrap:anywhere}.pe-fixnote small{color:#bdb3a9}.pe-fixnote button{background:none;border:0;color:#fff;font-size:1.3rem;line-height:1;cursor:pointer;padding:0 .2rem}
+.pe-fixsend{position:fixed;inset:0;z-index:200;display:grid;place-items:center;background:rgba(20,16,12,.55);padding:16px}.pe-fixsend>div{width:min(420px,100%);background:#fff;border-radius:18px;padding:1.4rem;text-align:center;line-height:1.5}.pe-fixsend b{font-size:1.1rem}.pe-fixsend__m{font-size:.82rem;color:#7a6f66}
+.pe-fixbar{height:8px;border-radius:5px;background:#efe7dc;overflow:hidden;margin:.6rem 0}.pe-fixbar i{display:block;height:100%;width:0;background:#ff5a1f;transition:width .3s}
+@media(max-width:700px){.pe-top .pe-fixbtn{font-size:.78rem;padding:.4rem .7rem}}

@@ -94,7 +94,7 @@
   }
 
   /* ---------------- save & history ---------------- */
-  var saveT;
+  var saveT, FIX = null;
   function save() {
     if (!S.p) return;
     el$.saved.textContent = 'Saving…';
@@ -117,6 +117,31 @@
         o.img = c.toDataURL('image/jpeg', 0.7); try { localStorage.setItem('pbk_last', JSON.stringify(o)); } catch (e) { }
       }).catch(function () { });
     }, 1500);
+  }
+  /* ---------- corrections Ciel Africa opened for a placed order ---------- */
+  function fixMode() {
+    var pu = FIX, b = $('#peOrder');
+    b.textContent = 'Send corrected book'; b.classList.add('pe-fixbtn');
+    var n = document.createElement('div'); n.className = 'pe-fixnote'; n.setAttribute('role', 'status');
+    n.innerHTML = '<div><b>Correcting order ' + esc(pu.ref) + '</b>' + (pu.fix.note ? '<span>“' + esc(pu.fix.note) + '”</span>' : '<span>Make your changes, then tap Send corrected book.</span>') + '<small>Keep ' + pu.pages + ' pages · open until ' + new Date(pu.fix.until).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' }) + '</small></div><button aria-label="Hide">×</button>';
+    n.querySelector('button').onclick = function () { n.remove(); };
+    $('#pe').appendChild(n);
+    b.addEventListener('click', function () {
+      if (S.p.pages.length !== pu.pages) { toast('Your order is for ' + pu.pages + ' pages. This book has ' + S.p.pages.length + ': add or remove pages first.'); return; }
+      if (!confirm('Send the corrected book to Ciel Africa now? After this it can’t be changed again unless we reopen it.')) return;
+      clearTimeout(saveT);
+      var ov = document.createElement('div'); ov.className = 'pe-fixsend'; ov.innerHTML = '<div><b>Sending your corrected book</b><p id="fxP">Preparing pages…</p><div class="pe-fixbar"><i id="fxB"></i></div><p class="pe-fixsend__m">Keep this page open until it finishes.</p></div>';
+      document.body.appendChild(ov);
+      ST.saveProject(S.p).then(function () {
+        return PBKShop.sendPages(pu, function (d, t) { $('#fxP', ov).textContent = 'Sending ' + Math.min(d, t) + ' of ' + t + '…'; $('#fxB', ov).style.width = Math.round(d / t * 100) + '%'; }, pu.fix);
+      }).then(function () {
+        ov.innerHTML = '<div><b>Corrected book sent ✓</b><p>Thank you! Ciel Africa will check it before printing. Your first version is kept too.</p><a class="btn btn--p" data-go href="' + BASE + '/track?ref=' + encodeURIComponent(pu.ref) + '">Track my order</a></div>';
+        ov.querySelector('a').addEventListener('click', function () { ov.remove(); });
+      }, function (e) {
+        ov.innerHTML = '<div><b>Not sent yet</b><p>' + esc(e.message || 'Something went wrong.') + '</p><p class="pe-fixsend__m">Pages already sent are kept: tap Send corrected book again to finish.</p><button class="btn btn--p">OK</button></div>';
+        ov.querySelector('button').onclick = function () { ov.remove(); };
+      });
+    });
   }
   function flush() { if (!S || !S.p) return; clearTimeout(saveT); ST.saveProject(S.p).catch(function () {}); }
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden' && document.body.classList.contains('pbk-editing')) flush(); });
@@ -157,7 +182,7 @@
     main.innerHTML = '<div class="pe" id="pe"><div class="pe-load">Opening your book…</div></div>';
     if (!ST || !PH) { main.innerHTML = '<div class="pe-err wrap"><h2>This browser can’t store your book</h2><p>Try a recent version of Chrome, Safari or Edge, and turn off private browsing.</p></div>'; return; }
     var q = new URLSearchParams(location.search);
-    var pid = q.get('p');
+    var pid = q.get('p'); FIX = null;
     var ready = pid ? ST.project(pid).then(function (p) { if (!p || p.app !== 'pbk') throw new Error('missing'); return p; }) :
       Promise.resolve().then(function () {
         var t = q.get('t') || 'blank'; if (t !== 'blank' && !C.TPL[t]) t = 'blank';
@@ -166,7 +191,7 @@
         return ST.saveProject(p).then(function () { history.replaceState({}, '', BASE + '/design?p=' + p.id); return p; });
       });
     /* a printed book whose pages were sent can't be changed any more */
-    var sentP = pid && window.PBKShop ? PBKShop.purchases().then(function (l) { return l.filter(function (pu) { return pu.projectId === pid && pu.product === 'print' && (pu.done || (pu.sent && pu.sent.print && pu.sent.print.length)); })[0] || null; }, function () { return null; }) : Promise.resolve(null);
+    var sentP = pid && window.PBKShop ? PBKShop.purchases().then(function (l) { var fx = l.filter(function (pu) { return pu.projectId === pid && PBKShop.fixActive(pu); })[0]; if (fx) { FIX = fx; return null; } return l.filter(function (pu) { return pu.projectId === pid && pu.product === 'print' && (pu.done || (pu.sent && pu.sent.print && pu.sent.print.length)); })[0] || null; }, function () { return null; }) : Promise.resolve(null);
     ready = Promise.all([ready, sentP]).then(function (r) {
       if (r[1]) { var pu = r[1]; main.innerHTML = '<div class="pe-err wrap pe-sentlock"><h2>This book has been sent to print</h2><p>Order <b>' + esc(pu.ref) + '</b> is with Ciel Africa, so it can’t be edited any more. Need a change? Talk to us on WhatsApp and we’ll help.</p><p><a class="btn btn--p" target="_blank" rel="noopener" href="https://wa.me/254706549703?text=' + encodeURIComponent('Hello Ciel Africa, I need help with my photo book order ' + pu.ref) + '">WhatsApp support</a> <a class="btn btn--ghost" data-go href="' + BASE + '/my-books?order=' + encodeURIComponent(pu.ref) + '">View my book</a></p></div>'; throw new Error('sent'); }
       return r[0];
@@ -251,7 +276,7 @@
     el$.undo.addEventListener('click', undo); el$.redo.addEventListener('click', redo); updUndo();
     $('#pePrev').addEventListener('click', preview);
     $('#peDel').addEventListener('click', deleteBook);
-    $('#peOrder').addEventListener('click', order);
+    if (FIX) fixMode(); else $('#peOrder').addEventListener('click', order);
   }
   function keys(e) {
     if (!document.body.classList.contains('pbk-editing')) { document.removeEventListener('keydown', keys); return; }
