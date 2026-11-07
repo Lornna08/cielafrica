@@ -1288,3 +1288,5 @@ body.pbk-editing .pk{background:#efeae2}
   .pe.has-sel:not(.has-panel) .pe-ctx .pe-sw2{border-color:#e6dfd3;width:30px;height:30px;align-self:center;margin:0 4px}
   .pe.has-sel:not(.has-panel) .pe-ctx [data-al]{min-width:auto;padding:.5rem .7rem}
 }
+
+.pkco__adm{margin-top:1rem;padding:.8rem 1rem;border:1px dashed #c9b9a6;border-radius:12px;display:flex;flex-direction:column;gap:.4rem;font-size:.85rem;color:#6b5f52}.pkco__adm b{color:#1b1714}.pkco__adm .btn{align-self:flex-start}

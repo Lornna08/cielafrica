@@ -501,6 +501,7 @@
         waOrder();
       };
       var pay = document.getElementById('coPay'); if (pay) pay.onclick = function () { if (check(rows, del)) startPay(rows, del, total); };
+      var tst = document.getElementById('coTest'); if (tst) tst.onclick = function () { if (check(rows, del)) startTest(rows, del); };
       var man = document.getElementById('coManual'); if (man) man.onclick = function () { if (check(rows, del)) startManual(rows, del, total); };
       document.querySelectorAll('[name=pm]').forEach(function (r2) { r2.onchange = function () { keep(); st.method = r2.value; draw(rows, cp); }; });
       document.querySelectorAll('[data-copy]').forEach(function (b) { b.onclick = function () { var v = b.getAttribute('data-copy'); try { navigator.clipboard.writeText(v).then(function () { b.classList.add('is-copied'); setTimeout(function () { b.classList.remove('is-copied'); }, 1200); }); } catch (e) { } }; });
@@ -508,7 +509,14 @@
       function refresh() { sync().then(function (rs) { if (!rs.length) return checkout(main); draw(rs, cp); }); }
     }
     /* how to pay: the M-Pesa prompt (STK), or Paybill paid by hand and confirmed by Ciel Africa */
-    function payBox(cp, total, missing) {
+    function payBox(cp, total, missing) { return payBox0(cp, total, missing) + (window.PBK_ADMIN ? '<div class="pkco__adm"><b>Admin only</b><span>Place this as a TEST order with no payment, to try the whole order flow (order number, pages, emails, tracking, Photo Book orders).</span><button class="btn btn--ghost btn--sm" id="coTest">Place test order (no payment)</button></div>' : ''); }
+    function startTest(rows, del) {
+      var f = st.f, btn = document.getElementById('coTest');
+      var body = { items: rows.map(function (r) { return { projectId: r.item.pb.p, name: r.item.name, product: r.item.pb.product, pages: r.item.pb.pages, qty: r.item.qty }; }), delivery: del ? del.id : null, name: f.name, phone: f.phone, email: f.email, address: { line1: f.line1, area: f.area, town: f.town, county: f.county, country: countryName(), notes: f.notes } };
+      btn.disabled = true; status('<span class="pkco__spin"></span> Placing the test order…');
+      withCover(body, rows).then(function (bd) { return api('pbk-admin-testorder', bd); }).then(function (r) { paid(r, rows); }).catch(function (e) { status(esc(e.code === 'auth' ? 'Sign in to Ciel Admin on this browser first.' : e.message), 'is-err'); btn.disabled = false; });
+    }
+    function payBox0(cp, total, missing) {
       var methods = []; if (cp.payments) methods.push('stk'); if (MANUAL && cp.manual) methods.push('manual');
       if (methods.indexOf(st.method) < 0) st.method = methods[0] || null;
       if (!methods.length) return '<p class="pkco__warn">M-Pesa checkout is not available right now. Order on WhatsApp below.</p>';

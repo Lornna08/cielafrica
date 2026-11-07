@@ -546,6 +546,55 @@
     });
   }
 
+  /* ---------- a book as one file (.cielbook): to keep a backup or move it to another phone or computer ----------
+     "CIELBOOK1" · 4-byte header length · header JSON { v, project, photos: [{ meta, parts: { kind: [offset, length, type] } }] } · the photo files */
+  function exportBook(pid) {
+    var ST = window.PBStore;
+    return Promise.all([ST.project(pid), ST.photos(pid)]).then(function (r) {
+      var p = r[0]; if (!p) throw new Error('That book isn’t on this device.');
+      var photos = r[1] || [], parts = [], off = 0, list = [];
+      return photos.reduce(function (chain, m) {
+        return chain.then(function () {
+          return Promise.all(['orig', 'prev', 'thumb'].map(function (k) { return ST.blob(m.id, k); })).then(function (bl) {
+            var e = { meta: m, parts: {} };
+            ['orig', 'prev', 'thumb'].forEach(function (k, i) { var b = bl[i]; if (!b) return; e.parts[k] = [off, b.size, b.type || 'image/jpeg']; parts.push(b); off += b.size; });
+            list.push(e);
+          });
+        });
+      }, Promise.resolve()).then(function () {
+        var pr = JSON.parse(JSON.stringify(p)); delete pr.versions;
+        var head = new TextEncoder().encode(JSON.stringify({ v: 1, app: 'pbk', at: Date.now(), project: pr, photos: list })), len = new Uint8Array(4);
+        new DataView(len.buffer).setUint32(0, head.length, true);
+        return { blob: new Blob([new TextEncoder().encode('CIELBOOK1'), len, head].concat(parts), { type: 'application/octet-stream' }), name: String(p.name || 'photo-book').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-').toLowerCase().slice(0, 50) + '.cielbook' };
+      });
+    });
+  }
+  function importBook(file) {
+    var ST = window.PBStore, nid = function (p) { return p + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
+    return file.slice(0, 13).arrayBuffer().then(function (b) {
+      var u = new Uint8Array(b); if (new TextDecoder().decode(u.slice(0, 9)) !== 'CIELBOOK1') throw new Error('That isn’t a Ciel Africa book file.');
+      var n = new DataView(b).getUint32(9, true); if (!(n > 10 && n < 64 * 1024 * 1024)) throw new Error('That book file is damaged.');
+      return file.slice(13, 13 + n).text().then(function (t) { return { h: JSON.parse(t), base: 13 + n }; });
+    }).then(function (x) {
+      var h = x.h, p = h.project, map = {}, newId = nid('pb');
+      if (!p || h.app !== 'pbk') throw new Error('That book file is damaged.');
+      return (h.photos || []).reduce(function (chain, e) {
+        return chain.then(function () {
+          var m = e.meta || {}, nm = Object.assign({}, m, { id: nid(m.mask ? 'mk' : 'ph'), projectId: newId }), blobs = {};
+          map[m.id] = nm.id;
+          Object.keys(e.parts || {}).forEach(function (k) { var q = e.parts[k]; blobs[k] = file.slice(x.base + q[0], x.base + q[0] + q[1], q[2]); });
+          return ST.savePhoto(nm, blobs);
+        });
+      }, Promise.resolve()).then(function () {
+        function fix(d) { (d && d.els || []).forEach(function (e) { if (e.photo && map[e.photo]) e.photo = map[e.photo]; if (e.mask && map[e.mask]) e.mask = map[e.mask]; }); }
+        [p.cover, p.back].concat(p.pages || []).forEach(fix);
+        if (Array.isArray(p.photoOrder)) p.photoOrder = p.photoOrder.map(function (id) { return map[id] || id; });
+        p.id = newId; delete p.lastPage; p.createdAt = Date.now();
+        return ST.saveProject(p);
+      });
+    });
+  }
+  PBK.exportBook = exportBook; PBK.importBook = importBook;
   /** a full copy of a book (its own photos too), to make another version without starting again */
   function dupBook(pid) {
     var ST = window.PBStore, nid = function (p) { return p + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
@@ -585,9 +634,14 @@
   /* ---------------- my books ---------------- */
   function myBooks() {
     document.title = 'My photo books — Ciel Africa';
-    main.innerHTML = catStrip() + '<section class="pk-my wrap"><div class="pk-head"><span class="eyebrow"><span class="brk">‹</span> Saved on this device</span><h2>My books</h2><p>Books are saved in this browser. Use the same phone or computer to continue.</p></div>' + orderBox() + '<div class="pk-my__grid" id="pkMy"><p class="pk-empty">Loading…</p></div></section>';
+    main.innerHTML = catStrip() + '<section class="pk-my wrap"><div class="pk-head"><span class="eyebrow"><span class="brk">‹</span> Saved on this device</span><h2>My books</h2><p>Books are saved in this browser. Use the same phone or computer to continue, or <b>Save as file</b> and open it on another device. <label class="pk-imp"><input type="file" id="pkImp" accept=".cielbook" hidden><span class="btn btn--sm btn--ghost">Open a book file</span></label></p></div>' + orderBox() + '<div class="pk-my__grid" id="pkMy"><p class="pk-empty">Loading…</p></div></section>';
     bindOrderBox();
-    var box = document.getElementById('pkMy');
+    var box = document.getElementById('pkMy'), imp = document.getElementById('pkImp');
+    if (imp) imp.onchange = function () {
+      var f = imp.files && imp.files[0]; if (!f) return;
+      var lb = imp.nextElementSibling; lb.textContent = 'Opening…';
+      importBook(f).then(function (p) { PBK.go(BASE + '/design?p=' + encodeURIComponent(p.id)); }, function (e) { lb.textContent = 'Open a book file'; alert(e.message || 'Couldn’t open that file.'); });
+    };
     myOrders(box);
     /* a correction link from Ciel Africa: reopen the matching book on this device */
     var fixT = new URLSearchParams(location.search).get('fix');
@@ -609,7 +663,7 @@
       list = list.filter(function (p) { return p.app === 'pbk'; });
       if (!list.length) { box.innerHTML = '<div class="pk-empty"><p>No books yet.</p><button class="btn btn--p" data-pick>Create my photo book ' + ICON.arrow + '</button></div>'; bindCommon(); return; }
       box.innerHTML = list.map(function (p) {
-        return '<div class="pk-myb"><a data-go href="' + BASE + '/design?p=' + esc(p.id) + '"><canvas width="275" height="355" data-p="' + esc(p.id) + '"></canvas></a><div><b>' + esc(p.name || 'My photo book') + '</b><span>' + (p.pages || []).length + ' pages · edited ' + new Date(p.updatedAt || Date.now()).toLocaleDateString() + '</span><div class="pk-myb__a"><a data-go class="btn btn--sm btn--dark" href="' + BASE + '/design?p=' + esc(p.id) + '">Open</a><button class="btn btn--sm btn--ghost" data-dup="' + esc(p.id) + '">Duplicate</button><button class="btn btn--sm btn--ghost" data-del="' + esc(p.id) + '">Delete</button></div></div></div>';
+        return '<div class="pk-myb"><a data-go href="' + BASE + '/design?p=' + esc(p.id) + '"><canvas width="275" height="355" data-p="' + esc(p.id) + '"></canvas></a><div><b>' + esc(p.name || 'My photo book') + '</b><span>' + (p.pages || []).length + ' pages · edited ' + new Date(p.updatedAt || Date.now()).toLocaleDateString() + '</span><div class="pk-myb__a"><a data-go class="btn btn--sm btn--dark" href="' + BASE + '/design?p=' + esc(p.id) + '">Open</a><button class="btn btn--sm btn--ghost" data-dup="' + esc(p.id) + '">Duplicate</button><button class="btn btn--sm btn--ghost" data-exp="' + esc(p.id) + '" title="Save the book and its photos as one file, to keep or open on another device">Save as file</button><button class="btn btn--sm btn--ghost" data-del="' + esc(p.id) + '">Delete</button></div></div></div>';
       }).join('');
       list.forEach(function (p) {
         var cv = box.querySelector('canvas[data-p="' + p.id + '"]'); if (!cv || !p.cover) return; C.fixCover(p.cover, p.tpl);
@@ -638,6 +692,12 @@
       });
       box.querySelectorAll('[data-dup]').forEach(function (b) {
         b.addEventListener('click', function () { b.disabled = true; b.textContent = 'Copying…'; dupBook(b.getAttribute('data-dup')).then(function () { myBooks(); }, function (e) { b.disabled = false; b.textContent = 'Duplicate'; alert(e.message || 'Couldn’t copy this book.'); }); });
+      });
+      box.querySelectorAll('[data-exp]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          b.disabled = true; b.textContent = 'Saving…';
+          exportBook(b.getAttribute('data-exp')).then(function (r) { var a = document.createElement('a'), u = URL.createObjectURL(r.blob); a.href = u; a.download = r.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 120000); b.textContent = 'Saved'; }, function (e) { b.textContent = 'Save as file'; alert(e.message || 'Couldn’t save the book.'); }).then(function () { b.disabled = false; });
+        });
       });
       box.querySelectorAll('[data-del]').forEach(function (b) {
         b.addEventListener('click', function () {
