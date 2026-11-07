@@ -540,6 +540,26 @@
     });
   }
 
+  /** a full copy of a book (its own photos too), to make another version without starting again */
+  function dupBook(pid) {
+    var ST = window.PBStore, nid = function (p) { return p + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
+    return Promise.all([ST.project(pid), ST.photos(pid)]).then(function (r) {
+      var p = JSON.parse(JSON.stringify(r[0])), map = {}, newId = nid('pb');
+      if (!p) throw new Error('That book isn’t on this device.');
+      var photos = r[1] || [];
+      return photos.reduce(function (chain, m) {
+        return chain.then(function () {
+          var nm = Object.assign({}, m, { id: nid(m.mask ? 'mk' : 'ph'), projectId: newId, added: Date.now() }); map[m.id] = nm.id;
+          return Promise.all(['orig', 'prev', 'thumb'].map(function (k) { return ST.blob(m.id, k); })).then(function (bl) { var blobs = {}; ['orig', 'prev', 'thumb'].forEach(function (k, i) { if (bl[i]) blobs[k] = bl[i]; }); return ST.savePhoto(nm, blobs); });
+        });
+      }, Promise.resolve()).then(function () {
+        function fix(d) { (d && d.els || []).forEach(function (e) { if (e.photo && map[e.photo]) e.photo = map[e.photo]; if (e.mask && map[e.mask]) e.mask = map[e.mask]; }); }
+        [p.cover, p.back].concat(p.pages || []).forEach(fix);
+        p.id = newId; p.name = (p.name || 'My photo book') + ' (copy)'; delete p.versions; delete p.lastPage; p.createdAt = Date.now();
+        return ST.saveProject(p);
+      });
+    });
+  }
   /* ---------------- my books ---------------- */
   function myBooks() {
     document.title = 'My photo books — Ciel Africa';
@@ -566,7 +586,7 @@
       list = list.filter(function (p) { return p.app === 'pbk'; });
       if (!list.length) { box.innerHTML = '<div class="pk-empty"><p>No books yet.</p><button class="btn btn--p" data-pick>Create my photo book ' + ICON.arrow + '</button></div>'; bindCommon(); return; }
       box.innerHTML = list.map(function (p) {
-        return '<div class="pk-myb"><a data-go href="' + BASE + '/design?p=' + esc(p.id) + '"><canvas width="275" height="355" data-p="' + esc(p.id) + '"></canvas></a><div><b>' + esc(p.name || 'My photo book') + '</b><span>' + (p.pages || []).length + ' pages · edited ' + new Date(p.updatedAt || Date.now()).toLocaleDateString() + '</span><div class="pk-myb__a"><a data-go class="btn btn--sm btn--dark" href="' + BASE + '/design?p=' + esc(p.id) + '">Open</a><button class="btn btn--sm btn--ghost" data-del="' + esc(p.id) + '">Delete</button></div></div></div>';
+        return '<div class="pk-myb"><a data-go href="' + BASE + '/design?p=' + esc(p.id) + '"><canvas width="275" height="355" data-p="' + esc(p.id) + '"></canvas></a><div><b>' + esc(p.name || 'My photo book') + '</b><span>' + (p.pages || []).length + ' pages · edited ' + new Date(p.updatedAt || Date.now()).toLocaleDateString() + '</span><div class="pk-myb__a"><a data-go class="btn btn--sm btn--dark" href="' + BASE + '/design?p=' + esc(p.id) + '">Open</a><button class="btn btn--sm btn--ghost" data-dup="' + esc(p.id) + '">Duplicate</button><button class="btn btn--sm btn--ghost" data-del="' + esc(p.id) + '">Delete</button></div></div></div>';
       }).join('');
       list.forEach(function (p) {
         var cv = box.querySelector('canvas[data-p="' + p.id + '"]'); if (!cv || !p.cover) return; C.fixCover(p.cover, p.tpl);
@@ -592,6 +612,9 @@
             info.insertAdjacentHTML('beforeend', '<br><small>Sent books can’t be edited. Need a change? WhatsApp us.</small>');
           }
         });
+      });
+      box.querySelectorAll('[data-dup]').forEach(function (b) {
+        b.addEventListener('click', function () { b.disabled = true; b.textContent = 'Copying…'; dupBook(b.getAttribute('data-dup')).then(function () { myBooks(); }, function (e) { b.disabled = false; b.textContent = 'Duplicate'; alert(e.message || 'Couldn’t copy this book.'); }); });
       });
       box.querySelectorAll('[data-del]').forEach(function (b) {
         b.addEventListener('click', function () {

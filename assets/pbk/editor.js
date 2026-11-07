@@ -69,6 +69,7 @@
     group: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><path d="M14 4h6v6M4 14v6h6"/></svg>',
     ungroup: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>',
     selmore: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M12 8v8M8 12h8"/></svg>',
+    clock: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>',
     grid: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>'
   };
 
@@ -105,11 +106,48 @@
   var saveT, FIX = null;
   function save() {
     if (!S.p) return;
+    if (S.ro) { el$.saved.textContent = 'Open in another tab'; return; }
+    var vs = S.p.versions || [];
+    if (!vs.length || Date.now() - vs[vs.length - 1].at > 10 * 60e3) checkpoint('Autosaved');
     el$.saved.textContent = 'Saving…';
     clearTimeout(saveT);
     saveT = setTimeout(function () {
       ST.saveProject(S.p).then(function () { remember(); var t = new Date(); el$.saved.textContent = 'Saved ' + t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); el$.saved.classList.add('is-ok'); }, function (e) { el$.saved.textContent = 'Not saved'; toast(e.message || 'Could not save'); });
     }, 500);
+  }
+  /* ---------- earlier versions of the whole book ---------- */
+  function checkpoint(label) { if (!S.p || !S.last) return; var vs = S.p.versions = S.p.versions || []; vs.push({ at: Date.now(), label: label, pages: S.p.pages.length, data: S.last }); while (vs.length > 12) vs.shift(); }
+  var vdlg;
+  function versions() {
+    select(null);
+    if (!vdlg) { vdlg = document.createElement('dialog'); vdlg.className = 'pe-pc'; document.body.appendChild(vdlg); vdlg.addEventListener('click', function (e) { if (e.target === vdlg) vdlg.close(); }); }
+    var vs = (S.p.versions || []).slice().reverse();
+    vdlg.innerHTML = '<div class="pe-pc__in"><header><h3>Earlier versions</h3><button class="pe-ib" data-x aria-label="Close">' + I.x + '</button></header><p class="pe-note">Your book is saved as you work. Every 10 minutes, and before big changes, a copy is kept here so you can go back.</p>' +
+      (vs.length ? '<div class="pe-vers">' + vs.map(function (v, i) { return '<div><span><b>' + new Date(v.at).toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' }) + '</b><small>' + esc(v.label || '') + ' · ' + v.pages + ' pages</small></span><button class="btn btn--ghost btn--sm" data-v="' + (vs.length - 1 - i) + '">Restore</button></div>'; }).join('') + '</div>' : '<p class="pe-note">No earlier versions yet. They appear as you work.</p>') + '</div>';
+    vdlg.querySelector('[data-x]').onclick = function () { vdlg.close(); };
+    vdlg.querySelectorAll('[data-v]').forEach(function (b) { b.onclick = function () {
+      var v = S.p.versions[+b.getAttribute('data-v')]; if (!v || !confirm('Go back to the version from ' + new Date(v.at).toLocaleString() + '? What you have now is kept as another version.')) return;
+      checkpoint('Before restoring'); restore(v.data); S.cur = Math.min(S.cur, S.p.pages.length); commit(); vdlg.close(); drawStrip(); drawInfo(); fit(); mockSoon(); toast('Earlier version restored. Tap ↶ to undo.');
+    }; });
+    if (!vdlg.open) vdlg.showModal();
+  }
+  /* ---------- the same book open in two tabs: only the newest one saves ---------- */
+  var bc = null, tabId = Math.random().toString(36).slice(2);
+  function claim() {
+    try { bc = bc || new BroadcastChannel('pbk-edit'); } catch (e) { return; }
+    bc.onmessage = function (m) {
+      var d = m.data || {}; if (!S.p || d.id !== S.p.id || d.tab === tabId) return;
+      if (d.type === 'open') { flush(); S.ro = true; roBar(); bc.postMessage({ type: 'here', id: S.p.id, tab: tabId }); }
+    };
+    S.ro = false; var rb = $('#peRo'); if (rb) rb.remove();
+    bc.postMessage({ type: 'open', id: S.p.id, tab: tabId });
+  }
+  function roBar() {
+    if ($('#peRo')) return;
+    var b = document.createElement('div'); b.id = 'peRo'; b.className = 'pe-ro';
+    b.innerHTML = '<div><b>This book is open in another tab.</b><span>Changes here won’t be saved, so nothing is overwritten. Close this tab, or continue here instead.</span></div><button class="btn btn--p btn--sm">Continue here</button>';
+    b.querySelector('button').onclick = function () { ST.project(S.p.id).then(function (fresh) { if (fresh) { S.p = fresh; S.last = snap(); S.undo = []; S.redo = []; } claim(); drawStrip(); drawInfo(); fit(); updUndo(); toast('You’re editing here now. The other tab stopped saving.'); }); };
+    el$.pe.appendChild(b);
   }
   /* the "Back to my book" button on every page of the site (assets/js/site.js) reads this */
   var lastT;
@@ -217,6 +255,7 @@
         R.toA4(nd); p.cover = nd;
       }
       S = { p: p, cur: -1, sel: null, undo: [], redo: [], last: null, photos: {}, order: [], stickers: [], panel: null, crop: false };
+      if (p.lastPage != null && !q.get('go')) S.cur = Math.max(-1, Math.min(p.pages.length, p.lastPage));
       S.last = snap(); S.go = q.get('go');
       return ST.photos(p.id).then(function (list) {
         list.sort(function (a, b) { return (a.taken || '').localeCompare(b.taken || '') || a.added - b.added; });
@@ -224,7 +263,7 @@
         return loadPhotoUrls(list);
       });
     }).then(function () {
-      build(main);
+      build(main); claim();
       ST.persist();
       remember();
     }).catch(function (e) {
@@ -240,7 +279,7 @@
       '<header class="pe-top"><a class="pe-back" data-go href="' + BASE + '" aria-label="Back to Photo Books">' + I.back + '<span>Photo Books</span></a>' +
       '<input class="pe-name" id="peName" value="' + esc(S.p.name) + '" aria-label="Book name" maxlength="60">' +
       '<span class="pe-saved" id="peSaved">Saved on this device</span>' +
-      '<div class="pe-top__r"><button class="pe-ib pe-delbook" id="peDel" aria-label="Delete this book" title="Delete this book">' + I.trash + '</button><button class="pe-ib" id="peUndo" aria-label="Undo" title="Undo">' + I.undo + '</button><button class="pe-ib" id="peRedo" aria-label="Redo" title="Redo">' + I.redo + '</button>' +
+      '<div class="pe-top__r"><button class="pe-ib pe-delbook" id="peDel" aria-label="Delete this book" title="Delete this book">' + I.trash + '</button><button class="pe-ib" id="peUndo" aria-label="Undo" title="Undo">' + I.undo + '</button><button class="pe-ib" id="peRedo" aria-label="Redo" title="Redo">' + I.redo + '</button><button class="pe-ib" id="peHist" aria-label="Earlier versions" title="Earlier versions">' + I.clock + '</button>' +
       '<button class="btn btn--ghost btn--sm pe-prevbtn" id="pePrev">' + I.eye + '<span>Preview</span></button><button class="btn btn--p btn--sm" id="peOrder">Order</button></div></header>' +
       '<div class="pe-body">' +
       '<nav class="pe-rail" id="peRail" aria-label="Tools">' +
@@ -286,6 +325,7 @@
     $('#peName').addEventListener('input', function () { S.p.name = this.value.slice(0, 60); save(); });
     el$.undo.addEventListener('click', undo); el$.redo.addEventListener('click', redo); updUndo();
     $('#pePrev').addEventListener('click', preview);
+    $('#peHist').addEventListener('click', versions);
     $('#peDel').addEventListener('click', deleteBook);
     if (FIX) fixMode(); else $('#peOrder').addEventListener('click', order);
   }
@@ -961,7 +1001,7 @@
         var b = ev.target.closest('[data-b]'); if (!b) return; var a = b.getAttribute('data-b'); dlg.close(); dlg.remove();
         if (a === 'keep') { S.keepBlank = true; return ok(); }
         if (a === 'go') { S.blankAsked = false; go(blanks[0]); return; }
-        var rm = blanks.slice(blanks.length - can); /* keeps the first blanks if some must stay; removes from the end of the list */
+        checkpoint('Before removing blank pages'); var rm = blanks.slice(blanks.length - can); /* keeps the first blanks if some must stay; removes from the end of the list */
         rm.sort(function (x, y) { return y - x; }).forEach(function (i) { S.p.pages.splice(i, 1); });
         commit(); S.cur = Math.min(S.cur, S.p.pages.length - 1); drawStrip(); drawInfo(); fit();
         toast(can + ' blank page' + (can === 1 ? '' : 's') + ' removed. Tap ↶ to bring ' + (can === 1 ? 'it' : 'them') + ' back.'); ok();
@@ -1459,7 +1499,7 @@
     if (i === S.cur) return;
     var was = isWrap(), wasCov = isCoverIdx(), wasSp = isSpineV();
     if (S.cview === 'spine') S.cview = 'wrap';
-    S.cur = i; S.sel = null; S.crop = false; S.target = null;
+    S.cur = i; S.sel = null; S.crop = false; S.target = null; S.p.lastPage = i; clearTimeout(S.lpT); S.lpT = setTimeout(function () { if (!S.ro) ST.saveProject(S.p).catch(function () { }); }, 1500);
     if (wasSp) { fit(); ctxBar(); drawStripSel(); return; }
     if (was !== isWrap() || wasCov !== isCoverIdx()) fit(); else draw();
     ctxBar(); drawStripSel();
@@ -1486,7 +1526,7 @@
     if (t < n) {
       var gone = S.p.pages.slice(t), used = gone.filter(function (d) { return (d.els || []).some(function (e) { return (e.t === 'photo' && e.photo) || e.t === 'text' || e.t === 'art' || e.t === 'img'; }); }).length;
       if (used && !confirm('The last ' + (n - t) + ' pages include ' + used + ' page' + (used === 1 ? '' : 's') + ' you’ve designed. Remove them?')) return;
-      S.p.pages.length = t;
+      checkpoint('Before removing pages'); S.p.pages.length = t;
     } else { for (var i = n; i < t; i++) S.p.pages.push(pageDoc('one')); }
     if (S.cur >= S.p.pages.length && S.cur !== n) S.cur = S.p.pages.length - 1;
     if (S.cur === n) S.cur = S.p.pages.length; /* was on the back cover */
@@ -1593,6 +1633,20 @@
   }
   /* ---------------- order ---------------- */
   var odlg;
+  /** effective print resolution of a placed photo (pixels per inch at its printed size) */
+  function dpiOf(e) { var m = S.photos[e.photo]; if (!m || !m.w) return 999; var z = (e.crop && e.crop.z) || 1, rw = e.rect ? e.rect.w : 1, rh = e.rect ? e.rect.h : 1, iw = m.w * rw, ih = m.h * rh, s = Math.max(e.w / iw, e.h / ih) * z, inch = (W / 210) * 25.4; return Math.round(inch / s); }
+  function printChecks() {
+    var out = { low: [], edge: [] }, SAFE = Math.round(W / 210 * 5);
+    [S.p.cover].concat(S.p.pages).forEach(function (d, i) {
+      var name = i === 0 ? 'the cover' : 'page ' + i;
+      (d.els || []).forEach(function (e) {
+        if (e.t === 'photo' && e.photo && dpiOf(e) < 150) out.low.push(name);
+        if ((e.t === 'text' || (e.t === 'img' && !e.role)) && !e.role) { var b = bounds(e); if (b.x < SAFE || b.y < SAFE || b.x + b.w > W - SAFE || b.y + b.h > H - SAFE) out.edge.push(name); }
+      });
+    });
+    function uniq2(a) { return a.filter(function (x, k) { return a.indexOf(x) === k; }); }
+    out.low = uniq2(out.low); out.edge = uniq2(out.edge); return out;
+  }
   function checks() {
     var empty = 0, emptyPages = 0, low = 0, used = usedMap();
     S.p.pages.forEach(function (d) { var fr = d.els.filter(function (e) { return e.t === 'photo'; }); var filled = fr.filter(function (e) { return e.photo; }).length; empty += fr.length - filled; if (!filled && !d.els.some(function (e) { return e.t !== 'photo'; })) emptyPages++; });
@@ -1612,7 +1666,7 @@
       (Sh.isTest(S.p) ? '<div class="pe-or__opts"><label class="pe-or__opt is-on"><input type="radio" name="prod" value="print" checked><span><b>Test order</b><small>A real M-Pesa payment that goes through the whole order flow. Only works while you’re signed in to Photo Book orders. Not printed; it stays in your orders until you delete it.</small></span><em>' + PBK.money(BOOK.testPrice || 5) + '</em></label></div>' :
       '<div class="pe-or__opts"><label class="pe-or__opt is-on"><input type="radio" name="prod" value="print" checked><span><b>Printed hardcover</b><small>Printed in Kenya and delivered or collected</small></span><em>' + PBK.money(pPrint) + '</em></label>' +
       (BOOK.pdf === false ? '' : '<label class="pe-or__opt"><input type="radio" name="prod" value="digital"><span><b>Print-ready PDF</b><small>Download the finished book after paying</small></span><em>' + PBK.money(pPdf) + '</em></label>') + '</div>') +
-      ((c.emptyPages || c.low) ? '<div class="pe-or__warn"><b>Before you order</b><ul>' + (c.emptyPages ? '<li>' + c.emptyPages + ' page' + (c.emptyPages === 1 ? ' is' : 's are') + ' still empty — they print blank.</li>' : '') + (c.low ? '<li>' + c.low + ' small photo' + (c.low === 1 ? '' : 's') + ' may look soft in print.</li>' : '') + '</ul></div>' : '') +
+      (function () { var pc = printChecks(), lst = function (a) { return a.length > 4 ? a.slice(0, 4).join(', ') + ' and ' + (a.length - 4) + ' more' : a.join(', '); }; return (c.emptyPages || pc.low.length || pc.edge.length) ? '<div class="pe-or__warn"><b>Before you order</b><ul>' + (c.emptyPages ? '<li>' + c.emptyPages + ' page' + (c.emptyPages === 1 ? ' is' : 's are') + ' still empty — they print blank.</li>' : '') + (pc.low.length ? '<li>A photo on ' + lst(pc.low) + ' is enlarged a lot and may look soft in print. Use a bigger photo or make it smaller on the page.</li>' : '') + (pc.edge.length ? '<li>Words or a sticker on ' + lst(pc.edge) + ' are very close to the edge and could be trimmed off. Move them a little inwards.</li>' : '') + '</ul></div>' : ''; })() +
       '<div class="pe-or__exact">' + I.eye + '<span><b>Printed exactly as you designed it.</b> ' + (n < 37 ? 'Every page and the cover come out just as you see them in the preview. A ' + n + '-page book is too thin for a printed spine, so the spine stays plain. Books with more than 36 pages get the spine you designed.' : 'Every page, the cover and the spine come out just as you see them in the preview.') + '</span></div>' +
       '<div class="pe-or__back"><button class="btn btn--ghost btn--sm" data-prev>' + I.eye + ' Preview my book</button><button class="btn btn--ghost btn--sm" data-x>' + I.left + ' Keep editing</button></div>' +
       '<div class="pe-or__acts"><button class="btn btn--p" data-buy>Checkout</button><button class="btn btn--ghost" data-cart>Add to cart</button></div>' +
