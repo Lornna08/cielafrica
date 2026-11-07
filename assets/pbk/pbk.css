@@ -1302,3 +1302,13 @@ body.pbk-editing .pk{background:#efeae2}
 .pk-samp{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.8rem 1.2rem;background:#fff;border:1px dashed var(--pk-line);border-radius:16px;padding:1rem 1.2rem;margin:0 0 1.2rem}
 .pk-samp>div:first-child{flex:1 1 20rem;min-width:0}.pk-samp b{display:block}.pk-samp span{font-size:.86rem;color:var(--pk-soft)}
 .pk-samp__b{display:flex;flex-wrap:wrap;gap:.5rem}.pk-samp__s{flex-basis:100%;margin:0;font-size:.85rem;color:var(--pk-soft)}.pk-samp__s:empty{display:none}
+
+/* turn handle below the selected item (the photo menu sits above it) */
+.pe-sel .pe-rotl{position:absolute;left:50%;bottom:-30px;width:2px;height:28px;margin-left:-1px;background:#ff5a1f;pointer-events:none}
+.pe-sel i.pe-roth{left:50%;bottom:-46px;margin-left:-14px;width:28px;height:28px;display:grid;place-items:center;color:#ff5a1f;cursor:grab;box-shadow:0 1px 4px rgba(0,0,0,.18)}
+.pe-sel i.pe-roth:active{cursor:grabbing}
+.pe-sel.is-crop .pe-rotl,.pe-sel.is-locked .pe-rotl,.pe-sel.is-multi .pe-rotl{display:none}
+@media (pointer:coarse){.pe-sel i.pe-roth{width:34px;height:34px;margin-left:-17px;bottom:-52px}.pe-sel .pe-rotl{bottom:-34px;height:32px}}
+
+.pkco__selfb,.pk-myb__fx{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.55rem}
+.pk-myb__fx .btn{flex:1 1 7rem;justify-content:center}

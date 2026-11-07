@@ -57,7 +57,7 @@
     var paidOnly = all.filter(function (o) { return o.paidAt && !o.test; });
     root.innerHTML = top('<button class="btn btn--ghost btn--sm" id="stg">Storage</button><button class="btn btn--ghost btn--sm" id="rf">Refresh</button>') +
       '<div id="stgBox"></div><div class="ao__bar"><input id="aq" type="search" placeholder="Search order, name, phone, email" value="' + esc(filt.q) + '"><select id="as"><option value="">All statuses</option>' + Object.keys(LABEL).map(function (k) { return '<option value="' + k + '"' + (filt.s === k ? ' selected' : '') + '>' + LABEL[k] + '</option>'; }).join('') + '</select></div>' +
-      '<div class="ao__card ao__tip"><b>Try a real order for KES ' + (BOOK.testPrice || 5) + '</b><span>On this browser, open <a href="/photobooks/someone" target="_blank" rel="noopener">Photo Books → Someone</a> and pick <b>Ciel Test</b> (only you see it while signed in here). Add a few photos, tap <b>Order</b>, pay with M-Pesa, keep the page open while the pages send, then refresh this list. Test orders are marked TEST and stay here until you delete them.</span></div>' +
+      '<div class="ao__card ao__tip"><b>Try an order yourself</b><span>On this browser, open <a href="/photobooks/my-books" target="_blank" rel="noopener">My books</a> → Test books, add the Serengeti or Dubai book, tap <b>Order</b> and choose <b>Place test order (no payment)</b>. Test orders are marked TEST, never count as revenue, and stay here until you delete them.</span></div>' +
       '<p class="ao__msg">' + paidOnly.length + ' paid order' + (paidOnly.length === 1 ? '' : 's') + ' · ' + money(paidOnly.reduce(function (s, o) { return s + (o.total || 0); }, 0)) + '</p>' +
       '<div class="ao__list">' + (l.length ? l.map(function (o) {
         var prints = (o.items || []).filter(function (i) { return i.product === 'print'; }).length;
@@ -281,10 +281,10 @@
           grid.querySelectorAll('img[data-v]').forEach(function (im) { var p = im.getAttribute('data-v'); if (p) file(p).then(function (bl) { im.src = URL.createObjectURL(bl); }); });
           grid.querySelectorAll('[data-f]').forEach(function (bt) { bt.onclick = function () { var p = bt.getAttribute('data-f'); file(p).then(function (bl) { save(bl, o.ref + '-' + it.projectId + '-' + p.split('/').pop()); }); }; });
           /* the spine, always, whatever the page count (the printer decides whether it prints) */
-          grid.insertAdjacentHTML('beforeend', '<button data-spine title="Download the spine as PNG"><canvas data-spc width="40" height="300" style="height:120px;width:auto;margin:0 auto;display:block"></canvas>Spine (PNG)</button>');
+          grid.insertAdjacentHTML('beforeend', '<button data-spine title="Download the spine as a PNG with a transparent background: just the words, the picture and CIEL AFRICA"><canvas data-spc width="40" height="300" style="height:120px;width:auto;margin:0 auto;display:block;background:repeating-conic-gradient(#e6e1d9 0 25%,#fff 0 50%) 0 0/10px 10px"></canvas>Spine (PNG, no background)</button>');
           var spb = grid.querySelector('[data-spine]');
-          spineCanvas(b, it).then(function (c) { var t = spb.querySelector('canvas'); if (!c) { spb.innerHTML = 'No spine design'; return; } t.width = Math.max(4, Math.round(c.width * 300 / c.height)); t.height = 300; t.getContext('2d').drawImage(c, 0, 0, t.width, t.height); });
-          spb.onclick = function () { spineCanvas(b, it).then(function (c) { if (!c) return; c.toBlob(function (bl) { save(bl, o.ref + '-' + it.projectId + '-spine-' + spineMm(it.pages) + 'mm.png'); }, 'image/png'); }); };
+          spineCanvas(b, it, true).then(function (c) { var t = spb.querySelector('canvas'); if (!c) { spb.innerHTML = 'No spine design'; return; } t.width = Math.max(4, Math.round(c.width * 300 / c.height)); t.height = 300; t.getContext('2d').drawImage(c, 0, 0, t.width, t.height); });
+          spb.onclick = function () { spineCanvas(b, it, true).then(function (c) { if (!c) return; c.toBlob(function (bl) { save(bl, o.ref + '-' + it.projectId + '-spine-' + spineMm(it.pages) + 'mm.png'); }, 'image/png'); }); };
         };
         var pd = el.querySelector('[data-pdf]');
         if (pd) pd.onclick = function () {
@@ -358,12 +358,13 @@
     var s = document.createElement('script'); s.src = '/assets/pbk/pdfview.js?v=1'; s.onload = go; s.onerror = function () { save(blob, name); }; document.head.appendChild(s);
   }
   /** the spine at 300 dpi: drawn from the book's spine settings, or the uploaded spine file */
-  function spineCanvas(b, it) {
+  /** the spine at print size; clear = only the words, the picture and CIEL AFRICA on a transparent background */
+  function spineCanvas(b, it, clear) {
     var bk = b.book || {}, tr = trim(bk), sp = spineMm(it.pages), R = window.PBKR, so = bk.spine || null;
     function fromFile() { if (!(b.spine && b.spine[0])) return Promise.resolve(null); return file(b.spine[0].path).then(function (bl) { return new Promise(function (ok) { var im = new Image(); im.onload = function () { var c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight; c.getContext('2d').drawImage(im, 0, 0); ok(c); }; im.onerror = function () { ok(null); }; im.src = URL.createObjectURL(bl); }); }); }
     if (!so || !R) return fromFile();
     if (so.artImg && !/^(\/assets\/|https:\/\/cielafrica\.com\/)/.test(so.artImg)) { so = Object.assign({}, so); delete so.artImg; }
-    return Promise.all([R.loadFonts(), R.loadSpine(so)]).then(function () { var w = Math.max(8, Math.round(sp / 25.4 * 300)), h = Math.round((tr.h + 6) / 25.4 * 300), c = document.createElement('canvas'); c.width = w; c.height = h; var x = c.getContext('2d'), su = R.spineUnits(it.pages), bp = 3 / 25.4 * 300; x.fillStyle = so.bg || '#fff'; x.fillRect(0, 0, w, h); x.setTransform(w / su, 0, 0, (h - 2 * bp) / R.H, 0, bp); R.drawSpine(x, so, su); return c; }).catch(fromFile);
+    return Promise.all([R.loadFonts(), R.loadSpine(so)]).then(function () { var w = Math.max(8, Math.round(sp / 25.4 * 300)), h = Math.round((tr.h + 6) / 25.4 * 300), c = document.createElement('canvas'); c.width = w; c.height = h; var x = c.getContext('2d'), su = R.spineUnits(it.pages), bp = 3 / 25.4 * 300; if (!clear) { x.fillStyle = so.bg || '#fff'; x.fillRect(0, 0, w, h); } x.setTransform(w / su, 0, 0, (h - 2 * bp) / R.H, 0, bp); R.drawSpine(x, clear ? Object.assign({}, so, { bg: 'rgba(0,0,0,0)' }) : so, su); return c; }).catch(clear ? function () { return null; } : fromFile);
   }
   /** a book's trim size (mm): from the files it sent; books before the A4 switch were 210 × 280 */
   function trim(bk) {

@@ -700,10 +700,10 @@
           if (!fixActive(pu) || !pu.fix.self || el.querySelector('[data-self]')) return;
           var d = document.createElement('p'); d.className = 'pkco__small pkco__self'; d.setAttribute('data-self', '');
           el.querySelector('div').appendChild(d);
-          var a = '<a class="btn btn--ghost btn--sm" data-go href="' + BASE + '/design?p=' + encodeURIComponent(pu.projectId) + '">Edit my book</a>';
+          var a = '<span class="pkco__selfb"><a class="btn btn--dark btn--sm" data-go href="' + BASE + '/design?p=' + encodeURIComponent(pu.projectId) + '&preview=1">Preview my book</a><a class="btn btn--ghost btn--sm" data-go href="' + BASE + '/design?p=' + encodeURIComponent(pu.projectId) + '">Edit my book</a></span>';
           (function tick() {
             var left = pu.fix.until - Date.now(); if (left <= 0 || pu.fix.sentAt) { d.remove(); return; }
-            d.innerHTML = 'Spotted a mistake? You can still change your book for <b>' + Math.ceil(left / 60000) + ' min</b>, then send it again. ' + a;
+            d.innerHTML = 'Check your book once more: preview it page by page. Spotted a mistake? You can still change it for <b>' + Math.ceil(left / 60000) + ' min</b>, then tap Send my changes. ' + a;
             setTimeout(tick, 15000);
           })();
         }

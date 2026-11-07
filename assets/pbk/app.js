@@ -303,7 +303,7 @@
       var ago = mins < 1 ? 'just now' : mins < 60 ? mins + ' min ago' : mins < 1440 ? Math.round(mins / 60) + ' h ago' : new Date(p.updatedAt).toLocaleDateString();
       box.innerHTML = '<div class="pk-cont__in"><span class="pk-cont__dot"></span><div><b>Continue “' + esc(p.name || 'My photo book') + '”</b><span>Saved on this device · ' + ago + (l.length > 1 ? ' · <a data-go href="' + BASE + '/my-books">' + l.length + ' books</a>' : '') + '</span></div><a data-go class="btn btn--dark btn--sm" href="' + BASE + '/design?p=' + esc(p.id) + '">Continue</a><button class="pk-cont__del" aria-label="Delete this book" title="Delete this book">✕</button></div>';
       var strip = main.querySelector('.pk-cats'); if (strip) strip.insertAdjacentElement('afterend', box);
-      box.querySelector('.pk-cont__del').onclick = function () { if (!confirm('Delete “' + (p.name || 'this book') + '” and its photos from this device? This can’t be undone.')) return; PBStore.deleteProject(p.id).then(function () { box.remove(); try { CIEL.cart.pbItems().forEach(function (i) { if (i.pb.p === p.id) CIEL.cart.remove(i.id); }); } catch (e) { } }); };
+      box.querySelector('.pk-cont__del').onclick = function () { ask('Delete “' + (p.name || 'this book') + '” and its photos from this device? This can’t be undone.', { ok: 'Delete book', danger: true }).then(function (ok) { if (!ok) return; PBStore.deleteProject(p.id).then(function () { box.remove(); try { CIEL.cart.pbItems().forEach(function (i) { if (i.pb.p === p.id) CIEL.cart.remove(i.id); }); } catch (e) { } }); }); };
     }).catch(function () {});
   }
   function bindCommon() {
@@ -569,6 +569,8 @@
       });
     });
   }
+  function ask(msg, o) { return window.PBKAsk ? PBKAsk.confirm(msg, o) : Promise.resolve(window.confirm(msg)); }
+  function say(msg) { return window.PBKAsk ? PBKAsk.alert(msg) : Promise.resolve(window.alert(msg)); }
   function importBook(file) {
     var ST = window.PBStore, nid = function (p) { return p + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
     return file.slice(0, 13).arrayBuffer().then(function (b) {
@@ -665,7 +667,7 @@
     if (imp) imp.onchange = function () {
       var f = imp.files && imp.files[0]; if (!f) return;
       var lb = imp.nextElementSibling; lb.textContent = 'Opening…';
-      importBook(f).then(function (p) { PBK.go(BASE + '/design?p=' + encodeURIComponent(p.id)); }, function (e) { lb.textContent = 'Open a book file'; alert(e.message || 'Couldn’t open that file.'); });
+      importBook(f).then(function (p) { PBK.go(BASE + '/design?p=' + encodeURIComponent(p.id)); }, function (e) { lb.textContent = 'Open a book file'; say(e.message || 'Couldn’t open that file.'); });
     };
     myOrders(box);
     var sp = document.getElementById('pkSamp');
@@ -710,7 +712,7 @@
           var info = document.createElement('div'); info.className = 'pk-myb__paid' + (pu.product === 'print' && !pu.done ? ' is-todo' : '');
           if (PBKShop.fixActive(pu)) {
             info.className = 'pk-myb__paid is-todo';
-            info.innerHTML = '<b>' + (pu.fix.self ? 'You can still change this book (' + Math.max(1, Math.ceil((pu.fix.until - Date.now()) / 60000)) + ' min left)' : 'Open for corrections') + '</b> · order ' + esc(pu.ref) + (pu.fix.note ? '<br><i>“' + esc(pu.fix.note) + '”</i>' : '') + '<br><a class="btn btn--p btn--sm" data-go href="' + BASE + '/design?p=' + esc(pu.projectId) + '">Edit book</a>';
+            info.innerHTML = '<b>' + (pu.fix.self ? 'You can still change this book (' + Math.max(1, Math.ceil((pu.fix.until - Date.now()) / 60000)) + ' min left)' : 'Open for corrections') + '</b> · order ' + esc(pu.ref) + (pu.fix.note ? '<br><i>“' + esc(pu.fix.note) + '”</i>' : '') + '<span class="pk-myb__fx"><a class="btn btn--dark btn--sm" data-go href="' + BASE + '/design?p=' + esc(pu.projectId) + '&preview=1">Preview</a><a class="btn btn--p btn--sm" data-go href="' + BASE + '/design?p=' + esc(pu.projectId) + '">Edit book</a></span>';
             card.querySelector('div').appendChild(info); var dl0 = card.querySelector('[data-del]'); if (dl0) dl0.remove(); return;
           }
           info.innerHTML = pu.product === 'print' ? (pu.done ? '✓ Order ' + esc(pu.ref) + ': pages sent to Ciel Africa. <a data-go href="' + BASE + '/track?ref=' + encodeURIComponent(pu.ref) + '">Track order</a>' : 'Order ' + esc(pu.ref) + ' is paid, but its pages haven’t finished sending. <a class="btn btn--p btn--sm" data-go href="' + BASE + '/checkout?sent=' + encodeURIComponent(pu.ref) + '">Send now</a>') : '✓ PDF paid (' + esc(pu.ref) + ')';
@@ -726,18 +728,17 @@
         });
       });
       box.querySelectorAll('[data-dup]').forEach(function (b) {
-        b.addEventListener('click', function () { b.disabled = true; b.textContent = 'Copying…'; dupBook(b.getAttribute('data-dup')).then(function () { myBooks(); }, function (e) { b.disabled = false; b.textContent = 'Duplicate'; alert(e.message || 'Couldn’t copy this book.'); }); });
+        b.addEventListener('click', function () { b.disabled = true; b.textContent = 'Copying…'; dupBook(b.getAttribute('data-dup')).then(function () { myBooks(); }, function (e) { b.disabled = false; b.textContent = 'Duplicate'; say(e.message || 'Couldn’t copy this book.'); }); });
       });
       box.querySelectorAll('[data-exp]').forEach(function (b) {
         b.addEventListener('click', function () {
           b.disabled = true; b.textContent = 'Saving…';
-          exportBook(b.getAttribute('data-exp')).then(function (r) { var a = document.createElement('a'), u = URL.createObjectURL(r.blob); a.href = u; a.download = r.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 120000); b.textContent = 'Saved'; }, function (e) { b.textContent = 'Save as file'; alert(e.message || 'Couldn’t save the book.'); }).then(function () { b.disabled = false; });
+          exportBook(b.getAttribute('data-exp')).then(function (r) { var a = document.createElement('a'), u = URL.createObjectURL(r.blob); a.href = u; a.download = r.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 120000); b.textContent = 'Saved'; }, function (e) { b.textContent = 'Save as file'; say(e.message || 'Couldn’t save the book.'); }).then(function () { b.disabled = false; });
         });
       });
       box.querySelectorAll('[data-del]').forEach(function (b) {
         b.addEventListener('click', function () {
-          if (!confirm('Delete this book and its photos from this device? This can’t be undone.')) return;
-          PBStore.deleteProject(b.getAttribute('data-del')).then(myBooks);
+          ask('Delete this book and its photos from this device? This can’t be undone.', { ok: 'Delete book', danger: true }).then(function (ok) { if (ok) PBStore.deleteProject(b.getAttribute('data-del')).then(myBooks); });
         });
       });
     });

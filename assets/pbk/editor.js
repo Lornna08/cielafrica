@@ -49,6 +49,7 @@
   function $(s, r) { return (r || document).querySelector(s); }
   /* only what the customer needs to know: something didn't work, or can't be done and why. Confirmations
      ("Saved", "Moved", "Grouped"…) aren't announced: the change on the page says it. */
+  function ask(msg, o) { return window.PBKAsk ? PBKAsk.confirm(msg, o) : Promise.resolve(window.confirm(msg)); }
   var IMPORTANT = /can[’']t|couldn|could not|not be used|up to|at least|already has|maximum|locked|only the first|your order is for|time for changes|holds up to|didn[’']t fit|not saved|isn[’']t|stopped|first:|too many|try again/i;
   function toast(msg, kind) { if (kind !== 'err' && !IMPORTANT.test(String(msg || ''))) return; if (window.CielNote) return CielNote(msg, kind ? { kind: kind } : null); var t = el$.toast; t.textContent = msg; t.classList.add('is-on'); clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove('is-on'); }, 2600); }
 
@@ -200,8 +201,11 @@
       (vs.length ? '<div class="pe-vers">' + vs.map(function (v, i) { return '<div><span><b>' + new Date(v.at).toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' }) + '</b><small>' + esc(v.label || '') + ' · ' + v.pages + ' pages</small></span><button class="btn btn--ghost btn--sm" data-v="' + (vs.length - 1 - i) + '">Restore</button></div>'; }).join('') + '</div>' : '<p class="pe-note">No earlier versions yet. They appear as you work.</p>') + '</div>';
     vdlg.querySelector('[data-x]').onclick = function () { vdlg.close(); };
     vdlg.querySelectorAll('[data-v]').forEach(function (b) { b.onclick = function () {
-      var v = S.p.versions[+b.getAttribute('data-v')]; if (!v || !confirm('Go back to the version from ' + new Date(v.at).toLocaleString() + '? What you have now is kept as another version.')) return;
-      checkpoint('Before restoring'); restore(v.data); S.cur = Math.min(S.cur, S.p.pages.length); commit(); vdlg.close(); drawStrip(); drawInfo(); fit(); mockSoon(); toast('Earlier version restored. Tap ↶ to undo.');
+      var v = S.p.versions[+b.getAttribute('data-v')]; if (!v) return;
+      ask('Go back to the version from ' + new Date(v.at).toLocaleString() + '? What you have now is kept as another version.', { ok: 'Restore' }).then(function (ok) {
+        if (!ok) return;
+        checkpoint('Before restoring'); restore(v.data); S.cur = Math.min(S.cur, S.p.pages.length); commit(); vdlg.close(); drawStrip(); drawInfo(); fit(); mockSoon(); toast('Earlier version restored. Tap ↶ to undo.');
+      });
     }; });
     if (!vdlg.open) vdlg.showModal();
   }
@@ -251,7 +255,9 @@
     b.addEventListener('click', function () {
       if (S.p.pages.length !== pu.pages) { toast('Your order is for ' + pu.pages + ' pages. This book has ' + S.p.pages.length + ': add or remove pages first.'); return; }
       if (pu.fix.until < Date.now()) { toast('The time for changes has passed. WhatsApp us on +254 706 549 703 if you still need a change.'); return; }
-      if (!confirm(self ? 'Send your changed book to Ciel Africa now? It replaces the version you sent.' : 'Send the corrected book to Ciel Africa now? After this it can’t be changed again unless we reopen it.')) return;
+      ask(self ? 'Send your changed book to Ciel Africa now? It replaces the version you sent.' : 'Send the corrected book to Ciel Africa now? After this it can’t be changed again unless we reopen it.', { title: self ? 'Send my changes' : 'Send corrected book', ok: 'Send now', primary: true }).then(function (ok) { if (ok) send(); });
+    });
+    function send() {
       clearTimeout(saveT);
       var ov = document.createElement('div'); ov.className = 'pe-fixsend'; ov.innerHTML = '<div><b>Sending your corrected book</b><p id="fxP">Preparing pages…</p><div class="pe-fixbar"><i id="fxB"></i></div><p class="pe-fixsend__m">Keep this page open until it finishes.</p></div>';
       document.body.appendChild(ov);
@@ -261,10 +267,10 @@
         ov.innerHTML = '<div><b>' + (self ? 'Changes sent ✓' : 'Corrected book sent ✓') + '</b><p>' + (self ? 'Thank you! We’ll print this new version.' : 'Thank you! Ciel Africa will check it before printing. Your first version is kept too.') + '</p><a class="btn btn--p" data-go href="' + BASE + '/track?ref=' + encodeURIComponent(pu.ref) + '">Track my order</a></div>';
         ov.querySelector('a').addEventListener('click', function () { ov.remove(); });
       }, function (e) {
-        ov.innerHTML = '<div><b>Not sent yet</b><p>' + esc(e.message || 'Something went wrong.') + '</p><p class="pe-fixsend__m">Pages already sent are kept: tap Send corrected book again to finish.</p><button class="btn btn--p">OK</button></div>';
+        ov.innerHTML = '<div><b>Not sent yet</b><p>' + esc(e.message || 'Something went wrong.') + '</p><p class="pe-fixsend__m">Pages already sent are kept: tap ' + (self ? 'Send my changes' : 'Send corrected book') + ' again to finish.</p><button class="btn btn--p">OK</button></div>';
         ov.querySelector('button').onclick = function () { ov.remove(); };
       });
-    });
+    }
   }
   function flush() { if (!S || !S.p) return; clearTimeout(saveT); ST.saveProject(S.p).catch(function () {}); }
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden' && document.body.classList.contains('pbk-editing')) flush(); });
@@ -285,6 +291,12 @@
   function isWrap(i) { return isCoverIdx(i) && S.cview === 'wrap'; }
   /** the spine on its own, turned to read left to right and made as big as the screen allows */
   function isSpineV() { return isCoverIdx() && S.cview === 'spine'; }
+  /** editing the spine: show the spine itself, large, so you see what you change */
+  function showSpine() {
+    if (isSpineV()) return;
+    S.cview = 'spine'; S.cur = -1; S.sel = null; S.crop = false;
+    fit(); ctxBar(); drawStripSel();
+  }
   function spU() { return R.spineUnits(S.p.pages.length); }
   /** the hinge (the groove where the cover bends) each side of the spine, and everything between back and front */
   /* the hinges are a printing detail (the case-cover file adds them from the cover's edges): the editor shows
@@ -343,6 +355,8 @@
       build(main); claim();
       ST.persist();
       remember();
+      /* ?preview=1 (from My books or the order page): open straight into the flip-through, Edit from there */
+      if (q.get('preview') === '1') { history.replaceState({}, '', BASE + '/design?p=' + encodeURIComponent(S.p.id)); setTimeout(function () { R.loadFonts().then(function () { preview(); }); }, 300); }
     }).catch(function (e) {
       if (e && e.message === 'sent') return;
       main.innerHTML = '<div class="pe-err wrap"><h2>We couldn’t open that book</h2><p>' + (e && e.message === 'missing' ? 'It isn’t saved in this browser. Books are stored on the device where they were made.' : esc(e && e.message || 'Something went wrong.')) + '</p><a class="btn btn--p" data-go href="' + BASE + '">Back to Photo Books</a></div>';
@@ -363,7 +377,7 @@
       [['cover', I.cover, 'Cover'], ['photos', I.photo, 'Photos'], ['layouts', I.layout, 'Layouts'], ['text', I.text, 'Text'], ['stickers', I.sticker, 'Stickers'], ['colors', I.color, 'Colours']].map(function (b) { return '<button data-panel="' + b[0] + '">' + b[1] + '<span>' + b[2] + '</span></button>'; }).join('') +
       '</nav>' +
       '<aside class="pe-panel" id="pePanel" aria-live="polite"></aside>' +
-      '<main class="pe-stage" id="peStage"><div class="pe-cvtabs" id="peCvTabs" role="tablist" aria-label="Cover view" hidden><button data-cv="wrap">Whole cover</button><button data-cv="front">Front</button><button data-cv="back">Back</button><button data-cv="spine">Spine</button></div><div class="pe-canvaswrap" id="peWrap"><div class="pe-wraplbl" id="peWrapLbl" hidden><span>Back cover</span><span data-sp>Spine</span><span>Front cover</span></div><canvas id="peCanvas"></canvas><div class="pe-hinge" id="peHinge" title="Spine side"></div><div class="pe-brand" id="peBrand">' + I.lock + '</div><div class="pe-sel" id="peSel" hidden><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i></div></div>' +
+      '<main class="pe-stage" id="peStage"><div class="pe-cvtabs" id="peCvTabs" role="tablist" aria-label="Cover view" hidden><button data-cv="wrap">Whole cover</button><button data-cv="front">Front</button><button data-cv="back">Back</button><button data-cv="spine">Spine</button></div><div class="pe-canvaswrap" id="peWrap"><div class="pe-wraplbl" id="peWrapLbl" hidden><span>Back cover</span><span data-sp>Spine</span><span>Front cover</span></div><canvas id="peCanvas"></canvas><div class="pe-hinge" id="peHinge" title="Spine side"></div><div class="pe-brand" id="peBrand">' + I.lock + '</div><div class="pe-sel" id="peSel" hidden><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i><b class="pe-rotl" aria-hidden="true"></b><i data-h="rot" class="pe-roth" title="Turn" aria-label="Turn"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></i></div></div>' +
       '<div class="pe-ctx" id="peCtx" hidden></div>' +
       '<div class="pe-mock" id="peMock"><span>Your book</span><div class="pe-rot" id="peRotBox"><div class="pe-rot__b" id="peRot"><canvas class="pe-rot__f"></canvas><canvas class="pe-rot__k"></canvas><canvas class="pe-rot__s"></canvas><i class="pe-rot__p"></i><i class="pe-rot__t"></i><i class="pe-rot__u"></i></div></div><canvas id="peMockC" width="550" height="710" hidden></canvas></div>' +
       '<div class="pe-hint" id="peHint"></div></main>' +
@@ -572,6 +586,14 @@
   function groupIds(e) { return e && e.g ? (doc().els || []).filter(function (x) { return x.g === e.g; }).map(function (x) { return x.id; }) : null; }
   function union(list) { var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity; list.forEach(function (e) { var b = bounds(e); x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.w); y1 = Math.max(y1, b.y + b.h); }); return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; }
 
+  /** an angle in -180…180, held at 0 / 90 / 180 / -90 when it's within 4° of them (or in steps when asked) */
+  function snapRot(d, step) {
+    d = ((d % 360) + 540) % 360 - 180;
+    if (step) return Math.round(d / step) * step;
+    for (var q = -180; q <= 180; q += 90) if (Math.abs(d - q) < 4) { d = q; break; }
+    if (d === -180) d = 180;
+    return Math.round(d * 10) / 10;
+  }
   function clampEl(e) {
     var minS = 40;
     if (e.t === 'text') e.h = bounds(e).h;
@@ -594,7 +616,7 @@
       if (drag && drag.o && drag.e) { Object.assign(drag.e, { x: drag.o.x, y: drag.o.y }); if (drag.many) drag.many.forEach(function (m) { m.e.x = m.o.x; m.e.y = m.o.y; }); }
       drag = null; guides(null);
       if (!e || e.lock) { pinch = { none: true }; return; }
-      pinch = { e: e, o: clone(e), b: bounds(e), d0: Math.max(10, Math.hypot(a.x - b.x, a.y - b.y)) }; el$.pe.classList.add('is-moving');
+      pinch = { e: e, o: clone(e), b: bounds(e), d0: Math.max(10, Math.hypot(a.x - b.x, a.y - b.y)), a0: Math.atan2(b.y - a.y, b.x - a.x) }; el$.pe.classList.add('is-moving');
     }
     function pinchMove() {
       var ids = Object.keys(pts); if (ids.length < 2 || !pinch || pinch.none) return;
@@ -604,8 +626,13 @@
         var cx = b0.x + b0.w / 2, cy = b0.y + b0.h / 2;
         if (e.t === 'text') { if (o.cap) e.cap = Math.max(14, o.cap * k); else e.size = Math.max(14, (o.size || 80) * k); e.w = Math.max(60, o.w * k); e.x = cx - (cx - o.x) * k; e.y = cy - (cy - o.y) * k; }
         else { e.w = Math.max(40, o.w * k); e.h = Math.max(30, o.h * k); e.x = cx - e.w / 2; e.y = cy - e.h / 2; }
+        /* turning the two fingers turns the photo (or sticker, or words) too */
+        if (e.role !== 'map' && e.id !== 'map' && e.id !== 'place') {
+          var da = (Math.atan2(b.y - a.y, b.x - a.x) - pinch.a0) * 180 / Math.PI;
+          if (pinch.rotOn || Math.abs(da) > 8) { pinch.rotOn = true; e.rot = snapRot((o.rot || 0) + da); if (!e.rot) delete e.rot; }
+        }
       }
-      draw();
+      draw(); placeSel();
     }
     wrap.addEventListener('pointerdown', function (ev) {
       if (ev.pointerType === 'touch') { pts[ev.pointerId] = pt(ev); if (Object.keys(pts).length === 2) { pinchStart(); ev.preventDefault(); return; } if (Object.keys(pts).length > 2) return; }
@@ -616,7 +643,8 @@
       var e = selEl();
       if (S.panel === 'photos' && innerWidth < 900) openPanel(null);
       if (S.cur < 0 && !S.p.cover.edited) { var tt = C.TPL[S.p.tpl]; if (tt && tt.kind === 'raster' && tt.editable) { ensureEditable(); draw(); } }
-      if (h && e && !e.lock && !S.multi) { drag = { mode: 'resize', h: h, e: e, p: p, o: clone(e), b: bounds(e) }; }
+      if (h === 'rot' && e && !e.lock && !S.multi) { var bR = bounds(e); drag = { mode: 'rotate', e: e, p: p, o: clone(e), c: { x: bR.x + bR.w / 2, y: bR.y + bR.h / 2 } }; drag.a0 = Math.atan2(p.y - drag.c.y, p.x - drag.c.x); }
+      else if (h && e && !e.lock && !S.multi) { drag = { mode: 'resize', h: h, e: e, p: p, o: clone(e), b: bounds(e) }; }
       else {
         var t = hit(p.x, p.y);
         if (S.crop && e && e.t === 'photo' && t === e) { drag = { mode: 'pan', e: e, p: p, o: clone(e) }; }
@@ -683,6 +711,11 @@
         e.crop = e.crop || { z: 1 };
         e.crop.cx = Math.max(0, Math.min(1, o.crop.cx - dx / (iw * s)));
         e.crop.cy = Math.max(0, Math.min(1, o.crop.cy - dy / (ih * s)));
+      } else if (drag.mode === 'rotate') {
+        el$.pe.classList.add('is-moving');
+        var ang = (Math.atan2(p.y - drag.c.y, p.x - drag.c.x) - drag.a0) * 180 / Math.PI;
+        e.rot = snapRot((o.rot || 0) + ang, ev.shiftKey ? 15 : 0); if (!e.rot) delete e.rot;
+        draw(); placeSel(); return;
       } else if (drag.mode === 'resize') {
         el$.pe.classList.add('is-moving');
         var b0 = drag.b, ax = drag.h.indexOf('w') >= 0 ? b0.x + b0.w : b0.x, ay = drag.h.indexOf('n') >= 0 ? b0.y + b0.h : b0.y;
@@ -1090,10 +1123,14 @@
         }
         if (a === 'del') {
           if (S.p.pages.length - 1 < BOOK.pages.min) return toast('A book needs at least ' + BOOK.pages.min + ' pages.');
-          if (!blankDoc(S.p.pages[i2]) && !confirm('Delete page ' + (i2 + 1) + ' and everything on it? You can undo with ↶.')) return;
-          S.p.pages.splice(i2, 1); var nt = '';
-          if (S.p.pages.length % 2) { S.p.pages.push(pageDoc('one')); nt = ' A blank page was added at the end to keep an even number of pages.'; }
-          commit(); toast('Page ' + (i2 + 1) + ' deleted; the pages after it moved up.' + nt); return redraw(Math.min(i2, S.p.pages.length - 1));
+          var delIt = function () {
+            S.p.pages.splice(i2, 1); var nt = '';
+            if (S.p.pages.length % 2) { S.p.pages.push(pageDoc('one')); nt = ' A blank page was added at the end to keep an even number of pages.'; }
+            commit(); toast('Page ' + (i2 + 1) + ' deleted; the pages after it moved up.' + nt); redraw(Math.min(i2, S.p.pages.length - 1));
+          };
+          if (blankDoc(S.p.pages[i2])) return delIt();
+          ask('Delete page ' + (i2 + 1) + ' and everything on it? You can undo with ↶.', { ok: 'Delete page', danger: true }).then(function (ok) { if (ok) delIt(); });
+          return;
         }
         return;
       }
@@ -1439,7 +1476,7 @@
         var l = E[g].filter(function (e) { return !q || ((e[2] || '') + ' ' + g).toLowerCase().indexOf(q) >= 0; });
         if (l.length) h += '<h4 class="pe-gh">' + esc(g) + ' <small>' + l.length + '</small></h4><div class="pe-stk pe-stk--emo">' + l.map(function (e) { return '<button data-img="' + emojiSrc(e[0]) + '" data-ar="1" title="' + esc(e[2] || e[1]) + '"><img alt="' + esc(e[1]) + '" loading="lazy" src="' + emojiSrc(e[0]) + '"></button>'; }).join('') + '</div>';
       });
-      if (tab === 'emoji') h += '<p class="pe-note pe-credit">Emoji: Twemoji, CC-BY 4.0.</p>';
+      if (tab === 'emoji') h += '<p class="pe-note pe-credit">Emoji: Noto Emoji by Google, Apache 2.0.</p>';
     }
     if (tab === 'words' || (tab === 'all' && q)) {
       R.loadAllFonts();
@@ -1457,7 +1494,7 @@
     P.onclick = function (ev) {
       var t = ev.target;
       if (t.closest('[data-close]')) { openPanel(null); return; }
-      var gp = t.closest('[data-go-panel]'); if (gp) { openPanel(gp.getAttribute('data-go-panel')); return; }
+      var gp = t.closest('[data-go-panel]'); if (gp) { if (gp.getAttribute('data-go-panel') === 'spine') showSpine(); openPanel(gp.getAttribute('data-go-panel')); return; }
       var act = t.closest('[data-act]'); if (act) { if (act.type === 'checkbox') return; return doAct(act.getAttribute('data-act')); }
       var ph = t.closest('[data-ph]'); if (ph && P._noClick && Date.now() - P._noClick < 400) return; if (ph) return placePhoto(ph.getAttribute('data-ph'), S.target || (selEl() && selEl().t === 'photo' ? S.sel : null));
       var lay = t.closest('[data-lay]'); if (lay) { var lost = applyLayout(doc(), lay.getAttribute('data-lay')); select(null); commit(); draw(); drawThumb(S.cur); openPanel('layouts', true); if (lost) toast('One photo was taken off this page. It is still in your photos.'); return; }
@@ -1511,14 +1548,14 @@
   function doAct(a) {
     if (a.indexOf('shape:') === 0) return addShape(a.slice(6));
     if (a === 'layall') { var key = doc().layout, n = 0; if (!LAYOUTS[key]) return; S.p.pages.forEach(function (d, i) { if (i !== S.cur && blankDoc(d)) { applyLayout(d, key); n++; drawThumb(i); } }); commit(); toast(n ? 'Layout used on ' + n + ' empty page' + (n === 1 ? '' : 's') + '.' : 'There are no empty pages.'); return; }
-    if (a === 'tplsave') { var d0 = doc(), nm = prompt('Name this design', 'Design ' + (((S.p.tpls || []).length) + 1)); if (nm === null) return; var els = clone(d0.els || []).map(function (e) { if (e.t === 'photo') { e.photo = null; delete e.fx; delete e.mask; delete e.rect; e.crop = { z: 1, cx: .5, cy: .5 }; } return e; }); S.p.tpls = (S.p.tpls || []).concat([{ name: (nm || 'My design').slice(0, 30), bg: d0.bg, els: els }]).slice(-12); commit(); openPanel('layouts', true); toast('Saved. Tap it on any page to use it.'); return; }
+    if (a === 'tplsave') { var d0 = doc(); (window.PBKAsk ? PBKAsk.prompt('Name this design', 'Design ' + (((S.p.tpls || []).length) + 1), { ok: 'Save' }) : Promise.resolve(prompt('Name this design', 'Design ' + (((S.p.tpls || []).length) + 1)))).then(function (nm) { if (nm === null) return; var els = clone(d0.els || []).map(function (e) { if (e.t === 'photo') { e.photo = null; delete e.fx; delete e.mask; delete e.rect; e.crop = { z: 1, cx: .5, cy: .5 }; } return e; }); S.p.tpls = (S.p.tpls || []).concat([{ name: (nm || 'My design').slice(0, 30), bg: d0.bg, els: els }]).slice(-12); commit(); openPanel('layouts', true); }); return; }
     if (a.indexOf('tpluse:') === 0) { var t = (S.p.tpls || [])[+a.slice(7)]; if (!t) return; var d1 = doc(), keep = d1.els.filter(function (e) { return e.t === 'photo' && e.photo; }).map(function (e) { return e.photo; }), ne = clone(t.els).map(function (e) { e.id = uid(e.t === 'photo' ? 'ph' : e.t); return e; }); ne.filter(function (e) { return e.t === 'photo'; }).forEach(function (e, k) { if (keep[k]) e.photo = keep[k]; }); var lost = Math.max(0, keep.length - ne.filter(function (e) { return e.t === 'photo'; }).length); d1.els = ne; if (t.bg) d1.bg = t.bg; delete d1.layout; select(null); commit(); draw(); toast(lost ? 'Design used. ' + lost + ' photo' + (lost === 1 ? '' : 's') + ' didn’t fit and went back to your library.' : 'Design used on this page.'); return; }
-    if (a.indexOf('tpldel:') === 0) { if (!confirm('Delete this saved design? Pages already using it stay as they are.')) return; S.p.tpls.splice(+a.slice(7), 1); commit(); openPanel('layouts', true); return; }
+    if (a.indexOf('tpldel:') === 0) { ask('Delete this saved design? Pages already using it stay as they are.', { ok: 'Delete', danger: true }).then(function (ok) { if (!ok) return; S.p.tpls.splice(+a.slice(7), 1); commit(); openPanel('layouts', true); }); return; }
     if (a === 'add') { S.importTarget = S.target || null; el$.file.click(); }
     else if (a === 'retry') { var bl = (S.importBad || []).map(function (x) { return x.file; }); S.importBad = null; importFiles(bl, true); }
     else if (a === 'badok') { S.importBad = null; openPanel('photos', true); }
     else if (a === 'auto') arrange(false);
-    else if (a === 'autoall') { if (confirm('Rearrange every page using all your photos? Text and stickers on the pages stay.')) arrange(true); }
+    else if (a === 'autoall') { ask('Rearrange every page using all your photos? Text and stickers on the pages stay. You can undo with ↶.', { ok: 'Rearrange', primary: true }).then(function (ok) { if (ok) arrange(true); }); }
     else if (a === 'upsticker') el$.sfile.click();
     else if (a === 'frame') addFrame();
     else if (a === 'delbook') deleteBook();
@@ -1529,8 +1566,8 @@
     else if (a === 'delpage') delPage();
     else if (a === 'mvl' || a === 'mvr') movePage(a === 'mvl' ? -1 : 1);
     else if (a === 'deltext') removeSel();
-    else if (a === 'spineoff') { S.p.spine = S.p.spine || {}; S.p.spine.hideTitle = !S.p.spine.hideTitle; commit(); if (!isCoverIdx()) go(-1); draw(); mockSoon(); openPanel('spine', true); }
-    else if (a === 'spinepic') { S.p.spine = S.p.spine || {}; S.p.spine.noPic = !S.p.spine.noPic; commit(); if (!isCoverIdx()) go(-1); draw(); mockSoon(); openPanel('spine', true); }
+    else if (a === 'spineoff') { S.p.spine = S.p.spine || {}; S.p.spine.hideTitle = !S.p.spine.hideTitle; commit(); showSpine(); draw(); mockSoon(); openPanel('spine', true); }
+    else if (a === 'spinepic') { S.p.spine = S.p.spine || {}; S.p.spine.noPic = !S.p.spine.noPic; commit(); showSpine(); draw(); mockSoon(); openPanel('spine', true); }
     else if (a === 'shadow') { var e = selEl(); if (e) { e.shadow = e.shadow ? 0 : 1; commit(); draw(); drawThumb(S.cur); } }
     else if (a === 'covshadow') { ensureEditable(); var on = !(S.p.cover.els.filter(function (x) { return x.role === 'title' || x.role === 'year'; })[0] || {}).shadow; S.p.cover.els.forEach(function (x) { if (x.t === 'text' && (x.role === 'title' || x.role === 'sub' || x.role === 'year')) x.shadow = on ? 1 : 0; }); if (S.cur !== -1) go(-1); commit(); draw(); drawThumb(-1); mockSoon(); }
     else if (a === 'bgall') { var c = doc().bg; S.p.pages.forEach(function (p) { p.bg = c; }); commit(); renderAll(); }
@@ -1688,12 +1725,15 @@
     if (t === n) return pageCount();
     if (t < n) {
       var gone = S.p.pages.slice(t), used = gone.filter(function (d) { return (d.els || []).some(function (e) { return (e.t === 'photo' && e.photo) || e.t === 'text' || e.t === 'art' || e.t === 'img'; }); }).length;
-      if (used && !confirm('The last ' + (n - t) + ' pages include ' + used + ' page' + (used === 1 ? '' : 's') + ' you’ve designed. Remove them?')) return;
+      if (used) { ask('The last ' + (n - t) + ' pages include ' + used + ' page' + (used === 1 ? '' : 's') + ' you’ve designed. Remove them?', { ok: 'Remove pages', danger: true }).then(function (ok) { if (!ok) return; checkpoint('Before removing pages'); S.p.pages.length = t; after(); }); return; }
       checkpoint('Before removing pages'); S.p.pages.length = t;
     } else { for (var i = n; i < t; i++) S.p.pages.push(pageDoc('one')); }
-    if (S.cur >= S.p.pages.length && S.cur !== n) S.cur = S.p.pages.length - 1;
-    if (S.cur === n) S.cur = S.p.pages.length; /* was on the back cover */
-    commit(); drawStrip(); drawInfo(); fit(); mockSoon(); pageCount();
+    after();
+    function after() {
+      if (S.cur >= S.p.pages.length && S.cur !== n) S.cur = S.p.pages.length - 1;
+      if (S.cur === n) S.cur = S.p.pages.length; /* was on the back cover */
+      commit(); drawStrip(); drawInfo(); fit(); mockSoon(); pageCount();
+    }
   }
   function addPages() {
     if (S.p.pages.length + 2 > BOOK.pages.max) { toast('A book can have up to ' + BOOK.pages.max + ' pages.'); return; }
@@ -1703,11 +1743,13 @@
     if (S.cur < 0) return;
     if (isBack()) { tip('The back cover stays. You can change everything on it.'); return; }
     if (S.p.pages.length - 1 < BOOK.pages.min) { toast('A book needs at least ' + BOOK.pages.min + ' pages. Add pages first, or leave this one blank.'); return; }
-    if (!blankDoc(S.p.pages[S.cur]) && !confirm('Remove page ' + (S.cur + 1) + ' and everything on it? You can undo with ↶.')) return;
-    S.p.pages.splice(S.cur, 1);
-    if (S.p.pages.length % 2) S.p.pages.push(pageDoc('one'));
-    commit(); var c = Math.min(S.cur, S.p.pages.length - 1); S.cur = -2; drawStrip(); drawInfo(); go(c);
-    toast('Page removed. Books always have an even number of pages.');
+    function rm() {
+      S.p.pages.splice(S.cur, 1);
+      if (S.p.pages.length % 2) S.p.pages.push(pageDoc('one'));
+      commit(); var c = Math.min(S.cur, S.p.pages.length - 1); S.cur = -2; drawStrip(); drawInfo(); go(c);
+    }
+    if (blankDoc(S.p.pages[S.cur])) return rm();
+    ask('Remove page ' + (S.cur + 1) + ' and everything on it? You can undo with ↶.', { ok: 'Remove page', danger: true }).then(function (ok) { if (ok) rm(); });
   }
   function movePage(dir) {
     var i = S.cur, j = i + dir; if (i < 0 || isBack() || j < 0 || j >= S.p.pages.length) return;
@@ -1759,7 +1801,9 @@
   /* ---------------- preview (flip through) ---------------- */
   /** Delete the whole book (and its photos) from this device. */
   function deleteBook() {
-    if (!confirm('Delete “' + (S.p.name || 'this book') + '” and its photos from this device? This can’t be undone.')) return;
+    ask('Delete “' + (S.p.name || 'this book') + '” and its photos from this device? This can’t be undone.', { title: 'Delete this book?', ok: 'Delete book', danger: true }).then(function (ok) { if (ok) gone(); });
+  }
+  function gone() {
     clearTimeout(saveT);
     var id = S.p.id; S.p = null;
     try { var lb = JSON.parse(localStorage.getItem('pbk_last') || 'null'); if (lb && lb.id === id) localStorage.removeItem('pbk_last'); } catch (e) { }

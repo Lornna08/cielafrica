@@ -294,7 +294,7 @@
       else if (a === 'auto') {
         var busy = dlg.querySelector('#pfxBusy'); busy.hidden = false; b.disabled = true;
         autoMask(im, MW, MH).then(function (m) { mask = m; st.maskChanged = true; paint(); })
-          .catch(function (er) { alert(er && er.message || 'The background could not be removed on this device.'); })
+          .catch(function (er) { (window.PBKAsk ? PBKAsk.alert : window.alert)(er && er.message || 'The background could not be removed on this device.'); })
           .then(function () { busy.hidden = true; b.disabled = false; });
       }
     });

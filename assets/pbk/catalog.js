@@ -50,7 +50,6 @@
     ['year', 'good-days', 'Good Days', 'THIS YEAR', 'GOOD DAYS', 'sun', [['#86d6e8', '#ffffff', '#ff7a2e'], ['#fff1d6', '#ff7a2e', '#2f80ed'], ['#ff7a2e', '#fff1d6', '#ffffff']], '2026'],
     ['someone', 'for-mum', 'For Mum', 'FOR MUM', 'WITH LOVE', 'tulips', [['#ffe3ec', '#d23a6a', '#3f8a3a'], ['#fff6d6', '#9d47c2', '#ff5a7a'], ['#2f4a3a', '#ffd8e4', '#ffb21e']]],
     ['someone', 'for-you', 'For You', 'FOR YOU', 'A LITTLE GIFT', 'gift', [['#ffe27a', '#1d63c4', '#e5383b'], ['#e8f1ff', '#2f80ed', '#f0a91c'], ['#e5383b', '#ffffff', '#ffd25e']]],
-    ['someone', 'ciel-test', 'Ciel Test', 'CIEL', 'TEST BOOK', 'gift', [['#fff1d6', '#ff5a1f', '#1b1714'], ['#1b1714', '#ff5a1f', '#ffffff'], ['#ff5a1f', '#ffffff', '#1b1714']], null, true],
     ['someone', 'for-dad', 'For Dad', 'FOR DAD', 'MY HERO', 'tie', [['#dcefff', '#1f3c74', '#e5383b'], ['#f4ecdf', '#1f3c74', '#b9831e'], ['#1f3c74', '#ffffff', '#9fd6ef']]]
   ];
 
