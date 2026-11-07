@@ -435,6 +435,10 @@
     {
       "path": "/api/photobooks?route=pbk-cron",
       "schedule": "17 3 * * *"
+    },
+    {
+      "path": "/api/domains?route=cron/renewals",
+      "schedule": "41 5 * * *"
     }
   ],
   "functions": {

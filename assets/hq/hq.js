@@ -279,6 +279,9 @@
     S.inbox.forEach(function (m) { if (m.followUp && m.followUp <= today() && !/completed|declined|archived/.test(m.stage || '')) attention.push(['y', 'Follow up: ' + (m.customer.name || m.customer.email || 'lead'), (m.subject || '').slice(0, 80), '#leads']); });
     newMsgs.forEach(function (m) { attention.push(['p', 'Message from ' + (m.customer.name || m.customer.email || 'a visitor'), (m.subject || '').slice(0, 80), '#inbox/' + m.id]); });
     overdue.forEach(function (t) { attention.push(['r', 'Overdue: ' + t.title, 'Was due ' + d2(t.due + 'T12:00'), '#tasks']); });
+    /* domains to renew in the next 60 days (customers are emailed at 60, 30 and 7 days and on the day) */
+    if (S.renewals == null) { S.renewals = []; api('/api/domains?route=admin/renewals').then(function (x) { S.renewals = (x.renewals || []).filter(function (r) { return r.days != null && r.days <= 60; }); if (S.renewals.length && (location.hash || '#overview') === '#overview') overview(); }, function () { }); }
+    S.renewals.forEach(function (r) { attention.push([r.days <= 7 ? 'r' : 'o', 'Renew ' + r.domain + (r.days > 0 ? ' · ' + r.days + ' days left' : r.days === 0 ? ' · expires today' : ' · expired ' + (-r.days) + ' days ago'), 'Expires ' + r.expiresAt + (r.estimated ? ' (estimated)' : '') + ' · ' + ((r.customer && (r.customer.name || r.customer.email)) || ''), '#content']); });
     var b = body(
       '<div class="kpis"><div class="card kpi"><span>Revenue this month</span><b>' + money(rev) + '</b><small>' + month.length + ' paid order' + (month.length === 1 ? '' : 's') + ' · tests not counted</small></div>' +
       '<div class="card kpi"><span>Orders to handle</span><b>' + todo.length + '</b><small>' + todo.filter(function (o) { return o.kind === 'photobook'; }).length + ' photo books · ' + todo.filter(function (o) { return o.kind === 'shop'; }).length + ' shop · ' + todo.filter(function (o) { return o.kind === 'domain'; }).length + ' domains</small></div>' +

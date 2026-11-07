@@ -682,3 +682,5 @@ html[data-theme="dark"] .mx2-it:hover{background:#18181c}html[data-theme="dark"]
 [data-theme=dark] .cnote__i{background:#2f2823}
 [data-theme=dark] .cnote__x:hover{background:#2f2823;color:#fff}
 .cat-file{margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}.cat-file p{margin:.35rem 0;font-size:.85rem}.cat-file .tag{font-weight:600}
+.np__f2{border-top:0;padding-top:0}.np__lnk{background:none;border:0;padding:0;color:var(--o);font:600 .8rem Inter,sans-serif;cursor:pointer;text-decoration:underline}
+.np__p{padding:.2rem .9rem .9rem;display:grid;gap:.45rem;font-size:.84rem;border-top:1px solid var(--line)}.np__ck{display:flex;gap:.5rem;align-items:center}.np__q{display:flex;gap:.4rem;align-items:center;padding-left:1.5rem;color:var(--soft)}.np__q input{border:1px solid var(--line);border-radius:6px;padding:.2rem .3rem;background:var(--card);color:var(--ink)}.np__note{margin:0;color:var(--faint);font-size:.76rem}
