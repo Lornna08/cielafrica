@@ -1001,35 +1001,48 @@
     openPanel('photos');
     if (replace) hint('Tap a photo to put it in this frame, or Upload more.');
   }
-  function importFiles(files) {
+  function importFiles(files, retry) {
     files = Array.prototype.slice.call(files || []); if (!files.length) return;
     var target = S.importTarget; S.importTarget = null;
     var lim = CFG.limits || { maxPhotosPerProject: 300, maxFileMB: 40, minPhotoPx: 800 };
-    var room = (lim.maxPhotosPerProject || 300) - S.order.length;
-    if (room <= 0) { toast('This book already has the maximum number of photos.'); return; }
-    files = files.slice(0, room);
     var hashes = {}; S.order.forEach(function (id) { if (S.photos[id].hash) hashes[S.photos[id].hash] = 1; });
-    var done = 0, bad = [], added = [];
+    var done = 0, bad = [], added = [], dup = 0, conv = 0, list = [];
     var prog = $('#peProg');
+    function say(t) { prog = $('#peProg'); if (prog) prog.textContent = t; }
+    /* PDFs and Word documents first become their pages / pictures */
+    var k = 0;
+    function expand() {
+      if (k >= files.length) return start();
+      var f = files[k++];
+      return PH.expand(f, say).then(function (l) { list = list.concat(l); if (l.length > 1 || l[0] !== f) conv++; }, function (e) { bad.push({ file: f, why: e.message }); }).then(expand);
+    }
+    function start() {
+      var room = (lim.maxPhotosPerProject || 300) - S.order.length;
+      if (room <= 0) { toast('This book already has the maximum number of photos (' + (lim.maxPhotosPerProject || 300) + ').'); return; }
+      if (list.length > room) { toast('Only the first ' + room + ' photos were added: a book can hold ' + (lim.maxPhotosPerProject || 300) + '.'); list = list.slice(0, room); }
+      next(0);
+    }
     function next(i) {
-      if (i >= files.length) {
-        if (prog) prog.textContent = '';
+      if (i >= list.length) {
+        say('');
         if (added.length && target) { placePhoto(added[0], target); added = added.slice(1); }
         if (added.length > 1) arrangeAsk(added.length);
         else if (added.length) tip('Photo added. Tap it to place it, or drag it onto a frame.');
-        if (bad.length) toast(bad.length + ' file' + (bad.length === 1 ? '' : 's') + ' skipped: ' + bad[0]);
-        if (S.panel === 'photos') openPanel('photos', true);
+        if (dup) toast(dup === 1 ? 'That photo is already in your library: use it as often as you like.' : dup + ' photos were already in your library: use them as often as you like.');
+        S.importBad = bad;
+        if (S.panel === 'photos' || bad.length) openPanel('photos', true);
         return;
       }
-      if (prog) prog.textContent = 'Adding ' + (i + 1) + ' of ' + files.length + '…';
-      PH.importFile(files[i], { limits: lim, hashes: hashes, projectId: S.p.id, uid: uid }).then(function (r) {
+      say('Adding ' + (i + 1) + ' of ' + list.length + '…');
+      PH.importFile(list[i], { limits: lim, hashes: hashes, projectId: S.p.id, uid: uid }).then(function (r) {
         return ST.savePhoto(r.meta, r.blobs).then(function () {
           hashes[r.meta.hash] = 1; S.photos[r.meta.id] = r.meta; S.order.push(r.meta.id); added.push(r.meta.id);
           urls[r.meta.id] = URL.createObjectURL(r.blobs.prev); thumbs[r.meta.id] = URL.createObjectURL(r.blobs.thumb);
         });
-      }).catch(function (e) { bad.push(e.message || 'A file could not be added.'); }).then(function () { done++; if (S.panel === 'photos' && done % 4 === 0) openPanel('photos', true); next(i + 1); });
+      }).catch(function (e) { if (e && e.duplicate) dup++; else bad.push({ file: list[i], why: (e && e.message) || 'This file couldn’t be added.' }); }).then(function () { done++; if (S.panel === 'photos' && done % 4 === 0) openPanel('photos', true); next(i + 1); });
     }
-    next(0);
+    say(retry ? 'Trying again…' : 'Preparing…');
+    expand();
   }
   function arrangeAsk(n) {
     var d = document.createElement('dialog'); d.className = 'pe-ask';
@@ -1116,8 +1129,9 @@
       var used = usedMap();
       h = head('Photos', S.target ? 'Choose a photo for the selected frame.' : 'Tap a photo to place it on this page, or ' + (innerWidth > 900 ? 'drag it' : 'press, hold and drag it') + ' onto a frame or a page below.') +
         '<div class="pe-row"><button class="btn btn--p btn--sm" data-act="add">' + I.plus + ' Add photos</button>' + (S.order.length ? '<button class="btn btn--ghost btn--sm" data-act="auto">Arrange for me</button>' : '') + '<button class="btn btn--ghost btn--sm" data-act="frame">' + I.frame + ' Add a photo frame</button></div>' + (S.order.length > 1 ? '<button class="pe-linkbtn" data-act="autoall">Rearrange the whole book</button>' : '<p class="pe-note">Select as many photos as you like: we’ll lay them out, two landscapes to a page, portraits on their own.</p>') + '<p class="pe-prog" id="peProg"></p>' +
+        (S.importBad && S.importBad.length ? '<div class="pe-bad"><b>' + S.importBad.length + ' file' + (S.importBad.length === 1 ? '' : 's') + ' couldn’t be added</b><ul>' + S.importBad.slice(0, 6).map(function (x) { return '<li>' + esc(x.why) + '</li>'; }).join('') + '</ul><div class="pe-row"><button class="btn btn--ghost btn--sm" data-act="retry">Try again</button><button class="pe-linkbtn" data-act="badok">Dismiss</button></div></div>' : '') +
         (S.order.length ? '<div class="pe-photos">' + S.order.map(function (id) { var m = S.photos[id]; return '<button class="pe-thumb" data-ph="' + id + '" title="' + esc(m.name) + '"><img alt="" data-src="' + id + '">' + (used[id] ? '<span class="pe-used">' + used[id] + '</span>' : '') + (m.low ? '<span class="pe-low" title="Small photo: it may look soft in print">Low res</span>' : '') + '</button>'; }).join('') + '</div>' :
-          '<div class="pe-emptyp">' + I.photo + '<p>Your photos stay on this device while you design. JPEG, PNG or WebP.</p></div>');
+          '<div class="pe-emptyp">' + I.photo + '<p>Your photos stay on this device while you design. JPEG, PNG, WebP and iPhone (HEIC) photos, or the pages of a PDF and the pictures in a Word document.</p></div>');
     } else if (name === 'layouts') {
       if (S.cur < 0) h = head('Layouts', 'Layouts are for the inside pages. Choose a page below the cover.') + '<div class="pe-row"><button class="btn btn--dark btn--sm" data-act="page1">Go to page 1</button></div>';
       else if (isBack()) h = head('Back cover', 'Move, resize or replace the map and words, add a photo, text or artwork, or change the colour. cielafrica.com stays small at the bottom right.') + '<div class="pe-row"><button class="btn btn--dark btn--sm" data-act="frame">' + I.frame + ' Add a photo frame</button><button class="btn btn--ghost btn--sm" data-act="resetback">' + I.reset + ' Reset the back cover</button></div>';
@@ -1328,6 +1342,8 @@
   }
   function doAct(a) {
     if (a === 'add') { S.importTarget = S.target || null; el$.file.click(); }
+    else if (a === 'retry') { var bl = (S.importBad || []).map(function (x) { return x.file; }); S.importBad = null; importFiles(bl, true); }
+    else if (a === 'badok') { S.importBad = null; openPanel('photos', true); }
     else if (a === 'auto') arrange(false);
     else if (a === 'autoall') { if (confirm('Rearrange every page using all your photos? Text and stickers on the pages stay.')) arrange(true); }
     else if (a === 'upsticker') el$.sfile.click();

@@ -1241,3 +1241,12 @@ body.pbk-editing .pk{background:#efeae2}
 .pf__edit{display:flex;justify-content:center;gap:.5rem;flex-wrap:wrap;padding:.3rem 1rem .6rem}
 .pf__edit .pf__btn{background:#ff5a1f;color:#fff;border-color:#ff5a1f}
 @media(max-width:900px){.pe.has-panel.is-peek .pe-ctx{display:flex;bottom:calc(118px - var(--pe-strip) + 14px)}}
+.pe-bad{background:#fff4f0;border:1px solid #ffd3c2;border-radius:12px;padding:.7rem .8rem;margin:.6rem 0;font-size:.82rem;line-height:1.45}.pe-bad b{display:block}.pe-bad ul{margin:.35rem 0 .5rem;padding-left:1.1rem}.pe-bad li{margin:.15rem 0}
+/* photo editor: undo/redo, zoom, box tool */
+.pfx__ur{display:flex;gap:.3rem;margin-left:auto}.pfx__ur button{width:36px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:transparent;color:#fff;font-size:1.1rem;cursor:pointer}.pfx__ur button:disabled{opacity:.35;cursor:default}
+.pfx__h .pfx__x{margin-left:0}
+.pfx__zoom{position:absolute;left:12px;bottom:12px;z-index:3;display:flex;align-items:center;gap:.2rem;background:rgba(20,16,12,.85);border-radius:12px;padding:.25rem;color:#fff}
+.pfx__zoom button{min-width:34px;height:34px;border:0;border-radius:9px;background:rgba(255,255,255,.08);color:#fff;font:600 .9rem Inter,sans-serif;cursor:pointer;padding:0 .5rem}.pfx__zoom output{min-width:48px;text-align:center;font-size:.8rem}
+.pfx__sel{border:2px dashed #ff5a1f;background:rgba(255,90,31,.12)}.pfx__sel i{border-color:#ff5a1f}
+.pfx__chips button{white-space:nowrap}
+.pfx__row{flex-wrap:wrap}.pfx__row .btn{border-radius:999px;white-space:nowrap}
