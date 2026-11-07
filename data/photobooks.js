@@ -30,7 +30,7 @@
       pages: { min: 24, max: 100, step: 2, default: 24 },
       maxPhotosPerPage: 12,
       /* printed hardcover (KES) for each book size; a book between sizes pays the next size up. Edited in Ciel Admin → Website → Prices. */
-      price: { tiers: { 24: 3500, 36: 5300, 48: 7100, 60: 8900, 80: 11900, 100: 14900 }, extraPage: 150 },
+      price: { tiers: { 24: 3500, 36: 5000, 48: 7000, 60: 8500, 80: 9300, 100: 11500 }, extraPage: 150 },
       digital: { base: 1600, includedPages: 24, perExtraPage: 25 },  /* print-ready PDF (KES) */
       pdf: false,    /* print-ready PDFs on sale? (false = printed books only) */
       testPrice: 5,  /* KES: the admin-only "Ciel Test" book (Someone), for trying real payments; kept until deleted in the orders inbox */
