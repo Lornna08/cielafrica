@@ -47,15 +47,16 @@
     root.innerHTML = top('<button class="btn btn--ghost btn--sm" id="rf">Refresh</button>') + '<p class="ao__msg">Loading orders…</p>'; wireTop();
     api('pbk-admin-orders').then(function (r) {
       if (!r.storage) { root.innerHTML = top() + '<div class="ao__card"><p class="ao__msg">Order storage is not connected to this deployment yet.</p></div>'; wireTop(); return; }
-      all = r.orders; drawList();
-      var h = decodeURIComponent((location.hash || '').slice(1)); if (/^PB-[0-9A-Z]{8}$/.test(h)) { history.replaceState(null, '', location.pathname); detail(h); }
+      all = r.orders;
+      var h = decodeURIComponent((location.hash || '').slice(1)); if (/^PB-[0-9A-Z]{8}$/.test(h)) detail(h); else drawList();
     }).catch(function (e) { if (e.status === 401) return login(); root.innerHTML = top() + '<p class="ao__msg">' + esc(e.message) + '</p>'; wireTop(); });
   }
   function drawList() {
+    if (location.hash) history.replaceState(null, '', location.pathname);
     var q = filt.q.toLowerCase(), l = all.filter(function (o) { return (!filt.s || o.status === filt.s) && (!q || (o.ref + ' ' + o.customer.name + ' ' + o.customer.phone + ' ' + o.customer.email).toLowerCase().indexOf(q) >= 0); });
     var paidOnly = all.filter(function (o) { return o.paidAt && !o.test; });
-    root.innerHTML = top('<button class="btn btn--ghost btn--sm" id="rf">Refresh</button>') +
-      '<div class="ao__bar"><input id="aq" type="search" placeholder="Search order, name, phone, email" value="' + esc(filt.q) + '"><select id="as"><option value="">All statuses</option>' + Object.keys(LABEL).map(function (k) { return '<option value="' + k + '"' + (filt.s === k ? ' selected' : '') + '>' + LABEL[k] + '</option>'; }).join('') + '</select></div>' +
+    root.innerHTML = top('<button class="btn btn--ghost btn--sm" id="stg">Storage</button><button class="btn btn--ghost btn--sm" id="rf">Refresh</button>') +
+      '<div id="stgBox"></div><div class="ao__bar"><input id="aq" type="search" placeholder="Search order, name, phone, email" value="' + esc(filt.q) + '"><select id="as"><option value="">All statuses</option>' + Object.keys(LABEL).map(function (k) { return '<option value="' + k + '"' + (filt.s === k ? ' selected' : '') + '>' + LABEL[k] + '</option>'; }).join('') + '</select></div>' +
       '<div class="ao__card ao__tip"><b>Try a real order for KES ' + (BOOK.testPrice || 5) + '</b><span>On this browser, open <a href="/photobooks/someone" target="_blank" rel="noopener">Photo Books → Someone</a> and pick <b>Ciel Test</b> (only you see it while signed in here). Add a few photos, tap <b>Order</b>, pay with M-Pesa, keep the page open while the pages send, then refresh this list. Test orders are marked TEST and stay here until you delete them.</span></div>' +
       '<p class="ao__msg">' + paidOnly.length + ' paid order' + (paidOnly.length === 1 ? '' : 's') + ' · ' + money(paidOnly.reduce(function (s, o) { return s + (o.total || 0); }, 0)) + '</p>' +
       '<div class="ao__list">' + (l.length ? l.map(function (o) {
@@ -63,10 +64,60 @@
         return '<button class="ao__row' + (o.test ? ' is-test' : '') + '" data-ref="' + esc(o.ref) + '"><span><b>' + esc(o.ref) + '</b>' + (o.test ? ' <i class="ao__test">TEST</i>' : '') + '<small>' + when(o.createdAt) + '</small></span><span>' + esc(o.customer.name) + '<small>' + esc(o.customer.phone) + (o.gift ? ' · 🎁 gift' : '') + '</small></span>' +
           '<span>' + (o.items || []).map(function (i) { return esc(i.name) + ' · ' + (i.product === 'print' ? 'Print ×' + i.qty : 'PDF') + ' · ' + i.pages + 'p'; }).join('<br>') + (prints ? '<small>' + (o.files ? Object.keys(o.files).length : 0) + '/' + prints + ' print files received</small>' : '') + '</span><span><b>' + money(o.total) + '</b></span><span>' + badge(o.status) + '</span></button>';
       }).join('') : '<p class="ao__msg">No orders yet.</p>') + '</div>';
-    wireTop(); document.getElementById('rf').onclick = list;
+    wireTop(); document.getElementById('rf').onclick = list; document.getElementById('stg').onclick = storage;
     var aq = document.getElementById('aq'); aq.oninput = function () { filt.q = aq.value; var pos = aq.selectionStart; drawList(); var n = document.getElementById('aq'); n.focus(); n.setSelectionRange(pos, pos); };
     document.getElementById('as').onchange = function () { filt.s = this.value; drawList(); };
     root.querySelectorAll('[data-ref]').forEach(function (b) { b.onclick = function () { detail(b.getAttribute('data-ref')); }; });
+  }
+  /* ---------- storage: delete page files of finished (and test) orders so the store doesn't fill up ---------- */
+  function mb(n) { return n >= 1073741824 ? (Math.round(n / 107374182.4) / 10) + ' GB' : Math.max(n ? 0.1 : 0, Math.round(n / 104857.6) / 10) + ' MB'; }
+  function storage() {
+    var el = document.getElementById('stgBox'); if (!el) return;
+    if (el.innerHTML) { el.innerHTML = ''; return; }
+    el.innerHTML = '<div class="ao__card"><p class="ao__msg">Checking storage…</p></div>';
+    function run(opts) {
+      return api('pbk-admin-storage', opts).then(function (r) {
+        if (opts.run) return r;
+        el.innerHTML = '<div class="ao__card ao__stg"><h2>Storage</h2>' +
+          '<p class="ao__msg">Order files: <b>' + mb(r.orders.bytes) + '</b> (' + r.orders.files + ' files) · Pages uploaded while customers design: <b>' + mb(r.drafts.bytes) + '</b> (' + r.drafts.files + ' files, removed by themselves after 30 days; ' + r.drafts.old + ' older than 7 days)</p>' +
+          '<p class="ao__msg">Free up space by deleting the page files of <b>finished orders</b> (delivered, collected, cancelled, refunded or failed) and <b>test orders</b>. The order record, customer details and cover picture stay.</p>' +
+          '<div class="ao__acts"><select id="stD"><option value="0">Finished any time</option><option value="14">Finished over 14 days ago</option><option value="30" selected>Finished over 30 days ago</option><option value="90">Finished over 90 days ago</option></select>' +
+          '<select id="stW"><option value="print">Print files only (keep previews)</option><option value="all">Print files and previews</option></select>' +
+          '<label class="ao__chk"><input type="checkbox" id="stX" checked> Also pages from books never ordered (over 7 days old)</label></div>' +
+          '<p class="ao__msg" id="stE">' + r.finished.orders + ' order' + (r.finished.orders === 1 ? '' : 's') + ' (' + r.finished.tests + ' test) · about <b>' + mb(r.finished.bytes) + '</b></p>' +
+          '<div class="ao__acts"><button class="btn btn--p btn--sm" id="stGo"' + (r.finished.orders || r.drafts.old ? '' : ' disabled') + '>Delete these files</button><span class="ao__msg" id="stM"></span></div></div>';
+        var D = document.getElementById('stD'), W = document.getElementById('stW');
+        D.value = String(opts.days); W.value = opts.what;
+        D.onchange = W.onchange = function () { run({ days: +D.value, what: W.value }); };
+        document.getElementById('stGo').onclick = function () {
+          var x = document.getElementById('stX').checked;
+          if (!confirm('Delete the ' + (W.value === 'all' ? 'print files and previews' : 'print files') + ' of ' + r.finished.orders + ' order(s)' + (x ? ' and old unordered pages' : '') + '? This can’t be undone.')) return;
+          this.disabled = true; document.getElementById('stM').textContent = 'Deleting…';
+          run({ days: +D.value, what: W.value, drafts: x, run: true }).then(function (z) { el.innerHTML = ''; list(); setTimeout(function () { alert('Deleted ' + z.deleted + ' files (' + mb(z.bytes) + ').'); }, 300); }, function (e) { document.getElementById('stM').textContent = e.message; });
+        };
+      }, function (e) { el.innerHTML = '<div class="ao__card"><p class="ao__msg">' + esc(e.message) + '</p></div>'; });
+    }
+    run({ days: 30, what: 'print' });
+  }
+  /** one order's files: delete them once the book is printed and delivered (or straight away for a test) */
+  function purgeBox(o, r) {
+    var el = document.getElementById('pg'); if (!el) return;
+    var st = r.storage || { files: 0, bytes: 0 }, done = o.test || /^(delivered|ready_collection|cancelled|refunded|payment_failed)$/.test(o.status);
+    var h = '<h2 style="margin-top:1.2rem">Files</h2>';
+    if (o.purged) h += '<p class="ao__msg">' + (o.purged.what === 'all' ? 'Page files and previews' : 'Print files') + ' deleted ' + when(o.purged.at) + ' (' + mb(o.purged.bytes) + ').</p>';
+    if (!st.files) { el.innerHTML = h + '<p class="ao__msg">No page files are stored for this order.</p>'; return; }
+    h += '<p class="ao__msg">' + st.files + ' files · ' + mb(st.bytes) + ' in storage.' + (done ? '' : ' This order isn’t finished yet: keep its files until the book is printed and delivered.') + '</p>' +
+      '<div class="ao__acts"><button class="btn btn--ghost btn--sm" data-pg="print">Delete print files</button><button class="btn btn--ghost btn--sm" data-pg="all">Delete files and previews</button>' + (done ? '' : '<label class="ao__chk"><input type="checkbox" id="pgF"> I’m sure</label>') + '</div><span class="ao__msg" id="pgM"></span>';
+    el.innerHTML = h;
+    el.querySelectorAll('[data-pg]').forEach(function (bt) {
+      bt.onclick = function () {
+        var what = bt.getAttribute('data-pg'), f = document.getElementById('pgF');
+        if (f && !f.checked) { document.getElementById('pgM').textContent = 'Tick “I’m sure” first: this order isn’t finished.'; return; }
+        if (!confirm(what === 'all' ? 'Delete all page files and previews of ' + o.ref + '? The order record and cover picture stay. This can’t be undone.' : 'Delete the print files of ' + o.ref + '? The previews stay, so you can still look at the book. This can’t be undone.')) return;
+        bt.disabled = true;
+        api('pbk-admin-purge', { ref: o.ref, what: what, force: !!(f && f.checked) }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { bt.disabled = false; document.getElementById('pgM').textContent = e.message; });
+      };
+    });
   }
   /* ---------- corrections: let the customer fix their book after ordering ---------- */
   function fixBox(o, r) {
@@ -175,6 +226,7 @@
     }
   }
   function detail(ref) {
+    if (/^PB-[0-9A-Z]{8}$/.test(ref) && location.hash !== '#' + ref) history.replaceState(null, '', location.pathname + '#' + ref);
     root.innerHTML = top() + '<button class="ao__back" id="bk">‹ All orders</button><p class="ao__msg">Loading ' + esc(ref) + '…</p>'; wireTop();
     document.getElementById('bk').onclick = drawList;
     api('pbk-admin-order', undefined, '&ref=' + encodeURIComponent(ref)).then(function (r) {
@@ -189,7 +241,7 @@
         (g ? '<dt>Gift</dt><dd>🎁 For ' + esc(g.to || '—') + (g.phone ? ' · ' + esc(g.phone) : '') + (g.note ? '<br>“' + esc(g.note) + '”' : '') + '</dd>' : '') +
         '<dt>Lines</dt><dd>' + (o.lines || []).map(function (l) { return esc(l.label) + (l.qty > 1 ? ' × ' + l.qty : '') + ' — ' + money(l.amount * (l.qty || 1)); }).join('<br>') + '</dd></dl>' +
         '<h2 style="margin-top:1.2rem">Status</h2><div class="ao__acts"><select id="ss">' + SET.map(function (k) { return '<option value="' + k + '"' + (o.status === k ? ' selected' : '') + '>' + LABEL[k] + '</option>'; }).join('') + '</select></div><textarea id="sn" rows="2" placeholder="Note (optional)" style="margin-top:.4rem"></textarea><label style="display:flex;gap:.4rem;align-items:center;font-size:.86rem;margin-top:.4rem"><input type="checkbox" id="se" checked> Email the customer</label><button class="btn btn--dark btn--sm" id="sb" style="margin-top:.4rem">Update status</button>' +
-        '<div id="fx"></div><div id="pr"></div><ul class="ao__hist">' + (o.history || []).slice().reverse().map(function (h) { return '<li><b>' + esc(LABEL[h.status] || h.status) + '</b> · ' + when(h.at) + (h.note ? ' — ' + esc(h.note) : '') + '</li>'; }).join('') + '</ul></div>' +
+        '<div id="fx"></div><div id="pr"></div><div id="pg"></div><ul class="ao__hist">' + (o.history || []).slice().reverse().map(function (h) { return '<li><b>' + esc(LABEL[h.status] || h.status) + '</b> · ' + when(h.at) + (h.note ? ' — ' + esc(h.note) : '') + '</li>'; }).join('') + '</ul></div>' +
         '<div class="ao__card"><h2>Books</h2>' + (o.items || []).map(function (it) {
           var b = r.books[it.projectId] || { print: [], view: [], spine: [] }, bk = b.book || {}, tr = trim(bk);
           return '<div class="ao__book" data-pid="' + esc(it.projectId) + '"><img data-cov alt=""><div><b>' + esc(it.name) + '</b>' + (b.dir && b.dir !== it.projectId ? ' <span class="ao__b ao__b--fix">Corrected version ' + esc(b.dir.split('-r').pop()) + '</span>' : '') + (b.incoming ? '<span class="ao__msg">Correction ' + b.incoming.round + ' arriving: ' + b.incoming.print + ' of ' + (it.pages + 2) + ' files so far.</span>' : '') + (b.earlier && b.earlier.length ? '<span class="ao__msg">Earlier version' + (b.earlier.length > 1 ? 's' : '') + ' kept: ' + b.earlier.map(function (v) { return '<button class="ao__lnk" data-old="' + esc(v.dir) + '">' + (v.round ? 'correction ' + v.round : 'first version') + '</button>'; }).join(', ') + '</span>' : '') + '<span class="ao__msg">' + (it.product === 'print' ? 'Printed hardcover × ' + it.qty : 'Print-ready PDF (customer downloads it)') + ' · ' + it.pages + ' pages · ' + tr.w / 10 + ' × ' + tr.h / 10 + ' cm' + (tr.h === 297 ? ' (A4)' : '') + '</span>' +
@@ -198,7 +250,7 @@
             (b.view.length ? '<div class="ao__acts"><button class="btn btn--p btn--sm" data-prev>Preview book</button>' + (b.print.length ? '<button class="btn btn--dark btn--sm" data-pdf>Print PDF</button><button class="btn btn--dark btn--sm" data-wrap>Full cover PDF</button><button class="btn btn--ghost btn--sm" data-pages>Show pages</button>' : '') + '</div><div class="ao__pages" data-grid hidden></div><span class="ao__msg" data-msg></span>' : (it.product === 'print' ? '<span class="ao__msg">The pages haven’t arrived yet. They send from the customer’s device after payment.</span>' : '')) + '</div></div>';
         }).join('') + '<p class="ao__msg">Print files: 000 = front cover, then the pages in order, last = back cover, each its own page at ' + ((BOOK.trimW || 210) + 6) + ' × ' + ((BOOK.trimH || 297) + 6) + ' mm (3 mm bleed) at 300 dpi; the PDF’s TrimBox is ' + (BOOK.trimW || 210) + ' × ' + (BOOK.trimH || 297) + ' mm. <b>Full cover</b> is the hardcover case in one piece: wrap · back · hinge · spine · hinge · front · wrap, sized for that book’s page count (numbers from Ciel Admin → Prices → Hardcover case).</p></div></div>';
       wireTop(); document.getElementById('bk').onclick = drawList;
-      fixBox(o, r); printerBox(o, r);
+      fixBox(o, r); printerBox(o, r); purgeBox(o, r);
       var pyok = document.getElementById('pyok'), pyno = document.getElementById('pyno');
       if (pyok) pyok.onclick = function () { if (!confirm('Confirm that ' + money(o.total) + ' (code ' + o.payment.code + ') reached Paybill ' + o.payment.paybill + '?')) return; pyok.disabled = true; api('pbk-admin-confirm', { ref: o.ref, ok: true }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { pyok.disabled = false; alert(e.message); }); };
       if (pyno) pyno.onclick = function () { var note = prompt('Payment not found. A short note for the customer (optional):', ''); if (note === null) return; api('pbk-admin-confirm', { ref: o.ref, ok: false, note: note }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { alert(e.message); }); };
