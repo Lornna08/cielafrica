@@ -202,7 +202,7 @@
           $('#coAv').innerHTML = okay ? '<span class="pill pill--available">' + ICON.ok + 'Available</span>' : a.state === 'registered' || a.state === 'reserved' ? '<span class="pill pill--registered">' + ICON.no + 'Taken</span>' : '<span class="pill pill--unknown">Couldn’t check — try again</span>';
           if (!okay) $('#coMsg').innerHTML = '<div class="dmmsg">' + (a.state === 'registered' || a.state === 'reserved' ? 'Sorry — this name was just taken. Pick another option.' : 'We couldn’t check this name just now. Please try again in a moment.') + '</div>';
           S.ok = okay && j.ordering;
-          if (okay && !j.ordering) $('#coMsg').innerHTML = '<div class="dmmsg dmmsg--info">Domain sales are paused for a moment. Please WhatsApp us on +254 706 549 703.</div>';
+          if (okay && !j.ordering) $('#coMsg').innerHTML = '<div class="dmmsg dmmsg--info">Domain sales are paused for a moment. Please WhatsApp us on +254 117 959 105.</div>';
         }
         $('#coNext').disabled = !S.ok;
       });

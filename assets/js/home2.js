@@ -75,7 +75,7 @@
     var pick = '', note = $('.qb__note'), wa = $('#qbWa'), q = $('#qbQuote');
     var upd = function () {
       var tpl = T[pick] || '', brief = 'Hi Ciel Africa! I’m building: ' + (pick || 'something new') + '.' + (tpl ? ' Your ' + tpl + ' template looks like a good starting point.' : '') + ' Can we talk?';
-      wa.href = 'https://wa.me/254706549703?text=' + encodeURIComponent(brief);
+      wa.href = 'https://wa.me/254117959105?text=' + encodeURIComponent(brief);
       q.href = 'quote.html?' + (tpl ? 'template=' + encodeURIComponent(tpl) + '&' : '') + 'brief=' + encodeURIComponent(brief);
       note.textContent = pick ? (tpl ? 'Good news — ' + tpl + ' is a live template you can start from.' : 'We’ll scope it with you from a blank page.') : '';
     };

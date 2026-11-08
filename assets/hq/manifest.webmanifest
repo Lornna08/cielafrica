@@ -1,13 +1,13 @@
 {
   "name": "Ciel Admin",
   "short_name": "Ciel Admin",
-  "description": "Ciel Africa admin: orders, messages, calendar and tasks.",
+  "description": "Ciel Africa admin: orders, Photo Books, messages, campaigns, reports, calendar and tasks.",
   "id": "/admin",
   "start_url": "/admin#overview",
   "scope": "/admin",
   "display": "standalone",
-  "background_color": "#14110f",
-  "theme_color": "#14110f",
+  "background_color": "#0e0e10",
+  "theme_color": "#0e0e10",
   "icons": [
     {
       "src": "/assets/img/icon-192.png?v=2",
@@ -26,6 +26,68 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Orders",
+      "short_name": "Orders",
+      "url": "/admin#orders",
+      "icons": [
+        {
+          "src": "/assets/img/icon-192.png?v=2",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Photo Books",
+      "short_name": "Photo Books",
+      "url": "/admin#photobooks",
+      "icons": [
+        {
+          "src": "/assets/img/icon-192.png?v=2",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Inbox",
+      "short_name": "Inbox",
+      "url": "/admin#inbox",
+      "icons": [
+        {
+          "src": "/assets/img/icon-192.png?v=2",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Email campaigns",
+      "short_name": "Campaigns",
+      "url": "/admin#campaigns",
+      "icons": [
+        {
+          "src": "/assets/img/icon-192.png?v=2",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Reports & exports",
+      "short_name": "Reports",
+      "url": "/admin#reports",
+      "icons": [
+        {
+          "src": "/assets/img/icon-192.png?v=2",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

@@ -164,7 +164,34 @@
   }
 
   /* ---------- live: check for news every 30 s while open, and when a notification arrives ---------- */
+  /* ---------- always the newest Ciel Admin: when a new version is published, the open app (computer or
+     the phone's home-screen app) picks it up by itself, without closing and reopening it ---------- */
+  var BUILD = null, hiddenAt = 0;
+  /* the version stamps (?v=) of the files admin.html loads itself; scripts added later are ignored */
+  function build(doc) { return [].map.call(doc.querySelectorAll('script[src*="/assets/hq/"],script[src^="/data/"],script[src*="/assets/js/notes"],link[href*="/assets/hq/hq.css"]'), function (x) { return x.getAttribute('src') || x.getAttribute('href'); }).filter(function (u) { return /\?v=/.test(u); }).sort().join('|'); }
+  function busy() { return !!document.querySelector('.drawer,.modal,.hq-frame,.cp,.np') || /^(campaigns|website)$/.test(S.view) || /^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement || {}).tagName || ''); }
+  function checkUpdate() {
+    if (BUILD === null) BUILD = build(document);
+    return fetch('/admin?u=' + Date.now(), { cache: 'no-store', credentials: 'same-origin' }).then(function (r) { return r.ok ? r.text() : ''; }).then(function (h) {
+      if (!h) return; var nb = build(new DOMParser().parseFromString(h, 'text/html'));
+      if (!nb || nb === BUILD) return;
+      var last = 0; try { last = +sessionStorage.getItem('hq_upd_at') || 0; } catch (e) { }
+      if (!busy() && Date.now() - last > 120000) { try { sessionStorage.setItem('hq_updated', '1'); sessionStorage.setItem('hq_upd_at', String(Date.now())); } catch (e) { } location.reload(); return; }
+      if (document.getElementById('hqUpd')) return;
+      var u = document.createElement('button'); u.id = 'hqUpd'; u.className = 'hq-upd'; u.innerHTML = I.ref + '<span>Ciel Admin was updated · tap to load it</span>'; u.onclick = function () { location.reload(); }; document.body.appendChild(u);
+    }).catch(function () { });
+  }
   function live() {
+    BUILD = build(document);
+    try { if (sessionStorage.getItem('hq_updated')) { sessionStorage.removeItem('hq_updated'); setTimeout(function () { toast('Ciel Admin is up to date', 'ok'); }, 800); } } catch (e) { }
+    setInterval(function () { if (!document.hidden) checkUpdate(); }, 180000);
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) { hiddenAt = Date.now(); return; }
+      checkUpdate();
+      /* back in the app after a while: load the latest orders and messages straight away */
+      if (hiddenAt && Date.now() - hiddenAt > 60000) refresh(false, true);
+    });
+    window.addEventListener('pageshow', function (e) { if (e.persisted) { checkUpdate(); refresh(false, true); } });
     function tick() {
       if (document.hidden) return;
       api('/api/hq?route=pulse').then(function (p) {
@@ -261,6 +288,8 @@
   function navs() {
     var c = counts();
     document.getElementById('nav').innerHTML = NAV.map(function (n, i) { return (n[3] ? '<div class="hq-nav__h">' + n[3] + '</div>' : '') + '<a href="#' + n[0] + '" class="' + (S.view === n[0] ? 'is-on' : '') + '">' + n[2] + '<span>' + n[1] + '</span>' + (c[n[0]] ? '<i>' + c[n[0]] + '</i>' : '') + '</a>'; }).join('');
+    /* the number on the app icon: paid orders to handle + new messages */
+    try { var nb = (c.orders || 0) + (c.inbox || 0); if (navigator.setAppBadge) { if (nb) navigator.setAppBadge(nb).catch(function () { }); else navigator.clearAppBadge().catch(function () { }); } } catch (e) { }
     document.getElementById('mnav').innerHTML = NAV.filter(function (n) { return /^(overview|orders|inbox|website|tasks)$/.test(n[0]); }).map(function (n) { return '<a href="#' + n[0] + '" class="' + (S.view === n[0] ? 'is-on' : '') + '">' + n[2] + '<span>' + n[1] + '</span>' + (c[n[0]] ? '<i>' + c[n[0]] + '</i>' : '') + '</a>'; }).join('');
   }
   function body(h) { document.getElementById('body').innerHTML = h; return document.getElementById('body'); }

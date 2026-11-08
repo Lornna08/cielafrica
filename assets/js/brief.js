@@ -254,7 +254,7 @@
   function waLink() {
     var lines = ['Hello Ciel Africa, here is my project brief.', ''];
     GROUPS.forEach(function (g) { var r = g[1].filter(function (k) { return val(k); }).map(function (k) { return '• ' + LABELS[k] + ': ' + val(k); }); if (r.length) { lines.push('*' + g[0] + '*'); lines = lines.concat(r); lines.push(''); } });
-    return 'https://wa.me/254706549703?text=' + encodeURIComponent(lines.join('\n').slice(0, 3500));
+    return 'https://wa.me/254117959105?text=' + encodeURIComponent(lines.join('\n').slice(0, 3500));
   }
 
   /* ---------- context card ---------- */

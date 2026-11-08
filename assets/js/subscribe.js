@@ -26,7 +26,7 @@
     '.csub input::placeholder{color:#8f877d}' +
     '.csub__go{flex:none;height:44px;border:0;border-radius:999px;padding:0 1.35rem;background:linear-gradient(135deg,#ff5a1f,#ff7a2f)!important;color:#fff!important;font:700 .98rem "Space Grotesk",system-ui,sans-serif;letter-spacing:-.01em;cursor:pointer;box-shadow:0 12px 26px -12px rgba(255,90,31,.9);transition:transform .08s,filter .15s;display:inline-flex;align-items:center;gap:.45rem}' +
     '.csub__go:hover{filter:brightness(1.06)}.csub__go:active{transform:translateY(1px)}.csub__go:disabled{opacity:.7;cursor:progress}.csub__go svg{width:17px;height:17px}' +
-    '.csub__ok{display:flex;gap:.6rem;align-items:flex-start;font-size:.84rem;line-height:1.45;color:#b3aa9f;cursor:pointer}.csub__ok input{flex:none;width:18px;height:18px;margin:.05rem 0 0;accent-color:#ff5a1f}.csub__ok a{color:#e9e1d6}' +
+    '.csub__ok{margin:0;padding:0 .4rem;font-size:.8rem;line-height:1.45;color:#a39b91}.csub__ok a{color:#e9e1d6}' +
     '.csub__err{min-height:1.2em;margin:0;font-size:.86rem;color:#ff9a7a}' +
     '.csub__hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;opacity:0}' +
     '.csub__done{display:grid;gap:.6rem;justify-items:start;animation:csubIn .35s ease both}.csub__done i{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#ff5a1f,#ffb04a);box-shadow:0 14px 30px -12px rgba(255,90,31,.9)}.csub__done i svg{width:26px;height:26px;color:#fff}.csub__done b{font:700 1.5rem/1.15 "Space Grotesk",system-ui,sans-serif;letter-spacing:-.02em;color:#fffaf3}.csub__done p{margin:0;color:#c4bbaf;line-height:1.55}' +
@@ -36,7 +36,7 @@
     '@media(max-width:420px){.csub__row{flex-wrap:wrap;border-radius:22px}.csub__row input{flex:1 1 100%}.csub__go{flex:1 1 100%;justify-content:center}}';
   var ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>';
   var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
-  var styled = false, n = 0;
+  var styled = false;
   function style() { if (styled) return; styled = true; var s = document.createElement('style'); s.textContent = CSS; document.head.appendChild(s); }
   function post(route, data) {
     return fetch('/api/hq?route=' + route, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'ciel' }, body: JSON.stringify(data) })
@@ -44,12 +44,12 @@
   }
   function render(el) {
     if (el.getAttribute('data-sub-on')) return; el.setAttribute('data-sub-on', '1'); style();
-    var src = el.getAttribute('data-subscribe') || 'home', c = COPY[src] || COPY.home, id = 'csub' + (++n);
+    var src = el.getAttribute('data-subscribe') || 'home', c = COPY[src] || COPY.home;
     el.innerHTML = '<div class="csub' + (el.hasAttribute('data-light') ? ' csub--light' : '') + '" id="subscribe-' + src + '"><span class="csub__brk" aria-hidden="true">‹</span>' +
       '<div><span class="csub__k"><b>‹</b> ' + c.k + '</span><h2>' + c.h + '</h2><p class="csub__p">' + c.p + '</p><ul class="csub__perks">' + c.perks.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>' +
       '<div class="csub__box"><form class="csub__f" novalidate><input class="csub__nm" name="name" type="text" autocomplete="given-name" placeholder="First name (optional)" maxlength="80" aria-label="First name (optional)">' +
       '<div class="csub__row"><input name="email" type="email" inputmode="email" autocomplete="email" placeholder="Your email address" required aria-label="Email address"><button class="csub__go" type="submit">' + c.btn + ARROW + '</button></div>' +
-      '<label class="csub__ok" for="' + id + '"><input type="checkbox" id="' + id + '" name="consent"> <span>Yes, send me Ciel Africa emails. Unsubscribe in one click, any time. See our <a href="/privacy.html#emails">privacy note</a>.</span></label>' +
+      '<p class="csub__ok">By subscribing you agree to get Ciel Africa emails. Unsubscribe in one click, any time. <a href="/privacy.html#emails">Privacy note</a>.</p>' +
       '<input class="csub__hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">' +
       '<p class="csub__err" role="alert"></p></form></div></div>';
     var f = el.querySelector('form'), box = el.querySelector('.csub__box'), er = el.querySelector('.csub__err'), go = el.querySelector('.csub__go');
@@ -57,7 +57,6 @@
       e.preventDefault(); er.textContent = '';
       var email = f.email.value.trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { er.textContent = 'Enter a valid email address.'; f.email.focus(); return; }
-      if (!f.consent.checked) { er.textContent = 'Tick the box to say you’d like our emails.'; return; }
       go.disabled = true; var label = go.innerHTML; go.textContent = 'Sending…';
       post('subscribe', { email: email, name: f.name.value.trim(), consent: true, source: src === 'page' ? 'other' : src, hp: f.website.value })
         .then(function () {

@@ -55,7 +55,7 @@
       (o.registration ? '<dt>Registered</dt><dd>' + esc((o.registration.registeredAt || '').slice(0, 10)) + '</dd>' + (o.registration.expiresAt ? '<dt>Expires</dt><dd>' + esc(o.registration.expiresAt) + '</dd>' : '') + (o.registration.nameservers && o.registration.nameservers.length ? '<dt>Nameservers</dt><dd>' + o.registration.nameservers.map(esc).join('<br>') + '</dd>' : '') : '') +
       (o.refund.status !== 'none' ? '<dt>Refund</dt><dd>' + esc(refundLabel(o)) + '</dd>' : '') +
       '<dt>Registrant</dt><dd>' + esc(o.customer.name) + '</dd><dt>Email</dt><dd>' + esc(o.customer.email) + '</dd></dl></div>' +
-      '<div class="dmcard"><h2>Need help?</h2><p style="font-size:.92rem">Quote <b>' + esc(o.ref) + '</b> and we’ll find your order straight away.</p><div class="dmlinks" style="margin-top:1rem"><a class="btn btn--dark btn--sm" href="https://wa.me/' + esc(s.whatsapp || '254706549703') + '?text=' + encodeURIComponent('Hi Ciel Africa, about my domain order ' + o.ref) + '" target="_blank" rel="noopener">WhatsApp</a><a class="btn btn--ghost btn--sm" href="mailto:' + esc(s.email || 'hello@cielafrica.com') + '?subject=' + encodeURIComponent('Domain order ' + o.ref) + '">Email us</a></div>' +
+      '<div class="dmcard"><h2>Need help?</h2><p style="font-size:.92rem">Quote <b>' + esc(o.ref) + '</b> and we’ll find your order straight away.</p><div class="dmlinks" style="margin-top:1rem"><a class="btn btn--dark btn--sm" href="https://wa.me/' + esc(s.whatsapp || '254117959105') + '?text=' + encodeURIComponent('Hi Ciel Africa, about my domain order ' + o.ref) + '" target="_blank" rel="noopener">WhatsApp</a><a class="btn btn--ghost btn--sm" href="mailto:' + esc(s.email || 'hello@cielafrica.com') + '?subject=' + encodeURIComponent('Domain order ' + o.ref) + '">Email us</a></div>' +
       '<p style="font-size:.82rem;margin-top:1rem"><a href="/domains/terms" style="text-decoration:underline">Domain terms</a></p></div>';
     root.innerHTML = '<div class="dmop__grid"><div>' + left + '</div><div>' + right + '</div></div>';
     bind();
@@ -79,7 +79,7 @@
     }
     if (o.status === 'awaiting_verification') return '<div class="dmcard"><h2>Order received</h2><p>We’ll email you a payment link for <b>' + esc(o.domain) + '</b> shortly.</p></div>';
     if (o.status !== 'pending_payment') return '';
-    if (!data.ordering) return '<div class="dmcard"><h2>Payment</h2><p>Payments are paused for a moment. Please WhatsApp us on +254 706 549 703.</p></div>';
+    if (!data.ordering) return '<div class="dmcard"><h2>Payment</h2><p>Payments are paused for a moment. Please WhatsApp us on +254 117 959 105.</p></div>';
     var p = o.payment;
     if (p.pending) return '<div class="dmcard"><h2>Waiting for your payment</h2><p>Check your phone and enter your M-Pesa PIN. This page updates on its own once Safaricom confirms the payment — please don’t pay twice.</p><div class="dmlinks"><button class="btn btn--ghost btn--sm" data-refresh>I’ve paid — check now</button></div>' + payMsg + '</div>';
     var mp = data.payments.mpesa, cd = data.payments.card;

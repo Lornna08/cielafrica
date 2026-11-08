@@ -471,7 +471,7 @@
             '<ul class="pk-track__items">' + o.items.map(function (i) { return '<li><b>' + esc(i.name) + '</b><span>' + (i.product === 'digital' ? 'Print-ready PDF' : 'Printed hardcover × ' + i.qty) + ' · ' + i.pages + ' pages</span></li>'; }).join('') + '</ul>' +
             (o.delivery ? '<p class="pk-track__del">' + esc(o.delivery) + '</p>' : '') +
             '<h3>History</h3><ul class="pk-track__hist">' + o.history.slice().reverse().map(function (h) { return '<li><b>' + esc(h.label) + '</b><span>' + when(h.at) + '</span></li>'; }).join('') + '</ul>' +
-            '<p class="pk-track__help">Questions? <a target="_blank" rel="noopener" href="https://wa.me/254706549703?text=' + encodeURIComponent('Hello Ciel Africa, about my photo book order ' + o.ref) + '">WhatsApp us</a> or email hello@cielafrica.com.</p></div>';
+            '<p class="pk-track__help">Questions? <a target="_blank" rel="noopener" href="https://wa.me/254117959105?text=' + encodeURIComponent('Hello Ciel Africa, about my photo book order ' + o.ref) + '">WhatsApp us</a> or email hello@cielafrica.com.</p></div>';
         }, function () { out.innerHTML = '<p class="pk-track__err">Can’t reach Ciel Africa right now. Check your connection and try again.</p>'; });
     }
     f.addEventListener('submit', function (e) { e.preventDefault(); go(false); });
@@ -535,7 +535,7 @@
       fetch('/api/photobooks?route=pbk-track', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'ciel' }, credentials: 'same-origin', body: JSON.stringify({ ref: document.getElementById('obRef').value, contact: document.getElementById('obC').value }) })
         .then(function (r) { return r.json(); }).then(function (j) {
           if (!j.ok) { out.innerHTML = '<p class="pk-track__err">' + esc(j.error || 'We couldn’t find that order.') + '</p>'; return; }
-          var o = j.order, wa = 'https://wa.me/254706549703?text=' + encodeURIComponent('Hello Ciel Africa, I need help with my photo book order ' + o.ref);
+          var o = j.order, wa = 'https://wa.me/254117959105?text=' + encodeURIComponent('Hello Ciel Africa, I need help with my photo book order ' + o.ref);
           var books = (j.books || []).map(function (b) {
             var pages = []; for (var i = 0; i < b.pages; i++) pages.push('<figure><img loading="lazy" draggable="false" src="/api/photobooks?route=pbk-view&t=' + encodeURIComponent(b.v) + '&i=' + i + '" alt="Page ' + (i + 1) + '"><figcaption>' + (i === 0 ? 'Front cover' : i === b.pages - 1 ? 'Back cover' : 'Page ' + i) + '</figcaption></figure>');
             return '<div class="pk-ob__book"><b>' + esc(b.name) + '</b><div class="pk-ob__pages">' + pages.join('') + '</div></div>';
@@ -652,7 +652,7 @@
       fetch('/api/photobooks?route=pbk-mine', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'ciel' }, body: JSON.stringify({ receipts: rc }) }).then(function (r) { return r.json(); }).then(function (j) {
         var os = (j && j.orders) || []; if (!os.length) { wrap.remove(); return; }
         wrap.innerHTML = '<h3>My orders</h3>' + os.map(function (o) {
-          var wa = 'https://wa.me/254706549703?text=' + encodeURIComponent('Hello Ciel Africa, I need help with my photo book order ' + o.ref);
+          var wa = 'https://wa.me/254117959105?text=' + encodeURIComponent('Hello Ciel Africa, I need help with my photo book order ' + o.ref);
           return '<div class="pk-mo__o"><div><b>' + esc(o.ref) + (o.test ? ' <small>(test)</small>' : '') + '</b><span>' + o.items.map(function (i) { return esc(i.name) + ' · ' + (i.product === 'print' ? 'printed' + (i.qty > 1 ? ' ×' + i.qty : '') : 'PDF') + ' · ' + i.pages + ' pages'; }).join('<br>') + '</span><small>Ordered ' + new Date(o.createdAt).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' }) + '</small></div>' +
             '<div class="pk-mo__s"><span class="pk-mo__st' + (/delivered|ready_collection/.test(o.status) ? ' is-done' : /cancel|refund|failed/.test(o.status) ? ' is-off' : '') + '">' + esc(o.fixOpen ? (o.fixSelf ? 'You can still change it (10 min)' : 'Open for your corrections') : o.label) + '</span><a class="btn btn--sm btn--dark" data-go href="' + esc(o.track) + '">Track</a><a class="btn btn--sm btn--ghost" target="_blank" rel="noopener" href="' + wa + '">Help</a></div></div>';
         }).join('');
@@ -686,7 +686,7 @@
     if (fixT && window.PBKShop) {
       var fb = document.createElement('div'); fb.className = 'pk-fix'; fb.innerHTML = '<p>Checking your correction link…</p>'; box.parentNode.insertBefore(fb, box);
       PBKShop.fixOpen(fixT).then(function (r) {
-        var wa = 'https://wa.me/254706549703?text=' + encodeURIComponent('Hello Ciel Africa, about the correction for my photo book order ' + r.ref);
+        var wa = 'https://wa.me/254117959105?text=' + encodeURIComponent('Hello Ciel Africa, about the correction for my photo book order ' + r.ref);
         var note = r.note ? '<p class="pk-fix__note">“' + esc(r.note) + '”</p>' : '';
         var till = '<small>Open until ' + new Date(r.until).toLocaleDateString('en-KE', { day: 'numeric', month: 'long' }) + '.</small>';
         if (!r.pids.length) { fb.innerHTML = '<b>Order ' + esc(r.ref) + '</b><p>We’ve received your corrected book. Thank you! We’ll check it and print it.</p>'; return; }
@@ -722,7 +722,7 @@
             card.classList.add('is-sent');
             var view = BASE + '/my-books?order=' + encodeURIComponent(pu.ref);
             card.querySelectorAll('a[href*="/design?p="]').forEach(function (a2) { a2.setAttribute('href', view); if (a2.classList.contains('btn')) a2.textContent = 'View'; });
-            var acts = card.querySelector('.pk-myb__a'); if (acts) acts.insertAdjacentHTML('beforeend', '<a class="btn btn--sm btn--ghost" target="_blank" rel="noopener" href="https://wa.me/254706549703?text=' + encodeURIComponent('Hello Ciel Africa, I need help with my photo book order ' + pu.ref) + '">Support</a>');
+            var acts = card.querySelector('.pk-myb__a'); if (acts) acts.insertAdjacentHTML('beforeend', '<a class="btn btn--sm btn--ghost" target="_blank" rel="noopener" href="https://wa.me/254117959105?text=' + encodeURIComponent('Hello Ciel Africa, I need help with my photo book order ' + pu.ref) + '">Support</a>');
             var del = card.querySelector('[data-del]'); if (del) del.remove();
             info.insertAdjacentHTML('beforeend', '<br><small>Sent books can’t be edited. Need a change? WhatsApp us.</small>');
           }

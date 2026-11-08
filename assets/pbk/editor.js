@@ -254,7 +254,7 @@
     $('#pe').appendChild(n);
     b.addEventListener('click', function () {
       if (S.p.pages.length !== pu.pages) { toast('Your order is for ' + pu.pages + ' pages. This book has ' + S.p.pages.length + ': add or remove pages first.'); return; }
-      if (pu.fix.until < Date.now()) { toast('The time for changes has passed. WhatsApp us on +254 706 549 703 if you still need a change.'); return; }
+      if (pu.fix.until < Date.now()) { toast('The time for changes has passed. WhatsApp us on +254 117 959 105 if you still need a change.'); return; }
       ask(self ? 'Send your changed book to Ciel Africa now? It replaces the version you sent.' : 'Send the corrected book to Ciel Africa now? After this it can’t be changed again unless we reopen it.', { title: self ? 'Send my changes' : 'Send corrected book', ok: 'Send now', primary: true }).then(function (ok) { if (ok) send(); });
     });
     function send() {
@@ -328,7 +328,7 @@
     /* a printed book whose pages were sent can't be changed any more */
     var sentP = pid && window.PBKShop ? PBKShop.purchases().then(function (l) { var fx = l.filter(function (pu) { return pu.projectId === pid && PBKShop.fixActive(pu); })[0]; if (fx) { FIX = fx; return null; } return l.filter(function (pu) { return pu.projectId === pid && pu.product === 'print' && (pu.done || (pu.sent && pu.sent.print && pu.sent.print.length)); })[0] || null; }, function () { return null; }) : Promise.resolve(null);
     ready = Promise.all([ready, sentP]).then(function (r) {
-      if (r[1]) { var pu = r[1]; main.innerHTML = '<div class="pe-err wrap pe-sentlock"><h2>This book has been sent to print</h2><p>Order <b>' + esc(pu.ref) + '</b> is with Ciel Africa, so it can’t be edited any more. Need a change? Talk to us on WhatsApp and we’ll help.</p><p><a class="btn btn--p" target="_blank" rel="noopener" href="https://wa.me/254706549703?text=' + encodeURIComponent('Hello Ciel Africa, I need help with my photo book order ' + pu.ref) + '">WhatsApp support</a> <a class="btn btn--ghost" data-go href="' + BASE + '/my-books?order=' + encodeURIComponent(pu.ref) + '">View my book</a></p></div>'; throw new Error('sent'); }
+      if (r[1]) { var pu = r[1]; main.innerHTML = '<div class="pe-err wrap pe-sentlock"><h2>This book has been sent to print</h2><p>Order <b>' + esc(pu.ref) + '</b> is with Ciel Africa, so it can’t be edited any more. Need a change? Talk to us on WhatsApp and we’ll help.</p><p><a class="btn btn--p" target="_blank" rel="noopener" href="https://wa.me/254117959105?text=' + encodeURIComponent('Hello Ciel Africa, I need help with my photo book order ' + pu.ref) + '">WhatsApp support</a> <a class="btn btn--ghost" data-go href="' + BASE + '/my-books?order=' + encodeURIComponent(pu.ref) + '">View my book</a></p></div>'; throw new Error('sent'); }
       return r[0];
     });
     ready.then(function (p) {

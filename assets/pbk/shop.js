@@ -12,7 +12,7 @@
   var R = window.PBKR, C = window.PBKCat, ST = window.PBStore;
   var PBK = window.PBK, esc = PBK.esc, BOOK = PBK.BOOK, BASE = PBK.BASE;
   var CFG = (window.CIEL && CIEL.photobooks) || {};
-  var WA = '254706549703';
+  var WA = '254117959105';
   var TRIM = { w: BOOK.trimW || 210, h: BOOK.trimH || 297 }, BLEED = 3, DPI = 300;
   var MANUAL = BOOK.manualPay && BOOK.manualPay.enabled !== false ? BOOK.manualPay : null;
 
@@ -668,7 +668,7 @@
       }).join('') + list.map(function (pu) {
         return '<div class="pkco__book" data-pu="' + esc(pu.id) + '"><img src="' + esc(pu.thumb || '') + '" alt="" draggable="false"><div><b>' + esc(pu.name || 'Photo book') + '</b><span>' + (pu.product === 'print' ? 'Printed hardcover' : 'Print-ready PDF') + ' · ' + pu.pages + ' pages</span>' +
           (pu.product === 'print' ? (cp.uploads ? '<div class="pkco__prog"><i style="width:' + (pu.done ? 100 : 0) + '%"></i></div><p class="pkco__small" data-msg>' + (pu.done ? 'Your pages have reached Ciel Africa. We’ll be in touch when it goes to print.' : 'Sending your pages to Ciel Africa. Keep this page open — it takes a few minutes.') + '</p>' + (pu.done ? '' : '<button class="btn btn--p btn--sm" data-send>Send my book now</button>')
-            : '<p class="pkco__small">Download your print file and send it to us on WhatsApp (+254 706 549 703) or hello@cielafrica.com, quoting ' + esc(ref) + '.</p><button class="btn btn--p btn--sm" data-pdf="bleed">Download print file</button>')
+            : '<p class="pkco__small">Download your print file and send it to us on WhatsApp (+254 117 959 105) or hello@cielafrica.com, quoting ' + esc(ref) + '.</p><button class="btn btn--p btn--sm" data-pdf="bleed">Download print file</button>')
             : '<button class="btn btn--p btn--sm" data-pdf>Download PDF</button><p class="pkco__small" data-msg></p>') + '</div></div>';
       }).join('') + '<div class="pkco__acts"><a class="btn btn--dark" data-go href="' + BASE + '/track?ref=' + encodeURIComponent(ref) + '">Track this order</a><a class="btn btn--ghost" data-go href="' + BASE + '/my-books">My books</a><a class="btn btn--ghost" target="_blank" rel="noopener" href="https://wa.me/' + WA + '?text=' + encodeURIComponent('Hello Ciel Africa, about my photo book order ' + ref) + '">Questions? WhatsApp us</a></div>';
       list.forEach(function (pu) {
@@ -724,7 +724,7 @@
           manualCheck(pend).then(function (s) {
             if (s.status === 'paid') return afterPay(main, ref);
             b.disabled = false; b.textContent = 'Check again';
-            var w = b.parentNode.querySelector('[data-wait]'); if (w) w.textContent = s.status === 'rejected' ? 'We couldn’t match this payment. Check your email or WhatsApp us on +254 706 549 703.' : 'Not confirmed yet. We check Paybill payments by hand: try again in a little while, or watch your email.';
+            var w = b.parentNode.querySelector('[data-wait]'); if (w) w.textContent = s.status === 'rejected' ? 'We couldn’t match this payment. Check your email or WhatsApp us on +254 117 959 105.' : 'Not confirmed yet. We check Paybill payments by hand: try again in a little while, or watch your email.';
           }, function (e) { b.disabled = false; b.textContent = 'Check again'; });
         };
       });

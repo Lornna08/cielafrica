@@ -98,7 +98,7 @@ Notes for cPanel hosting:
 
 - **General email:** info@cielafrica.com
 - **Founder (direct):** lorna@cielafrica.com
-- **Phone:** +254 706 549 703
+- **Phone:** +254 117 959 105
 
 **Team**
 - Lorna Matu — Founder · Lead Developer · Creative Director

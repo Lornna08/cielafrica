@@ -108,4 +108,4 @@ The demo is a faithful front end, not a finished multi-user system. A production
 - audit log, backups and data export
 
 Ciel Africa offers this as a managed cloud deployment, an install on your own server, or a custom build.
-Contact: +254 706 549 703 or `quote.html?template=Reside%20Ke`.
+Contact: +254 117 959 105 or `quote.html?template=Reside%20Ke`.

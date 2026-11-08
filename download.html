@@ -32,7 +32,7 @@ body{background:#faf8f4;color:#17130f;font-family:Inter,system-ui,sans-serif;mar
   var head = root.querySelector('.dl__top').outerHTML;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function size(n) { return n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
-  var help = '<p class="dl__muted">Need help? <a href="mailto:hello@cielafrica.com">hello@cielafrica.com</a> or <a href="https://wa.me/254706549703" target="_blank" rel="noopener">WhatsApp +254 706 549 703</a>.</p>';
+  var help = '<p class="dl__muted">Need help? <a href="mailto:hello@cielafrica.com">hello@cielafrica.com</a> or <a href="https://wa.me/254117959105" target="_blank" rel="noopener">WhatsApp +254 117 959 105</a>.</p>';
   fetch('/api/hq?route=dl-info', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'ciel' }, body: JSON.stringify({ o: o, k: k }) })
     .then(function (r) { return r.json(); }).then(function (j) {
       if (!j.ok) { root.innerHTML = head + '<h1>We couldn’t open this link</h1><div class="dl__card dl__err"><p>' + esc(j.error || 'This link is not valid.') + '</p></div>' + help; return; }

@@ -89,7 +89,7 @@ window.CIEL = window.CIEL || {};
         +'<a href="/templates.html"><span class="cart-go__i" style="--c:#1B2A4A">'+ICO.tpl+'</span><span><b>Templates</b><small>Live sites you can start from</small></span>'+ICO.arr+'</a>'
         +'<a href="/products.html"><span class="cart-go__i" style="--c:#1F9D55">'+ICO.box+'</span><span><b>Products</b><small>Ready-made software</small></span>'+ICO.arr+'</a>'
         +'</div></div>';
-      foot.innerHTML='<a class="cart-help" href="https://wa.me/254706549703?text=Hi%20Ciel%20Africa%2C%20I%20need%20help%20choosing." target="_blank" rel="noopener">Not sure what you need? <b>Ask us on WhatsApp</b></a>';
+      foot.innerHTML='<a class="cart-help" href="https://wa.me/254117959105?text=Hi%20Ciel%20Africa%2C%20I%20need%20help%20choosing." target="_blank" rel="noopener">Not sure what you need? <b>Ask us on WhatsApp</b></a>';
       return;
     }
     body.innerHTML=items.map(function(i){
