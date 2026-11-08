@@ -141,6 +141,7 @@
       alr: ic(P('M20 2v20') + Rc(4, 5, 12, 5) + Rc(9, 14, 7, 5)),
       alt: ic(P('M2 4h20') + Rc(5, 8, 5, 12) + Rc(14, 8, 5, 7)),
       alb: ic(P('M2 20h20') + Rc(5, 4, 5, 12) + Rc(14, 9, 5, 7)),
+      turn: ic(P('M19.4 14.5A7.5 7.5 0 1 1 17.3 6.7L20 9.3M20 4.2v5.1h-5.1')),
       alpc: ic(Rc(3, 3, 18, 18, 2) + Rc(8.5, 8.5, 7, 7, 1) + P('M12 3v3M12 18v3M3 12h3M18 12h3')),
       aldh: ic(P('M4 3v18M20 3v18') + Rc(9, 7, 6, 10, 1)),
       aldv: ic(P('M3 4h18M3 20h18') + Rc(7, 9, 10, 6, 1)),
@@ -388,7 +389,7 @@
       [['cover', I.cover, 'Cover'], ['photos', I.photo, 'Photos'], ['layouts', I.layout, 'Layouts'], ['text', I.text, 'Text'], ['stickers', I.sticker, 'Stickers'], ['colors', I.color, 'Colours']].map(function (b) { return '<button data-panel="' + b[0] + '">' + b[1] + '<span>' + b[2] + '</span></button>'; }).join('') +
       '</nav>' +
       '<aside class="pe-panel" id="pePanel" aria-live="polite"></aside>' +
-      '<main class="pe-stage" id="peStage"><button class="pe-fill" id="peFill" type="button" hidden></button><div class="pe-cvtabs" id="peCvTabs" role="tablist" aria-label="Cover view" hidden><button data-cv="wrap">Whole cover</button><button data-cv="front">Front</button><button data-cv="back">Back</button><button data-cv="spine">Spine</button></div><div class="pe-canvaswrap" id="peWrap"><div class="pe-wraplbl" id="peWrapLbl" hidden><span>Back cover</span><span data-sp>Spine</span><span>Front cover</span></div><canvas id="peCanvas"></canvas><div class="pe-hinge" id="peHinge" title="Spine side"></div><div class="pe-brand" id="peBrand">' + I.lock + '</div><div class="pe-sel" id="peSel" hidden><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i><i data-h="rot" class="pe-roth" title="Drag to turn" aria-label="Turn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"><path d="M19.4 14.5A7.5 7.5 0 1 1 17.3 6.7L20 9.3"/><path d="M20 4.2v5.1h-5.1"/></svg></i></div></div>' +
+      '<main class="pe-stage" id="peStage"><button class="pe-fill" id="peFill" type="button" hidden></button><div class="pe-cvtabs" id="peCvTabs" role="tablist" aria-label="Cover view" hidden><button data-cv="wrap">Whole cover</button><button data-cv="front">Front</button><button data-cv="back">Back</button><button data-cv="spine">Spine</button></div><div class="pe-canvaswrap" id="peWrap"><div class="pe-wraplbl" id="peWrapLbl" hidden><span>Back cover</span><span data-sp>Spine</span><span>Front cover</span></div><canvas id="peCanvas"></canvas><div class="pe-hinge" id="peHinge" title="Spine side"></div><div class="pe-brand" id="peBrand">' + I.lock + '</div><div class="pe-sel" id="peSel" hidden><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i></div><i data-h="rot" class="pe-roth" id="peRot" title="Drag to turn" aria-label="Turn" hidden><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"><path d="M19.4 14.5A7.5 7.5 0 1 1 17.3 6.7L20 9.3"/><path d="M20 4.2v5.1h-5.1"/></svg></i><div class="pe-mg" id="peMg"></div></div>' +
       '<div class="pe-ctx" id="peCtx" hidden></div>' +
       '<div class="pe-mock" id="peMock"><span>Your book</span><div class="pe-rot" id="peRotBox"><div class="pe-rot__b" id="peRot"><canvas class="pe-rot__f"></canvas><canvas class="pe-rot__k"></canvas><canvas class="pe-rot__s"></canvas><i class="pe-rot__p"></i><i class="pe-rot__t"></i><i class="pe-rot__u"></i></div></div><canvas id="peMockC" width="550" height="710" hidden></canvas></div>' +
       '<div class="pe-hint" id="peHint"></div></main>' +
@@ -397,7 +398,7 @@
       '<div class="pe-toast" id="peToast" role="status"></div>' +
       '<input type="file" id="peFile" accept="' + (PH.accept || 'image/*') + '" multiple hidden><input type="file" id="peSFile" accept="image/png,image/webp,image/jpeg" hidden>';
     el$ = { pe: pe, canvas: $('#peCanvas', pe), wrap: $('#peWrap', pe), sel: $('#peSel', pe), ctx: $('#peCtx', pe), panel: $('#pePanel', pe), strip: $('#peStrip', pe), toast: $('#peToast', pe), saved: $('#peSaved', pe), undo: $('#peUndo', pe), redo: $('#peRedo', pe), mock: $('#peMockC', pe), mockBox: $('#peMock', pe), stage: $('#peStage', pe), file: $('#peFile', pe), sfile: $('#peSFile', pe), hint: $('#peHint', pe) };
-    el$.g = el$.canvas.getContext('2d');
+    el$.g = el$.canvas.getContext('2d'); el$.rot = $('#peRot', pe); el$.mg = $('#peMg', pe);
     el$.guides = document.createElement('div'); el$.guides.className = 'pe-guides'; el$.wrap.appendChild(el$.guides);
     el$.msel = document.createElement('div'); el$.msel.className = 'pe-msel'; el$.wrap.appendChild(el$.msel);
     el$.panel.addEventListener('pointerdown', function () { if (el$.pe.classList.contains('is-peek')) { el$.pe.classList.remove('is-peek'); setTimeout(fit, 300); } }, true);
@@ -486,6 +487,8 @@
     g.globalAlpha = .38; g.drawImage(im, rx, ry, rw, rh, dx, dy, dw, dh);
     g.globalAlpha = 1; g.restore();
   }
+  /* the page margin, drawn faintly while something is moved or resized (not on the cover) */
+  function showMg() { var m = el$.mg; if (!m) return; if (isCoverIdx()) { m.style.display = 'none'; return; } var k = S.k; m.style.display = 'block'; m.style.left = (MG + ox()) * k + 'px'; m.style.top = MG * k + 'px'; m.style.width = (W - 2 * MG) * k + 'px'; m.style.height = (H - 2 * MG) * k + 'px'; }
   var rafId;
   function draw() {
     cancelAnimationFrame(rafId);
@@ -575,8 +578,8 @@
   function placeSel() {
     var e = selEl(), s = el$.sel, ms = el$.msel;
     if (ms) ms.innerHTML = '';
-    if (!e) { s.hidden = true; return; }
-    if (S.multi) {
+    if (!e) { s.hidden = true; rotHandle(null); return; }
+    if (S.multi) { rotHandle(null);
       var list = selEls(), u = union(list), k0 = S.k;
       s.hidden = false; s.className = 'pe-sel is-multi'; s.style.transform = '';
       s.style.left = (u.x + ox()) * k0 + 'px'; s.style.top = u.y * k0 + 'px'; s.style.width = u.w * k0 + 'px'; s.style.height = u.h * k0 + 'px';
@@ -588,7 +591,19 @@
     s.style.left = (b.x + ox()) * k + 'px'; s.style.top = b.y * k + 'px'; s.style.width = b.w * k + 'px'; s.style.height = b.h * k + 'px';
     s.className = 'pe-sel' + (S.crop ? ' is-crop' : '') + (e.t === 'text' ? ' is-text' : '') + (e.lock ? ' is-locked' : '');
     s.style.transform = e.rot ? 'rotate(' + e.rot + 'deg)' : '';
+    rotHandle(e);
     ctxPos();
+  }
+  /* the turn handle sits below the item as you see it (above it if there's no room), never off the screen */
+  function rotHandle(e) {
+    var hd = el$.rot; if (!hd) return;
+    if (!e || S.multi || S.crop || e.lock || S.pick || isSpineV()) { hd.hidden = true; return; }
+    var a = abox(e), k = S.k, L = (a.x + ox()) * k, T = a.y * k, Wd = a.w * k, Ht = a.h * k;
+    var st = el$.pe.querySelector('#peStage').getBoundingClientRect(), wr = el$.wrap.getBoundingClientRect();
+    var top = st.top - wr.top + 22, bot = st.bottom - wr.top - 22, lft = st.left - wr.left + 22, rgt = st.right - wr.left - 22;
+    var y = T + Ht + 30; if (y > bot) y = T - 30; if (y < top) y = Math.min(bot, T + Ht - 30);
+    var x = Math.max(lft, Math.min(rgt, L + Wd / 2));
+    hd.hidden = false; hd.style.left = x + 'px'; hd.style.top = y + 'px';
   }
   /* a point in the element's own (unturned) frame, so turned photos are hit where they show */
   function local(e, x, y) { if (!e.rot) return { x: x, y: y }; var b = bounds(e), cx = b.x + b.w / 2, cy = b.y + b.h / 2, r = -e.rot * Math.PI / 180, c = Math.cos(r), sn = Math.sin(r); return { x: cx + (x - cx) * c - (y - cy) * sn, y: cy + (x - cx) * sn + (y - cy) * c }; }
@@ -706,7 +721,7 @@
       var p = pt(ev), dx = p.x - drag.p.x, dy = p.y - drag.p.y, e = drag.e, o = drag.o;
       if (drag.mode === 'move') {
         if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 6) return;
-        if (!drag.moved) el$.pe.classList.add('is-moving');
+        if (!drag.moved) { el$.pe.classList.add('is-moving'); showMg(); }
         drag.moved = true;
         if (drag.many) {
           drag.many.forEach(function (m) { m.e.x = m.o.x + dx; m.e.y = m.o.y + dy; });
@@ -752,7 +767,7 @@
         e.rot = snapRot((o.rot || 0) + ang, ev.shiftKey ? 15 : 0); if (!e.rot) delete e.rot;
         draw(); placeSel(); return;
       } else if (drag.mode === 'resize') {
-        el$.pe.classList.add('is-moving');
+        el$.pe.classList.add('is-moving'); showMg();
         var b0 = drag.b, ax = drag.h.indexOf('w') >= 0 ? b0.x + b0.w : b0.x, ay = drag.h.indexOf('n') >= 0 ? b0.y + b0.h : b0.y;
         var keep = (e.t !== 'photo' && e.t !== 'shape') || ev.shiftKey;
         var nw = Math.abs(p.x - ax), nh = Math.abs(p.y - ay);
@@ -763,7 +778,21 @@
           var r = nw / b0.w;
           if (o.cap) e.cap = Math.max(14, o.cap * r); else e.size = Math.max(14, (o.size || 80) * r);
           e.w = Math.max(60, o.w * r); e.x = fx + (o.x - b0.x) * r; e.y = fy + (o.y - b0.y) * r;
-        } else { e.x = fx; e.y = fy; e.w = nw; e.h = nh; }
+        } else {
+          e.x = fx; e.y = fy; e.w = nw; e.h = nh;
+          /* the edge you're dragging stops on the margin, the page edge, the centre and other items */
+          if (!e.rot && !keep) {
+            var thr = 13 / (S.k || 1), M2 = MG, others2 = (doc().els || []).filter(function (x) { return x !== e; });
+            var xs2 = [0, M2, W / 2, W - M2, W], ys2 = [0, M2, H / 2, H - M2, H];
+            others2.forEach(function (o2) { var bo = abox(o2); xs2.push(bo.x, bo.x + bo.w); ys2.push(bo.y, bo.y + bo.h); });
+            var near = function (v, l) { var r = null; l.forEach(function (c) { if (Math.abs(c - v) <= thr && (r == null || Math.abs(c - v) < Math.abs(r - v))) r = c; }); return r; }, gl = [];
+            if (drag.h.indexOf('w') >= 0) { var sx = near(e.x, xs2); if (sx != null) { e.w += e.x - sx; e.x = sx; gl.push({ v: 1, at: sx, k: sx === M2 || sx === W - M2 ? 'm' : sx === W / 2 ? 'c' : 'e' }); } }
+            else if (drag.h.indexOf('e') >= 0) { var sx2 = near(e.x + e.w, xs2); if (sx2 != null) { e.w = sx2 - e.x; gl.push({ v: 1, at: sx2, k: sx2 === M2 || sx2 === W - M2 ? 'm' : sx2 === W / 2 ? 'c' : 'e' }); } }
+            if (drag.h.indexOf('n') >= 0) { var sy = near(e.y, ys2); if (sy != null) { e.h += e.y - sy; e.y = sy; gl.push({ v: 0, at: sy, k: sy === M2 || sy === H - M2 ? 'm' : sy === H / 2 ? 'c' : 'e' }); } }
+            else if (drag.h.indexOf('s') >= 0) { var sy2 = near(e.y + e.h, ys2); if (sy2 != null) { e.h = sy2 - e.y; gl.push({ v: 0, at: sy2, k: sy2 === M2 || sy2 === H - M2 ? 'm' : sy2 === H / 2 ? 'c' : 'e' }); } }
+            guides(gl);
+          }
+        }
         clampEl(e);
       }
       draw();
@@ -844,7 +873,7 @@
     var fixes = (hist ? '<button data-a="phundo">' + I.undo + '<span>Undo edit</span></button>' : '') + (edited ? '<button data-a="phreset">' + I.reset + '<span>Original</span></button>' : '');
     if (e.t === 'photo') {
       if (S.crop) h = '<label class="pe-zoom">Zoom <input type="range" id="peZoom" min="1" max="4" step="0.01" value="' + ((e.crop && e.crop.z) || 1) + '"></label><button data-a="done" class="pe-done">' + I.check + '<span>Done</span></button>';
-      else h = (e.photo ? '<button data-a="edit-photo" class="pe-hl">' + I.wand + '<span>Edit photo</span></button>' + fixes + '<button data-a="crop">' + I.crop + '<span>Move &amp; zoom</span></button><button data-a="replace">' + I.swap + '<span>Replace</span></button>' : '<button data-a="replace" class="pe-hl">' + I.photo + '<span>Add photo</span></button>') +
+      else h = (e.photo ? '<button data-a="edit-photo" class="pe-hl">' + I.wand + '<span>Edit photo</span></button>' + fixes + '<button data-a="crop">' + I.crop + '<span>Move &amp; zoom</span></button><button data-a="turn">' + I.turn + '<span>Turn</span></button><button data-a="replace">' + I.swap + '<span>Replace</span></button>' : '<button data-a="replace" class="pe-hl">' + I.photo + '<span>Add photo</span></button>') +
         (e.photo ? '<button data-a="clear">' + I.x + '<span>Remove photo</span></button>' : '') + '<button data-a="dup">' + I.dup + '<span>Duplicate</span></button>' + more + style + '<button data-a="fill">' + I.fill + '<span>Fill page</span></button><button data-a="front">' + I.up + '<span>To front</span></button><button data-a="back">' + I.down + '<span>To back</span></button><button data-a="lock">' + I.lockb + '<span>Lock</span></button><button data-a="del" class="pe-del">' + I.trash + '<span>' + (e.photo ? 'Delete' : 'Delete frame') + '</span></button>';
     } else if (e.t === 'shape') {
       h = '<button data-a="color" class="pe-hl">' + I.palette + '<span>Colour</span></button><button data-a="dup">' + I.dup + '<span>Duplicate</span></button><button data-a="align">' + I.align + '<span>Align</span></button>' + more + '<button data-a="front">' + I.up + '<span>To front</span></button><button data-a="back">' + I.down + '<span>To back</span></button><button data-a="lock">' + I.lockb + '<span>Lock</span></button><button data-a="del" class="pe-del">' + I.trash + '<span>Delete</span></button>';
@@ -857,7 +886,7 @@
     /* the most used actions first; the rest behind More */
     if (!S.crop && !S.pick) {
       var tpl = document.createElement('div'); tpl.innerHTML = h;
-      var PRI = ['edit-photo', 'phundo', 'phreset', 'crop', 'replace', 'dup', 'align', 'del', 'edit', 'swap', 'color'];
+      var PRI = ['edit-photo', 'phundo', 'phreset', 'crop', 'turn', 'replace', 'dup', 'align', 'del', 'edit', 'swap', 'color'];
       var kids = [].slice.call(tpl.children), sec = kids.filter(function (x) { return PRI.indexOf(x.getAttribute('data-a')) < 0; });
       if (innerWidth <= 900) { kids.filter(function (x) { return PRI.indexOf(x.getAttribute('data-a')) < 0 && x.getAttribute('data-a') !== 'del'; }).concat(kids.filter(function (x) { return x.getAttribute('data-a') === 'del'; })).forEach(function (x) { tpl.appendChild(x); }); }
       else if (sec.length > 1) {
@@ -885,6 +914,7 @@
       else if (a === 'front') { var d = doc(); d.els.splice(d.els.indexOf(e), 1); d.els.push(e); commit(); draw(); }
       else if (a === 'flip') { e.flip = !e.flip; commit(); draw(); drawThumb(S.cur); }
       else if (a === 'dup') duplicate();
+      else if (a === 'turn') { var r0 = Math.round(((e.rot || 0) + 90) / 90) * 90; r0 = ((r0 % 360) + 540) % 360 - 180; if (r0 === -180) r0 = 180; if (r0) e.rot = r0; else delete e.rot; clampEl(e); commit(); draw(); placeSel(); }
       else if (a === 'copy') copySel();
       else if (a === 'paste') paste();
       else if (a === 'align') { S.alignOpen = true; ctxBar(); }
@@ -1069,7 +1099,8 @@
   }
   function alignBar(bar) {
     var l = selEls(), many = l.length > 1;
-    bar.innerHTML = '<span class="pe-lockmsg">Align ' + (many ? 'to each other' : 'on the page') + '</span>' +
+    var one = !many && l[0] && l[0].t === 'photo' && !isCoverIdx();
+    bar.innerHTML = (one ? '<button data-al="fm">' + I.alpc + '<span>Fit margins</span></button><button data-al="fp">' + I.fill + '<span>Full page</span></button>' : '') +
       [['ch', 'Centre', I.alch], ['cv', 'Middle', I.alcv], ['l', 'Left', I.all], ['r', 'Right', I.alr], ['t', 'Top', I.alt], ['b', 'Bottom', I.alb]].map(function (x) { return '<button data-al="' + x[0] + '">' + x[2] + '<span>' + x[1] + '</span></button>'; }).join('') +
       (many ? '<button data-al="pc">' + I.alpc + '<span>Page centre</span></button>' : '') + (l.length > 2 ? '<button data-al="dh">' + I.aldh + '<span>Space ↔</span></button><button data-al="dv">' + I.aldv + '<span>Space ↕</span></button>' : '') + '<button data-al="x" class="pe-hl">' + I.check + '<span>Done</span></button>';
     bar.hidden = false; ctxPos();
@@ -1077,15 +1108,23 @@
   }
   function align(a) {
     var l = selEls().filter(function (e) { return !e.lock; }); if (!l.length) return;
-    var many = l.length > 1, M = 60, box = many && a !== 'pc' ? union(l) : { x: 0, y: 0, w: W, h: H };
-    function mv(e, nx, ny) { var b = bounds(e); if (nx != null) e.x += nx - b.x; if (ny != null) e.y += ny - b.y; }
+    var many = l.length > 1, M = MG, box = many && a !== 'pc' ? union(l) : { x: 0, y: 0, w: W, h: H };
+    function mv(e, nx, ny) { var b = abox(e); if (nx != null) e.x += nx - b.x; if (ny != null) e.y += ny - b.y; }
+    if (a === 'fm' || a === 'fp') {
+      /* the photo fills the area inside the margins (a turned photo stays turned), or the whole page edge to edge */
+      var e0 = l[0], q = a === 'fm' ? MG : 0, iw = W - 2 * q, ih = H - 2 * q, side = e0.rot && Math.abs(Math.abs(e0.rot) - 90) < 1;
+      if (e0.rot && !side) e0.rot = 0;
+      if (side) { e0.w = ih; e0.h = iw; } else { e0.w = iw; e0.h = ih; }
+      e0.x = (W - e0.w) / 2; e0.y = (H - e0.h) / 2; delete e0.border; if (!e0.rot) delete e0.rot;
+      commit(); draw(); placeSel(); return;
+    }
     if (a === 'pc') { var u = union(l), sx = W / 2 - (u.x + u.w / 2), sy = H / 2 - (u.y + u.h / 2); l.forEach(function (e) { e.x += sx; e.y += sy; }); }
     else if (a === 'dh' || a === 'dv') {
       var hz = a === 'dh', srt = l.slice().sort(function (p, q) { return hz ? bounds(p).x - bounds(q).x : bounds(p).y - bounds(q).y; }), u2 = union(l);
       var tot = srt.reduce(function (n, e) { var b = bounds(e); return n + (hz ? b.w : b.h); }, 0), gap = ((hz ? u2.w : u2.h) - tot) / (srt.length - 1), at = hz ? u2.x : u2.y;
       srt.forEach(function (e) { var b = bounds(e); if (hz) mv(e, at, null); else mv(e, null, at); at += (hz ? b.w : b.h) + gap; });
     } else l.forEach(function (e) {
-      var b = bounds(e), bx = box, pad = many ? 0 : M;
+      var b = abox(e), bx = box, pad = many ? 0 : M;
       if (a === 'l') mv(e, bx.x + pad, null); else if (a === 'r') mv(e, bx.x + bx.w - pad - b.w, null); else if (a === 'ch') mv(e, bx.x + (bx.w - b.w) / 2, null);
       else if (a === 't') mv(e, null, bx.y + pad); else if (a === 'b') mv(e, null, bx.y + bx.h - (many ? 0 : (S.cur < 0 ? H - BRAND_TOP + 20 : M)) - b.h); else if (a === 'cv') mv(e, null, bx.y + (bx.h - b.h) / 2);
     });
@@ -1093,7 +1132,7 @@
   }
   /* dotted guides while dragging: snaps to the page centre, edges, margins and other elements */
   function snapTo(list) {
-    var u = union(list), th = 9 / (S.k || 1), M = 60, others = (doc().els || []).filter(function (x) { return list.indexOf(x) < 0; });
+    var u = union(list), th = 13 / (S.k || 1), M = MG, others = (doc().els || []).filter(function (x) { return list.indexOf(x) < 0; });
     var xs = [[0, 'e'], [M, 'm'], [W / 2, 'c'], [W - M, 'm'], [W, 'e']], ys = [[0, 'e'], [M, 'm'], [H / 2, 'c'], [H - M, 'm'], [H, 'e']];
     others.forEach(function (o) { var b = abox(o); xs.push([b.x, 'o'], [b.x + b.w / 2, 'o'], [b.x + b.w, 'o']); ys.push([b.y, 'o'], [b.y + b.h / 2, 'o'], [b.y + b.h, 'o']); });
     function best(edges, cands) { var r = null; edges.forEach(function (v) { cands.forEach(function (c) { var d0 = c[0] - v; if (Math.abs(d0) <= th && (!r || Math.abs(d0) < Math.abs(r.d))) r = { d: d0, at: c[0], k: c[1] }; }); }); return r; }
@@ -1359,8 +1398,8 @@
         if (cut) added -= cut;
       }
       commit(); S.cur = Math.max(0, Math.min(pages.length - 1, slots[0] || 0)); if (innerWidth < 900) S.panel = null; renderAll(); if (innerWidth < 900) openPanel(null);
-      var left = free.length - placed, emp = pages.filter(blankDoc).length;
-      toast(placed + ' photo' + (placed === 1 ? '' : 's') + ' arranged on ' + Math.min(plan.length, slots.length) + ' page' + (plan.length === 1 ? '' : 's') + (added > 0 ? ', ' + added + ' page' + (added === 1 ? '' : 's') + ' added' : added < 0 ? ', ' + (-added) + ' empty pages taken out' : '') + (left > 0 ? '. ' + left + ' didn’t fit: the book is at ' + BOOK.pages.max + ' pages.' : '. Tap ↶ to undo.') + (emp ? ' ' + emp + ' page' + (emp === 1 ? ' is' : 's are') + ' still empty: a book has at least ' + BOOK.pages.min + ' pages and empty pages print blank, so add more photos to fill them.' : ''));
+      var left = free.length - placed;
+      toast(placed + ' photo' + (placed === 1 ? '' : 's') + ' arranged on ' + Math.min(plan.length, slots.length) + ' page' + (plan.length === 1 ? '' : 's') + (added > 0 ? ', ' + added + ' page' + (added === 1 ? '' : 's') + ' added' : added < 0 ? ', ' + (-added) + ' empty pages taken out' : '') + (left > 0 ? '. ' + left + ' didn’t fit: the book is at ' + BOOK.pages.max + ' pages.' : '. Tap ↶ to undo.'));
     }).catch(function (e) { toast('Couldn’t arrange the photos: ' + ((e && e.message) || 'please try again') + '.'); }).then(function () { S.arranging = false; busy(''); });
   }
   function autofill() { arrange(false); }
@@ -1820,7 +1859,7 @@
   function fillPill() {
     var f = $('#peFill'); if (!f || !S.p) return;
     var empty = S.p.pages.filter(blankDoc).length, n = S.p.pages.length;
-    f.hidden = !empty || !!S.sel || isCoverIdx() || !!document.querySelector('.pe-ask');
+    f.hidden = true; return; /* reminders now come only in the preview and when ordering */
     if (!empty) return;
     f.innerHTML = '<b>' + empty + ' of ' + n + ' pages empty</b><span>' + (n - empty ? 'Empty pages print blank. ' : 'A book has at least ' + BOOK.pages.min + ' pages. ') + '<u>Add photos</u></span>';
   }
@@ -1878,13 +1917,14 @@
   /* ---------------- preview: a real book you can flip ---------------- */
   function preview() {
     select(null); flush();
+    var em = S.p.pages.filter(blankDoc).length, notice = em ? em + ' of your ' + S.p.pages.length + ' pages ' + (em === 1 ? 'is' : 'are') + ' still empty and will print blank. A book has at least ' + BOOK.pages.min + ' pages: add photos to fill them.' : '';
     var t = C.TPL[S.p.tpl], board = S.p.cover.img && t ? t.bg : S.p.cover.bg;
     var list = window.PBKShop ? PBKShop.docs(S.p) : [S.p.cover].concat(S.p.pages);
     var made = [];
     function jpg(doc, px) { return R.toCanvas(doc, px, { photo: photoUrl, empty: 'soft' }).then(function (c) { return new Promise(function (ok) { c.toBlob(function (b) { var u = URL.createObjectURL(b); made.push(u); ok(u); }, 'image/jpeg', 0.86); }); }); }
     var startAt = typeof arguments[0] === 'number' ? arguments[0] : 0;
     PBKFlip.open({
-      title: S.p.name, count: S.p.pages.length, board: board || '#3b2f26', endpaper: '#f3ece0', start: startAt,
+      title: S.p.name, count: S.p.pages.length, board: board || '#3b2f26', endpaper: '#f3ece0', start: startAt, notice: startAt ? '' : notice,
       onEdit: function (pg, at) { go(pg); backToPreview(at); },
       page: function (i) {
         var n = S.p.pages.length;

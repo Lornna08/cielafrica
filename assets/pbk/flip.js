@@ -24,11 +24,13 @@
     /* page height ÷ width: A4 (297 / 210), or what the book was made at */
     var RATIO = o.ratio || 297 / 210;
     dlg.innerHTML = '<div class="pf__in"><header class="pf__h"><b>' + esc(o.title || 'Your book') + '</b><span class="pf__lbl" id="pfLbl">Cover</span><button class="pf__x pf__rot" data-rot aria-label="Turn the book sideways" title="Turn the book sideways">' + I.rot + '<span>Turn</span></button><button class="pf__x" data-x aria-label="Close preview">' + I.x + '<span>Close</span></button></header>' +
+      (o.notice ? '<div class="pf__note" id="pfNote" role="status"><span>' + esc(o.notice) + '</span><button type="button" aria-label="Close">×</button></div>' : '') +
       '<div class="pf__stage" id="pfStage"><button class="pf__nav pf__nav--l" data-p aria-label="Previous page">' + I.l + '</button><div class="pf__book" id="pfBook" style="--board:' + (o.board || '#3b2f26') + '"><div class="pf__board"></div><div class="pf__stack pf__stack--l"></div><div class="pf__stack pf__stack--r"></div><div class="pf__flip" id="pfFlip"></div></div><button class="pf__nav pf__nav--r" data-n aria-label="Next page">' + I.r + '</button><div class="pf__load" id="pfLoad"><span></span></div></div>' +
       '<footer class="pf__f"><button class="pf__btn" data-p>' + I.l + '<span>Back</span></button><input type="range" id="pfR" min="0" max="' + (total - 1) + '" value="0" step="1" aria-label="Go to page"><button class="pf__btn pf__btn--n" data-n><span>Next</span>' + I.r + '</button></footer>' +
       (o.onEdit ? '<div class="pf__edit" id="pfEd"></div>' : '') +
       '<p class="pf__tip" id="pfTip">' + (innerWidth < 760 && innerHeight > innerWidth ? 'Swipe to turn the page. Tap Turn at the top for a bigger book.' : 'Drag a page corner, swipe, or tap the arrows to turn the page.') + '</p></div>';
     dlg.showModal();
+    (function () { var nt = dlg.querySelector('#pfNote'); if (!nt) return; var off = function () { nt.classList.add('is-off'); setTimeout(function () { nt.remove(); }, 300); }; nt.querySelector('button').onclick = off; setTimeout(off, 9000); })();
     var stage = dlg.querySelector('#pfStage'), book = dlg.querySelector('#pfBook'), host = dlg.querySelector('#pfFlip'), lbl = dlg.querySelector('#pfLbl'), range = dlg.querySelector('#pfR');
     function want(i) {
       if (i < 0 || i >= total || urls[i] || pending[i]) return pending[i];

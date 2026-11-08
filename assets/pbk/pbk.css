@@ -1304,10 +1304,14 @@ body.pbk-editing .pk{background:#efeae2}
 .pk-samp__b{display:flex;flex-wrap:wrap;gap:.5rem}.pk-samp__s{flex-basis:100%;margin:0;font-size:.85rem;color:var(--pk-soft)}.pk-samp__s:empty{display:none}
 
 /* turn handle below the selected item (the photo menu sits above it) */
-.pe-sel i.pe-roth{left:50%;bottom:-44px;margin-left:-15px;width:30px;height:30px;display:grid;place-items:center;color:#1b1714;background:#fff;border:0;cursor:grab;box-shadow:0 0 0 1px rgba(27,23,20,.12),0 3px 10px rgba(27,23,20,.22);transition:transform .12s,box-shadow .12s}
-.pe-sel i.pe-roth:hover{box-shadow:0 0 0 1px rgba(255,90,31,.55),0 3px 12px rgba(27,23,20,.26);color:#ff5a1f}
-.pe-sel i.pe-roth:active{cursor:grabbing;transform:scale(.94)}
-@media (pointer:coarse){.pe-sel i.pe-roth{width:36px;height:36px;margin-left:-18px;bottom:-52px}.pe-sel i.pe-roth svg{width:18px;height:18px}}
+.pe-canvaswrap>.pe-roth{position:absolute;z-index:7;width:32px;height:32px;margin:-16px 0 0 -16px;display:grid;place-items:center;border-radius:50%;color:#1b1714;background:#fff;cursor:grab;touch-action:none;box-shadow:0 0 0 1px rgba(27,23,20,.12),0 3px 10px rgba(27,23,20,.22);transition:box-shadow .12s,color .12s}
+.pe-canvaswrap>.pe-roth[hidden]{display:none}
+.pe-canvaswrap>.pe-roth:hover{color:#ff5a1f;box-shadow:0 0 0 1px rgba(255,90,31,.55),0 3px 12px rgba(27,23,20,.26)}
+.pe-canvaswrap>.pe-roth:active{cursor:grabbing}
+@media (pointer:coarse){.pe-canvaswrap>.pe-roth{width:40px;height:40px;margin:-20px 0 0 -20px}.pe-canvaswrap>.pe-roth svg{width:19px;height:19px}}
+/* the page margin, shown while moving or resizing: things stop on it, and on the page edge */
+.pe-mg{position:absolute;display:none;pointer-events:none;z-index:4;border:1px dashed rgba(255,90,31,.65);border-radius:1px}
+.pe:not(.is-moving) .pe-mg{display:none!important}
 
 .pkco__selfb,.pk-myb__fx{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.55rem}
 .pk-myb__fx .btn{flex:1 1 7rem;justify-content:center}
@@ -1322,4 +1326,11 @@ body.pbk-editing .pk{background:#efeae2}
 .pe-fill,.pe-fill b{color:#fff!important;opacity:1!important}
 .pe-fill{top:5px;padding:.34rem .4rem .34rem .8rem}
 .pe-fill u{padding:.2rem .55rem}
-.pe-sel.is-crop i.pe-roth,.pe-sel.is-locked i.pe-roth,.pe-sel.is-multi i.pe-roth{display:none}
+.pe.is-moving .pe-canvaswrap:not(.is-wrap)::after{display:none}
+/* preview: a short note about empty pages, over the book */
+.pf__note{position:absolute;z-index:5;top:62px;left:50%;transform:translateX(-50%);display:flex;align-items:flex-start;gap:.6rem;width:min(520px,calc(100% - 24px));padding:.7rem .6rem .7rem .95rem;border-radius:14px;background:#fff;color:#1b1714;font:500 .86rem/1.4 var(--text,system-ui);box-shadow:0 14px 34px -14px rgba(0,0,0,.6);transition:opacity .25s,transform .25s}
+.pf__note::before{content:"";flex:none;width:8px;height:8px;margin-top:.45rem;border-radius:50%;background:#ff5a1f}
+.pf__note span{flex:1}
+.pf__note button{flex:none;border:0;background:none;font-size:1.25rem;line-height:1;color:#6b625a;cursor:pointer;padding:0 .3rem}
+.pf__note.is-off{opacity:0;transform:translate(-50%,-8px)}
+.pf__in{position:relative}

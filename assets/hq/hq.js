@@ -343,7 +343,7 @@
     var hr = now.getHours(), greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening', urgent = attention.length;
     var b = body(
       '<section class="ovh"><span class="ovh__brk" aria-hidden="true">‹</span><div class="ovh__in"><p class="ovh__k"><b>‹</b> Ciel Admin · ' + now.toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long' }) + '</p>' +
-      '<h1 class="ovh__t">' + greet + ', <em>Lorna.</em></h1>' +
+      '<h1 class="ovh__t">' + greet + ',<br><em>Lorna.</em></h1>' +
       '<p class="ovh__s">' + (urgent ? '<b>' + urgent + ' thing' + (urgent === 1 ? '' : 's') + '</b> need' + (urgent === 1 ? 's' : '') + ' you today' : 'All clear. Nothing is waiting on you') + ' · <b>' + money(rev) + '</b> in ' + now.toLocaleDateString('en-KE', { month: 'long' }) + '</p>' +
       '<div class="ovh__go"><a class="ovh__b ovh__b--p" href="#orders">' + I.orders + '<span>Orders' + (todo.length ? ' · ' + todo.length : '') + '</span></a><a class="ovh__b" href="#photobooks">' + I.book + '<span>Photo Books</span></a><a class="ovh__b" href="#inbox">' + I.inbox + '<span>Inbox' + (newMsgs.length ? ' · ' + newMsgs.length : '') + '</span></a><a class="ovh__b" href="#campaigns">' + I.send + '<span>Campaigns</span></a><a class="ovh__b" href="#reports">' + I.pie + '<span>Reports</span></a></div></div></section>' +
       '<div class="kpis"><div class="card kpi kpi--o"><i class="kpi__i">' + I.card + '</i><span>Revenue this month</span><b>' + money(rev) + '</b><small>' + month.length + ' paid order' + (month.length === 1 ? '' : 's') + ' · tests not counted</small></div>' +

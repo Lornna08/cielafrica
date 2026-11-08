@@ -1057,3 +1057,31 @@ html[data-theme="dark"] #hq .kpi--b{--kc:#7aa2ff}html[data-theme="dark"] #hq .kp
 }
 #hq .hq-side::before{opacity:.25}
 #hq .hq-side::after{display:none}
+
+/* ---------- overview, settled (Nov 2026): the ink header back at a middle size, one accent colour (orange) throughout ---------- */
+.ovh{background:#141210;color:#f6f1e9;border:1px solid rgba(255,255,255,.06);box-shadow:0 18px 44px -30px rgba(20,17,16,.65);padding:clamp(1.35rem,2.6vw,2rem) clamp(1.35rem,2.8vw,2.2rem)}
+.ovh::before{background:radial-gradient(48% 130% at 100% 0%,rgba(255,90,31,.26),transparent 62%),radial-gradient(30% 80% at 78% 120%,rgba(255,150,70,.10),transparent 70%)}
+.ovh__in{display:block}
+.ovh__k{color:#ff9f75;font-size:.7rem;letter-spacing:.16em}.ovh__k b{color:var(--o)}
+.ovh__t{font-size:clamp(1.85rem,3.4vw,2.7rem);line-height:1.02;letter-spacing:-.04em;margin:.6rem 0 .6rem;color:#fffaf3}
+.ovh__t em{color:#ff6a2e}
+.ovh__s{color:#c9c0b4;font-size:.95rem}.ovh__s b{color:#fff}
+.ovh__go{margin-top:1.15rem;justify-content:flex-start;max-width:none}
+.ovh__b{height:36px;padding:0 .9rem;font-size:.82rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);color:#f3ede5}
+.ovh__b:hover{background:rgba(255,255,255,.13)}
+.ovh__b svg{opacity:.85}
+.ovh__b--p{background:var(--o);border-color:var(--o);color:#fff;box-shadow:0 8px 20px -12px rgba(255,90,31,.8)}
+.ovh__b--p:hover{background:var(--o);opacity:1;filter:brightness(1.05)}
+/* KPI cards: same family, orange icons; the money card gets a soft orange wash */
+#hq .kpi__i,#hq .kpi--o .kpi__i{width:34px;height:34px;border-radius:11px;background:color-mix(in srgb,var(--o) 13%,transparent);color:var(--o)}
+#hq .kpi--b,#hq .kpi--y,#hq .kpi--p,#hq .kpi--g,#hq .kpi--o{--kc:var(--o)}
+#hq .kpi--o{background:linear-gradient(135deg,color-mix(in srgb,var(--o) 10%,var(--card)),var(--card) 70%);border-color:color-mix(in srgb,var(--o) 28%,var(--line))}
+#hq .kpi b{font-size:1.75rem}
+#hq .cards3 .tile .ico,#hq .cards3 .tile:nth-child(3n+2) .ico,#hq .cards3 .tile:nth-child(3n) .ico,#hq .tile .ico{background:color-mix(in srgb,var(--o) 13%,transparent);color:var(--o)}
+@media(max-width:900px){
+  .ovh{padding:1.25rem 1.1rem 1.15rem}
+  .ovh__t{font-size:1.95rem;margin:.45rem 0 .45rem}
+  .ovh__s{font-size:.88rem}
+  .ovh__go{margin:.95rem -1.1rem 0;padding:0 1.1rem}
+  #hq .kpi b{font-size:1.4rem}
+}
