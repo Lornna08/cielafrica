@@ -1085,3 +1085,45 @@ html[data-theme="dark"] #hq .kpi--b{--kc:#7aa2ff}html[data-theme="dark"] #hq .kp
   .ovh__go{margin:.95rem -1.1rem 0;padding:0 1.1rem}
   #hq .kpi b{font-size:1.4rem}
 }
+
+/* ---------- Policies ---------- */
+.lg-lead{margin:0 0 1rem;max-width:70ch}
+.lg-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.8rem}
+.lg-item{display:flex;align-items:center;gap:.85rem;padding:1rem 1.1rem;text-decoration:none;color:var(--ink);transition:border-color .15s,transform .15s}
+.lg-item:hover{border-color:var(--o);transform:translateY(-1px)}
+.lg-item span{display:grid;gap:.2rem;min-width:0;flex:1}.lg-item b{font-weight:650}.lg-item small{color:var(--faint);font-size:.78rem}
+.lg-item em{font-style:normal;flex:none}
+.lg-ic{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;flex:none;background:color-mix(in srgb,var(--o) 12%,transparent);color:var(--o)}.lg-ic svg{width:20px;height:20px}
+.lg-note{margin-top:1rem;font-size:.82rem}
+.lg-top{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem}.lg-sp{flex:1}
+.lg-top .b svg{width:15px;height:15px}
+.lg-state{display:flex;align-items:center;gap:.5rem;font-size:.8rem}
+.lg-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.2rem;align-items:start}
+.lg-form{display:grid;gap:.8rem}
+.lg-form .card__b{display:grid;gap:.8rem}
+.lg-help{font-size:.78rem;line-height:1.5}
+.lg-sec{padding:.8rem;display:grid;gap:.6rem}
+.lg-sech{display:flex;align-items:center;gap:.35rem}
+.lg-n{display:grid;place-items:center;flex:none;width:26px;height:26px;border-radius:8px;font-size:.75rem;font-weight:700;background:color-mix(in srgb,var(--o) 12%,transparent);color:var(--o)}
+.lg-h{font-weight:600}
+.lg-sech .b{padding:0;width:32px;height:32px;display:grid;place-items:center;flex:none}.lg-sech .b svg{width:16px;height:16px}
+.lg-b{resize:vertical;line-height:1.5;min-height:80px}
+.lg-add{justify-self:start}
+.lg-prev{position:sticky;top:76px}
+.lg-prevh{display:flex;align-items:baseline;gap:.6rem;margin:0 0 .5rem;font-size:.85rem}
+.lg-paper{background:#FAFAF8;color:#141414;border:1px solid var(--line);border-radius:var(--rad);padding:1.6rem 1.6rem 1rem;max-height:calc(100vh - 140px);overflow:auto;font-family:Inter,system-ui,sans-serif}
+.lg-paper .wrap{padding:0}.lg-paper .crumb{font:600 .7rem "Space Grotesk",sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#FF5A1F}
+.lg-paper h1{font:700 1.9rem/1.05 "Space Grotesk",sans-serif;letter-spacing:-.035em;margin:.5rem 0 .6rem}
+.lg-paper .lead{color:#50504B;font-size:1rem}.lg-paper .pol__date{color:#8C8C86;font-size:.8rem;margin-top:.4rem}
+.lg-paper .sec{margin-top:1.4rem}
+.lg-paper .pol__toc{border:1px solid #E6E5DF;border-radius:12px;padding:.8rem 1rem;background:#fff;margin-bottom:1.2rem}
+.lg-paper .pol__toc b{display:block;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:#8C8C86;margin-bottom:.4rem}
+.lg-paper .pol__toc ol{margin:0;padding-left:1.2rem;font-size:.84rem;line-height:1.7}.lg-paper .pol__toc a{color:#50504B;text-decoration:none}
+.lg-paper h2{font:700 1.15rem "Space Grotesk",sans-serif;letter-spacing:-.02em;margin:1.4rem 0 .5rem}
+.lg-paper p,.lg-paper li{color:#50504B;font-size:.9rem;line-height:1.6}.lg-paper p{margin:0 0 .7rem}.lg-paper ul{margin:0 0 .8rem 1.1rem;padding:0}.lg-paper strong{color:#141414}
+.lg-paper a{color:#E84E14}
+.lg-paper .pol__moreh{font-size:.95rem}.lg-paper .pol__links{display:flex;flex-wrap:wrap;gap:.4rem}.lg-paper .pol__links a{border:1px solid #E6E5DF;border-radius:999px;padding:.3rem .7rem;font-size:.78rem;color:#50504B;text-decoration:none;background:#fff}.lg-paper .pol__links a[aria-current]{background:#141414;color:#fff;border-color:#141414}
+@media(max-width:1100px){.lg-cols{grid-template-columns:minmax(0,1fr)}.lg-prev{position:static}.lg-paper{max-height:none}}
+@media(max-width:600px){.lg-top .b span{display:none}.lg-top .b{flex:none}.lg-state .faint{display:none}}
+.lg-paper .lead{border:0;padding:0;margin:0;background:none;box-shadow:none;border-radius:0}
+.lg-top>a.b{text-decoration:none}
