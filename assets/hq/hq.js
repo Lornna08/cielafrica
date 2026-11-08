@@ -367,13 +367,39 @@
   /* ---------- orders ---------- */
   function orderTable(list, compact) {
     if (!list.length) return '<p class="empty">No orders yet.</p>';
-    return '<table class="tbl"><thead><tr><th>Order</th><th>Customer</th><th class="hide-m">Items</th><th>Total</th><th>Status</th></tr></thead><tbody>' + list.map(function (o) {
+    return '<table class="tbl otbl"><thead><tr><th>Order</th><th>Customer</th><th class="hide-m">Items</th><th>Total</th><th>Status</th></tr></thead><tbody>' + list.map(function (o) {
       var k = KIND[o.kind];
-      return '<tr data-ref="' + esc(o.ref) + '"><td><b>' + esc(o.ref) + '</b>' + (o.test ? ' <span class="chip chip--k">TEST</span>' : '') + '<small><span class="kind"><i style="background:' + k[1] + '"></i>' + k[0] + '</span> · ' + d2(o.at) + '</small></td><td>' + esc(o.customer.name || '—') + '<small>' + esc(o.customer.phone ? '+' + String(o.customer.phone).replace(/^\+/, '') : o.customer.email || '') + '</small></td>' +
+      return '<tr data-ref="' + esc(o.ref) + '"><td><div class="otd">' + thumb(o) + '<div><b>' + esc(o.ref) + '</b>' + (o.test ? ' <span class="chip chip--k">TEST</span>' : '') + '<small><span class="kind"><i style="background:' + k[1] + '"></i>' + k[0] + '</span> · ' + d2(o.at) + '</small></div></div></td><td>' + esc(o.customer.name || '—') + '<small>' + esc(o.customer.phone ? '+' + String(o.customer.phone).replace(/^\+/, '') : o.customer.email || '') + '</small></td>' +
         (compact ? '<td class="hide-m"><small>' + esc((o.summary || '').slice(0, 60)) + '</small></td>' : '<td class="hide-m"><small>' + esc((o.summary || '').slice(0, 90)) + '</small></td>') + '<td><b>' + money(o.total) + '</b></td><td><span class="chip chip--' + tone(o.status) + '">' + esc(o.label) + '</span></td></tr>';
-    }).join('') + '</tbody></table>';
+    }).join('') + '</tbody></table>' +
+      /* phones: one box per order, going down */
+      '<div class="ocards">' + list.map(function (o) {
+        var k = KIND[o.kind], c = o.customer || {}, name = c.name || (o.kind === 'whatsapp' ? 'WhatsApp customer' : 'No name given');
+        var ph = c.phone ? '+' + String(c.phone).replace(/^\+/, '') : c.email || '';
+        return '<a class="ocard" href="#orders/' + esc(o.ref) + '" data-ref="' + esc(o.ref) + '">' + thumb(o) +
+          '<span class="ocard__m"><span class="ocard__t"><b>' + esc(name) + '</b>' + (o.total ? '<b class="ocard__amt">' + money(o.total) + '</b>' : '') + '</span>' +
+          '<span class="ocard__s"><span class="kind"><i style="background:' + k[1] + '"></i>' + k[0] + '</span> · ' + esc(o.ref) + ' · ' + d2(o.at) + '</span>' +
+          (o.summary ? '<span class="ocard__x">' + esc(o.summary.slice(0, 90)) + '</span>' : '') +
+          '<span class="ocard__f"><span class="chip chip--' + tone(o.status) + '">' + esc(o.label) + '</span>' + (o.test ? '<span class="chip chip--k">TEST</span>' : '') + (ph ? '<span class="ocard__ph">' + esc(ph) + '</span>' : '') + '</span></span></a>';
+      }).join('') + '</div>';
   }
-  function bindOrderRows(el) { el.querySelectorAll('tr[data-ref]').forEach(function (tr) { tr.onclick = function () { location.hash = '#orders/' + tr.getAttribute('data-ref'); }; }); }
+  /* the book's front cover for photo book orders (an icon for everything else, or while it loads) */
+  var K_IC = { photobook: 'book', shop: 'box', domain: 'globe', whatsapp: 'wa', invoice: 'pen' };
+  function thumb(o) {
+    var it = o.kind === 'photobook' && o.raw && (o.raw.items || [])[0], f = function (p) { return '/api/photobooks?route=pbk-admin-file&path=' + encodeURIComponent('orders/' + o.ref + '/' + p); }, src = '', alt = '';
+    if (o.kind === 'photobook' && /^PB-[0-9A-Z]{8}$/.test(o.ref)) {
+      src = f('cover.jpg'); /* saved with every order and kept when page files are cleaned up */
+      if (it && /^[A-Za-z0-9_-]{1,40}$/.test(it.projectId || '') && !(o.raw.purged && o.raw.purged.what === 'all')) alt = f(it.projectId + '/view/000.jpg');
+    }
+    return '<span class="othumb othumb--' + o.kind + '">' + (I[K_IC[o.kind]] || I.orders) + (src ? '<img loading="lazy" alt="" src="' + src + '"' + (alt ? ' data-alt="' + alt + '"' : '') + '>' : '') + '</span>';
+  }
+  function bindOrderRows(el) {
+    el.querySelectorAll('tr[data-ref]').forEach(function (tr) { tr.onclick = function () { location.hash = '#orders/' + tr.getAttribute('data-ref'); }; });
+    el.querySelectorAll('.othumb img').forEach(function (im) {
+      var gone = function () { var a = im.getAttribute('data-alt'); if (a) { im.removeAttribute('data-alt'); im.src = a; } else im.remove(); };
+      im.addEventListener('error', gone); im.addEventListener('load', function () { if (im.parentNode) im.parentNode.classList.add('is-img'); });
+    });
+  }
   function orders() {
     var f = S.filt, q = f.q.toLowerCase();
     var list = S.orders.filter(function (o) {

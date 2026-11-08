@@ -453,7 +453,7 @@
   /* ---------------- canvas & stage ---------------- */
   var dpr = Math.min(2, window.devicePixelRatio || 1);
   function fit() {
-    var st = el$.stage; if (!st) return;
+    var st = el$.stage; if (!st || !st.isConnected) return; /* the editor was closed (e.g. went to checkout) */
     var pad = innerWidth < 700 ? 18 : 40;
     var wrapV = isWrap(), cov = isCoverIdx(), TW = wrapV ? 2 * W + midU() : W;
     var mk = cov && innerWidth >= 900 ? 210 : 0, mob = cov && wrapV && innerWidth < 900 ? 150 : 0;

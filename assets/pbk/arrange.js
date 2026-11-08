@@ -176,7 +176,9 @@
   }
 
   /* ---------- 3. pages ---------- */
-  var PREF = { wide: 0.05, one: 0.06, full: 0.22, land: 0.02, square: 0.05, polaroid: 0.14, twov: 0, twost: 0.03, twost2: 0.04, collage: 0.16, bigsmall: 0.3, fullduo: 0.32, three: 0, threev: 0.2, threel: 0.02, threep: 0.06, four: 0.1, fourl: 0.08, five: 0.12, six: 0.18 };
+  /* Overlapping layouts (staggered, collage) are left out on purpose: arranged pages keep clean, even margins.
+     They are still in the Layouts panel for anyone who wants them. */
+  var PREF = { wide: 0.05, one: 0.06, full: 0.22, land: 0.02, square: 0.05, polaroid: 0.14, twov: 0, twoh: 0.04, twop: 0.03, lp: 0.08, bigsmall: 0.3, fullduo: 0.32, three: 0, threev: 0.2, threel: 0.02, threep: 0.06, four: 0.1, fourl: 0.08, five: 0.12, six: 0.18 };
   function perms(n) { if (n <= 1) return [[0]]; var out = []; perms(n - 1).forEach(function (p) { for (var i = 0; i <= p.length; i++) { var q = p.slice(); q.splice(i, 0, n - 1); out.push(q); } }); return out; }
   var PERM = [null, perms(1), perms(2), perms(3), perms(4)];
   /** how well a set of photos fits a layout: lower is better. Returns {cost, order} (order[f] = index of the photo in frame f) */
