@@ -996,3 +996,15 @@ html[data-theme="dark"] .pka__in{background:#0f0f12;color:#ededef;border-color:#
 .rv__x{font-size:.95rem;line-height:1.55;margin:0;max-width:70ch}
 .rv__f{font-size:.8rem;color:var(--soft)}.rv__f a{color:var(--o)}
 .rv-set{gap:.5rem}
+/* send an invoice / receipt */
+.doc-modal{width:min(1040px,100%)!important}
+.doc-g{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,400px);gap:1rem;align-items:start}
+.doc-g .doc-pv{height:min(68vh,660px)}
+.doc-send{display:grid;gap:.8rem}
+.doc-send .tabs button{display:inline-flex;align-items:center;gap:.35rem}.doc-send .tabs svg{width:15px;height:15px}
+.doc-p{display:grid;gap:.7rem}.doc-p[hidden]{display:none}
+.doc-p textarea{line-height:1.5}
+.doc-p>.b{justify-self:start}
+.doc-att{display:inline-flex;align-items:center;gap:.4rem;font-size:.84rem;font-weight:600;color:var(--o);cursor:pointer;justify-self:start}.doc-att svg{width:15px;height:15px}
+.doc-atl{display:flex;flex-wrap:wrap;gap:.35rem}.doc-atl:empty{display:none}
+@media(max-width:860px){.doc-g{grid-template-columns:minmax(0,1fr)}.doc-g .doc-pv{height:150px}.doc-p>.b{justify-self:stretch;justify-content:center}}
