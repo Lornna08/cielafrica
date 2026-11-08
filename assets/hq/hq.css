@@ -1008,3 +1008,52 @@ html[data-theme="dark"] .pka__in{background:#0f0f12;color:#ededef;border-color:#
 .doc-att{display:inline-flex;align-items:center;gap:.4rem;font-size:.84rem;font-weight:600;color:var(--o);cursor:pointer;justify-self:start}.doc-att svg{width:15px;height:15px}
 .doc-atl{display:flex;flex-wrap:wrap;gap:.35rem}.doc-atl:empty{display:none}
 @media(max-width:860px){.doc-g{grid-template-columns:minmax(0,1fr)}.doc-g .doc-pv{height:150px}.doc-p>.b{justify-self:stretch;justify-content:center}}
+
+/* ---------- calmer overview (Nov 2026): fewer colours, a compact header ---------- */
+.ovh{background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:var(--sh);padding:1.1rem 1.35rem 1.15rem;border-radius:var(--rad)}
+.ovh::before{background:radial-gradient(38% 160% at 100% 0%,rgba(255,90,31,.06),transparent 70%)}
+.ovh::after,.ovh__brk{display:none}
+.ovh__in{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:1.5rem;align-items:center}
+.ovh__k,.ovh__t,.ovh__s{grid-column:1}
+.ovh__k{color:var(--faint);font-size:.66rem;letter-spacing:.14em}.ovh__k b{color:var(--o);font-size:.95rem}
+.ovh__t{font-size:clamp(1.35rem,2.3vw,1.8rem);line-height:1.1;letter-spacing:-.035em;margin:.3rem 0 .2rem;color:var(--ink)}
+.ovh__t em{background:none;-webkit-background-clip:border-box;background-clip:border-box;color:var(--o)}
+.ovh__s{color:var(--soft);font-size:.88rem}.ovh__s b{color:var(--ink);font-weight:650}
+.ovh__go{grid-column:2;grid-row:1/span 3;margin:0;justify-content:flex-end;gap:.4rem;max-width:560px}
+.ovh__b{height:34px;padding:0 .8rem;font-size:.8rem;font-weight:600;background:transparent;border:1px solid var(--line);color:var(--ink);-webkit-backdrop-filter:none;backdrop-filter:none}
+.ovh__b:hover{background:var(--side2)}
+.ovh__b svg{width:15px;height:15px;opacity:.75}
+.ovh__b--p{background:var(--ink);border-color:var(--ink);color:var(--card);box-shadow:none}
+.ovh__b--p:hover{background:var(--ink);filter:none;opacity:.9}.ovh__b--p svg{opacity:1}
+/* KPI cards: one neutral card style, colour only on a small tinted icon */
+#hq .kpi::before,#hq .kpi::after{display:none}
+#hq .kpi,#hq .kpi--o{background:var(--card);border:1px solid var(--line);color:var(--ink);box-shadow:var(--sh)}
+#hq .kpi--o span,#hq .kpi span{color:var(--soft)}
+#hq .kpi--o small,#hq .kpi small{color:var(--faint)}
+#hq .kpi b{font-size:1.6rem}
+#hq .kpi__i,#hq .kpi--o .kpi__i{width:32px;height:32px;border-radius:10px;margin-bottom:.35rem;background:color-mix(in srgb,var(--kc,#ff5a1f) 12%,transparent);color:var(--kc,#ff5a1f);box-shadow:none}
+#hq .kpi__i svg{width:17px;height:17px}
+#hq .kpi--o{--kc:#e4561d}#hq .kpi--b{--kc:#2f5fd0}#hq .kpi--y{--kc:#b7790f}#hq .kpi--p{--kc:#6a3fd1}#hq .kpi--g{--kc:#15803d}
+html[data-theme="dark"] #hq .kpi--b{--kc:#7aa2ff}html[data-theme="dark"] #hq .kpi--y{--kc:#f5c451}html[data-theme="dark"] #hq .kpi--p{--kc:#b59aff}html[data-theme="dark"] #hq .kpi--o{--kc:#ff7a45}
+/* sidebar, buttons and tiles: orange as an accent, not a fill */
+#hq .hq-nav a.is-on{background:rgba(255,255,255,.08);color:#fff;box-shadow:none;font-weight:600}
+#hq .hq-nav a.is-on svg{color:var(--o)}
+#hq .hq-nav a.is-on i{background:var(--o);color:#fff}
+#hq .b--p{background:var(--o);box-shadow:none}#hq .b--p:hover{background:var(--o);filter:brightness(.96)}
+#hq .tile .ico{background:var(--o2);color:var(--o);box-shadow:none}
+#hq .cards3 .tile:nth-child(3n+2) .ico{background:var(--b2);color:var(--b);box-shadow:none}
+#hq .cards3 .tile:nth-child(3n) .ico{background:var(--p2);color:var(--p);box-shadow:none}
+@media(max-width:900px){
+  #hq .hq-top::after{display:none}
+  .ovh{padding:.9rem 1rem 1rem;border-radius:16px}
+  .ovh__in{grid-template-columns:minmax(0,1fr)}
+  .ovh__t{font-size:1.4rem}
+  .ovh__s{font-size:.84rem}
+  .ovh__go{grid-column:1;grid-row:auto;justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;margin:.75rem -1rem 0;padding:0 1rem;max-width:none;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .ovh__go::-webkit-scrollbar{display:none}
+  .ovh__b{height:34px;padding:0 .75rem;font-size:.8rem;flex:none}
+  #hq .kpi b{font-size:1.3rem}
+  #hq .kpi__i,#hq .kpi--o .kpi__i{width:28px;height:28px;border-radius:9px}
+}
+#hq .hq-side::before{opacity:.25}
+#hq .hq-side::after{display:none}

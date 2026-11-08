@@ -15,8 +15,19 @@
   var KY = H / (R.LEGACY_H || 1600);
   function ay(v) { return v * KY; }
 
+  /* one photo alone on a page fills the page inside the same margin every layout uses (90 units ≈ 16 mm);
+     a landscape photo is turned a quarter turn so it fills the page too, and the photo is zoomed to fill its frame */
+  var MG = 90;
+  function soloRect(ar) {
+    if (ar >= 1.12) { var w = H - 2 * MG, h = W - 2 * MG; return { x: (W - w) / 2, y: (H - h) / 2, w: w, h: h, rot: -90 }; }
+    return { x: MG, y: MG, w: W - 2 * MG, h: H - 2 * MG, rot: 0 };
+  }
+  function photoAr(id) { var m = S.photos[id] || {}; return m.w && m.h ? m.w / m.h : 4 / 3; }
+  function setSolo(e, ar) { var r = soloRect(ar); e.x = r.x; e.y = r.y; e.w = r.w; e.h = r.h; if (r.rot) e.rot = r.rot; else delete e.rot; }
+  /* the frame is the page's single "solo" frame (either way round), so a new photo in it can take the solo shape */
+  function isSoloFrame(e) { var a = soloRect(1), b = soloRect(2); return [a, b].some(function (r) { return Math.abs(e.x - r.x) < 6 && Math.abs(e.y - r.y) < 6 && Math.abs(e.w - r.w) < 6 && Math.abs(e.h - r.h) < 6; }); }
   var LAYOUTS = {
-    one: { n: 'One photo', f: [[90, 90, 1020, H - 270]] },
+    one: { n: 'One photo', f: [[MG, MG, W - 2 * MG, H - 2 * MG]] },
     full: { n: 'Full page', f: [[0, 0, 1200, H]] },
     land: { n: 'Landscape', f: [[90, ay(420) + 40, 1020, 765]] },
     square: { n: 'Square', f: [[150, ay(260) + 30, 900, 900]] },
@@ -108,7 +119,7 @@
       dup: ic(Rc(8, 8, 13, 13, 2) + P('M4 16V5a1 1 0 0 1 1-1h11')),
       copy: ic(Rc(8, 2, 8, 4, 1) + P('M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2')),
       paste: ic(Rc(8, 2, 8, 4, 1) + P('M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M9 14l2 2 4-4')),
-      align: ic(P('M12 2v20') + Rc(5, 6, 14, 4) + Rc(8, 14, 8, 4)),
+      align: ic(P('M4 8.5V5a1 1 0 0 1 1-1h3.5M15.5 4H19a1 1 0 0 1 1 1v3.5M20 15.5V19a1 1 0 0 1-1 1h-3.5M8.5 20H5a1 1 0 0 1-1-1v-3.5') + Rc(9, 9, 6, 6, 1.4)),
       selmore: ic(P('M4 3l6.5 17 2.4-6.6L19.5 11zM18 16v6M15 19h6')),
       brush: ic(P('M18.4 2.6a2.1 2.1 0 0 1 3 3L12 15l-3-3zM7.1 14.1c-1.7 0-3.1 1.4-3.1 3.1 0 1.2-.9 1.9-2 1.9 1 1.2 2.6 1.9 4.1 1.9 2.3 0 4-1.8 4-4 0-1.6-1.4-2.9-3-2.9z')),
       fill: ic(P('M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3')),
@@ -276,7 +287,7 @@
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden' && document.body.classList.contains('pbk-editing')) flush(); });
   window.addEventListener('pagehide', function () { if (document.body.classList.contains('pbk-editing')) flush(); });
   function snap() { return JSON.stringify({ cover: S.p.cover, pages: S.p.pages, back: S.p.back || null, spine: S.p.spine || null }); }
-  function commit() { if (S.p && S.cur != null) drawThumb(S.cur); S.undo.push(S.last); if (S.undo.length > 60) S.undo.shift(); S.redo = []; S.last = snap(); save(); updUndo(); }
+  function commit() { if (S.p && S.cur != null) drawThumb(S.cur); setTimeout(fillPill, 0); S.undo.push(S.last); if (S.undo.length > 60) S.undo.shift(); S.redo = []; S.last = snap(); save(); updUndo(); }
   function restore(js) { var o = JSON.parse(js); S.p.cover = o.cover; S.p.pages = o.pages; if (o.back) S.p.back = o.back; else delete S.p.back; if (o.spine) S.p.spine = o.spine; else delete S.p.spine; S.last = js; if (S.cur > S.p.pages.length) S.cur = S.p.pages.length; S.sel = null; save(); updUndo(); renderAll(); }
   function undo() { if (!S.undo.length) return; S.redo.push(S.last); restore(S.undo.pop()); }
   function redo() { if (!S.redo.length) return; S.undo.push(S.last); restore(S.redo.pop()); }
@@ -377,7 +388,7 @@
       [['cover', I.cover, 'Cover'], ['photos', I.photo, 'Photos'], ['layouts', I.layout, 'Layouts'], ['text', I.text, 'Text'], ['stickers', I.sticker, 'Stickers'], ['colors', I.color, 'Colours']].map(function (b) { return '<button data-panel="' + b[0] + '">' + b[1] + '<span>' + b[2] + '</span></button>'; }).join('') +
       '</nav>' +
       '<aside class="pe-panel" id="pePanel" aria-live="polite"></aside>' +
-      '<main class="pe-stage" id="peStage"><div class="pe-cvtabs" id="peCvTabs" role="tablist" aria-label="Cover view" hidden><button data-cv="wrap">Whole cover</button><button data-cv="front">Front</button><button data-cv="back">Back</button><button data-cv="spine">Spine</button></div><div class="pe-canvaswrap" id="peWrap"><div class="pe-wraplbl" id="peWrapLbl" hidden><span>Back cover</span><span data-sp>Spine</span><span>Front cover</span></div><canvas id="peCanvas"></canvas><div class="pe-hinge" id="peHinge" title="Spine side"></div><div class="pe-brand" id="peBrand">' + I.lock + '</div><div class="pe-sel" id="peSel" hidden><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i><b class="pe-rotl" aria-hidden="true"></b><i data-h="rot" class="pe-roth" title="Turn" aria-label="Turn"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></i></div></div>' +
+      '<main class="pe-stage" id="peStage"><button class="pe-fill" id="peFill" type="button" hidden></button><div class="pe-cvtabs" id="peCvTabs" role="tablist" aria-label="Cover view" hidden><button data-cv="wrap">Whole cover</button><button data-cv="front">Front</button><button data-cv="back">Back</button><button data-cv="spine">Spine</button></div><div class="pe-canvaswrap" id="peWrap"><div class="pe-wraplbl" id="peWrapLbl" hidden><span>Back cover</span><span data-sp>Spine</span><span>Front cover</span></div><canvas id="peCanvas"></canvas><div class="pe-hinge" id="peHinge" title="Spine side"></div><div class="pe-brand" id="peBrand">' + I.lock + '</div><div class="pe-sel" id="peSel" hidden><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i><i data-h="rot" class="pe-roth" title="Drag to turn" aria-label="Turn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"><path d="M19.4 14.5A7.5 7.5 0 1 1 17.3 6.7L20 9.3"/><path d="M20 4.2v5.1h-5.1"/></svg></i></div></div>' +
       '<div class="pe-ctx" id="peCtx" hidden></div>' +
       '<div class="pe-mock" id="peMock"><span>Your book</span><div class="pe-rot" id="peRotBox"><div class="pe-rot__b" id="peRot"><canvas class="pe-rot__f"></canvas><canvas class="pe-rot__k"></canvas><canvas class="pe-rot__s"></canvas><i class="pe-rot__p"></i><i class="pe-rot__t"></i><i class="pe-rot__u"></i></div></div><canvas id="peMockC" width="550" height="710" hidden></canvas></div>' +
       '<div class="pe-hint" id="peHint"></div></main>' +
@@ -461,6 +472,20 @@
     el$.canvas.style.width = w + 'px'; el$.canvas.style.height = h + 'px';
     draw();
   }
+  /* while moving a photo inside its frame: the parts outside the frame show faintly, so you can see what you're placing */
+  function ghost(g, e, k) {
+    var im = R.ready(photoUrl(e.photo)); if (!im) return;
+    var IW = im.naturalWidth || im.width, IH = im.naturalHeight || im.height, rx = 0, ry = 0, rw = IW, rh = IH;
+    if (e.rect && e.rect.w > 0) { rx = e.rect.x * IW; ry = e.rect.y * IH; rw = e.rect.w * IW; rh = e.rect.h * IH; }
+    var z = Math.max(1, (e.crop && e.crop.z) || 1), s = Math.max(e.w / rw, e.h / rh) * z, dw = rw * s, dh = rh * s;
+    var cx = e.crop && e.crop.cx != null ? e.crop.cx : .5, cy = e.crop && e.crop.cy != null ? e.crop.cy : .5;
+    var dx = Math.min(e.x, Math.max(e.x + e.w - dw, e.x + e.w / 2 - cx * dw)), dy = Math.min(e.y, Math.max(e.y + e.h - dh, e.y + e.h / 2 - cy * dh));
+    g.save(); g.setTransform(k, 0, 0, k, 0, 0);
+    if (e.rot) { var mx = e.x + e.w / 2, my = e.y + e.h / 2; g.translate(mx, my); g.rotate(e.rot * Math.PI / 180); g.translate(-mx, -my); }
+    g.beginPath(); g.rect(dx - 2, dy - 2, dw + 4, dh + 4); g.rect(e.x + e.w, e.y, -e.w, e.h); g.clip('evenodd');
+    g.globalAlpha = .38; g.drawImage(im, rx, ry, rw, rh, dx, dy, dw, dh);
+    g.globalAlpha = 1; g.restore();
+  }
   var rafId;
   function draw() {
     cancelAnimationFrame(rafId);
@@ -500,6 +525,7 @@
         g.setTransform(1, 0, 0, 1, 0, 0);
         g.clearRect(0, 0, el$.canvas.width, el$.canvas.height);
         R.draw(g, d, { scale: S.k * dpr, photo: photoUrl, empty: 'editor' });
+        var ce = S.crop && selEl(); if (ce && ce.t === 'photo' && ce.photo) ghost(g, ce, S.k * dpr);
         placeSel();
       });
       var isCover = S.cur < 0;
@@ -564,9 +590,13 @@
     s.style.transform = e.rot ? 'rotate(' + e.rot + 'deg)' : '';
     ctxPos();
   }
+  /* a point in the element's own (unturned) frame, so turned photos are hit where they show */
+  function local(e, x, y) { if (!e.rot) return { x: x, y: y }; var b = bounds(e), cx = b.x + b.w / 2, cy = b.y + b.h / 2, r = -e.rot * Math.PI / 180, c = Math.cos(r), sn = Math.sin(r); return { x: cx + (x - cx) * c - (y - cy) * sn, y: cy + (x - cx) * sn + (y - cy) * c }; }
+  /* the box a turned element takes up on the page */
+  function abox(e) { var b = bounds(e); if (!e.rot) return b; var r = e.rot * Math.PI / 180, c = Math.abs(Math.cos(r)), sn = Math.abs(Math.sin(r)), cx = b.x + b.w / 2, cy = b.y + b.h / 2, w = b.w * c + b.h * sn, h = b.w * sn + b.h * c; return { x: cx - w / 2, y: cy - h / 2, w: w, h: h }; }
   function hit(x, y) {
     var d = doc(), list = (d.els || []).slice().reverse();
-    for (var i = 0; i < list.length; i++) { var b = bounds(list[i]); if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) return list[i]; }
+    for (var i = 0; i < list.length; i++) { var b = bounds(list[i]), q = local(list[i], x, y); if (q.x >= b.x && q.x <= b.x + b.w && q.y >= b.y && q.y <= b.y + b.h) return list[i]; }
     return null;
   }
   function pt(ev) { var r = el$.canvas.getBoundingClientRect(); return { x: (ev.clientX - r.left) / S.k - ox(), y: (ev.clientY - r.top) / S.k }; }
@@ -579,12 +609,12 @@
     if (sd !== S.cur) { S.cur = sd; S.sel = null; S.crop = false; S.target = null; draw(); drawStripSel(); ctxBar(); if (S.panel && S.panel !== 'photos' && S.panel !== 'stickers') openPanel(S.panel, false); }
     return true;
   }
-  function select(id) { if (id !== S.sel) { S.more = false; S.alignOpen = false; S.colorOpen = false; } S.sel = id; S.multi = null; if (!id) { S.crop = false; S.pick = false; } placeSel(); ctxBar(); }
+  function select(id) { if (id !== S.sel) { S.more = false; S.alignOpen = false; S.colorOpen = false; } S.sel = id; S.multi = null; if (!id) { S.crop = false; S.pick = false; } placeSel(); ctxBar(); fillPill(); }
   /** several elements selected at once (shift/ctrl click, "Select more", or a group) */
   function selectMany(ids) { ids = ids.filter(function (v, i) { return ids.indexOf(v) === i; }); if (ids.length < 2) return select(ids[0] || null); S.sel = ids[ids.length - 1]; S.multi = ids; S.crop = false; placeSel(); ctxBar(); }
   function selEls() { var d = doc(); if (S.multi) return (d.els || []).filter(function (e) { return S.multi.indexOf(e.id) >= 0; }); var e = selEl(); return e ? [e] : []; }
   function groupIds(e) { return e && e.g ? (doc().els || []).filter(function (x) { return x.g === e.g; }).map(function (x) { return x.id; }) : null; }
-  function union(list) { var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity; list.forEach(function (e) { var b = bounds(e); x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.w); y1 = Math.max(y1, b.y + b.h); }); return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; }
+  function union(list) { var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity; list.forEach(function (e) { var b = abox(e); x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.w); y1 = Math.max(y1, b.y + b.h); }); return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; }
 
   /** an angle in -180…180, held at 0 / 90 / 180 / -90 when it's within 4° of them (or in steps when asked) */
   function snapRot(d, step) {
@@ -605,7 +635,7 @@
   }
 
   function bindCanvas() {
-    var drag = null, pts = {}, pinch = null;
+    var drag = null, pts = {}, pinch = null, lastTap = null;
     var wrap = el$.wrap;
     /* tapping the empty space around the page lets go of the selection (and brings the main menu back) */
     el$.stage.addEventListener('pointerdown', function (ev) { if ((ev.target === el$.stage) && (S.sel || S.multi) && !drag && !pinch) { S.crop = false; select(null); } });
@@ -698,19 +728,24 @@
         e.x = o.x + dx; e.y = o.y + dy;
         /* a photo held over another photo for a moment replaces it on release (like Canva) */
         if (e.t === 'photo' && e.photo) {
-          var under = (doc().els || []).slice().reverse().filter(function (x) { if (x === e || x.t !== 'photo' || x.lock) return false; var bb = bounds(x); return p.x >= bb.x && p.x <= bb.x + bb.w && p.y >= bb.y && p.y <= bb.y + bb.h; })[0] || null;
-          if (under !== drag.over) { drag.over = under; drag.overAt = Date.now(); drag.swap = null; clearTimeout(drag.swT); if (under) drag.swT = setTimeout(function () { if (drag && drag.over === under) { drag.swap = under; swapMark(under); } }, 450); else swapMark(null); }
+          var under = (doc().els || []).slice().reverse().filter(function (x) { if (x === e || x.t !== 'photo' || x.lock) return false; var bb = bounds(x), q = local(x, p.x, p.y), ix = bb.w * .2, iy = bb.h * .2; return q.x >= bb.x + ix && q.x <= bb.x + bb.w - ix && q.y >= bb.y + iy && q.y <= bb.y + bb.h - iy; })[0] || null;
+          if (under !== drag.over) { drag.over = under; drag.overAt = Date.now(); drag.swap = null; clearTimeout(drag.swT); if (under) drag.swT = setTimeout(function () { if (drag && drag.over === under) { drag.swap = under; swapMark(under); } }, 650); else swapMark(null); }
           if (drag.swap) { draw(); return; }
         }
         /* alignment guides: page centre, edges, margins and the other elements */
         var sn1 = snapTo([e]); e.x += sn1.dx; e.y += sn1.dy;
         clampEl(e);
       } else if (drag.mode === 'pan') {
+        /* the photo follows the finger exactly, inside its frame (turned frames included); it stops at the photo's edges
+           straight away, so there is never a dead stretch before it moves back */
         var im = R.ready(photoUrl(e.photo)); if (!im) return;
-        var z = (e.crop && e.crop.z) || 1, iw = im.naturalWidth * (e.rect ? e.rect.w : 1), ih = im.naturalHeight * (e.rect ? e.rect.h : 1), s = Math.max(e.w / iw, e.h / ih) * z;
+        var rd = (e.rot || 0) * Math.PI / 180, lx = dx * Math.cos(rd) + dy * Math.sin(rd), ly = -dx * Math.sin(rd) + dy * Math.cos(rd);
+        var z = (e.crop && e.crop.z) || 1, iw = (im.naturalWidth || im.width) * (e.rect ? e.rect.w : 1), ih = (im.naturalHeight || im.height) * (e.rect ? e.rect.h : 1), s = Math.max(e.w / iw, e.h / ih) * z, dw = iw * s, dh = ih * s;
+        var mx = Math.min(.5, e.w / (2 * dw)), my = Math.min(.5, e.h / (2 * dh)), cl = function (v, m) { return Math.max(m, Math.min(1 - m, v)); };
+        var oc = o.crop || { cx: .5, cy: .5 };
         e.crop = e.crop || { z: 1 };
-        e.crop.cx = Math.max(0, Math.min(1, o.crop.cx - dx / (iw * s)));
-        e.crop.cy = Math.max(0, Math.min(1, o.crop.cy - dy / (ih * s)));
+        e.crop.cx = +cl(cl(oc.cx == null ? .5 : oc.cx, mx) - lx / dw, mx).toFixed(4);
+        e.crop.cy = +cl(cl(oc.cy == null ? .5 : oc.cy, my) - ly / dh, my).toFixed(4);
       } else if (drag.mode === 'rotate') {
         el$.pe.classList.add('is-moving');
         var ang = (Math.atan2(p.y - drag.c.y, p.x - drag.c.x) - drag.a0) * 180 / Math.PI;
@@ -746,6 +781,12 @@
       }
       if (d.many) { if (d.moved) { commit(); placeSel(); ctxBar(); } return; }
       if (d.mode === 'move' && !d.moved) {
+        /* a double tap on a photo: move and zoom it inside its frame (phones don't always send dblclick) */
+        if (d.e.t === 'photo' && d.e.photo && !d.e.lock) {
+          var now = Date.now();
+          if (lastTap && lastTap.id === d.e.id && now - lastTap.t < 380) { lastTap = null; S.crop = true; placeSel(); ctxBar(); draw(); return; }
+          lastTap = { id: d.e.id, t: now };
+        }
         // a tap: text opens the text editor; an empty frame asks for a photo
         if (d.e.t === 'text' && d.wasSel) openPanel('text');
         /* an empty frame shows its menu first (Add photo is the first choice), not the whole photo library */
@@ -1054,7 +1095,7 @@
   function snapTo(list) {
     var u = union(list), th = 9 / (S.k || 1), M = 60, others = (doc().els || []).filter(function (x) { return list.indexOf(x) < 0; });
     var xs = [[0, 'e'], [M, 'm'], [W / 2, 'c'], [W - M, 'm'], [W, 'e']], ys = [[0, 'e'], [M, 'm'], [H / 2, 'c'], [H - M, 'm'], [H, 'e']];
-    others.forEach(function (o) { var b = bounds(o); xs.push([b.x, 'o'], [b.x + b.w / 2, 'o'], [b.x + b.w, 'o']); ys.push([b.y, 'o'], [b.y + b.h / 2, 'o'], [b.y + b.h, 'o']); });
+    others.forEach(function (o) { var b = abox(o); xs.push([b.x, 'o'], [b.x + b.w / 2, 'o'], [b.x + b.w, 'o']); ys.push([b.y, 'o'], [b.y + b.h / 2, 'o'], [b.y + b.h, 'o']); });
     function best(edges, cands) { var r = null; edges.forEach(function (v) { cands.forEach(function (c) { var d0 = c[0] - v; if (Math.abs(d0) <= th && (!r || Math.abs(d0) < Math.abs(r.d))) r = { d: d0, at: c[0], k: c[1] }; }); }); return r; }
     var bx = best([u.x, u.x + u.w / 2, u.x + u.w], xs), by = best([u.y, u.y + u.h / 2, u.y + u.h], ys);
     guides([bx ? { v: 1, at: bx.at, k: bx.k } : null, by ? { v: 0, at: by.at, k: by.k } : null]);
@@ -1077,6 +1118,7 @@
     else if (!n) { w = W - 180; h = w / ar; if (h > H - 300) { h = H - 300; w = h * ar; } }
     else { w = W * 0.46; h = w / ar; if (h > H * 0.42) { h = H * 0.42; w = h * ar; } }
     var x = (W - w) / 2, y = (H - h) / 2 - (n ? 0 : 20);
+    if (!cover && !n) { var e0 = { id: uid('ph'), t: 'photo', photo: id, crop: { z: 1, cx: .5, cy: .5 } }; setSolo(e0, ar); return e0; }
     if (n) {
       /* beside what's already there: the free-est of nine spots, nothing existing is moved */
       var M = 70, best = null, rs = (d.els || []).map(bounds);
@@ -1167,6 +1209,11 @@
       var dlg = document.createElement('dialog'); dlg.className = 'pe-pc'; document.body.appendChild(dlg);
       var list = blanks.map(function (i) { return i + 1; }), tag = list.length > 6 ? list.slice(0, 6).join(', ') + '…' : list.join(', ');
       var keepN = blanks.length - Math.max(0, can);
+      var minStay = can < blanks.length && n - blanks.length < BOOK.pages.min, multi = S.p.pages.some(function (d) { return photoCount(d) > 1 && (d.els || []).filter(function (e) { return e.t === 'photo' && e.photo; }).length > 1; });
+      if (minStay) {
+        dlg.innerHTML = '<div class="pe-pc__in"><header><h3>Fill all ' + BOOK.pages.min + ' pages</h3></header><p>A photo book has at least ' + BOOK.pages.min + ' pages. ' + (blanks.length === 1 ? 'Page ' + tag + ' is' : blanks.length + ' pages (' + tag + ') are') + ' still empty and would print <b>blank</b>.</p><p>Add more photos to fill them' + (multi ? ', or spread the photos you have so each page gets at least one' : '') + '.</p>' +
+          '<div class="pe-row"><button class="btn btn--p btn--sm" data-b="add">Add photos</button>' + (multi ? '<button class="btn btn--ghost btn--sm" data-b="spread">Spread my photos out</button>' : '') + '<button class="btn btn--ghost btn--sm" data-b="keep">Order with blank pages</button></div></div>';
+      } else
       dlg.innerHTML = '<div class="pe-pc__in"><header><h3>Blank pages found</h3></header><p>' + (blanks.length === 1 ? 'Page ' + tag + ' is' : 'Pages ' + tag + ' are') + ' empty and would print blank.</p>' +
         (can > 0 ? '<p>We can remove ' + (can === blanks.length ? (can === 1 ? 'it' : 'them') : can + ' of them') + ' for you.' + (keepN > 0 ? ' ' + (keepN === 1 ? 'One blank page has' : keepN + ' blank pages have') + ' to stay because ' + why.join(', and ') + '. You can add a photo or words to ' + (keepN === 1 ? 'it' : 'them') + ' instead.' : '') + '</p>' : '<p>They have to stay because ' + why.join(', and ') + '. Add photos or words to them, or keep them blank.</p>') +
         '<div class="pe-row">' + (can > 0 ? '<button class="btn btn--p btn--sm" data-b="rm">Remove ' + (can === 1 ? 'the blank page' : can + ' blank pages') + '</button>' : '') + '<button class="btn btn--ghost btn--sm" data-b="keep">Keep blank pages</button><button class="btn btn--ghost btn--sm" data-b="go">Go to ' + (blanks.length === 1 ? 'it' : 'the first one') + '</button></div></div>';
@@ -1174,6 +1221,8 @@
       dlg.onclick = function (ev) {
         var b = ev.target.closest('[data-b]'); if (!b) return; var a = b.getAttribute('data-b'); dlg.close(); dlg.remove();
         if (a === 'keep') { S.keepBlank = true; return ok(); }
+        if (a === 'add') { S.blankAsked = false; addMore(); return; }
+        if (a === 'spread') { S.blankAsked = false; arrange(true); return; }
         if (a === 'go') { S.blankAsked = false; go(blanks[0]); return; }
         checkpoint('Before removing blank pages'); var rm = blanks.slice(blanks.length - can); /* keeps the first blanks if some must stay; removes from the end of the list */
         rm.sort(function (x, y) { return y - x; }).forEach(function (i) { S.p.pages.splice(i, 1); });
@@ -1194,7 +1243,11 @@
     if (!e) {
       if (photoCount(d) >= MAXPH) { toast('This page already has ' + MAXPH + ' photos. Use another page, or select a photo and tap Replace.'); return; }
       e = newPhotoEl(id, d, S.cur < 0 || isBack()); d.els.push(e); clampEl(e);
-    } else { e.photo = id; e.crop = { z: 1, cx: 0.5, cy: 0.5 }; delete e.rect; delete e.fx; delete e.mask; }
+    } else {
+      e.photo = id; e.crop = { z: 1, cx: 0.5, cy: 0.5 }; delete e.rect; delete e.fx; delete e.mask;
+      /* alone on an inner page in the full-page frame: portrait fills it, landscape turns to fill it */
+      if (S.cur >= 0 && !isBack() && photoCount(d) === 1 && isSoloFrame(e)) setSolo(e, photoAr(id));
+    }
     S.target = null;
     commit(); select(e.id); draw(); drawThumb(S.cur);
     if (S.panel === 'photos') { if (innerWidth < 900) peek(); else openPanel('photos', true); }
@@ -1280,7 +1333,7 @@
     AR.features(free.map(function (id) { return S.photos[id]; }), thumbUrl, function (i, n) { busy('Looking at your photos… ' + Math.round(i / n * 100) + '%'); }).then(function (items) {
       if (all) { for (var i = 0; i < pages.length; i++) slots.push(i); }
       else pages.forEach(function (d, i) { var fr = d.els.filter(function (e) { return e.t === 'photo'; }); if (!d.els.some(function (e) { return e.t !== 'photo'; }) && !fr.some(function (f) { return f.photo; })) slots.push(i); });
-      var plan = AR.plan(items, { layouts: LAYOUTS, slots: slots.length, max: slots.length + (BOOK.pages.max - pages.length) });
+      var plan = AR.plan(items, { layouts: LAYOUTS, slots: slots.length, max: slots.length + (BOOK.pages.max - pages.length), solo: soloRect });
       var need = plan.length - slots.length, added = 0;
       while (need > 0 && pages.length < BOOK.pages.max) { pages.push(pageDoc('one')); slots.push(pages.length - 1); need--; added++; }
       if (pages.length % 2 && pages.length < BOOK.pages.max) { pages.push(pageDoc('one')); added++; }
@@ -1295,7 +1348,7 @@
           if (!fr[x]) return;
           fr[x].photo = id; fr[x].crop = pl.crops[x]; placed++;
           /* simple pages: the frame takes the photo's own shape and sits in the middle of the page */
-          var rc = pl.rects && pl.rects[x]; if (rc) { fr[x].x = rc[0]; fr[x].y = rc[1]; fr[x].w = rc[2]; fr[x].h = rc[3]; }
+          var rc = pl.rects && pl.rects[x]; if (rc) { fr[x].x = rc[0]; fr[x].y = rc[1]; fr[x].w = rc[2]; fr[x].h = rc[3]; if (rc[4]) fr[x].rot = rc[4]; else delete fr[x].rot; }
         });
       });
       if (all) {
@@ -1306,8 +1359,8 @@
         if (cut) added -= cut;
       }
       commit(); S.cur = Math.max(0, Math.min(pages.length - 1, slots[0] || 0)); if (innerWidth < 900) S.panel = null; renderAll(); if (innerWidth < 900) openPanel(null);
-      var left = free.length - placed;
-      toast(placed + ' photo' + (placed === 1 ? '' : 's') + ' arranged on ' + Math.min(plan.length, slots.length) + ' page' + (plan.length === 1 ? '' : 's') + (added > 0 ? ', ' + added + ' page' + (added === 1 ? '' : 's') + ' added' : added < 0 ? ', ' + (-added) + ' empty pages taken out' : '') + (left > 0 ? '. ' + left + ' didn’t fit: the book is at ' + BOOK.pages.max + ' pages.' : '. Tap ↶ to undo.'));
+      var left = free.length - placed, emp = pages.filter(blankDoc).length;
+      toast(placed + ' photo' + (placed === 1 ? '' : 's') + ' arranged on ' + Math.min(plan.length, slots.length) + ' page' + (plan.length === 1 ? '' : 's') + (added > 0 ? ', ' + added + ' page' + (added === 1 ? '' : 's') + ' added' : added < 0 ? ', ' + (-added) + ' empty pages taken out' : '') + (left > 0 ? '. ' + left + ' didn’t fit: the book is at ' + BOOK.pages.max + ' pages.' : '. Tap ↶ to undo.') + (emp ? ' ' + emp + ' page' + (emp === 1 ? ' is' : 's are') + ' still empty: a book has at least ' + BOOK.pages.min + ' pages and empty pages print blank, so add more photos to fill them.' : ''));
     }).catch(function (e) { toast('Couldn’t arrange the photos: ' + ((e && e.message) || 'please try again') + '.'); }).then(function () { S.arranging = false; busy(''); });
   }
   function autofill() { arrange(false); }
@@ -1702,7 +1755,7 @@
     S.cur = i; S.sel = null; S.crop = false; S.target = null; S.p.lastPage = i; clearTimeout(S.lpT); S.lpT = setTimeout(function () { if (!S.ro) ST.saveProject(S.p).catch(function () { }); }, 1500);
     if (wasSp) { fit(); ctxBar(); drawStripSel(); return; }
     if (was !== isWrap() || wasCov !== isCoverIdx()) fit(); else draw();
-    ctxBar(); drawStripSel();
+    ctxBar(); drawStripSel(); fillPill();
     if (S.panel && S.panel !== 'photos' && S.panel !== 'stickers') openPanel(S.panel, false);
   }
   /** choose how many pages the book has (from the strip) */
@@ -1758,11 +1811,22 @@
   function drawInfo() {
     var n = S.p.pages.length;
     $('#pePages').textContent = n + ' pages';
+    fillPill();
     if (S.lastN != null && S.lastN !== n && isWrap()) setTimeout(fit, 0); S.lastN = n;
     $('#pePrice').textContent = PBK.priceLabel(n);
     if (S.lastKind && S.lastKind !== R.bookKind(n)) mockSoon(); S.lastKind = R.bookKind(n);
   }
+  /** how many inner pages are still empty: shown as a small pill over the page, because empty pages print blank */
+  function fillPill() {
+    var f = $('#peFill'); if (!f || !S.p) return;
+    var empty = S.p.pages.filter(blankDoc).length, n = S.p.pages.length;
+    f.hidden = !empty || !!S.sel || isCoverIdx() || !!document.querySelector('.pe-ask');
+    if (!empty) return;
+    f.innerHTML = '<b>' + empty + ' of ' + n + ' pages empty</b><span>' + (n - empty ? 'Empty pages print blank. ' : 'A book has at least ' + BOOK.pages.min + ' pages. ') + '<u>Add photos</u></span>';
+  }
+  function addMore() { var used = usedMap(), free = S.order.filter(function (id) { return !used[id]; }); if (free.length) arrange(false); else el$.file.click(); }
   function bindStrip() {
+    $('#peFill').addEventListener('click', addMore);
     el$.strip.addEventListener('click', function (ev) { var b = ev.target.closest('[data-pg]'); if (b) go(+b.getAttribute('data-pg')); var a = ev.target.closest('[data-addpg]'); if (a) { S.cur = S.p.pages.length - 1; addPages(); } });
     $('#pePgPrev').addEventListener('click', function () { go(S.cur - 1); });
     $('#pePgNext').addEventListener('click', function () { go(S.cur + 1); });

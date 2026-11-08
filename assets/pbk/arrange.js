@@ -176,7 +176,7 @@
   }
 
   /* ---------- 3. pages ---------- */
-  var PREF = { wide: 0.05, one: 0.06, full: 0.22, land: 0.02, square: 0.05, polaroid: 0.14, twov: 0, twost: 0.03, twost2: 0.04, collage: 0.16, bigsmall: 0.09, fullduo: 0.12, three: 0, threev: 0.2, threel: 0.02, threep: 0.06, four: 0.1, fourl: 0.08, five: 0.12, six: 0.18 };
+  var PREF = { wide: 0.05, one: 0.06, full: 0.22, land: 0.02, square: 0.05, polaroid: 0.14, twov: 0, twost: 0.03, twost2: 0.04, collage: 0.16, bigsmall: 0.3, fullduo: 0.32, three: 0, threev: 0.2, threel: 0.02, threep: 0.06, four: 0.1, fourl: 0.08, five: 0.12, six: 0.18 };
   function perms(n) { if (n <= 1) return [[0]]; var out = []; perms(n - 1).forEach(function (p) { for (var i = 0; i <= p.length; i++) { var q = p.slice(); q.splice(i, 0, n - 1); out.push(q); } }); return out; }
   var PERM = [null, perms(1), perms(2), perms(3), perms(4)];
   /** how well a set of photos fits a layout: lower is better. Returns {cost, order} (order[f] = index of the photo in frame f) */
@@ -233,14 +233,14 @@
    * items (from features), opts: { layouts, slots (pages to fill without adding), max (most pages that may be used) }
    * → [{ layout, ids: [photo id per frame], crops: [{z,cx,cy}] }]
    */
-  var SIMPLE = { one: 1, land: 1, square: 1 };
   function plan(items, opts) {
     var L = opts.layouts, n = items.length; if (!n) return [];
     var seq = order(items), ms = moments(seq);
     var dens = n <= 10 ? 1 : n <= 30 ? 1.6 : n <= 80 ? 2 : n <= 160 ? 2.5 : 3;
     var T = Math.max(Math.ceil(n / 6), Math.min(opts.max, Math.ceil(n / dens)));
     /* the pages are already there (and paid for): use them, rather than crowding photos onto a few */
-    if (opts.slots) T = Math.max(T, Math.min(opts.slots, opts.max, Math.ceil(n / 1.35)));
+    /* the pages are there (24 at least): spread the photos so as many pages as possible get one, rather than leaving pages blank */
+    if (opts.slots) T = Math.max(T, Math.min(opts.slots, opts.max, n));
     if (T < ms.length) T = Math.min(opts.max, ms.length);
     /* pages per moment, in proportion to its photos */
     var share = ms.map(function (m) { return m.length / n * T; }), pg = share.map(function (v, i) { return Math.max(1, Math.min(ms[i].length, Math.floor(v))); });
@@ -274,21 +274,16 @@
         crops.push({ z: 1, cx: x.ar > fa * 1.02 ? +fc.x.toFixed(3) : 0.5, cy: x.ar < fa / 1.02 ? +fc.y.toFixed(3) : 0.5 });
         ids.push(x.id);
       });
-      /* one photo on a simple page: the frame follows the photo's shape (very long or tall photos are
-         trimmed a little) and is centred on the page, so it never sits high with a gap below */
-      var rects = null;
-      if (SIMPLE[p.key] && p.ph.length === 1) {
-        var x1 = p.ph[p.order[0]], PW = 1200, PH = L.full ? L.full.f[0][3] : 1697, M = 90, bw = PW - 2 * M, bh = PH - 2 * M;
-        var a = Math.max(0.55, Math.min(2.2, x1.ar)), w = bw, h = bw / a;
-        if (h > bh) { h = bh; w = bh * a; }
-        /* a landscape photo alone on a page runs edge to edge, so the page reads as one big picture */
-        if (a >= 1.15) { w = PW; h = PW / a; }
-        w = Math.round(w); h = Math.round(h);
-        rects = [[Math.round((PW - w) / 2), Math.round((PH - h) / 2), w, h]];
-        var fc1 = x1.look.focus;
-        crops = [{ z: 1, cx: x1.ar > a * 1.02 ? +fc1.x.toFixed(3) : 0.5, cy: x1.ar < a / 1.02 ? +fc1.y.toFixed(3) : 0.5 }];
+      /* one photo alone on a page: it fills the page inside the book's usual margin. A landscape photo is
+         turned a quarter turn so it fills the page too; the photo is zoomed to fill the frame, centred on its subject */
+      var rects = null, key = p.key;
+      if (p.ph.length === 1 && opts.solo) {
+        var x1 = p.ph[p.order[0]], r1 = opts.solo(x1.ar), fa1 = r1.w / r1.h, fc1 = x1.look.focus, ar1 = r1.rot ? x1.ar : x1.ar;
+        key = 'one';
+        rects = [[Math.round(r1.x), Math.round(r1.y), Math.round(r1.w), Math.round(r1.h), r1.rot || 0]];
+        crops = [{ z: 1, cx: ar1 > fa1 * 1.02 ? +fc1.x.toFixed(3) : 0.5, cy: ar1 < fa1 / 1.02 ? +fc1.y.toFixed(3) : 0.5 }];
       }
-      return { layout: p.key, ids: ids, crops: crops, rects: rects };
+      return { layout: key, ids: ids, crops: crops, rects: rects };
     });
   }
   window.PBKArrange = { features: features, plan: plan, look: look, _order: order, _moments: moments };
