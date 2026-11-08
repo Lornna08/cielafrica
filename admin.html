@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="color-scheme" content="light dark">
 <title>Ciel Admin — Ciel Africa</title>
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c0c0e" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#0e0e10" media="(max-width: 900px)"><meta name="theme-color" content="#f7f4ef" media="(min-width: 901px) and (prefers-color-scheme: light)"><meta name="theme-color" content="#0c0c0e" media="(min-width: 901px) and (prefers-color-scheme: dark)">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png?v=20261108">
 <script>try{var t=localStorage.getItem("ca_theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.setAttribute("data-theme","dark")}catch(e){}</script>
 <link rel="manifest" href="/assets/hq/manifest.webmanifest?v=20261108">
@@ -13,22 +13,24 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Ciel Admin">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/hq/hq.css?v=20261108a">
+<link rel="stylesheet" href="/assets/hq/hq.css?v=20261108c">
 </head>
 <body>
+<script>/* the iPhone status bar: how much room the header leaves above its buttons (some iOS versions report 0 in the home-screen app) */(function(){function m(){var d=document.documentElement,p=document.createElement("div");p.style.cssText="position:fixed;left:0;top:0;width:1px;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none";document.body.appendChild(p);var h=p.getBoundingClientRect().height;p.remove();var sa=navigator.standalone||matchMedia("(display-mode: standalone)").matches;if(h<1&&sa&&/iphone/i.test(navigator.userAgent)&&Math.abs(innerHeight-screen.height)<3&&screen.height>=780)h=screen.height>=852?54:47;d.style.setProperty("--sat",Math.round(h)+"px");d.classList.toggle("is-app",!!sa)}m();addEventListener("resize",m);addEventListener("orientationchange",function(){setTimeout(m,300)})})();</script>
 <div id="hq" class="hq"><div class="hq-boot"><img class="lg lg--d" src="/assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa"><img class="lg lg--l" src="/assets/img/logo-light.png?v=20261108" alt="" aria-hidden="true"><div class="hq-boot__bar"></div><p>Ciel Admin</p></div></div><div class="hq-prog" id="prog"></div>
 <script src="/data/photobooks.js?v=20261103a"></script>
 <script src="/assets/hq/sitecms.js?v=20261107f"></script>
 <script src="/assets/hq/site.js?v=20261107f"></script>
 <script src="/assets/hq/mail.js?v=3"></script>
-<script src="/assets/hq/crm.js?v=1"></script>
+<script src="/assets/hq/crm.js?v=2"></script>
 <script src="/assets/hq/analytics.js?v=1"></script>
-<script src="/assets/hq/tools.js?v=2"></script>
+<script src="/assets/hq/tools.js?v=3"></script>
 <script src="/assets/js/notes.js?v=3"></script>
-<script src="/assets/hq/hq.js?v=20261108b"></script>
+<script src="/assets/hq/grow.js?v=1"></script>
+<script src="/assets/hq/hq.js?v=20261108c"></script>
 </body>
 </html>

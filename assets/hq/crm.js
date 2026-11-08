@@ -167,5 +167,5 @@
     d.querySelectorAll('.hist [data-i]').forEach(function (li) { li.onclick = function () { var e = tl[+li.getAttribute('data-i')]; d.remove(); if (e.href) location.hash = e.href; else if (e.lead) { var m = leads().filter(function (y) { return y.id === e.lead; })[0]; if (m) leadDrawer(m); } }; });
   }
 
-  window.HQCrm = { init: function (h) { H = h; }, leads: renderLeads, projects: renderProjects, customers: renderCustomers, leadDrawer: leadDrawer };
+  window.HQCrm = { init: function (h) { H = h; }, leads: renderLeads, projects: renderProjects, customers: renderCustomers, leadDrawer: leadDrawer, people: people };
 })();

@@ -10,7 +10,7 @@
   function seen() { try { return +localStorage.getItem(SEEN) || 0; } catch (e) { return 0; } }
   function setSeen(t) { try { localStorage.setItem(SEEN, String(t)); } catch (e) { } }
   function ago(t) { var s = (Date.now() - t) / 1000; return s < 60 ? 'just now' : s < 3600 ? Math.floor(s / 60) + ' min ago' : s < 86400 ? Math.floor(s / 3600) + ' h ago' : H.d2(t); }
-  var KI = { order: ['Order', 'o'], whatsapp: ['WhatsApp', 'g'], pages: ['Pages', 'p'], message: ['Message', 'b'], printer: ['Printer', 'p'], renewal: ['Renewal', 'o'] };
+  var KI = { order: ['Order', 'o'], whatsapp: ['WhatsApp', 'g'], pages: ['Pages', 'p'], message: ['Message', 'b'], printer: ['Printer', 'p'], renewal: ['Renewal', 'o'], subscriber: ['Subscriber', 'g'] };
 
   function bell() {
     var c = document.getElementById('nbc'); if (!c) return;
@@ -33,7 +33,7 @@
     var upd = function () { H.pushState().then(function (st) { var b = p.querySelector('#npB'), s = p.querySelector('#npS'); if (!b) return; b.textContent = st === 'on' ? 'Turn off' : 'Turn on'; b.className = 'b b--sm' + (st === 'on' ? '' : ' b--p'); b.style.display = (st === 'denied' || st === 'none' || st === 'ios') ? 'none' : ''; s.textContent = st === 'on' ? 'Phone notifications are on for this device' : st === 'denied' ? 'Notifications are blocked in this browser’s settings' : st === 'ios' ? 'On iPhone, install Ciel Admin to the Home Screen first' : st === 'none' ? 'This browser can’t show notifications' : 'Get these on this device, even when Ciel Admin is closed'; btn.classList.toggle('is-on', st === 'on'); }); };
     p.querySelector('#npC').onclick = function () {
       var box = p.querySelector('#npP'); box.hidden = !box.hidden; if (box.hidden) return; box.innerHTML = '<p class="np__e">Loading…</p>';
-      var NAMES = [['order', 'New orders and payments'], ['whatsapp', 'WhatsApp orders'], ['pages', 'Photo book pages received'], ['message', 'Website messages and leads'], ['printer', 'Printer updates'], ['renewal', 'Domain renewals']];
+      var NAMES = [['order', 'New orders and payments'], ['whatsapp', 'WhatsApp orders'], ['pages', 'Photo book pages received'], ['message', 'Website messages and leads'], ['printer', 'Printer updates'], ['renewal', 'Domain renewals'], ['subscriber', 'New email subscribers']];
       H.api('/api/hq?route=notify-prefs').then(function (x) {
         var pr = x.prefs;
         box.innerHTML = NAMES.map(function (n) { return '<label class="np__ck"><input type="checkbox" data-k="' + n[0] + '"' + (pr.kinds[n[0]] === false ? '' : ' checked') + '> ' + n[1] + '</label>'; }).join('') +

@@ -60,9 +60,11 @@
     moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>',
     sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>',
     search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
+    pie: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>',
+    send: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>',
     menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>'
   };
-  var NAV = [['overview', 'Overview', I.home, 'Main'], ['analytics', 'Analytics', I.chart], ['orders', 'Orders', I.orders, 'Commerce'], ['photobooks', 'Photo Books', I.book], ['payments', 'Payments', I.card], ['products', 'Products', I.box], ['templates', 'Website templates', I.web], ['inbox', 'Inbox', I.inbox, 'Customers & sales'], ['leads', 'Leads', I.target], ['customers', 'Customers', I.people], ['projects', 'Projects', I.folder], ['website', 'Website editor', I.globe, 'Website'], ['content', 'Content library', I.image], ['calendar', 'Calendar', I.cal, 'Operations'], ['tasks', 'Tasks', I.tasks], ['activity', 'Activity log', I.act, 'System'], ['settings', 'Setup', I.gear]];
+  var NAV = [['overview', 'Overview', I.home, 'Main'], ['analytics', 'Analytics', I.chart], ['reports', 'Reports & exports', I.pie], ['orders', 'Orders', I.orders, 'Commerce'], ['photobooks', 'Photo Books', I.book], ['payments', 'Payments', I.card], ['products', 'Products', I.box], ['templates', 'Website templates', I.web], ['inbox', 'Inbox', I.inbox, 'Customers & sales'], ['leads', 'Leads', I.target], ['customers', 'Customers', I.people], ['campaigns', 'Email campaigns', I.send], ['projects', 'Projects', I.folder], ['website', 'Website editor', I.globe, 'Website'], ['content', 'Content library', I.image], ['calendar', 'Calendar', I.cal, 'Operations'], ['tasks', 'Tasks', I.tasks], ['activity', 'Activity log', I.act, 'System'], ['settings', 'Setup', I.gear]];
 
   /* ---------- order sources, normalised ---------- */
   var KIND = { photobook: ['Photo book', '#ff5a1f'], shop: ['Shop', '#1f4fb5'], domain: ['Domain', '#5b3fd1'], whatsapp: ['WhatsApp', '#1fa855'] };
@@ -129,7 +131,7 @@
     root.innerHTML = '<aside class="hq-side"><div class="hq-side__brand">' + LOGO + '<span class="hq-side__tag">Admin</span></div><nav class="hq-nav" id="nav"></nav><div class="hq-side__foot"><a href="/" target="_blank" rel="noopener">cielafrica.com ↗</a><button id="lo">Sign out</button></div></aside>' +
       '<div class="hq-main"><header class="hq-top"><button class="hq-burger" id="burger" aria-label="Open menu">' + I.menu + '</button><button class="hq-srch" id="sk" title="Search (Ctrl+K)">' + I.search + '<span>Search everything…</span><kbd>Ctrl K</kbd></button><span class="hq-live" id="lv" title="Live">Live</span><button class="b b--sm" id="inst" hidden>Install app</button><button class="b b--sm" id="thm" title="Light or dark"></button><button class="b b--sm hq-bell" id="nb" title="Notifications">' + I.bell + '<i id="nbc" hidden></i></button><button class="b b--sm" id="rf" title="Refresh">' + I.ref + '<span>Refresh</span></button></header><div class="hq-ph"><h1 id="ttl"></h1><div id="topx"></div></div><main class="hq-body" id="body"><p class="muted">Loading…</p></main></div><nav class="hq-mnav" id="mnav"></nav>';
     document.getElementById('lo').onclick = function () { api('/api/hq?route=logout', {}).then(function () { try { localStorage.removeItem('pbk_admin'); } catch (e) { } login(S.setup || {}); }); };
-    document.getElementById('rf').onclick = function () { refresh(true); };
+    document.getElementById('rf').onclick = function () { if (window.HQGrow) HQGrow.refresh(); refresh(true); };
     /* phone & tablet: the sidebar slides in from the left */
     var side = root.querySelector('.hq-side'), scrim = document.createElement('div'); scrim.className = 'hq-scrim'; root.appendChild(scrim);
     var setNav = function (on) { root.classList.toggle('nav-open', on); document.body.style.overflow = on ? 'hidden' : ''; };
@@ -143,7 +145,7 @@
     document.addEventListener('touchend', function (e) { if (sx == null) return; var t = e.changedTouches[0], dx = t.clientX - sx; if (Math.abs(t.clientY - sy) < 60) { if (dx > 50) setNav(true); else if (dx < -50) setNav(false); } sx = null; }, { passive: true });
     var th = document.getElementById('thm'), dark = function () { return document.documentElement.getAttribute('data-theme') === 'dark'; };
     var paintTh = function () { th.innerHTML = dark() ? I.sun : I.moon; th.title = dark() ? 'Switch to light' : 'Switch to dark'; };
-    paintTh(); th.onclick = function () { var d = !dark(); if (d) document.documentElement.setAttribute('data-theme', 'dark'); else document.documentElement.removeAttribute('data-theme'); try { localStorage.setItem('ca_theme', d ? 'dark' : 'light'); } catch (e) { } paintTh(); var m = document.querySelector('meta[name=theme-color]'); if (m) m.content = d ? '#0c0c0e' : '#ffffff'; };
+    paintTh(); th.onclick = function () { var d = !dark(); if (d) document.documentElement.setAttribute('data-theme', 'dark'); else document.documentElement.removeAttribute('data-theme'); try { localStorage.setItem('ca_theme', d ? 'dark' : 'light'); } catch (e) { } paintTh(); };
     document.getElementById('inst').onclick = install; if (installEv) document.getElementById('inst').hidden = false;
     var nb = document.getElementById('nb');
     nb.onclick = function () { if (window.HQTools) HQTools.notifs(nb); };
@@ -155,7 +157,7 @@
   function refresh(note, quiet) {
     return Promise.all([loadOrders(), loadInbox(), loadLists()]).then(function () {
       mergeOrders(); S.loaded = true;
-      if (quiet && (document.querySelector('.drawer,.modal') || /^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement || {}).tagName || ''))) navs(); else route(true);
+      if (quiet && (document.querySelector('.drawer,.modal') || S.view === 'campaigns' || S.view === 'website' || /^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement || {}).tagName || ''))) navs(); else route(true);
       if (note) toast('Up to date');
       document.getElementById('lv').title = 'Live · updated ' + new Date().toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' });
     });
@@ -232,8 +234,8 @@
     var h = (location.hash || '#overview').slice(1).split('/'), v = h[0];
     if (!NAV.some(function (n) { return n[0] === v; })) v = 'overview';
     document.querySelectorAll('.drawer,.modal').forEach(function (x) { x.remove(); });
-    S.view = v; navs();
-    var titles = { overview: 'Good ' + (new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening') + ', Lorna', orders: 'Orders', calendar: 'Calendar', tasks: 'Tasks', customers: 'Customers', website: 'Website', settings: 'Setup', inbox: 'Inbox', content: 'Content library', activity: 'Activity log', payments: 'Payments', products: 'Products', templates: 'Website templates', photobooks: 'Photo Books', leads: 'Leads', projects: 'Projects', analytics: 'Analytics' };
+    S.view = v; navs(); root.classList.toggle('is-ov', v === 'overview');
+    var titles = { overview: 'Good ' + (new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening') + ', Lorna', orders: 'Orders', calendar: 'Calendar', tasks: 'Tasks', customers: 'Customers', website: 'Website', settings: 'Setup', inbox: 'Inbox', content: 'Content library', activity: 'Activity log', payments: 'Payments', products: 'Products', templates: 'Website templates', photobooks: 'Photo Books', leads: 'Leads', projects: 'Projects', analytics: 'Analytics', reports: 'Reports & exports', campaigns: 'Email campaigns' };
     document.getElementById('ttl').innerHTML = esc(titles[v]) + '<small>' + new Date().toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + '</small>';
     document.getElementById('topx').innerHTML = v === 'calendar' ? '<button class="b b--p b--sm" data-newev>' + I.plus + '<span>Event</span></button>' : v === 'tasks' ? '<button class="b b--p b--sm" data-newtk>' + I.plus + '<span>Task</span></button>' : '';
     var tb = document.querySelector('[data-newev]'); if (tb) tb.onclick = function () { eventModal({ date: today() }); };
@@ -244,6 +246,8 @@
     else if (v === 'projects' && window.HQCrm) HQCrm.projects(h[1]);
     else if (v === 'customers' && window.HQCrm) HQCrm.customers();
     else if (v === 'analytics' && window.HQAnalytics) HQAnalytics.render();
+    else if (v === 'reports' && window.HQGrow) HQGrow.reports();
+    else if (v === 'campaigns' && window.HQGrow) HQGrow.campaigns(h[1]);
     else if (v === 'photobooks' && h[1] === 'prices' && window.HQSite) HQSite.renderCatalog('photobooks');
     else if (v === 'photobooks') photobooks();
     else ({ overview: overview, orders: orders, inbox: inbox, calendar: calendar, tasks: tasks, customers: customers, content: content, activity: activity, payments: payments, settings: settings })[v]();
@@ -276,7 +280,7 @@
     var days = []; for (var i = 29; i >= 0; i--) { var d = new Date(Date.now() - i * 864e5); days.push({ k: iso(d), v: 0, d: d }); }
     real.forEach(function (o) { var k = iso(new Date(o.at)), x = days.filter(function (y) { return y.k === k; })[0]; if (x) x.v += o.total || 0; });
     var mx = Math.max(1, Math.max.apply(null, days.map(function (x) { return x.v; })));
-    var bars = days.map(function (x, j) { var h = x.v / mx * 140; return '<rect x="' + (j * 20 + 4) + '" y="' + (160 - h) + '" width="12" height="' + Math.max(2, h) + '" rx="3" fill="' + (x.v ? '#ff5a1f' : '#ebe4d8') + '"><title>' + d2(x.d) + ': ' + money(x.v) + '</title></rect>'; }).join('');
+    var bars = '<defs><linearGradient id="ovg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb04a"/><stop offset="1" stop-color="#ff5a1f"/></linearGradient></defs>' + days.map(function (x, j) { var h = x.v / mx * 140; return '<rect x="' + (j * 20 + 4) + '" y="' + (160 - Math.max(3, h)) + '" width="12" height="' + Math.max(3, h) + '" rx="3"' + (x.v ? ' fill="url(#ovg)"' : ' class="ov-z"') + '><title>' + d2(x.d) + ': ' + money(x.v) + '</title></rect>'; }).join('');
     var attention = [];
     S.orders.forEach(function (o) {
       var tg = o.test ? 'TEST · ' : '';
@@ -297,12 +301,17 @@
     /* domains to renew in the next 60 days (customers are emailed at 60, 30 and 7 days and on the day) */
     if (S.renewals == null) { S.renewals = []; api('/api/domains?route=admin/renewals').then(function (x) { S.renewals = (x.renewals || []).filter(function (r) { return r.days != null && r.days <= 60; }); if (S.renewals.length && (location.hash || '#overview') === '#overview') overview(); }, function () { }); }
     S.renewals.forEach(function (r) { attention.push([r.days <= 7 ? 'r' : 'o', 'Renew ' + r.domain + (r.days > 0 ? ' · ' + r.days + ' days left' : r.days === 0 ? ' · expires today' : ' · expired ' + (-r.days) + ' days ago'), 'Expires ' + r.expiresAt + (r.estimated ? ' (estimated)' : '') + ' · ' + ((r.customer && (r.customer.name || r.customer.email)) || ''), '#content']); });
+    var hr = now.getHours(), greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening', urgent = attention.length;
     var b = body(
-      '<div class="kpis"><div class="card kpi"><span>Revenue this month</span><b>' + money(rev) + '</b><small>' + month.length + ' paid order' + (month.length === 1 ? '' : 's') + ' · tests not counted</small></div>' +
-      '<div class="card kpi"><span>Orders to handle</span><b>' + todo.length + '</b><small>' + todo.filter(function (o) { return o.kind === 'photobook'; }).length + ' photo books · ' + todo.filter(function (o) { return o.kind === 'shop'; }).length + ' shop · ' + todo.filter(function (o) { return o.kind === 'domain'; }).length + ' domains</small></div>' +
-      '<div class="card kpi"><span>Pending orders</span><b>' + pending.length + '</b><small>' + pending.filter(function (o) { return o.kind === 'whatsapp'; }).length + ' WhatsApp · ' + pending.filter(function (o) { return o.kind !== 'whatsapp'; }).length + ' not paid yet</small></div>' +
-      '<div class="card kpi"><span>New messages</span><b>' + newMsgs.length + '</b><small>' + open.length + ' open task' + (open.length === 1 ? '' : 's') + (overdue.length ? ' · ' + overdue.length + ' overdue' : '') + ' · ' + week.length + ' event' + (week.length === 1 ? '' : 's') + ' this week</small></div></div>' +
-      '<div class="ov"><div class="ov__main"><div class="card"><div class="card__h"><h2>Revenue, last 30 days</h2><span class="muted">' + money(days.reduce(function (s, x) { return s + x.v; }, 0)) + '</span></div><div class="card__b"><svg class="chart" viewBox="0 0 600 170" preserveAspectRatio="none">' + bars + '<line x1="0" y1="160.5" x2="600" y2="160.5" stroke="#ebe4d8"/></svg><div class="row muted" style="justify-content:space-between;font-size:.76rem"><span>' + d2(days[0].d) + '</span><span>Today</span></div></div></div>' +
+      '<section class="ovh"><span class="ovh__brk" aria-hidden="true">‹</span><div class="ovh__in"><p class="ovh__k"><b>‹</b> Ciel Admin · ' + now.toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long' }) + '</p>' +
+      '<h1 class="ovh__t">' + greet + ',<br><em>Lorna.</em></h1>' +
+      '<p class="ovh__s">' + (urgent ? '<b>' + urgent + ' thing' + (urgent === 1 ? '' : 's') + '</b> need' + (urgent === 1 ? 's' : '') + ' you today' : 'All clear. Nothing is waiting on you') + ' · <b>' + money(rev) + '</b> in ' + now.toLocaleDateString('en-KE', { month: 'long' }) + '</p>' +
+      '<div class="ovh__go"><a class="ovh__b ovh__b--p" href="#orders">' + I.orders + '<span>Orders' + (todo.length ? ' · ' + todo.length : '') + '</span></a><a class="ovh__b" href="#photobooks">' + I.book + '<span>Photo Books</span></a><a class="ovh__b" href="#inbox">' + I.inbox + '<span>Inbox' + (newMsgs.length ? ' · ' + newMsgs.length : '') + '</span></a><a class="ovh__b" href="#campaigns">' + I.send + '<span>Campaigns</span></a><a class="ovh__b" href="#reports">' + I.pie + '<span>Reports</span></a></div></div></section>' +
+      '<div class="kpis"><div class="card kpi kpi--o"><i class="kpi__i">' + I.card + '</i><span>Revenue this month</span><b>' + money(rev) + '</b><small>' + month.length + ' paid order' + (month.length === 1 ? '' : 's') + ' · tests not counted</small></div>' +
+      '<div class="card kpi kpi--b"><i class="kpi__i">' + I.orders + '</i><span>Orders to handle</span><b>' + todo.length + '</b><small>' + todo.filter(function (o) { return o.kind === 'photobook'; }).length + ' photo books · ' + todo.filter(function (o) { return o.kind === 'shop'; }).length + ' shop · ' + todo.filter(function (o) { return o.kind === 'domain'; }).length + ' domains</small></div>' +
+      '<div class="card kpi kpi--y"><i class="kpi__i">' + I.wa + '</i><span>Pending orders</span><b>' + pending.length + '</b><small>' + pending.filter(function (o) { return o.kind === 'whatsapp'; }).length + ' WhatsApp · ' + pending.filter(function (o) { return o.kind !== 'whatsapp'; }).length + ' not paid yet</small></div>' +
+      '<div class="card kpi kpi--p"><i class="kpi__i">' + I.mail + '</i><span>New messages</span><b>' + newMsgs.length + '</b><small>' + open.length + ' open task' + (open.length === 1 ? '' : 's') + (overdue.length ? ' · ' + overdue.length + ' overdue' : '') + ' · ' + week.length + ' event' + (week.length === 1 ? '' : 's') + ' this week</small></div></div>' +
+      '<div class="ov"><div class="ov__main"><div class="card"><div class="card__h"><h2>Revenue, last 30 days</h2><span class="muted">' + money(days.reduce(function (s, x) { return s + x.v; }, 0)) + '</span></div><div class="card__b"><svg class="chart" viewBox="0 0 600 170" preserveAspectRatio="none">' + bars + '<line x1="0" y1="160.5" x2="600" y2="160.5" stroke="var(--line)" vector-effect="non-scaling-stroke"/></svg><div class="row muted" style="justify-content:space-between;font-size:.76rem"><span>' + d2(days[0].d) + '</span><span>Today</span></div></div></div>' +
       '<div class="card"><div class="card__h"><h2>Recent orders</h2><a class="b b--sm" href="#orders">All orders</a></div>' + orderTable(S.orders.slice(0, 6), true) +
       '<div class="card__h" style="border-top:1px solid var(--line)"><h2>Pending orders</h2><span class="muted" style="font-size:.8rem">WhatsApp and unpaid</span></div>' + orderTable(pending.slice(0, 6), true) + '</div>' +
       '</div><div class="ov__rail">' +
@@ -659,5 +668,6 @@
   if (window.HQMail) HQMail.init(window.HQ);
   if (window.HQAnalytics) HQAnalytics.init(window.HQ);
   if (window.HQTools) HQTools.init(window.HQ);
+  if (window.HQGrow) HQGrow.init(window.HQ);
   start();
 })();

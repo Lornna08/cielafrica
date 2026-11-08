@@ -257,8 +257,9 @@
       '<section class="pk-spec wrap"><div class="pk-spec__card"><div><span class="eyebrow"><span class="brk">‹</span> The book</span><h2>Price by pages</h2><p>Start with ' + BOOK.pages.min + ' pages and add more as you go: the price depends on the number of pages.</p></div>' +
       '<div class="pk-calc"><label for="pkPages">Pages <output id="pkPagesOut">' + BOOK.pages.default + '</output></label><input type="range" id="pkPages" min="' + BOOK.pages.min + '" max="' + BOOK.pages.max + '" step="' + BOOK.pages.step + '" value="' + BOOK.pages.default + '"><div class="pk-calc__price" id="pkPrice">' + esc(priceLabel(BOOK.pages.default)) + '</div>' + (price(BOOK.pages.min) == null ? '<p class="pk-calc__note">Prices are being finalised. You can design and save your book now.</p>' : '') + '</div></div></section>' +
       trust() + faq() +
-      '<section class="wrap"><div class="pk-band"><h2>Ready to make yours?</h2><p>Choose a cover and start adding photos.</p><button class="btn btn--p btn--lg" data-pick>Create my photo book ' + ICON.arrow + '</button><p class="pk-band__track">Already ordered? <a data-go href="' + BASE + '/track">Track your order</a> · <a data-go href="' + BASE + '/my-books">My books</a></p></div></section>';
-    bindCommon(); flowStart(flow); continueCard(); if (window.PBKShop) PBKShop.resumeBanner(main);
+      '<section class="wrap"><div class="pk-band"><h2>Ready to make yours?</h2><p>Choose a cover and start adding photos.</p><button class="btn btn--p btn--lg" data-pick>Create my photo book ' + ICON.arrow + '</button><p class="pk-band__track">Already ordered? <a data-go href="' + BASE + '/track">Track your order</a> · <a data-go href="' + BASE + '/my-books">My books</a></p></div></section>' +
+      '<section class="wrap" data-subscribe="photobooks" data-light aria-label="Subscribe to Photo Books emails"></section>';
+    bindCommon(); flowStart(flow); continueCard(); if (window.PBKShop) PBKShop.resumeBanner(main); if (window.CielSub) CielSub.mount(main);
     var r = document.getElementById('pkPages');
     if (r) r.addEventListener('input', function () { document.getElementById('pkPagesOut').textContent = r.value; document.getElementById('pkPrice').textContent = priceLabel(+r.value); });
   }
