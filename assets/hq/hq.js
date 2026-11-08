@@ -6,6 +6,12 @@
 (function () {
   'use strict';
   var root = document.getElementById('hq');
+  /* questions are asked in the page (the phone's own pop-ups are blocked or silent in many app views) */
+  window.HQAsk = {
+    confirm: function (t, o) { o = o || {}; var m = /^(Delete|Remove|Discard)\b/.exec(t); if (m && !o.ok) { o.ok = m[1]; o.danger = true; } if (!o.ok) { o.ok = 'Yes'; o.primary = true; } return window.PBKAsk ? PBKAsk.confirm(t, o) : Promise.resolve(window.confirm(t)); },
+    prompt: function (t, v, o) { o = o || {}; if (!o.ok) { o.ok = 'OK'; o.primary = true; } return window.PBKAsk ? PBKAsk.prompt(t, v, o) : Promise.resolve(window.prompt(t, v)); },
+    alert: function (t, o) { return window.PBKAsk ? PBKAsk.alert(t, o) : Promise.resolve(window.alert(t)); }
+  };
   var CFG = (window.CIEL && CIEL.photobooks) || {};
   var S = { view: 'overview', orders: [], inbox: [], sources: {}, tasks: [], events: [], notes: [], projects: [], loaded: false, pulse: null, filt: { kind: 'all', q: '', st: 'open' }, cal: null };
 
@@ -19,7 +25,7 @@
   var inflight = 0;
   function prog(d) { var p = document.getElementById('prog'); if (!p) return; inflight = Math.max(0, inflight + d); if (inflight) { p.className = 'hq-prog'; void p.offsetWidth; p.className = 'hq-prog is-on'; } else { p.className = 'hq-prog is-done'; } }
   function api(url, body) {
-    var get = body === undefined, quiet = /route=(pulse|mail-unread)\b/.test(url);
+    var get = body === undefined, quiet = /route=(pulse|mail-unread|camp-due)\b/.test(url);
     if (!quiet) { prog(1); return api0(url, body, get).then(function (r) { prog(-1); return r; }, function (e) { prog(-1); throw e; }); }
     return api0(url, body, get);
   }
@@ -62,12 +68,13 @@
     search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
     pie: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>',
     send: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>',
+    star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>',
     menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>'
   };
-  var NAV = [['overview', 'Overview', I.home, 'Main'], ['analytics', 'Analytics', I.chart], ['reports', 'Reports & exports', I.pie], ['orders', 'Orders', I.orders, 'Commerce'], ['photobooks', 'Photo Books', I.book], ['payments', 'Payments', I.card], ['products', 'Products', I.box], ['templates', 'Website templates', I.web], ['inbox', 'Inbox', I.inbox, 'Customers & sales'], ['leads', 'Leads', I.target], ['customers', 'Customers', I.people], ['campaigns', 'Email campaigns', I.send], ['projects', 'Projects', I.folder], ['website', 'Website editor', I.globe, 'Website'], ['content', 'Content library', I.image], ['calendar', 'Calendar', I.cal, 'Operations'], ['tasks', 'Tasks', I.tasks], ['activity', 'Activity log', I.act, 'System'], ['settings', 'Setup', I.gear]];
+  var NAV = [['overview', 'Overview', I.home, 'Main'], ['analytics', 'Analytics', I.chart], ['reports', 'Reports & exports', I.pie], ['orders', 'Orders', I.orders, 'Commerce'], ['photobooks', 'Photo Books', I.book], ['payments', 'Payments', I.card], ['invoices', 'Invoices & receipts', I.pen], ['products', 'Products', I.box], ['templates', 'Website templates', I.web], ['inbox', 'Inbox', I.inbox, 'Customers & sales'], ['leads', 'Leads', I.target], ['customers', 'Customers', I.people], ['campaigns', 'Email campaigns', I.send], ['reviews', 'Reviews', I.star], ['projects', 'Projects', I.folder], ['website', 'Website editor', I.globe, 'Website'], ['content', 'Content library', I.image], ['calendar', 'Calendar', I.cal, 'Operations'], ['tasks', 'Tasks', I.tasks], ['activity', 'Activity log', I.act, 'System'], ['settings', 'Setup', I.gear]];
 
   /* ---------- order sources, normalised ---------- */
-  var KIND = { photobook: ['Photo book', '#ff5a1f'], shop: ['Shop', '#1f4fb5'], domain: ['Domain', '#5b3fd1'], whatsapp: ['WhatsApp', '#1fa855'] };
+  var KIND = { photobook: ['Photo book', '#ff5a1f'], shop: ['Shop', '#1f4fb5'], domain: ['Domain', '#5b3fd1'], whatsapp: ['WhatsApp', '#1fa855'], invoice: ['Invoice', '#0f766e'] };
   var WA_SET = ['pending', 'contacted', 'confirmed', 'paid', 'done', 'cancelled'];
   var WA_LABEL = { pending: 'Pending', contacted: 'Contacted', confirmed: 'Confirmed', paid: 'Paid', done: 'Delivered', cancelled: 'Cancelled', new: 'New' };
   var PB_LABEL = { awaiting_payment: 'Awaiting payment', awaiting_confirmation: 'Paybill: confirm payment', whatsapp_request: 'WhatsApp request', payment_failed: 'Payment failed', paid: 'Waiting for pages', preparing: 'Waiting for pages', ready: 'Pages received', printing: 'Printing', ready_collection: 'Ready to collect', dispatched: 'Dispatched', delivered: 'Delivered', cancelled: 'Cancelled', refunded: 'Refunded' };
@@ -91,10 +98,10 @@
     ]).then(function (r) { S.base = r[0].concat(r[1], r[2]); mergeOrders(); });
   }
   function mergeOrders() {
-    S.orders = (S.base || []).concat(S.inbox.filter(function (x) { return x.kind === 'whatsapp'; }).map(fromWA)).sort(function (a, b) { return (b.at || 0) - (a.at || 0); });
+    S.orders = (S.base || []).concat(S.inbox.filter(function (x) { return x.kind === 'whatsapp'; }).map(fromWA), window.HQMoney ? (S.invoices || []).map(HQMoney.invToOrder) : []).sort(function (a, b) { return (b.at || 0) - (a.at || 0); });
   }
   function loadLists() {
-    return Promise.all(['tasks', 'events', 'notes', 'projects'].map(function (c) { return api('/api/hq?route=list&c=' + c).then(function (r) { S[c] = r.items || []; }, function (e) { S[c] = []; S.listErr = e.message; }); }));
+    return Promise.all(['tasks', 'events', 'notes', 'projects', 'invoices', 'expenses'].map(function (c) { return api('/api/hq?route=list&c=' + c).then(function (r) { S[c] = r.items || []; }, function (e) { S[c] = []; S.listErr = e.message; }); }));
   }
   function saveItem(c, item) { return api('/api/hq?route=save', { c: c, item: item }).then(function (r) { var l = S[c], i = l.findIndex(function (x) { return x.id === r.item.id; }); if (i >= 0) l[i] = r.item; else l.push(r.item); return r.item; }); }
   function delItem(c, id) { return api('/api/hq?route=save', { c: c, op: 'delete', id: id }).then(function () { S[c] = S[c].filter(function (x) { return x.id !== id; }); }); }
@@ -262,7 +269,7 @@
     if (!NAV.some(function (n) { return n[0] === v; })) v = 'overview';
     document.querySelectorAll('.drawer,.modal').forEach(function (x) { x.remove(); });
     S.view = v; navs(); root.classList.toggle('is-ov', v === 'overview');
-    var titles = { overview: 'Good ' + (new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening') + ', Lorna', orders: 'Orders', calendar: 'Calendar', tasks: 'Tasks', customers: 'Customers', website: 'Website', settings: 'Setup', inbox: 'Inbox', content: 'Content library', activity: 'Activity log', payments: 'Payments', products: 'Products', templates: 'Website templates', photobooks: 'Photo Books', leads: 'Leads', projects: 'Projects', analytics: 'Analytics', reports: 'Reports & exports', campaigns: 'Email campaigns' };
+    var titles = { overview: 'Good ' + (new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening') + ', Lorna', orders: 'Orders', calendar: 'Calendar', tasks: 'Tasks', customers: 'Customers', website: 'Website', settings: 'Setup', inbox: 'Inbox', content: 'Content library', activity: 'Activity log', payments: 'Payments', products: 'Products', templates: 'Website templates', photobooks: 'Photo Books', leads: 'Leads', projects: 'Projects', analytics: 'Analytics', reports: 'Reports & exports', campaigns: 'Email campaigns', invoices: 'Invoices & receipts', reviews: 'Reviews' };
     document.getElementById('ttl').innerHTML = esc(titles[v]) + '<small>' + new Date().toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + '</small>';
     document.getElementById('topx').innerHTML = v === 'calendar' ? '<button class="b b--p b--sm" data-newev>' + I.plus + '<span>Event</span></button>' : v === 'tasks' ? '<button class="b b--p b--sm" data-newtk>' + I.plus + '<span>Task</span></button>' : '';
     var tb = document.querySelector('[data-newev]'); if (tb) tb.onclick = function () { eventModal({ date: today() }); };
@@ -275,6 +282,8 @@
     else if (v === 'analytics' && window.HQAnalytics) HQAnalytics.render();
     else if (v === 'reports' && window.HQGrow) HQGrow.reports();
     else if (v === 'campaigns' && window.HQGrow) HQGrow.campaigns(h[1]);
+    else if (v === 'reviews' && window.HQGrow) HQGrow.reviews();
+    else if (v === 'invoices' && window.HQMoney) HQMoney.invoices();
     else if (v === 'photobooks' && h[1] === 'prices' && window.HQSite) HQSite.renderCatalog('photobooks');
     else if (v === 'photobooks') photobooks();
     else ({ overview: overview, orders: orders, inbox: inbox, calendar: calendar, tasks: tasks, customers: customers, content: content, activity: activity, payments: payments, settings: settings })[v]();
@@ -316,6 +325,7 @@
       if (o.paid && !CLOSED.test(o.status) && Date.now() - o.at < 2 * 864e5 && !(o.kind === 'photobook' && o.status === 'ready')) attention.push(['o', tg + 'New ' + KIND[o.kind][0].toLowerCase() + ' order ' + o.ref + ' · ' + money(o.total), (o.customer.name || '') + ' · ' + o.label + ' · ' + dt(o.at), '#orders/' + o.ref]);
       if (o.status === 'whatsapp_request') attention.push(['o', tg + 'WhatsApp order request · ' + o.ref + ' · ' + money(o.total), (o.customer.name || '') + (o.customer.phone ? ' · +' + o.customer.phone : '') + ' · reply on WhatsApp · ' + dt(o.at), '#orders/' + o.ref]);
       if (o.status === 'awaiting_confirmation') attention.push(['o', tg + 'Paybill payment to confirm · ' + o.ref + ' · ' + money(o.total), (o.customer.name || '') + ' · check M-Pesa, then confirm · ' + dt(o.at), '#orders/' + o.ref]);
+      if (o.kind === 'invoice' && o.status === 'overdue') attention.push(['r', 'Invoice ' + o.ref + ' is overdue · ' + money(o.total), (o.customer.name || '') + (o.raw.due ? ' · was due ' + d2(o.raw.due + 'T12:00') : ''), '#orders/' + o.ref]);
       if (o.kind === 'whatsapp' && o.status === 'pending') attention.push(['g', 'WhatsApp order ' + o.ref + (o.customer.name ? ' · ' + o.customer.name : ''), o.summary.slice(0, 80) || 'Reply on WhatsApp', '#orders/' + o.ref]);
       if (o.test && o.kind === 'photobook' && o.status === 'ready') attention.push(['b', tg + o.ref + ' pages received', 'Test only: don’t print', '#orders/' + o.ref]);
       if (o.test) return;
@@ -391,6 +401,7 @@
     return d;
   }
   function orderDrawer(o) {
+    if (o.kind === 'invoice' && window.HQMoney) return HQMoney.editInvoice(o.raw);
     var r = o.raw, c = o.customer, set = o.kind === 'photobook' ? PB_SET : o.kind === 'shop' ? SHOP_SET : o.kind === 'whatsapp' ? WA_SET : null;
     var a = r.address, g = r.gift, addr = a ? [a.line1, a.area, a.town, a.county].filter(Boolean).join(', ') + (a.notes ? ' (' + a.notes + ')' : '') : '';
     var labels = o.kind === 'photobook' ? PB_LABEL : o.kind === 'whatsapp' ? WA_LABEL : null;
@@ -411,18 +422,19 @@
       (o.kind === 'shop' && o.paid ? '<div class="card" style="padding:1rem;display:grid;gap:.6rem"><b>Download link</b><span class="muted" id="dlS">' + (r.dl ? 'Valid until ' + d2(r.dl.until) + (r.verified ? '' : '') : r.verified === false ? 'The amount paid didn’t match the published prices, so no link was sent automatically. Check the payment, then make one.' : (r.lines || []).length ? 'No link yet.' : 'This order was placed before automatic downloads, so send its files by email.') + '</span><div class="row" style="flex-wrap:wrap;gap:.4rem">' + ((r.lines || []).length ? '<button class="b b--sm" data-dl="copy">' + (r.dl ? 'Copy link' : 'Make a link') + '</button><button class="b b--sm" data-dl="email"' + (c.email ? '' : ' disabled') + '>Email it to the customer</button>' + (r.dl ? '<button class="b b--sm b--ghost" data-dl="renew">New link (old one stops)</button>' : '') : '') + '</div></div>' : '') +
       '<button class="b" id="dtask">' + I.tasks + '<span>Make a task for this order</span></button>';
     var d = drawer(esc(o.ref), h, function () { if (location.hash.indexOf('#orders/') === 0) history.replaceState(null, '', '#orders'); });
+    if (window.HQMoney) { try { HQMoney.extras(o, d); } catch (e) { console.error(e); } }
     var pyok = d.querySelector('#pyok'), pyno = d.querySelector('#pyno');
     function pyDone(x) { var n = fromPB(x.order); S.orders = S.orders.map(function (y) { return y.ref === n.ref ? n : y; }); d.remove(); orderDrawer(n); }
-    if (pyok) pyok.onclick = function () { if (!confirm('Confirm that ' + money(o.total) + ' (code ' + r.payment.code + ') reached Paybill ' + r.payment.paybill + '?')) return; pyok.disabled = true; api('/api/photobooks?route=pbk-admin-confirm', { ref: o.ref, ok: true }).then(function (x) { toast('Payment confirmed: customer emailed'); pyDone(x); }, function (e) { pyok.disabled = false; toast(e.message); }); };
-    if (pyno) pyno.onclick = function () { var note = prompt('Payment not found. A short note for the customer (optional):', ''); if (note === null) return; api('/api/photobooks?route=pbk-admin-confirm', { ref: o.ref, ok: false, note: note }).then(function (x) { toast('Order put on hold: customer emailed'); pyDone(x); }, function (e) { toast(e.message); }); };
+    if (pyok) pyok.onclick = function () { HQAsk.confirm('Confirm that ' + money(o.total) + ' (code ' + r.payment.code + ') reached Paybill ' + r.payment.paybill + '?').then(function (ok) { if (!ok) return; pyok.disabled = true; api('/api/photobooks?route=pbk-admin-confirm', { ref: o.ref, ok: true }).then(function (x) { toast('Payment confirmed: customer emailed'); pyDone(x); }, function (e) { pyok.disabled = false; toast(e.message); }); }); };
+    if (pyno) pyno.onclick = function () { HQAsk.prompt('Payment not found. A short note for the customer (optional):', '').then(function (note) { if (note === null) return; api('/api/photobooks?route=pbk-admin-confirm', { ref: o.ref, ok: false, note: note }).then(function (x) { toast('Order put on hold: customer emailed'); pyDone(x); }, function (e) { toast(e.message); }); }); };
     d.querySelectorAll('[data-dl]').forEach(function (b) { b.onclick = function () {
-      var op = b.getAttribute('data-dl'); if (op === 'renew' && !confirm('Make a new link? The old one stops working.')) return; b.disabled = true;
+      var op = b.getAttribute('data-dl'); (op === 'renew' ? HQAsk.confirm('Make a new link? The old one stops working.') : Promise.resolve(true)).then(function (ok) { if (!ok) return; b.disabled = true;
       api('/api/hq?route=shop-link', { id: r.id, op: op }).then(function (x) {
         if (op !== 'email' && navigator.clipboard) navigator.clipboard.writeText(x.url).catch(function () { });
         toast(op === 'email' ? (x.emailed ? 'Emailed to ' + c.email : 'The email couldn’t be sent. The link is copied instead.') : 'Link copied'); if (op === 'email' && !x.emailed && navigator.clipboard) navigator.clipboard.writeText(x.url).catch(function () { });
         var n = fromShop(x.order); S.orders = S.orders.map(function (y) { return y.ref === n.ref ? n : y; }); d.remove(); orderDrawer(n);
-      }, function (e) { b.disabled = false; toast(e.message); });
-    }; });
+      }, function (e) { b.disabled = false; toast(e.message); }); });
+}; });
     var sb = d.querySelector('#db');
     if (sb) sb.onclick = function () {
       sb.disabled = true; var st = d.querySelector('#ds').value, note = d.querySelector('#dn').value;
@@ -479,7 +491,7 @@
       var it = { id: e.id, title: m.querySelector('#et').value, date: m.querySelector('#ed').value, type: m.querySelector('#ey').value, allDay: all, start: all ? '' : m.querySelector('#es').value, finish: all ? '' : m.querySelector('#ef').value, end: m.querySelector('#ee').value > m.querySelector('#ed').value ? m.querySelector('#ee').value : '', client: m.querySelector('#ec').value, location: m.querySelector('#el').value, notes: m.querySelector('#en').value, ref: e.ref };
       saveItem('events', it).then(function () { m.remove(); toast('Event saved'); route(); }, function (er) { toast(er.message); });
     };
-    var del = m.querySelector('[data-del]'); if (del) del.onclick = function () { if (!confirm('Delete this event?')) return; delItem('events', e.id).then(function () { m.remove(); toast('Deleted'); route(); }); };
+    var del = m.querySelector('[data-del]'); if (del) del.onclick = function () { HQAsk.confirm('Delete this event?').then(function (ok) { if (!ok) return; delItem('events', e.id).then(function () { m.remove(); toast('Deleted'); route(); }); }); };
     setTimeout(function () { m.querySelector('#et').focus(); }, 50);
   }
 
@@ -519,7 +531,7 @@
       var it = { id: t.id, title: m.querySelector('#tt').value, status: m.querySelector('#ts').value, priority: m.querySelector('#tp').value, due: m.querySelector('#td').value, tag: m.querySelector('#tg').value, assignee: m.querySelector('#ta').value, ref: m.querySelector('#tr').value, notes: m.querySelector('#tn').value };
       saveItem('tasks', it).then(function () { m.remove(); toast('Task saved'); if (S.view === 'tasks') tasks(); else route(); navs(); }, function (er) { toast(er.message); });
     };
-    var del = m.querySelector('[data-del]'); if (del) del.onclick = function () { if (!confirm('Delete this task?')) return; delItem('tasks', t.id).then(function () { m.remove(); route(); }); };
+    var del = m.querySelector('[data-del]'); if (del) del.onclick = function () { HQAsk.confirm('Delete this task?').then(function (ok) { if (!ok) return; delItem('tasks', t.id).then(function () { m.remove(); route(); }); }); };
     setTimeout(function () { m.querySelector('#tt').focus(); }, 50);
   }
 
@@ -577,7 +589,7 @@
     if (m.status === 'new') set('contacted').then(function () { d.querySelector('#ms').value = 'contacted'; }, function () { });
     d.querySelector('#ms').onchange = function () { set(this.value).then(function () { toast('Saved'); }, function (e) { toast(e.message); }); };
     d.querySelector('#mt').onclick = function () { taskModal({ status: 'todo', title: 'Reply to ' + (c.name || c.email || 'message') }); };
-    d.querySelector('#md').onclick = function () { if (!confirm('Delete this message?')) return; api('/api/hq?route=inbox-status', { id: m.id, op: 'delete' }).then(function () { S.inbox = S.inbox.filter(function (y) { return y.id !== m.id; }); d.remove(); history.replaceState(null, '', '#inbox'); route(); }, function (e) { toast(e.message); }); };
+    d.querySelector('#md').onclick = function () { HQAsk.confirm('Delete this message?').then(function (ok) { if (!ok) return; api('/api/hq?route=inbox-status', { id: m.id, op: 'delete' }).then(function () { S.inbox = S.inbox.filter(function (y) { return y.id !== m.id; }); d.remove(); history.replaceState(null, '', '#inbox'); route(); }, function (e) { toast(e.message); }); }); };
   }
 
   /* ---------- website & setup ---------- */
@@ -689,6 +701,7 @@
     upd();
     b.querySelector('#spb').onclick = function () { pushState().then(function (st) { return st === 'on' ? disablePush() : enablePush(); }).then(upd); };
     var si = b.querySelector('#spi'); if (si) si.onclick = install;
+    if (window.HQMoney) HQMoney.setupCards(b);
   }
 
   window.HQ = { pushState: pushState, enablePush: enablePush, disablePush: disablePush, I: I, NAV: NAV, KIND: KIND, orderDrawer: orderDrawer, api: api, toast: toast, esc: esc, dt: dt, d2: d2, money: money, today: today, body: body, modal: modal, drawer: drawer, S: S, navs: navs, route: route, saveItem: saveItem, delItem: delItem, taskModal: taskModal, eventModal: eventModal };
@@ -697,6 +710,8 @@
   if (window.HQMail) HQMail.init(window.HQ);
   if (window.HQAnalytics) HQAnalytics.init(window.HQ);
   if (window.HQTools) HQTools.init(window.HQ);
+  window.HQ.refreshOrders = function () { mergeOrders(); navs(); };
   if (window.HQGrow) HQGrow.init(window.HQ);
+  if (window.HQMoney) HQMoney.init(window.HQ);
   start();
 })();

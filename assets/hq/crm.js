@@ -109,7 +109,7 @@
         if (done) done(saved); else H.route();
       }, function (e) { H.toast(e.message); });
     };
-    var del = m.querySelector('[data-del]'); if (del) del.onclick = function () { if (!confirm('Delete this project? Its tasks stay on the task board.')) return; H.delItem('projects', p.id).then(function () { m.remove(); history.replaceState(null, '', '#projects'); H.route(); }); };
+    var del = m.querySelector('[data-del]'); if (del) del.onclick = function () { HQAsk.confirm('Delete this project? Its tasks stay on the task board.').then(function (ok) { if (!ok) return; H.delItem('projects', p.id).then(function () { m.remove(); history.replaceState(null, '', '#projects'); H.route(); }); }); };
   }
   function projectDrawer(p) {
     var T = S().tasks.filter(function (t) { return t.ref === p.id; }), g = progress(p);

@@ -91,10 +91,8 @@
         D.onchange = W.onchange = function () { run({ days: +D.value, what: W.value }); };
         document.getElementById('stGo').onclick = function () {
           var x = document.getElementById('stX').checked;
-          if (!confirm('Delete the ' + (W.value === 'all' ? 'print files and previews' : 'print files') + ' of ' + r.finished.orders + ' order(s)' + (x ? ' and old unordered pages' : '') + '? This can’t be undone.')) return;
-          this.disabled = true; document.getElementById('stM').textContent = 'Deleting…';
-          run({ days: +D.value, what: W.value, drafts: x, run: true }).then(function (z) { el.innerHTML = ''; list(); setTimeout(function () { alert('Deleted ' + z.deleted + ' files (' + mb(z.bytes) + ').'); }, 300); }, function (e) { document.getElementById('stM').textContent = e.message; });
-        };
+          PBKAsk.confirm('Delete the ' + (W.value === 'all' ? 'print files and previews' : 'print files') + ' of ' + r.finished.orders + ' order(s)' + (x ? ' and old unordered pages' : '') + '? This can’t be undone.').then(function (ok) { if (!ok) return; this.disabled = true; document.getElementById('stM').textContent = 'Deleting…';
+          run({ days: +D.value, what: W.value, drafts: x, run: true }).then(function (z) { el.innerHTML = ''; list(); setTimeout(function () { PBKAsk.alert('Deleted ' + z.deleted + ' files (' + mb(z.bytes) + ').'); }, 300); }, function (e) { document.getElementById('stM').textContent = e.message; }); }); };
       }, function (e) { el.innerHTML = '<div class="ao__card"><p class="ao__msg">' + esc(e.message) + '</p></div>'; });
     }
     run({ days: 30, what: 'print' });
@@ -113,10 +111,8 @@
       bt.onclick = function () {
         var what = bt.getAttribute('data-pg'), f = document.getElementById('pgF');
         if (f && !f.checked) { document.getElementById('pgM').textContent = 'Tick “I’m sure” first: this order isn’t finished.'; return; }
-        if (!confirm(what === 'all' ? 'Delete all page files and previews of ' + o.ref + '? The order record and cover picture stay. This can’t be undone.' : 'Delete the print files of ' + o.ref + '? The previews stay, so you can still look at the book. This can’t be undone.')) return;
-        bt.disabled = true;
-        api('pbk-admin-purge', { ref: o.ref, what: what, force: !!(f && f.checked) }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { bt.disabled = false; document.getElementById('pgM').textContent = e.message; });
-      };
+        PBKAsk.confirm(what === 'all' ? 'Delete all page files and previews of ' + o.ref + '? The order record and cover picture stay. This can’t be undone.' : 'Delete the print files of ' + o.ref + '? The previews stay, so you can still look at the book. This can’t be undone.').then(function (ok) { if (!ok) return; bt.disabled = true;
+        api('pbk-admin-purge', { ref: o.ref, what: what, force: !!(f && f.checked) }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { bt.disabled = false; document.getElementById('pgM').textContent = e.message; }); }); };
     });
   }
   /* ---------- corrections: let the customer fix their book after ordering ---------- */
@@ -153,13 +149,13 @@
       el.innerHTML = h;
       var q = function (s2) { return el.querySelector(s2); };
       if (q('[data-copy]')) q('[data-copy]').onclick = function () { var i = q('.ao__fxl input'); i.select(); (navigator.clipboard ? navigator.clipboard.writeText(i.value) : Promise.reject()).then(function () { q('[data-copy]').textContent = 'Copied ✓'; }, function () { document.execCommand('copy'); }); };
-      if (q('[data-rv]')) q('[data-rv]').onclick = function () { api('pbk-admin-reopen', { ref: o.ref, reviewed: true }).then(function (x) { done(x, url); }, function (er) { alert(er.message); }); };
-      if (q('[data-close]')) q('[data-close]').onclick = function () { if (!confirm('Close corrections? The customer’s link stops working.')) return; api('pbk-admin-reopen', { ref: o.ref, close: true }).then(function (x) { done(x); }, function (er) { alert(er.message); }); };
+      if (q('[data-rv]')) q('[data-rv]').onclick = function () { api('pbk-admin-reopen', { ref: o.ref, reviewed: true }).then(function (x) { done(x, url); }, function (er) { PBKAsk.alert(er.message); }); };
+      if (q('[data-close]')) q('[data-close]').onclick = function () { PBKAsk.confirm('Close corrections? The customer’s link stops working.').then(function (ok) { if (!ok) return; api('pbk-admin-reopen', { ref: o.ref, close: true }).then(function (x) { done(x); }, function (er) { PBKAsk.alert(er.message); }); }); };
       if (q('[data-open]')) q('[data-open]').onclick = function () {
         var pids = [].slice.call(el.querySelectorAll('[data-fp]')).filter(function (c) { return c.checked; }).map(function (c) { return c.value; });
-        if (prints.length > 1 && !pids.length) return alert('Choose at least one book.');
+        if (prints.length > 1 && !pids.length) return PBKAsk.alert('Choose at least one book.');
         var btn = q('[data-open]'); btn.disabled = true; btn.textContent = 'Opening…';
-        api('pbk-admin-reopen', { ref: o.ref, note: q('#fxn').value, days: +q('#fxd').value, notify: q('#fxe').checked, pids: pids.length ? pids : undefined }).then(function (x) { done(x, x.url); }, function (er) { btn.disabled = false; btn.textContent = 'Allow corrections'; alert(er.message); });
+        api('pbk-admin-reopen', { ref: o.ref, note: q('#fxn').value, days: +q('#fxd').value, notify: q('#fxe').checked, pids: pids.length ? pids : undefined }).then(function (x) { done(x, x.url); }, function (er) { btn.disabled = false; btn.textContent = 'Allow corrections'; PBKAsk.alert(er.message); });
       };
     }
     draw();
@@ -195,7 +191,7 @@
       }
       if (sh.length) h += '<p class="ao__msg"><b>Shared</b><br>' + sh.slice().reverse().map(function (x) { return when(x.at) + ' · ' + (x.via === 'email' ? 'email to ' + esc(x.to || '') : x.via === 'whatsapp' ? 'WhatsApp' : 'link') + ' · ' + (x.delivery === 'printer' ? 'printer delivers' : 'you deliver') + (x.include && x.include.phone ? ' · phone' : '') + (x.include && x.include.name ? ' · name' : ''); }).join('<br>') + '</p>';
       el.innerHTML = h;
-      q('#pcS').onclick = function () { api('pbk-printer-save', { name: q('#pcN').value, email: q('#pcE').value, phone: q('#pcP').value }).then(function (x) { PRN = x.printer; draw(PRN); }, function (e) { alert(e.message); }); };
+      q('#pcS').onclick = function () { api('pbk-printer-save', { name: q('#pcN').value, email: q('#pcE').value, phone: q('#pcP').value }).then(function (x) { PRN = x.printer; draw(PRN); }, function (e) { PBKAsk.alert(e.message); }); };
       if (!ready) return;
       q('#prZ').onclick = function () {
         var bt = q('#prZ'), m = q('#prM'); bt.disabled = true;
@@ -218,7 +214,7 @@
                 if (w) w.location = 'https://wa.me/' + y.printer.phone + '?text=' + encodeURIComponent(y.text);
                 draw(PRN || P);
                 q('#prM').innerHTML = (via === 'email' ? '✓ Emailed to ' + esc(y.printer.email) + '. ' : via === 'whatsapp' ? '✓ WhatsApp opened with the message. ' : '') + 'Link: <a href="' + esc(y.url) + '" target="_blank" rel="noopener">open the printer’s page</a>';
-              }, function (e) { if (w) w.close(); b.disabled = false; alert(e.message); });
+              }, function (e) { if (w) w.close(); b.disabled = false; PBKAsk.alert(e.message); });
             };
           });
         }, function (e) { q('#prM').textContent = e.message; });
@@ -252,15 +248,15 @@
       wireTop(); document.getElementById('bk').onclick = drawList;
       fixBox(o, r); printerBox(o, r); purgeBox(o, r);
       var pyok = document.getElementById('pyok'), pyno = document.getElementById('pyno');
-      if (pyok) pyok.onclick = function () { if (!confirm('Confirm that ' + money(o.total) + ' (code ' + o.payment.code + ') reached Paybill ' + o.payment.paybill + '?')) return; pyok.disabled = true; api('pbk-admin-confirm', { ref: o.ref, ok: true }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { pyok.disabled = false; alert(e.message); }); };
-      if (pyno) pyno.onclick = function () { var note = prompt('Payment not found. A short note for the customer (optional):', ''); if (note === null) return; api('pbk-admin-confirm', { ref: o.ref, ok: false, note: note }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { alert(e.message); }); };
-      var td = document.getElementById('tdel'); if (td) td.onclick = function () { if (!confirm('Delete test order ' + o.ref + ' and its files now?')) return; api('pbk-admin-delete', { ref: o.ref }).then(function () { all = all.filter(function (y) { return y.ref !== o.ref; }); drawList(); }, function (e) { alert(e.message); }); };
-      document.getElementById('sb').onclick = function () { api('pbk-admin-status', { ref: o.ref, status: document.getElementById('ss').value, note: document.getElementById('sn').value, notify: document.getElementById('se').checked }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { alert(e.message); }); };
+      if (pyok) pyok.onclick = function () { PBKAsk.confirm('Confirm that ' + money(o.total) + ' (code ' + o.payment.code + ') reached Paybill ' + o.payment.paybill + '?').then(function (ok) { if (!ok) return; pyok.disabled = true; api('pbk-admin-confirm', { ref: o.ref, ok: true }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { pyok.disabled = false; PBKAsk.alert(e.message); }); }); };
+      if (pyno) pyno.onclick = function () { PBKAsk.prompt('Payment not found. A short note for the customer (optional):', '').then(function (note) { if (note === null) return; api('pbk-admin-confirm', { ref: o.ref, ok: false, note: note }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { PBKAsk.alert(e.message); }); }); };
+      var td = document.getElementById('tdel'); if (td) td.onclick = function () { PBKAsk.confirm('Delete test order ' + o.ref + ' and its files now?').then(function (ok) { if (!ok) return; api('pbk-admin-delete', { ref: o.ref }).then(function () { all = all.filter(function (y) { return y.ref !== o.ref; }); drawList(); }, function (e) { PBKAsk.alert(e.message); }); }); };
+      document.getElementById('sb').onclick = function () { api('pbk-admin-status', { ref: o.ref, status: document.getElementById('ss').value, note: document.getElementById('sn').value, notify: document.getElementById('se').checked }).then(function (x) { all = all.map(function (y) { return y.ref === o.ref ? x.order : y; }); detail(o.ref); }, function (e) { PBKAsk.alert(e.message); }); };
       (o.items || []).forEach(function (it) {
         var b = r.books[it.projectId], el = root.querySelector('[data-pid="' + it.projectId + '"]'); if (!b || !el) return;
         var msg = el.querySelector('[data-msg]');
         el.querySelectorAll('[data-old]').forEach(function (bt) { bt.onclick = function () {
-          var v = b.earlier.filter(function (x) { return x.dir === bt.getAttribute('data-old'); })[0]; if (!v || !v.view.length) return alert('No preview pages were kept for that version.');
+          var v = b.earlier.filter(function (x) { return x.dir === bt.getAttribute('data-old'); })[0]; if (!v || !v.view.length) return PBKAsk.alert('No preview pages were kept for that version.');
           var n = v.view.length - 2, tr = trim(b.book || {});
           PBKFlip.open({ title: it.name + ' · ' + (v.round ? 'correction ' + v.round : 'first version'), count: n, board: '#3b2f26', ratio: tr.h / tr.w, page: function (i) { var k = i === 0 ? 0 : i === n + 3 ? n + 1 : (i === 1 || i === n + 2) ? -1 : i - 1; if (k < 0 || !v.view[k]) return null; return file(v.view[k].path).then(function (bl) { return URL.createObjectURL(bl); }); } });
         }; });

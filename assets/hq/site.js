@@ -75,7 +75,7 @@
     b.querySelectorAll('#wsTabs [data-t]').forEach(function (x) { x.onclick = function () { location.hash = '#website/' + x.getAttribute('data-t'); }; });
     b.querySelectorAll('#wsDev [data-d]').forEach(function (x) { x.onclick = function () { W.dev = x.getAttribute('data-d'); draw(); }; });
     b.querySelector('#wsPub').onclick = publish;
-    b.querySelector('#wsDiscard').onclick = function () { if (!confirm('Discard all unpublished changes and go back to what is live?')) return; H.api('/api/hq?route=site-draft-save', { clear: true }).then(function () { W.model = clone(W.base); W.items = { products: {}, templates: {} }; W.pb = clone(W.pbBase); W.uploads = {}; W.draftAt = null; W.dirty = false; draw(); H.toast('Draft discarded'); }); };
+    b.querySelector('#wsDiscard').onclick = function () { HQAsk.confirm('Discard all unpublished changes and go back to what is live?').then(function (ok) { if (!ok) return; H.api('/api/hq?route=site-draft-save', { clear: true }).then(function () { W.model = clone(W.base); W.items = { products: {}, templates: {} }; W.pb = clone(W.pbBase); W.uploads = {}; W.draftAt = null; W.dirty = false; draw(); H.toast('Draft discarded'); }); }); };
     var f = b.querySelector('#wsForm');
     ({ home: formHome, menus: formMenus, prices: formPrices, history: formHistory })[W.tab](f);
     status(); preview(); fit();
@@ -160,7 +160,7 @@
       el.querySelectorAll('[data-col]').forEach(function (ul) { sortable(ul, m.footer[+ul.getAttribute('data-col')].links, foot); });
       el.querySelectorAll('[data-dl]').forEach(function (bt) { bt.onclick = function () { m.footer[+bt.closest('[data-col]').getAttribute('data-col')].links.splice(+bt.getAttribute('data-dl'), 1); changed(); foot(); }; });
       el.querySelectorAll('[data-al]').forEach(function (bt) { bt.onclick = function () { m.footer[+bt.getAttribute('data-al')].links.push({ label: '', href: '' }); changed(); foot(); }; });
-      el.querySelectorAll('[data-dcol]').forEach(function (bt) { bt.onclick = function () { if (!confirm('Remove this footer column?')) return; m.footer.splice(+bt.getAttribute('data-dcol'), 1); changed(); foot(); }; });
+      el.querySelectorAll('[data-dcol]').forEach(function (bt) { bt.onclick = function () { HQAsk.confirm('Remove this footer column?').then(function (ok) { if (!ok) return; m.footer.splice(+bt.getAttribute('data-dcol'), 1); changed(); foot(); }); }; });
     }
     f.querySelector('#mAdd').onclick = function () { m.nav.push({ label: 'New link', href: '', visible: true }); changed(); nav(); };
     f.querySelector('#fAdd').onclick = function () { m.footer.push({ title: 'New column', links: [] }); changed(); foot(); };
@@ -243,7 +243,7 @@
       };
       if (g('cpCancel')) g('cpCancel').onclick = function () { box._ed = null; draw(); };
       box.querySelectorAll('[data-ed]').forEach(function (bt) { bt.onclick = function () { box._ed = list.filter(function (c) { return c.code === bt.getAttribute('data-ed'); })[0]; draw(); box.scrollIntoView({ block: 'start', behavior: 'smooth' }); }; });
-      box.querySelectorAll('[data-del]').forEach(function (bt) { bt.onclick = function () { var c = bt.getAttribute('data-del'); if (!confirm('Delete coupon ' + c + '? Customers can no longer use it.')) return; H.api('/api/photobooks?route=pbk-admin-coupon-delete', { code: c }).then(function (r) { list = r.coupons; draw(); H.toast('Coupon deleted'); }, function (e) { alert(e.message); }); }; });
+      box.querySelectorAll('[data-del]').forEach(function (bt) { bt.onclick = function () { var c = bt.getAttribute('data-del'); HQAsk.confirm('Delete coupon ' + c + '? Customers can no longer use it.').then(function (ok) { if (!ok) return; H.api('/api/photobooks?route=pbk-admin-coupon-delete', { code: c }).then(function (r) { list = r.coupons; draw(); H.toast('Coupon deleted'); }, function (e) { HQAsk.alert(e.message); }); }); }; });
     }
     H.api('/api/photobooks?route=pbk-admin-coupons').then(function (r) { list = r.coupons || []; if (!r.storage) { box.innerHTML = '<p class="empty">Coupons need Blob storage (Setup).</p>'; return; } draw(); }, function (e) { box.innerHTML = '<p class="empty">' + esc(e.message) + '</p>'; });
   }
@@ -256,9 +256,7 @@
       if (!r.items.length) { el.innerHTML = '<p class="empty">Nothing published from Ciel Admin yet. Every publish is listed here and can be loaded back.</p>'; return; }
       el.innerHTML = '<table class="tbl"><thead><tr><th>When</th><th>What changed</th><th></th></tr></thead><tbody>' + r.items.map(function (v) { return '<tr><td>' + H.dt(v.at) + '<small>' + esc(String(v.sha || '').slice(0, 7)) + '</small></td><td>' + esc(v.summary || '') + (v.note ? '<small>' + esc(v.note) + '</small>' : '') + '</td><td><button class="b b--sm" data-v="' + esc(v.id) + '">Load this version</button></td></tr>'; }).join('') + '</tbody></table>';
       el.querySelectorAll('[data-v]').forEach(function (bt) { bt.onclick = function () {
-        if (!confirm('Load this version into the editor? Your current draft is replaced. Nothing changes on the live site until you publish.')) return;
-        H.api('/api/hq?route=site-version&id=' + bt.getAttribute('data-v')).then(function (x) { var v = x.version; if (v.model) W.model = v.model; W.items = v.items || { products: {}, templates: {} }; if (v.photobooks) W.pb = v.photobooks; changed(); location.hash = '#website/home'; H.toast('Version loaded: review it, then Publish'); }, function (e) { H.toast(e.message); });
-      }; });
+        HQAsk.confirm('Load this version into the editor? Your current draft is replaced. Nothing changes on the live site until you publish.').then(function (ok) { if (!ok) return; H.api('/api/hq?route=site-version&id=' + bt.getAttribute('data-v')).then(function (x) { var v = x.version; if (v.model) W.model = v.model; W.items = v.items || { products: {}, templates: {} }; if (v.photobooks) W.pb = v.photobooks; changed(); location.hash = '#website/home'; H.toast('Version loaded: review it, then Publish'); }, function (e) { H.toast(e.message); }); }); }; });
     }, function (e) { document.getElementById('hv').innerHTML = '<p class="empty">' + esc(e.message) + '</p>'; });
   }
 
@@ -356,7 +354,7 @@
       setItem(kind, p.id, patch); m.remove(); drawCatalog(kind); H.toast('Saved to draft · publish when ready');
     };
     var dup = m.querySelector('#eDup'); if (dup) dup.onclick = function () { var id = nextId(kind), c = cur(kind, p), o = {}; ['name', 'category', 'desc', 'meta', 'idealFor', 'price', 'was', 'badge', 'art', 'image'].forEach(function (k) { if (c[k] != null && c[k] !== '') o[k] = c[k]; }); o.name = (o.name || '') + ' (copy)'; o.create = true; o.hidden = true; setItem(kind, id, o); m.remove(); drawCatalog(kind); H.toast('Duplicated as hidden: edit and show it when ready'); };
-    var del = m.querySelector('#eDel'); if (del) del.onclick = function () { if (!confirm('Delete “' + p.name + '” from the website? It is removed when you publish. Past orders are not affected.')) return; var c = (W.items[kind] || {})[p.id]; if (c && c.create) { delete W.items[kind][p.id]; changed(); } else setItem(kind, p.id, { delete: true }); m.remove(); drawCatalog(kind); };
+    var del = m.querySelector('#eDel'); if (del) del.onclick = function () { HQAsk.confirm('Delete “' + p.name + '” from the website? It is removed when you publish. Past orders are not affected.').then(function (ok) { if (!ok) return; var c = (W.items[kind] || {})[p.id]; if (c && c.create) { delete W.items[kind][p.id]; changed(); } else setItem(kind, p.id, { delete: true }); m.remove(); drawCatalog(kind); }); };
   }
 
   /* ---- the file a customer downloads after paying (private storage; link sent after M-Pesa confirms) ---- */
@@ -366,7 +364,7 @@
       el.innerHTML = '<b>Download file</b>' + (f ? '<p><span class="tag">' + esc(f.name) + '</span> <span class="muted">' + size(f.size || 0) + ' · added ' + H.d2(f.at) + '</span></p>' : '<p class="muted">No file yet. Customers who buy this get a download link only once a file is added here.</p>') +
         '<div class="row"><label class="b b--sm">' + (f ? 'Replace file' : 'Add file') + '<input type="file" id="fUp" hidden></label>' + (f ? '<button class="b b--sm b--ghost" id="fRm" style="color:var(--r)">Remove</button>' : '') + '<span class="muted" id="fMsg">' + (note || '') + '</span></div>';
       el.querySelector('#fUp').onchange = function () { var file = this.files[0]; if (file) up(file); };
-      var rm = el.querySelector('#fRm'); if (rm) rm.onclick = function () { if (!confirm('Remove this file? Customers who already bought it will see that it is being prepared.')) return; H.api('/api/hq?route=pf-remove', { id: p.id }).then(function () { draw(null, 'Removed.'); }, function (e) { H.toast(e.message); }); };
+      var rm = el.querySelector('#fRm'); if (rm) rm.onclick = function () { HQAsk.confirm('Remove this file? Customers who already bought it will see that it is being prepared.').then(function (ok) { if (!ok) return; H.api('/api/hq?route=pf-remove', { id: p.id }).then(function () { draw(null, 'Removed.'); }, function (e) { H.toast(e.message); }); }); };
     }
     function lib() { return window.CielBlobUpload ? Promise.resolve(window.CielBlobUpload) : new Promise(function (ok, no) { var sc = document.createElement('script'); sc.src = '/assets/vendor/vercel-blob-client-2.8.2.min.js'; sc.onload = function () { ok(window.CielBlobUpload); }; sc.onerror = function () { no(new Error('Couldn’t load the uploader.')); }; document.head.appendChild(sc); }); }
     function up(file) {

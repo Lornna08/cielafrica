@@ -79,14 +79,13 @@
     if (pv) pv.onclick = function () { M.page--; load(); }; if (nx) nx.onclick = function () { M.page++; load(); };
   }
   function act(uids, op) {
-    if (op === 'trash' && !confirm(uids.length > 1 ? 'Delete ' + uids.length + ' emails?' : 'Delete this email?')) return;
-    return H.api('/api/hq?route=mail-act', { acct: box(), folder: M.folder, uids: uids, op: op }).then(function () {
+    (op === 'trash' ? HQAsk.confirm(uids.length > 1 ? 'Delete ' + uids.length + ' emails?' : 'Delete this email?') : Promise.resolve(true)).then(function (ok) { if (!ok) return; return H.api('/api/hq?route=mail-act', { acct: box(), folder: M.folder, uids: uids, op: op }).then(function () {
       H.toast({ archive: 'Archived', trash: 'Deleted', unread: 'Marked unread', read: 'Marked read', star: 'Starred', unstar: 'Star removed', spam: 'Moved to spam' }[op]);
       if (/archive|trash|spam/.test(op)) { M.list = M.list.filter(function (m) { return uids.indexOf(m.uid) < 0; }); if (M.sel && uids.indexOf(M.sel.uid) >= 0) { M.sel = null; document.getElementById('mxRead').innerHTML = '<div class="mx2-empty">' + ic('mail') + '<p>Select an email to read it</p></div>'; M.el.querySelector('.mx2').classList.remove('is-reading'); } }
       else M.list.forEach(function (m) { if (uids.indexOf(m.uid) >= 0) { if (op === 'read') m.seen = true; if (op === 'unread') m.seen = false; if (op === 'star') m.flagged = true; if (op === 'unstar') m.flagged = false; } });
       M.checked = {}; paintList(); poll();
-    }, function (e) { H.toast(e.message); });
-  }
+    }, function (e) { H.toast(e.message); }); });
+}
   function bulk(op) { var u = Object.keys(M.checked).map(Number); if (u.length) act(u, op); }
   function open(s) {
     var el = document.getElementById('mxRead'); M.el.querySelector('.mx2').classList.add('is-reading');
@@ -139,10 +138,10 @@
     setTimeout(function () { (o.to ? body : d.querySelector('#cTo')).focus(); }, 60);
     d.querySelector('#cCcB').onclick = function () { d.querySelector('#cCcR').hidden = false; d.querySelector('#cBcR').hidden = false; this.remove(); };
     from.onchange = function () { var s1 = sig(acct), s2 = sig(from.value), el = body.querySelector('.sig'); if (el) el.innerHTML = s2; else if (s2) body.insertAdjacentHTML('afterbegin', '<div><br></div><div class="sig">' + s2 + '</div>'); acct = from.value; };
-    d.querySelectorAll('[data-c]').forEach(function (b) { b.onclick = function () { var c = b.getAttribute('data-c'); body.focus(); if (c === 'createLink') { var u = prompt('Link address (https://…)'); if (u && /^https?:\/\//.test(u)) document.execCommand(c, false, u); } else document.execCommand(c, false, null); }; });
+    d.querySelectorAll('[data-c]').forEach(function (b) { b.onclick = function () { var c = b.getAttribute('data-c'); body.focus(); if (c === 'createLink') { var sel = window.getSelection(), rg = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null; HQAsk.prompt('Link address (https://…)', 'https://').then(function (u) { body.focus(); if (rg) { sel.removeAllRanges(); sel.addRange(rg); } if (u && /^https?:\/\/./.test(u)) document.execCommand(c, false, u); }); } else document.execCommand(c, false, null); }; });
     var paintAtt = function () { d.querySelector('#cAttL').innerHTML = atts.map(function (a, i) { return '<span class="mx2-chip">' + ic('clip') + esc(a.name) + '<button type="button" data-ra="' + i + '">✕</button></span>'; }).join(''); d.querySelectorAll('[data-ra]').forEach(function (b) { b.onclick = function () { atts.splice(+b.getAttribute('data-ra'), 1); paintAtt(); }; }); };
     d.querySelector('#cAtt').onchange = function () { Array.prototype.forEach.call(this.files, function (f) { if (f.size > 3 * 1024 * 1024) { H.toast(f.name + ' is over 3 MB'); return; } var r = new FileReader(); r.onload = function () { atts.push({ name: f.name, type: f.type, data: String(r.result).split(',')[1] }); paintAtt(); }; r.readAsDataURL(f); }); this.value = ''; };
-    d.querySelector('#cSig').onclick = function () { var s = prompt('Signature for ' + from.selectedOptions[0].text + ' (saved on this device):', (sig(from.value) || '').replace(/<br>/g, '\n').replace(/<[^>]+>/g, '')); if (s == null) return; ls('ca_sig_' + from.value, esc(s).replace(/\n/g, '<br>')); var el = body.querySelector('.sig'); if (el) el.innerHTML = sig(from.value); else body.insertAdjacentHTML('afterbegin', '<div><br></div><div class="sig">' + sig(from.value) + '</div>'); H.toast('Signature saved'); };
+    d.querySelector('#cSig').onclick = function () { HQAsk.prompt('Signature for ' + from.selectedOptions[0].text + ' (saved on this device):', (sig(from.value) || '').replace(/<br>/g, '\n').replace(/<[^>]+>/g, '')).then(function (s) { if (s == null) return; ls('ca_sig_' + from.value, esc(s).replace(/\n/g, '<br>')); var el = body.querySelector('.sig'); if (el) el.innerHTML = sig(from.value); else body.insertAdjacentHTML('afterbegin', '<div><br></div><div class="sig">' + sig(from.value) + '</div>'); H.toast('Signature saved'); }); };
     d.querySelector('#cSend').onclick = function () {
       var bt = this, msg = d.querySelector('#cMsg'); if (!d.querySelector('#cTo').value.trim()) { msg.textContent = 'Add a recipient.'; return; }
       bt.disabled = true; msg.textContent = 'Sending…';

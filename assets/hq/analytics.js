@@ -7,7 +7,7 @@
 (function () {
   var H, A = { per: '30', cmp: true };
   var esc = function (s) { return H.esc(s); };
-  var KN = { photobook: ['Photo Books', '#ff5a1f'], shop: ['Shop', '#2563eb'], domain: ['Domains', '#7c3aed'], whatsapp: ['WhatsApp', '#16a34a'] };
+  var KN = { photobook: ['Photo Books', '#ff5a1f'], shop: ['Shop', '#2563eb'], domain: ['Domains', '#7c3aed'], whatsapp: ['WhatsApp', '#16a34a'], invoice: ['Invoices', '#0f766e'] };
   function range() {
     var now = Date.now(), d = new Date();
     if (A.per === 'year') { var s = new Date(d.getFullYear(), 0, 1).getTime(); return { from: s, to: now, pfrom: new Date(d.getFullYear() - 1, 0, 1).getTime(), pto: new Date(d.getFullYear() - 1, d.getMonth(), d.getDate()).getTime(), unit: 'month', days: Math.ceil((now - s) / 864e5) }; }
