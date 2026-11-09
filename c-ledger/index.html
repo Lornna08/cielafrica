@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<base href="/c-ledger/"><!-- Vercel serves this page at /c-ledger (no trailing slash): pin relative URLs to the folder -->
+<script>if(location.protocol==='file:')document.querySelector('base').setAttribute('href','./');</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C-Ledger — Double-entry accounting software · by Ciel Africa</title>
+<meta name="description" content="C-Ledger is double-entry accounting software with a real general ledger, invoicing, bills, expenses, banking, reconciliation and financial reports. Explore the live template — no sign-up. Built by Ciel Africa.">
+<link rel="canonical" href="https://cielafrica.com/c-ledger">
+<meta property="og:title" content="C-Ledger — Your finances. Clear by design.">
+<meta property="og:description" content="A smarter way to manage financial records, track cash flow, and understand your business through reliable accounting workflows. Try the live template.">
+<meta property="og:image" content="https://cielafrica.com/c-ledger/img/shots/og.webp">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#F6F8F6">
+<link rel="icon" type="image/svg+xml" href="img/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/site.css?v=20261023e">
+<link rel="stylesheet" href="../assets/css/iphone17.css?v=20261023a">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"C-Ledger","applicationCategory":"BusinessApplication","operatingSystem":"Web","description":"Double-entry accounting software by Ciel Africa: general ledger, journals, invoicing, bills, expenses, banking, reconciliation and financial reports.","publisher":{"@type":"Organization","name":"Ciel Africa","url":"https://cielafrica.com"}}</script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10Z"/><path d="M2 21c0-3 1.9-5.4 5.1-6"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5Z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5M9 8h7M9 12h5"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 3v18M7 21h10M5 7h14M5 7l-3 7a3.5 3.5 0 0 0 6 0Zm14 0-3 7a3.5 3.5 0 0 0 6 0Z"/></symbol>
+  <symbol id="i-trace" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.5 6H15a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h6.5"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></symbol>
+  <symbol id="i-invoice" viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6Z"/><path d="M14 2v6h6M9 13h7M9 17h5"/></symbol>
+  <symbol id="i-bill" viewBox="0 0 24 24"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2Z"/><path d="M9 8h6M9 12h6"/></symbol>
+  <symbol id="i-receipt" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/></symbol>
+  <symbol id="i-bank" viewBox="0 0 24 24"><path d="M3 10 12 4l9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18"/></symbol>
+  <symbol id="i-match" viewBox="0 0 24 24"><path d="M4 7h11M4 12h7M4 17h11"/><path d="m15 12 2.5 2.5L22 10"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16"/><path d="m7 15 4-4 3 3 5-6"/></symbol>
+  <symbol id="i-pie" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9h-9Z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15Z"/></symbol>
+  <symbol id="i-flow" viewBox="0 0 24 24"><path d="M3 7h13l-3-3M21 17H8l3 3"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/><path d="M10 15.5h4v3h-4zM11 15.5v-1a1 1 0 0 1 2 0v1"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4.5 6v6c0 4.5 3.2 7.8 7.5 9 4.3-1.2 7.5-4.5 7.5-9V6Z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18a4.5 4.5 0 0 1-.6-9A6 6 0 0 1 18 8.5a4.8 4.8 0 0 1-.5 9.5Z"/></symbol>
+  <symbol id="i-server" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></symbol>
+  <symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0 5 5L21 13l-8 8-3-3 6.3-6.3"/><path d="M14.7 6.3 13 4.6a4 4 0 0 0-5.6 5.6L3 14.6V18h3.4l4.4-4.4"/></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24"><path d="M3 9.5 4.5 4h15L21 9.5a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0Z"/><path d="M5 12v8h14v-8M10 20v-5h4v5"/></symbol>
+  <symbol id="i-brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M3 13h18"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.4-7.5-10A4.3 4.3 0 0 1 12 7.3 4.3 4.3 0 0 1 19.5 10c0 5.6-7.5 10-7.5 10Z"/></symbol>
+  <symbol id="i-calc" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8.5 6.5h7M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 14.5h.01M12 14.5h.01M15.5 14.5h.01M8.5 18h.01M12 18h3.5"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1M10 21v-3h4v3"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2Z"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6Z"/><path d="M14 2v6h6M9 13l2 2 4-4"/></symbol>
+</svg>
+
+<!-- Ciel Africa template strip -->
+<style>.cstrip{position:relative;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:12px;height:40px;padding:0 max(16px,calc((100% - 1200px)/2));background:#121212;color:#C9C9C9;font:500 13px/1 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:0}
+.cstrip a{display:inline-flex;align-items:center;gap:7px;color:#fff;text-decoration:none;white-space:nowrap;padding:6px 0}
+.cstrip a:hover{color:#FF7A45}.cstrip a:focus-visible{outline:2px solid #FF7A45;outline-offset:2px;border-radius:4px}
+.cstrip b{color:#FF5A1F;font-weight:700;font-size:15px;line-height:1}
+.cstrip span{flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:640px){.cstrip span{display:none}}</style>
+<div class="cstrip" role="navigation" aria-label="Ciel Africa"><a href="../index.html"><b>‹</b>Back to Ciel Africa</a><span>A live template by Ciel Africa</span><a href="../templates.html">All templates<b>›</b></a></div>
+
+<header class="nav" id="nav"><div class="wrap nav__in">
+  <a class="logo" href="./" aria-label="C-Ledger home"><span class="logo__m"><svg class="ic"><use href="#i-leaf"/></svg></span>C-Ledger<small>by Ciel Africa</small></a>
+  <nav class="nav__l" aria-label="Sections"><a href="#features">Features</a><a href="#ledger">General ledger</a><a href="#reports">Reports</a><a href="#security">Security</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a></nav>
+  <div class="nav__a"><a class="btn btn--g btn--sm" href="../quote.html?template=C-Ledger">Request a quote</a><a class="btn btn--p btn--sm" href="demo.html">Live template</a></div>
+</div></header>
+
+<main>
+<section class="hero"><div class="wrap">
+  <span class="pill rv"><b>Live template</b><span>Double-entry accounting · no sign-up</span></span>
+  <h1 class="rv">Your finances. <span>Clear by design.</span></h1>
+  <p class="hero__p rv">A smarter way to manage financial records, track cash flow, and understand your business through reliable accounting workflows.</p>
+  <div class="hero__cta rv"><a class="btn btn--p" href="demo.html">Explore Live Template <svg class="ic"><use href="#i-arrow"/></svg></a><a class="btn btn--g" href="#features">Discover Features</a></div>
+  <p class="hero__note rv">The template is the real application, running on twelve months of sample books for a fictional Nairobi studio.</p>
+  <div class="stage rv">
+    <div class="frame">
+      <div class="frame__bar" aria-hidden="true"><i></i><i></i><i></i><span>cielafrica.com/c-ledger/demo</span></div>
+      <video autoplay muted loop playsinline preload="metadata" poster="../assets/img/home/cledger-live-poster.webp?v=20261024a" width="1600" height="1000" aria-label="C-Ledger overview dashboard with cash position, income versus expenses, cash flow and reconciliation status"><source src="../assets/img/home/cledger-live.mp4?v=20261024a" type="video/mp4"><source src="../assets/img/home/cledger-live.webm?v=20261024a" type="video/webm"></video>
+    </div>
+    <div class="ip17 stage__phone ip17--blue" role="img" aria-label="C-Ledger overview on an iPhone 17 Pro Max"><div class="ip17__body"><i class="ip17__k ip17__k--act"></i><i class="ip17__k ip17__k--vu"></i><i class="ip17__k ip17__k--vd"></i><i class="ip17__k ip17__k--pwr"></i><i class="ip17__k ip17__k--cam"></i><div class="ip17__bezel"><div class="ip17__scr"><div class="ip17__sb"><span>9:41</span><svg viewBox="0 0 68 13" aria-hidden="true"><rect x="0" y="8.5" width="3" height="4" rx="1" stroke="none"/><rect x="4.6" y="6.5" width="3" height="6" rx="1" stroke="none"/><rect x="9.2" y="4" width="3" height="8.5" rx="1" stroke="none"/><rect x="13.8" y="1.5" width="3" height="11" rx="1" stroke="none"/><path d="M31 12.4 28.5 9.7a3.5 3.5 0 0 1 5 0Z" stroke="none"/><path d="M26.1 7.3a6.9 6.9 0 0 1 9.8 0M23.7 4.8a10.3 10.3 0 0 1 14.6 0" fill="none" stroke-width="1.7" stroke-linecap="round"/><rect x="44.5" y="1.2" width="20" height="10.6" rx="3.2" fill="none" stroke-width="1.1" opacity=".45"/><rect x="46.3" y="3" width="14.6" height="7" rx="1.7" stroke="none"/><rect x="65.6" y="4.6" width="1.6" height="3.8" rx=".8" stroke="none" opacity=".45"/></svg></div><i class="ip17__di"></i><img src="../assets/img/home/cledger-phone.webp?v=20261023a" width="880" height="1804" alt=""><i class="ip17__hb"></i></div></div></div></div>
+  </div>
+</div>
+<div class="hero__fade"></div>
+<div class="wrap"><div class="for rv" aria-label="Built for">
+  <span><svg class="ic"><use href="#i-brief"/></svg>Studios & agencies</span>
+  <span><svg class="ic"><use href="#i-store"/></svg>Retail & distribution</span>
+  <span><svg class="ic"><use href="#i-building"/></svg>Growing SMEs</span>
+  <span><svg class="ic"><use href="#i-heart"/></svg>NGOs & foundations</span>
+  <span><svg class="ic"><use href="#i-calc"/></svg>Accounting practices</span>
+  <span><svg class="ic"><use href="#i-users"/></svg>In-house finance teams</span>
+</div></div>
+</section>
+
+<section class="sec" id="features"><div class="wrap">
+  <div class="center">
+    <span class="eyebrow rv"><i></i>Product</span>
+    <h2 class="h2 rv">Real accounting underneath. A calm workspace on top.</h2>
+    <p class="lede rv">C-Ledger is built around a genuine double-entry ledger. Invoices, bills, expenses and bank activity all post balanced journal entries — so every report is derived from the same source of truth.</p>
+  </div>
+  <div class="pr">
+    <div class="rv"><span class="k"><svg class="ic"><use href="#i-scale"/></svg></span><h3>Double-entry at the core</h3><p>Every transaction posts equal debits and credits. Unbalanced entries cannot be posted, and account balances are computed from posted lines only.</p></div>
+    <div class="rv"><span class="k"><svg class="ic"><use href="#i-trace"/></svg></span><h3>Every number traces back</h3><p>Click any balance on a report to see the ledger lines behind it, then the journal, then the invoice, bill or bank line that created it.</p></div>
+    <div class="rv"><span class="k"><svg class="ic"><use href="#i-shield"/></svg></span><h3>Controls built for teams</h3><p>Role-based permissions, approval steps, closed periods and an audit trail of who did what — without slowing down day-to-day work.</p></div>
+  </div>
+
+  <div class="feat rv">
+    <div class="feat__t">
+      <h3>One overview of the business</h3>
+      <p>Cash across every account, income against expenses, receivables and payables, and the items that need attention today — calculated live from the ledger for the period you choose.</p>
+      <ul class="ticks">
+        <li><svg class="ic"><use href="#i-check"/></svg><span>Cash position, net profit and month-so-far at a glance</span></li>
+        <li><svg class="ic"><use href="#i-check"/></svg><span>Cash flow, expense breakdown and revenue trend charts</span></li>
+        <li><svg class="ic"><use href="#i-check"/></svg><span>Overdue invoices, bills due and unreconciled lines flagged</span></li>
+      </ul>
+    </div>
+    <div class="feat__m"><div class="shot"><picture><source media="(max-width: 640px)" srcset="img/shots/m-overview.webp?v=20261023b" width="780" height="1520"><img src="img/shots/d-overview.webp?v=20261023b" width="2000" height="1250" alt="C-Ledger overview dashboard with KPIs, income versus expenses chart and cash flow" loading="lazy" decoding="async"></picture></div></div>
+  </div>
+</div></section>
+
+<section class="wrap" id="ledger"><div class="gl">
+  <span class="eyebrow rv"><i></i>General ledger</span>
+  <h2 class="h2 rv">Posted means permanent. Corrections leave a trail.</h2>
+  <p class="lede rv">C-Ledger treats the general ledger the way an auditor expects: drafts can change, posted entries cannot. Mistakes are corrected with a dated reversal, never by quietly editing history.</p>
+  <div class="gl__g">
+    <div class="je rv" role="figure" aria-label="Example posted journal entry for an invoice">
+      <div class="je__h"><span><b>JE-2026-0418 · Invoice INV-0148</b><em>Baraka Dental Clinic · posted by David Otieno</em></span><span class="tag tag--g">Posted</span></div>
+      <table>
+        <colgroup><col class="c-a"><col class="c-n"><col class="c-n"></colgroup>
+        <thead><tr><th>Account</th><th class="r">Debit</th><th class="r">Credit</th></tr></thead>
+        <tbody>
+          <tr><td><span class="cd">1100<i> · </i></span>Accounts Receivable<small>Control account</small></td><td class="r">232,000.00</td><td class="r"></td></tr>
+          <tr><td><span class="cd">4000<i> · </i></span>Service Revenue — Design<small>Concept design & mood boards</small></td><td class="r"></td><td class="r">200,000.00</td></tr>
+          <tr><td><span class="cd">2100<i> · </i></span>Tax Payable — VAT<small>VAT 16%</small></td><td class="r"></td><td class="r">32,000.00</td></tr>
+        </tbody>
+        <tfoot><tr><td>Total (KES)</td><td class="r">232,000.00</td><td class="r">232,000.00</td></tr></tfoot>
+      </table>
+      <div class="je__f"><svg class="ic"><use href="#i-check"/></svg>Balanced · locked after posting</div>
+    </div>
+    <ul class="gl__l">
+      <li class="rv"><span class="k"><svg class="ic"><use href="#i-book"/></svg></span><div><b>Draft, then post</b><p>Save entries as drafts, attach supporting documents, and post only when debits equal credits. The post button stays disabled until they do.</p></div></li>
+      <li class="rv"><span class="k"><svg class="ic"><use href="#i-undo"/></svg></span><div><b>Reverse, don’t edit</b><p>A posted entry is corrected with a linked reversing entry on a date you choose — with the reason recorded and both entries visible.</p></div></li>
+      <li class="rv"><span class="k"><svg class="ic"><use href="#i-cal"/></svg></span><div><b>Close the books</b><p>Close a month once it’s reviewed. Nothing can post into a closed period until someone with permission reopens it — and that’s logged too.</p></div></li>
+      <li class="rv"><span class="k"><svg class="ic"><use href="#i-trace"/></svg></span><div><b>A chart of accounts that fits</b><p>Assets, liabilities, equity, income and expenses with sub-accounts and control accounts. Accounts with history can be archived, never deleted.</p></div></li>
+    </ul>
+  </div>
+  <div class="gl__shot rv"><div class="shot"><picture><source media="(max-width: 640px)" srcset="img/shots/m-ledger.webp?v=20261023b" width="780" height="1520"><img src="img/shots/d-ledger.webp?v=20261023b" width="2000" height="1250" alt="General ledger with running balances, filters and source links" loading="lazy" decoding="async"></picture></div></div>
+</div></section>
+
+<section class="sec" id="workflows"><div class="wrap">
+  <span class="eyebrow rv"><i></i>Everyday workflows</span>
+  <h2 class="h2 rv">Invoices, bills and expenses that post themselves.</h2>
+  <p class="lede rv">Your team works with familiar documents. C-Ledger writes the journal entries in the background — correctly, every time.</p>
+
+  <div class="feat feat--r rv">
+    <div class="feat__t">
+      <h3>Invoicing and receivables</h3>
+      <p>Create invoices with line discounts and VAT, issue them to post to receivables, and record full or partial payments against them. Overpayments are held as customer credit, not lost.</p>
+      <ul class="ticks">
+        <li><svg class="ic"><use href="#i-check"/></svg><span>Draft, sent, partially paid, paid, overdue and void statuses</span></li>
+        <li><svg class="ic"><use href="#i-check"/></svg><span>Customer statements and AR ageing by 30/60/90 days</span></li>
+        <li><svg class="ic"><use href="#i-check"/></svg><span>Clean printable invoices with your company details</span></li>
+      </ul>
+    </div>
+    <div class="feat__m"><div class="shot"><picture><source media="(max-width: 640px)" srcset="img/shots/m-invoice.webp?v=20261023b" width="780" height="1520"><img src="img/shots/d-invoice.webp?v=20261023b" width="2000" height="1250" alt="Invoice detail with line items, VAT, payments received and journal link" loading="lazy" decoding="async"></picture></div></div>
+  </div>
+
+  <div class="bento">
+    <div class="bx bx--img rv"><span class="k"><svg class="ic"><use href="#i-bill"/></svg></span><h3>Bills with an approval step</h3><p>Supplier bills move from draft to approved to posted. Pay them in full or in part from any bank or mobile money account.</p><span class="bx__sp"></span><div class="shot"><picture><source media="(max-width: 640px)" srcset="img/shots/m-bills.webp?v=20261023b" width="780" height="1520"><img src="img/shots/d-bills.webp?v=20261023b" width="2000" height="1250" alt="Bills and payables list with statuses and amounts due" loading="lazy" decoding="async"></picture></div></div>
+    <div class="bx bx--img rv"><span class="k"><svg class="ic"><use href="#i-receipt"/></svg></span><h3>Expense claims, reviewed</h3><p>Staff submit expenses with receipts. Approvers approve or reject with a reason, and approved claims post with VAT backed out.</p><span class="bx__sp"></span><div class="shot"><picture><source media="(max-width: 640px)" srcset="img/shots/m-expenses.webp?v=20261023b" width="780" height="1520"><img src="img/shots/d-expenses.webp?v=20261023b" width="2000" height="1250" alt="Expenses list with submitted, approved and rejected claims" loading="lazy" decoding="async"></picture></div></div>
+    <div class="bx bx--4 bx--img rv"><span class="k"><svg class="ic"><use href="#i-bank"/></svg></span><h3>Banking across every account</h3><p>Operating, reserve, petty cash and mobile money in one place, with running statements and transfers that post to both sides automatically.</p><span class="bx__sp"></span><div class="shot"><picture><source media="(max-width: 640px)" srcset="img/shots/m-banking.webp?v=20261023b" width="780" height="1520"><img src="img/shots/d-banking.webp?v=20261023b" width="2000" height="1250" alt="Banking page with account balances and recent transactions" loading="lazy" decoding="async"></picture></div></div>
+    <div class="bx bx--2 bx--dark rv"><span class="k"><svg class="ic"><use href="#i-users"/></svg></span><h3>Customers and suppliers</h3><p>Contact records with balances, open documents, payment terms and downloadable statements — the same numbers your ledger holds.</p><span class="bx__sp"></span><p style="color:#8FD3AD;font-weight:700;font-size:14px">Ctrl&nbsp;K searches everything →</p></div>
+  </div>
+</div></section>
+
+<section class="sec" id="reconciliation" style="padding-top:0"><div class="wrap">
+  <div class="feat rv" style="margin-top:0">
+    <div class="feat__t">
+      <span class="eyebrow"><i></i>Reconciliation</span>
+      <h3 style="margin-top:14px">Match the bank statement, line by line.</h3>
+      <p>Import a CSV statement and C-Ledger suggests matches by amount and date — and tells you why. Record bank charges straight from the statement, and the reconciliation only completes when the difference is exactly zero.</p>
+      <ul class="ticks">
+        <li><svg class="ic"><use href="#i-check"/></svg><span>CSV import with date and amount validation</span></li>
+        <li><svg class="ic"><use href="#i-check"/></svg><span>Suggested matches with the reason shown</span></li>
+        <li><svg class="ic"><use href="#i-check"/></svg><span>Statement balance check before completion</span></li>
+        <li><svg class="ic"><use href="#i-check"/></svg><span>A history of completed reconciliations per account</span></li>
+      </ul>
+    </div>
+    <div class="feat__m"><div class="shot"><picture><source media="(max-width: 640px)" srcset="img/shots/m-recon.webp?v=20261023b" width="780" height="1520"><img src="img/shots/d-recon.webp?v=20261023b" width="2000" height="1250" alt="Bank reconciliation workspace with statement lines, suggested matches and difference" loading="lazy" decoding="async"></picture></div></div>
+  </div>
+</div></section>
+
+<section class="sec" id="reports" style="padding-top:0"><div class="wrap">
+  <span class="eyebrow rv"><i></i>Financial reports</span>
+  <h2 class="h2 rv">Reports you can hand to the board — or the auditor.</h2>
+  <p class="lede rv">Every report is generated from posted ledger lines for any period, compared with the previous one, and exported to CSV or print. Built-in checks confirm the books still balance.</p>
+  <div class="rp">
+    <div>
+      <div class="rp__tabs" role="tablist" aria-label="Report previews">
+        <button class="rp__tab" role="tab" id="t-pl" aria-controls="v-pl" aria-selected="true"><span class="k"><svg class="ic"><use href="#i-chart"/></svg></span><span><b>Profit & loss</b><em>Income, cost of sales and expenses with prior-period comparison</em></span></button>
+        <button class="rp__tab" role="tab" id="t-bs" aria-controls="v-bs" aria-selected="false" tabindex="-1"><span class="k"><svg class="ic"><use href="#i-scale"/></svg></span><span><b>Balance sheet</b><em>Assets, liabilities and equity — with current-year earnings</em></span></button>
+        <button class="rp__tab" role="tab" id="t-jn" aria-controls="v-jn" aria-selected="false" tabindex="-1"><span class="k"><svg class="ic"><use href="#i-book"/></svg></span><span><b>Journal entry</b><em>The source behind every number on every report</em></span></button>
+        <button class="rp__tab" role="tab" id="t-rl" aria-controls="v-rl" aria-selected="false" tabindex="-1"><span class="k"><svg class="ic"><use href="#i-shield"/></svg></span><span><b>Roles & permissions</b><em>Who can draft, post, approve, reconcile and close</em></span></button>
+      </div>
+      <div class="rp__all" aria-label="All reports"><span>Profit & loss</span><span>Balance sheet</span><span>Trial balance</span><span>Cash flow</span><span>General ledger</span><span>AR ageing</span><span>AP ageing</span><span>Expense analysis</span></div>
+    </div>
+    <div class="rp__v">
+      <div class="shot" role="tabpanel" id="v-pl" aria-labelledby="t-pl"><picture><source media="(max-width: 640px)" srcset="img/shots/m-pl.webp?v=20261023b" width="780" height="1520"><img src="img/shots/d-pl.webp?v=20261023b" width="2000" height="1250" alt="Profit and loss report with prior-period comparison" loading="lazy" decoding="async"></picture></div>
+      <div class="shot" role="tabpanel" id="v-bs" aria-labelledby="t-bs" hidden><picture><source media="(max-width: 640px)" srcset="img/shots/m-balance.webp?v=20261023b" width="780" height="1520"><img src="img/shots/d-balance.webp?v=20261023b" width="2000" height="1250" alt="Balance sheet with assets, liabilities and equity" loading="lazy" decoding="async"></picture></div>
+      <div class="shot" role="tabpanel" id="v-jn" aria-labelledby="t-jn" hidden><picture><source media="(max-width: 640px)" srcset="img/shots/m-journal.webp?v=20261023b" width="780" height="1520"><img src="img/shots/d-journal.webp?v=20261023b" width="2480" height="1440" alt="Journal entry editor with balanced debit and credit lines" loading="lazy" decoding="async"></picture></div>
+      <div class="shot" role="tabpanel" id="v-rl" aria-labelledby="t-rl" hidden><picture><source media="(max-width: 640px)" srcset="img/shots/m-roles.webp?v=20261023b" width="780" height="1520"><img src="img/shots/d-roles.webp?v=20261023b" width="2000" height="1250" alt="Roles and permissions matrix" loading="lazy" decoding="async"></picture></div>
+    </div>
+  </div>
+</div></section>
+
+<section class="sec" id="security" style="padding-top:0"><div class="wrap">
+  <span class="eyebrow rv"><i></i>Security & access</span>
+  <h2 class="h2 rv">The right people, the right permissions.</h2>
+  <div class="sc">
+    <div class="rv">
+      <p class="lede" style="margin-top:0">Give each person a role that matches their job. A bookkeeper can draft; an accountant can post; an approver signs off on bills and expenses; an auditor can read everything and change nothing.</p>
+      <div class="roles" aria-label="Built-in roles"><span>Owner</span><span>Accountant</span><span>Finance manager</span><span>Bookkeeper</span><span>Approver</span><span>Read-only viewer</span></div>
+      <div class="honest"><svg class="ic"><use href="#i-info"/></svg><span>The public template runs entirely in your browser with no sign-in. Production deployments add authenticated accounts, a server database and backups — set up with you during onboarding.</span></div>
+    </div>
+    <div class="sc__l rv">
+      <div><span class="k"><svg class="ic"><use href="#i-users"/></svg></span><b>Role-based access</b><p>Permissions are enforced in the accounting engine, not just hidden in the interface.</p></div>
+      <div><span class="k"><svg class="ic"><use href="#i-file"/></svg></span><b>Approval workflows</b><p>Bills and expense claims wait for an approver before they reach the ledger.</p></div>
+      <div><span class="k"><svg class="ic"><use href="#i-history"/></svg></span><b>Audit trail</b><p>Every post, reversal, approval, reconciliation and setting change is logged with who and when.</p></div>
+      <div><span class="k"><svg class="ic"><use href="#i-lock"/></svg></span><b>Period locking</b><p>Closed months are protected from back-dated postings until formally reopened.</p></div>
+    </div>
+  </div>
+</div></section>
+
+<section class="wrap" id="preview"><div class="live rv">
+  <div class="live__h"><div><span class="eyebrow"><i></i>Interactive preview</span><h2 class="h2">This is the app. Post something.</h2><p class="lede">Create a journal entry, issue an invoice, approve a bill or finish the bank reconciliation. Changes stay in your browser and reset any time.</p></div><a class="btn btn--p" href="demo.html">Open full screen <svg class="ic"><use href="#i-arrow"/></svg></a></div>
+  <div class="live__f"><iframe data-src="demo.html#/overview" title="C-Ledger live template" loading="lazy"></iframe></div>
+  <div class="live__fb"><a href="demo.html" aria-label="Open the C-Ledger live template"><div class="shot"><img src="img/shots/m-overview.webp?v=20261023b" width="780" height="1520" alt="C-Ledger overview dashboard" loading="lazy" decoding="async"></div></a></div>
+  <div class="live__n"><span><svg class="ic"><use href="#i-check"/></svg>No sign-up</span><span><svg class="ic"><use href="#i-check"/></svg>Sample data only</span><span><svg class="ic"><use href="#i-check"/></svg>Reset in one click</span><span><svg class="ic"><use href="#i-check"/></svg>Works on mobile</span></div>
+</div></section>
+
+<section class="sec" id="deploy"><div class="wrap">
+  <span class="eyebrow rv"><i></i>Deployment</span>
+  <h2 class="h2 rv">Set up for your organisation, your way.</h2>
+  <p class="lede rv">C-Ledger is delivered by Ciel Africa as a configured product — your chart of accounts, tax rates, branding and team — rather than a sign-up form.</p>
+  <div class="dp">
+    <div class="rv"><span class="k"><svg class="ic"><use href="#i-cloud"/></svg></span><h3>Managed hosting</h3><p>We host, monitor and back up your instance. You log in and get to work.</p><ul><li><svg class="ic"><use href="#i-check"/></svg>Your domain and branding</li><li><svg class="ic"><use href="#i-check"/></svg>Updates and backups handled</li></ul></div>
+    <div class="rv"><span class="k"><svg class="ic"><use href="#i-server"/></svg></span><h3>Your own server</h3><p>Deploy on infrastructure you control. We set it up and document everything.</p><ul><li><svg class="ic"><use href="#i-check"/></svg>Data stays in your environment</li><li><svg class="ic"><use href="#i-check"/></svg>Handover and admin training</li></ul></div>
+    <div class="rv"><span class="k"><svg class="ic"><use href="#i-wrench"/></svg></span><h3>Custom build</h3><p>Extra modules, M-Pesa or bank feeds, payroll, multi-company or inventory — scoped with you.</p><ul><li><svg class="ic"><use href="#i-check"/></svg>Integrations quoted per project</li><li><svg class="ic"><use href="#i-check"/></svg>Data migration from spreadsheets</li></ul></div>
+  </div>
+</div></section>
+
+<section class="sec" id="pricing" style="padding-top:0"><div class="wrap">
+  <span class="eyebrow rv"><i></i>Pricing</span>
+  <h2 class="h2 rv">Priced to your organisation, not a per-seat guess.</h2>
+  <div class="pc">
+    <div class="hl rv">
+      <h3>C-Ledger licence</h3>
+      <div class="pc__p">Request a quote<small>Based on users, companies, deployment and integrations</small></div>
+      <p>The full application configured for your business, with a walkthrough for your finance team.</p>
+      <ul class="ticks">
+        <li><svg class="ic"><use href="#i-check"/></svg><span>Every module in the template</span></li>
+        <li><svg class="ic"><use href="#i-check"/></svg><span>Your chart of accounts & tax rates</span></li>
+        <li><svg class="ic"><use href="#i-check"/></svg><span>Your logo, colours and domain</span></li>
+        <li><svg class="ic"><use href="#i-check"/></svg><span>Team roles and approval setup</span></li>
+      </ul>
+      <div class="btns"><a class="btn btn--p" href="../quote.html?template=C-Ledger">Request a quote</a><a class="btn btn--g" href="https://wa.me/254117959105?text=Hi%20Ciel%20Africa%2C%20I%27d%20like%20to%20talk%20about%20C-Ledger.">Talk to sales</a></div>
+    </div>
+    <div class="rv">
+      <h3>Optional add-ons</h3>
+      <p>Quoted with your licence when you need them.</p>
+      <ul class="addons"><li>Opening balances & data migration<span>Quoted</span></li><li>Bank & M-Pesa integrations<span>Quoted</span></li><li>Multi-company consolidation<span>Quoted</span></li><li>Staff training<span>Quoted</span></li><li>Maintenance & support<span>Quoted</span></li></ul>
+    </div>
+  </div>
+</div></section>
+
+<section class="sec" id="faq" style="padding-top:0"><div class="wrap">
+  <span class="eyebrow rv"><i></i>FAQ</span>
+  <h2 class="h2 rv">Questions finance teams ask us.</h2>
+  <div class="faq rv">
+    <details><summary>Is the template the real software?<svg class="ic"><use href="#i-plus"/></svg></summary><p>Yes. It’s the same application and accounting engine, loaded with twelve months of sample books for a fictional design studio. Everything you post is stored only in your browser, and “Reset template” restores the original books.</p></details>
+    <details><summary>Is it real double-entry accounting?<svg class="ic"><use href="#i-plus"/></svg></summary><p>Yes. Every invoice, bill, expense, payment and transfer posts a balanced journal entry to the general ledger. Reports are computed from posted ledger lines, and built-in checks confirm the trial balance agrees and the balance sheet balances.</p></details>
+    <details><summary>Can we edit a transaction after it’s posted?<svg class="ic"><use href="#i-plus"/></svg></summary><p>Not directly — that’s deliberate. Posted entries are corrected with a linked reversal (or by voiding the source invoice or bill), so your history stays complete and auditable. Drafts can be edited freely.</p></details>
+    <details><summary>Does it handle VAT?<svg class="ic"><use href="#i-plus"/></svg></summary><p>Tax rates are configurable, and VAT on sales and purchases posts to a tax account automatically. The template is set up with Kenyan VAT at 16%. C-Ledger does not file returns for you — confirm your tax treatment with your accountant.</p></details>
+    <details><summary>Can it connect to our bank or M-Pesa?<svg class="ic"><use href="#i-plus"/></svg></summary><p>Bank statements can be imported as CSV today. Direct bank or M-Pesa feeds are available as a quoted integration during setup. The public template never connects to a bank or moves money.</p></details>
+    <details><summary>Who owns our data?<svg class="ic"><use href="#i-plus"/></svg></summary><p>You do. Whether we host it or you do, your books stay in your organisation’s database and can be exported at any time.</p></details>
+  </div>
+</div></section>
+
+<section class="wrap"><div class="cta rv">
+  <h2 class="h2">Books you can trust. Reports you can explain.</h2>
+  <p>Tell us about your organisation, your team and how you keep the books today. We’ll come back with a setup plan and a quote.</p>
+  <div class="cta__a"><a class="btn btn--w" href="../quote.html?template=C-Ledger">Contact sales</a><a class="btn btn--o" href="demo.html">Explore Live Template <svg class="ic"><use href="#i-arrow"/></svg></a></div>
+  <div class="cta__c"><span><svg class="ic" style="display:inline;vertical-align:-3px;margin-right:6px;width:15px;height:15px"><use href="#i-phone"/></svg>Call or WhatsApp <a href="https://wa.me/254117959105">+254 117 959 105</a></span><span>or <a href="../contact.html">send us a message</a></span></div>
+</div></section>
+</main>
+
+<footer class="foot"><div class="wrap">
+  <div class="foot__in"><a class="logo" href="./"><span class="logo__m"><svg class="ic"><use href="#i-leaf"/></svg></span>C-Ledger</a><nav class="foot__l"><a href="demo.html">Live template</a><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="../templates.html">More templates</a><a href="../privacy.html">Privacy</a></nav><span>Software by <a href="../" style="font-weight:700;color:var(--ink)">Ciel Africa</a> · © <span id="yr">2026</span></span></div>
+  <p class="credit">Screenshots show the C-Ledger template. Companies, people and figures in the template are fictional. C-Ledger is a product of Ciel Africa.</p>
+</div></footer>
+<script>
+(function(){
+  document.getElementById('yr').textContent = new Date().getFullYear();
+  var nav = document.getElementById('nav');
+  addEventListener('scroll', function () { nav.classList.toggle('is-s', scrollY > 8); }, { passive: true });
+  var io = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, { rootMargin: '0px 0px -8% 0px' }) : null;
+  document.querySelectorAll('.rv').forEach(function (el) { if (io) io.observe(el); else el.classList.add('in'); });
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, small = matchMedia('(max-width: 640px)').matches;
+  var vd = document.querySelector('.stage video');
+  if (vd && (reduce || small)) { vd.removeAttribute('autoplay'); vd.preload = 'none'; vd.pause(); }
+  // Load the live iframe only on wide screens, when it scrolls near view
+  var fr = document.querySelector('.live__f iframe');
+  if (fr && matchMedia('(min-width: 901px)').matches) {
+    var load = function () { if (!fr.src) fr.src = fr.getAttribute('data-src'); };
+    if ('IntersectionObserver' in window) { var fo = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { load(); fo.disconnect(); } }, { rootMargin: '400px' }); fo.observe(fr); } else load();
+  }
+  // Report preview tabs
+  var tabs = [].slice.call(document.querySelectorAll('.rp__tab'));
+  function sel(t) { tabs.forEach(function (x) { var on = x === t; x.setAttribute('aria-selected', on); x.tabIndex = on ? 0 : -1; document.getElementById(x.getAttribute('aria-controls')).hidden = !on; }); }
+  tabs.forEach(function (t, i) {
+    t.addEventListener('click', function () { sel(t); });
+    t.addEventListener('keydown', function (e) { var d = e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : e.key === 'ArrowUp' || e.key === 'ArrowLeft' ? -1 : 0; if (!d) return; e.preventDefault(); var n = tabs[(i + d + tabs.length) % tabs.length]; sel(n); n.focus(); });
+  });
+})();
+</script>
+<script>
+/* With <base> set, "#id" links would navigate to /c-ledger/#id; scroll in place instead */
+document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href^="#"]');if(!a||e.defaultPrevented)return;var id=a.getAttribute('href').slice(1);e.preventDefault();var el=id&&document.getElementById(id);if(el){el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}else{scrollTo({top:0,behavior:'smooth'});}try{history.replaceState(null,'',location.pathname+location.search+(id?'#'+id:''));}catch(_){}});
+</script>
+</body>
+</html>

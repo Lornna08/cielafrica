@@ -1,0 +1,2 @@
+Emoji graphics: Noto Emoji, Copyright Google Inc., Apache License 2.0
+https://github.com/googlefonts/noto-emoji/blob/main/svg/LICENSE

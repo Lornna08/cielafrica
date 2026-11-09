@@ -1,0 +1,224 @@
+{
+ "v": 1,
+ "hero": {
+  "eyebrow": "Software & product studio",
+  "before": "We design and build",
+  "words": [
+   "online stores",
+   "ledgers",
+   "CRMs",
+   "field apps",
+   "dashboards",
+   "M‑Pesa checkouts"
+  ],
+  "after": "that earn their keep.",
+  "label": "We design and build software that earns its keep.",
+  "sub": "From the first idea to a running system — engineered as carefully as it's designed, for teams who can't afford to get it wrong.",
+  "ctas": [
+   {
+    "label": "Start a project",
+    "href": "quote.html"
+   },
+   {
+    "label": "Browse templates",
+    "href": "templates.html"
+   }
+  ]
+ },
+ "sections": [
+  {
+   "key": "HERO",
+   "name": "Hero",
+   "visible": true,
+   "title": null,
+   "lead": null
+  },
+  {
+   "key": "STRIP",
+   "name": "Services ticker",
+   "visible": true,
+   "title": null,
+   "lead": null
+  },
+  {
+   "key": "WORK",
+   "name": "Our work",
+   "visible": true,
+   "title": "Real systems,\nrunning in the wild.",
+   "lead": "A few of the products we've designed and engineered end to end — from operations platforms to field apps."
+  },
+  {
+   "key": "TEMPLATES",
+   "name": "Templates",
+   "visible": true,
+   "title": "Start from a design.\nWe make it yours.",
+   "lead": "Ready-made websites and systems, customised to your brand, content and features — then launched and supported by us."
+  },
+  {
+   "key": "SERVICES",
+   "name": "Services",
+   "visible": true,
+   "title": "Everything it takes\nto ship a product.",
+   "lead": "One team across the whole build. No hand-offs, no finger-pointing — and every example below is something we actually shipped."
+  },
+  {
+   "key": "PROCESS",
+   "name": "How a build goes",
+   "visible": true,
+   "title": "How a build\nactually goes.",
+   "lead": "Follow one real product — C-Ledger — from a sketch on paper to live on your domain. Scroll on."
+  },
+  {
+   "key": "WHY",
+   "name": "Why teams keep us",
+   "visible": true,
+   "title": "Why teams keep us.",
+   "lead": null
+  },
+  {
+   "key": "PHOTO BOOKS",
+   "name": "Photo Books",
+   "visible": true,
+   "title": null,
+   "lead": null
+  },
+  {
+   "key": "CTA",
+   "name": "Call to action",
+   "visible": true,
+   "title": null,
+   "lead": null
+  }
+ ],
+ "nav": [
+  {
+   "label": "Home",
+   "href": "index.html",
+   "visible": true
+  },
+  {
+   "label": "Templates",
+   "href": "templates.html",
+   "visible": true
+  },
+  {
+   "label": "Work",
+   "href": "work.html",
+   "visible": true
+  },
+  {
+   "label": "Products",
+   "href": "products.html",
+   "visible": true
+  },
+  {
+   "label": "Services",
+   "href": "services.html",
+   "visible": true
+  },
+  {
+   "label": "Photo Books",
+   "href": "/photobooks",
+   "visible": true
+  },
+  {
+   "label": "Domains",
+   "href": "domains.html",
+   "visible": true
+  },
+  {
+   "label": "About",
+   "href": "about.html",
+   "visible": true
+  },
+  {
+   "label": "Insights",
+   "href": "insights.html",
+   "visible": true
+  },
+  {
+   "label": "Contact",
+   "href": "contact.html",
+   "visible": true
+  }
+ ],
+ "cta": {
+  "label": "Start a project",
+  "href": "quote.html"
+ },
+ "footer": [
+  {
+   "title": "Studio",
+   "links": [
+    {
+     "label": "Work",
+     "href": "work.html"
+    },
+    {
+     "label": "Services",
+     "href": "services.html"
+    },
+    {
+     "label": "About",
+     "href": "about.html"
+    },
+    {
+     "label": "Insights",
+     "href": "insights.html"
+    }
+   ]
+  },
+  {
+   "title": "Build with us",
+   "links": [
+    {
+     "label": "Start a project",
+     "href": "quote.html"
+    },
+    {
+     "label": "Request a quote",
+     "href": "quote.html"
+    },
+    {
+     "label": "Templates",
+     "href": "templates.html"
+    },
+    {
+     "label": "Products",
+     "href": "products.html"
+    },
+    {
+     "label": "Photo Books",
+     "href": "/photobooks"
+    },
+    {
+     "label": "Domains",
+     "href": "domains.html"
+    }
+   ]
+  },
+  {
+   "title": "Contact",
+   "links": [
+    {
+     "label": "hello@cielafrica.com",
+     "href": "mailto:hello@cielafrica.com"
+    },
+    {
+     "label": "+254 117 959 105",
+     "href": "tel:+254117959105"
+    },
+    {
+     "label": "Subscribe to our emails",
+     "href": "/subscribe"
+    }
+   ]
+  }
+ ],
+ "announce": {
+  "on": false,
+  "text": "",
+  "href": ""
+ },
+ "publishedAt": 1794090816492
+}

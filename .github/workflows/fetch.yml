@@ -1,0 +1,25 @@
+name: fetch-media
+on:
+  push:
+    branches: [media-fetch]
+    paths: ['media/list.txt']
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: download
+        run: |
+          mkdir -p media/img
+          W=$(head -1 media/size.txt 2>/dev/null || echo 600)
+          while read -r id url; do
+            [ -z "$id" ] && continue
+            curl -sSL --retry 3 -o "media/img/$id.jpg" "$url?w=$W&q=86&fm=jpg&fit=max" || true
+          done < media/list.txt
+          ls -la media/img | head
+      - name: commit
+        run: |
+          git config user.name "media-bot"; git config user.email "media-bot@users.noreply.github.com"
+          git add media/img && git commit -m "media: fetched [skip ci]" && git push

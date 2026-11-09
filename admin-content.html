@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="color-scheme" content="only light">
+<title>Website content — Ciel Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="assets/img/favicon-32.png?v=20261108">
+<style>
+:root{
+  --black:#08090B;--graphite:#111317;--card:#14161c;--line:rgba(255,255,255,0.1);
+  --line-strong:rgba(255,255,255,0.18);--off:#EDECE6;--grey:#8A8F98;--grey-2:#5B5F68;
+  --blue:#2F6BFF;--cyan:#57D9C4;--green:#3DD68C;--red:#ff5d5d;--amber:#F59E0B;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--black);color:var(--off);line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:var(--cyan)}
+button{font-family:inherit;cursor:pointer}
+input,textarea,select{font-family:inherit}
+
+/* ---------- Login gate ---------- */
+.gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:
+  radial-gradient(ellipse 60% 60% at 30% 30%,rgba(47,107,255,0.18),transparent 60%),
+  radial-gradient(ellipse 50% 60% at 80% 80%,rgba(87,217,196,0.12),transparent 60%),var(--black);z-index:100;padding:20px}
+.gate__box{width:100%;max-width:380px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:32px}
+.gate__logo{height:44px;margin-bottom:22px}
+.gate h1{font-size:1.3rem;margin-bottom:4px;letter-spacing:-0.02em}
+.gate p{color:var(--grey);font-size:0.9rem;margin-bottom:20px}
+.gate input{width:100%;padding:12px 14px;background:var(--black);border:1px solid var(--line-strong);border-radius:8px;color:var(--off);font-size:1rem;margin-bottom:12px}
+.gate button{width:100%;padding:12px;background:var(--blue);color:#fff;border:0;border-radius:8px;font-weight:600;font-size:1rem}
+.gate__err{color:var(--red);font-size:0.85rem;min-height:1.2em;margin-bottom:8px}
+.gate__hint{color:var(--grey-2);font-size:0.78rem;margin-top:14px;line-height:1.5}
+
+/* ---------- App ---------- */
+.app{display:none;min-height:100vh;flex-direction:column}
+.app.on{display:flex}
+.topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:16px;padding:12px 20px;background:rgba(8,9,11,0.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.topbar img{height:30px}
+.topbar .title{font-weight:700;font-size:0.95rem}
+.topbar .spacer{flex:1}
+.btn{padding:9px 15px;border-radius:8px;border:1px solid var(--line-strong);background:transparent;color:var(--off);font-weight:600;font-size:0.85rem;display:inline-flex;align-items:center;gap:7px}
+.btn:hover{background:rgba(255,255,255,0.05)}
+.btn--p{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn--p:hover{background:#4479ff}
+.btn--g{background:var(--green);border-color:var(--green);color:#042}
+.btn--g:hover{filter:brightness(1.08)}
+.btn--sm{padding:6px 11px;font-size:0.78rem}
+.btn--danger{color:var(--red);border-color:rgba(255,93,93,0.4)}
+.btn--danger:hover{background:rgba(255,93,93,0.1)}
+
+.layout{display:flex;flex:1;min-height:0}
+.side{width:210px;flex:none;border-right:1px solid var(--line);padding:16px 10px;background:var(--graphite)}
+.side button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;border:0;background:transparent;color:var(--grey);border-radius:8px;font-size:0.9rem;font-weight:600;margin-bottom:2px}
+.side button:hover{color:var(--off);background:rgba(255,255,255,0.04)}
+.side button.on{color:var(--off);background:rgba(47,107,255,0.15);box-shadow:inset 2px 0 0 var(--blue)}
+.side .count{margin-left:auto;font-family:var(--mono);font-size:0.72rem;color:var(--grey-2)}
+
+.main{flex:1;overflow-y:auto;padding:24px 28px;min-width:0}
+.panel{display:none}
+.panel.on{display:block}
+.panel__head{display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.panel__head h2{font-size:1.4rem;letter-spacing:-0.02em}
+.panel__head p{color:var(--grey);font-size:0.85rem;width:100%}
+
+.rows{display:flex;flex-direction:column;gap:12px}
+.row{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.row__top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.row__top .idx{font-family:var(--mono);font-size:0.72rem;color:var(--grey-2);background:var(--black);padding:3px 8px;border-radius:5px}
+.row__top .nm{font-weight:700;font-size:0.98rem}
+.row__top .sp{flex:1}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.f{display:flex;flex-direction:column;gap:5px}
+.f label{font-size:0.72rem;color:var(--grey);font-weight:600;text-transform:uppercase;letter-spacing:0.04em}
+.f input,.f textarea,.f select{padding:9px 11px;background:var(--black);border:1px solid var(--line);border-radius:7px;color:var(--off);font-size:0.9rem;width:100%}
+.f input:focus,.f textarea:focus,.f select:focus{outline:none;border-color:var(--blue)}
+.f textarea{resize:vertical;min-height:62px;line-height:1.5}
+.f--full{grid-column:1/-1}
+.f .pricewrap{display:flex;align-items:center;gap:0}
+.f .pricewrap .ks{padding:9px 10px;background:var(--graphite);border:1px solid var(--line);border-right:0;border-radius:7px 0 0 7px;color:var(--grey);font-size:0.85rem;font-family:var(--mono)}
+.f .pricewrap input{border-radius:0 7px 7px 0}
+.chk{display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--off)}
+.chk input{width:auto}
+.addbar{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(120%);background:var(--green);color:#042;padding:12px 20px;border-radius:10px;font-weight:600;font-size:0.9rem;z-index:80;transition:transform .35s cubic-bezier(.22,1,.36,1);box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast--err{background:var(--red);color:#fff}
+
+.note{background:rgba(47,107,255,0.08);border:1px solid rgba(47,107,255,0.25);border-radius:10px;padding:14px 16px;font-size:0.85rem;color:#b9cdff;margin-bottom:18px;line-height:1.55}
+.note strong{color:#fff}
+.help{font-size:0.78rem;color:var(--grey-2);margin-top:4px}
+.export-list{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.export-row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+.export-row code{font-family:var(--mono);font-size:0.82rem;color:var(--cyan)}
+.export-row .desc{color:var(--grey);font-size:0.82rem;flex:1}
+.cat-tags{display:flex;flex-wrap:wrap;gap:6px}
+.cat-tags .tag{background:var(--black);border:1px solid var(--line);border-radius:6px;padding:4px 9px;font-size:0.78rem;display:flex;align-items:center;gap:6px}
+.cat-tags .tag button{background:none;border:0;color:var(--grey-2);font-size:0.9rem;line-height:1;padding:0}
+.cat-tags .tag button:hover{color:var(--red)}
+.tm-avatar{width:84px;height:84px;border-radius:12px;object-fit:cover;border:1px solid var(--line-strong);display:flex;align-items:center;justify-content:center}
+.tm-avatar--ph{background:linear-gradient(140deg,#17202e,#0b0f14);color:var(--cyan);font-weight:800;font-size:1.4rem;font-family:var(--mono)}
+@media (max-width:720px){
+  .side{width:56px;padding:12px 6px}
+  .side button span.lbl{display:none}
+  .side .count{display:none}
+  .main{padding:16px}
+}
+</style>
+<script>if(/[?&]embed=1/.test(location.search))document.documentElement.classList.add("is-embed")</script>
+<style>.is-embed .ao__top,.is-embed .ao__tip{display:none!important}</style>
+</head>
+<body>
+
+<!-- ======= LOGIN GATE ======= -->
+<div class="gate" id="gate">
+  <div class="gate__box">
+    <img src="assets/img/logo.png?v=20261019" class="gate__logo" alt="Ciel Africa">
+    <h1>Content Manager</h1>
+    <p>Sign in to edit your site content.</p>
+    <div class="gate__err" id="gateErr"></div>
+    <input type="password" id="gatePass" placeholder="Password" autocomplete="current-password">
+    <button id="gateBtn">Unlock</button>
+    <p class="gate__hint">Use your Ciel Africa admin password (ADMIN_PASSWORD in Vercel). It is checked on the server. <a href="/admin">Back to Ciel Admin</a></p>
+  </div>
+</div>
+
+<!-- ======= APP ======= -->
+<div class="app" id="app">
+  <div class="topbar">
+    <img src="assets/img/logo.png?v=20261019" alt="Ciel Africa">
+    <span class="title">Content Manager</span>
+    <span class="spacer"></span>
+    <button class="btn btn--sm" id="reloadBtn" title="Discard changes and reload original data">↺ Reset</button>
+    <button class="btn btn--g" id="exportAllBtn">⤓ Save all files</button>
+    <button class="btn btn--sm" id="logoutBtn">Log out</button>
+  </div>
+
+  <div class="layout">
+    <nav class="side" id="side">
+      <button data-tab="products" class="on"><span class="lbl">Products</span><span class="count" id="c-products">0</span></button>
+      <button data-tab="templates"><span class="lbl">Templates</span><span class="count" id="c-templates">0</span></button>
+      <button data-tab="work"><span class="lbl">Work</span><span class="count" id="c-work">0</span></button>
+      <button data-tab="insights"><span class="lbl">Insights</span><span class="count" id="c-insights">0</span></button>
+      <button data-tab="team"><span class="lbl">Team</span><span class="count" id="c-team">0</span></button>
+      <button data-tab="categories"><span class="lbl">Categories</span></button>
+      <button data-tab="export"><span class="lbl">Save / Publish</span></button>
+    </nav>
+
+    <main class="main">
+      <div id="loadWarn" style="display:none;background:rgba(255,93,93,0.1);border:1px solid rgba(255,93,93,0.4);color:#ffb3b3;border-radius:10px;padding:12px 16px;font-size:0.85rem;margin-bottom:18px;line-height:1.5"></div>
+
+      <!-- PRODUCTS -->
+      <section class="panel on" data-panel="products">
+        <div class="panel__head">
+          <h2>Digital Products</h2>
+          <button class="btn btn--p btn--sm" data-add="products">+ Add product</button>
+          <button class="btn btn--g btn--sm" data-save="products">⤓ Save products.js</button>
+          <p>Edit prices (KES), names, descriptions and categories. These appear on the Products page and homepage. Changes are kept in this browser automatically — click <strong>Save</strong> to download the file, then upload it to your repo to publish.</p>
+        </div>
+        <div class="rows" id="rows-products"></div>
+      </section>
+
+      <!-- TEMPLATES -->
+      <section class="panel" data-panel="templates">
+        <div class="panel__head">
+          <h2>Website Templates</h2>
+          <button class="btn btn--p btn--sm" data-add="templates">+ Add template</button>
+          <button class="btn btn--g btn--sm" data-save="templates">⤓ Save templates.js</button>
+          <p>Edit prices (KES), names, descriptions, who each is ideal for, and badges.</p>
+        </div>
+        <div class="rows" id="rows-templates"></div>
+      </section>
+
+      <!-- WORK -->
+      <section class="panel" data-panel="work">
+        <div class="panel__head">
+          <h2>Selected Work</h2>
+          <button class="btn btn--p btn--sm" data-add="work">+ Add project</button>
+          <button class="btn btn--g btn--sm" data-save="work">⤓ Save work.js</button>
+          <p>Edit project names, industry, summaries and results. Advanced fields (tech, overview) edit as text.</p>
+        </div>
+        <div class="rows" id="rows-work"></div>
+      </section>
+
+      <!-- INSIGHTS -->
+      <section class="panel" data-panel="insights">
+        <div class="panel__head">
+          <h2>Insights / Blog</h2>
+          <button class="btn btn--p btn--sm" data-add="insights">+ Add post</button>
+          <button class="btn btn--g btn--sm" data-save="work">⤓ Save (work.js)</button>
+          <p>Manage the article list shown on the Insights page. Insights are saved inside <code>work.js</code>.</p>
+        </div>
+        <div class="rows" id="rows-insights"></div>
+      </section>
+
+      <!-- TEAM -->
+      <section class="panel" data-panel="team">
+        <div class="panel__head">
+          <h2>Team (About page)</h2>
+          <button class="btn btn--p btn--sm" data-add="team">+ Add member</button>
+          <button class="btn btn--g btn--sm" data-save="team">⤓ Save team.js</button>
+          <p>Edit team members shown on the About page — name, role, bio, and a photo. Photos are embedded into the file (keep each under ~900KB).</p>
+        </div>
+        <div class="rows" id="rows-team"></div>
+      </section>
+
+      <!-- CATEGORIES -->
+      <section class="panel" data-panel="categories">
+        <div class="panel__head"><h2>Categories</h2><p>These power the filter tabs. The first ("All") stays first.</p></div>
+        <div class="row">
+          <div class="row__top"><span class="nm">Product categories</span></div>
+          <div class="cat-tags" id="cats-products"></div>
+          <div class="addbar"><input id="newcat-products" placeholder="New product category" style="padding:8px 11px;background:var(--black);border:1px solid var(--line);border-radius:7px;color:var(--off);font-size:0.85rem"><button class="btn btn--sm" data-addcat="products">Add</button></div>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <div class="row__top"><span class="nm">Template categories</span></div>
+          <div class="cat-tags" id="cats-templates"></div>
+          <div class="addbar"><input id="newcat-templates" placeholder="New template category" style="padding:8px 11px;background:var(--black);border:1px solid var(--line);border-radius:7px;color:var(--off);font-size:0.85rem"><button class="btn btn--sm" data-addcat="templates">Add</button></div>
+        </div>
+      </section>
+
+      <!-- SAVE / PUBLISH -->
+      <section class="panel" data-panel="export">
+        <div class="panel__head"><h2>Save &amp; publish</h2></div>
+        <div class="note">
+          <strong>Publishing:</strong> once the one-click setup is done (GitHub token + password added in Vercel — see the README),
+          clicking <strong>Save</strong> commits straight to your repo and the change goes live in ~30 seconds. No downloads.<br><br>
+          If the setup isn't in place yet, Save still works — it just <em>downloads</em> the file instead, and you upload it to your
+          repo manually. Either way your edits are kept in this browser until you publish.
+        </div>
+        <div class="export-list">
+          <div class="export-row"><code>data/products.js</code><span class="desc">Digital products &amp; prices</span><button class="btn btn--sm" data-save="products">⤓ Save</button></div>
+          <div class="export-row"><code>data/templates.js</code><span class="desc">Website templates &amp; prices</span><button class="btn btn--sm" data-save="templates">⤓ Save</button></div>
+          <div class="export-row"><code>data/work.js</code><span class="desc">Selected work + insights</span><button class="btn btn--sm" data-save="work">⤓ Save</button></div>
+          <div class="export-row"><code>data/team.js</code><span class="desc">About-page team &amp; photos</span><button class="btn btn--sm" data-save="team">⤓ Save</button></div>
+        </div>
+        <div style="margin-top:18px"><button class="btn btn--g" id="exportAllBtn2">⤓ Save all 4 files</button></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- load the real site data so the admin edits the live content -->
+<script src="data/products.js?v=20261014f"></script>
+<script src="data/templates.js?v=20261101b"></script>
+<script src="data/work.js?v=20261101b"></script>
+<script src="data/team.js?v=20261014f"></script>
+<script src="assets/js/admin.js?v=20261101a"></script>
+</body>
+</html>

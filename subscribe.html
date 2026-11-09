@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="color-scheme" content="only light">
+<title>Subscribe — Ciel Africa</title>
+<meta name="description" content="Subscribe to the Ciel letter: new work from the studio, new photo book covers and the occasional offer. Unsubscribe in one click.">
+<link rel="canonical" href="https://cielafrica.com/subscribe">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cielafrica.com/subscribe">
+<meta property="og:title" content="Subscribe — Ciel Africa">
+<meta property="og:description" content="Subscribe to the Ciel letter: new work from the studio, new photo book covers and the occasional offer. Unsubscribe in one click.">
+<meta property="og:site_name" content="Ciel Africa">
+<meta property="og:image" content="https://www.cielafrica.com/assets/img/og.png?v=20261025d">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Subscribe — Ciel Africa">
+<meta name="twitter:description" content="Subscribe to the Ciel letter: new work from the studio, new photo book covers and the occasional offer. Unsubscribe in one click.">
+<meta name="twitter:image" content="https://www.cielafrica.com/assets/img/og.png?v=20261025d">
+<meta name="theme-color" content="#FAFAF8">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png?v=20261108">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16.png?v=20261108">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png?v=20261108">
+<link rel="manifest" href="site.webmanifest?v=20261021i">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/base.css?v=20261026a">
+<link rel="stylesheet" href="assets/css/components.css?v=20261101p">
+</head>
+<body>
+<script src="/assets/js/autoplay.js?v=20261026a"></script>
+<a href="#main" class="sr-only">Skip to content</a>
+<!--cms:announce--><!--/cms:announce-->
+<header class="nav" id="nav">
+  <div class="nav__in">
+    <a href="index.html" class="brand" aria-label="Ciel Africa home"><img src="assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa" class="brand__logo"></a>
+    <nav class="nav__links" aria-label="Primary"><a href="index.html">Home</a><a href="templates.html">Templates</a><a href="work.html">Work</a><a href="products.html">Products</a><a href="services.html">Services</a><a href="/photobooks">Photo Books</a><a href="domains.html">Domains</a><a href="about.html">About</a><a href="insights.html">Insights</a><a href="contact.html">Contact</a></nav>
+    <button class="nav__cart" data-open-cart aria-label="Open cart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg><span class="nav__cartcount" data-cart-count>0</span></button>
+    <a href="quote.html" class="nav__cta">Start a project</a>
+    <button class="nav__burger" id="burger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+<div class="mobile-menu" id="mobileMenu"><a href="index.html"><span class="brk">‹</span> Home</a><a href="templates.html"><span class="brk">‹</span> Templates</a><a href="work.html"><span class="brk">‹</span> Work</a><a href="products.html"><span class="brk">‹</span> Products</a><a href="services.html"><span class="brk">‹</span> Services</a><a href="/photobooks"><span class="brk">‹</span> Photo Books</a><a href="domains.html"><span class="brk">‹</span> Domains</a><a href="about.html"><span class="brk">‹</span> About</a><a href="insights.html"><span class="brk">‹</span> Insights</a><a href="contact.html"><span class="brk">‹</span> Contact</a><a href="quote.html" class="btn btn--p">Start a project</a></div>
+<main id="main">
+<section class="phead wrap">
+  <div class="crumb"><span class="brk">‹</span> <span id="sbCrumb">Emails</span></div>
+  <div class="hl"><h1 id="sbH">The Ciel letter.<br><span class="em">Good things, now and then.</span></h1></div>
+  <p class="lead" id="sbP">New work from the studio, fresh photo book covers and the occasional offer. Sign up below and confirm from your inbox.</p>
+  <p id="sbGo" style="margin-top:1.4rem;display:none;gap:.6rem;flex-wrap:wrap"><a href="/photobooks" class="btn btn--p btn--lg">Make a photo book</a><a href="/" class="btn btn--ghost btn--lg">Back to cielafrica.com</a></p>
+</section>
+<section class="wrap" id="sbBox" data-subscribe="page" aria-label="Subscribe"></section>
+</main>
+<script>
+(function(){
+  var q=new URLSearchParams(location.search),c=q.get('c'),u=q.get('u');
+  if(!c&&!u)return;
+  history.replaceState(null,'','/subscribe');
+  var H=document.getElementById('sbH'),P=document.getElementById('sbP'),C=document.getElementById('sbCrumb'),G=document.getElementById('sbGo'),B=document.getElementById('sbBox');
+  B.hidden=true;C.textContent=c?'Confirming':'Unsubscribing';H.innerHTML='One moment…';P.textContent='';
+  function post(r,d){return fetch('/api/hq?route='+r,{method:'POST',headers:{'Content-Type':'application/json','X-Requested-With':'ciel'},body:JSON.stringify(d)}).then(function(x){return x.json().then(function(j){if(!x.ok||j.ok===false)throw new Error(j.error||'Something went wrong.');return j})})}
+  function esc(s){return String(s||'').replace(/[<>&"]/g,'')}
+  if(c)post('sub-confirm',{k:c}).then(function(j){C.textContent='Subscribed';H.innerHTML='You’re in.<br><span class="em">Welcome to the Ciel letter.</span>';P.textContent='We’ll write to '+esc(j.email)+' now and then. Every email has a one-click unsubscribe link.';G.style.display='flex'},function(e){C.textContent='Emails';H.innerHTML='That link didn’t work.';P.textContent=e.message;B.hidden=false});
+  else post('sub-unsub',{k:u}).then(function(j){C.textContent='Unsubscribed';H.innerHTML='You’re unsubscribed.<br><span class="em">No more emails.</span>';P.textContent=(j.email?esc(j.email)+' won’t get our emails any more. ':'')+'Changed your mind? You can sign up again below.';B.hidden=false},function(e){C.textContent='Emails';H.innerHTML='That link didn’t work.';P.textContent=e.message+' You can also email hello@cielafrica.com and we’ll take you off the list.';});
+})();
+</script>
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot__top">
+      <a href="index.html" class="brand" aria-label="Ciel Africa home"><img src="assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa" class="brand__logo"></a>
+      <div class="foot__cols">
+        <div class="foot__col"><h4><span class="brk">‹</span> Studio</h4><a href="work.html">Work</a><a href="services.html">Services</a><a href="about.html">About</a><a href="insights.html">Insights</a></div>
+        <div class="foot__col"><h4><span class="brk">‹</span> Build with us</h4><a href="quote.html">Start a project</a><a href="quote.html">Request a quote</a><a href="templates.html">Templates</a><a href="products.html">Products</a><a href="/photobooks">Photo Books</a><a href="domains.html">Domains</a></div>
+        <div class="foot__col"><h4><span class="brk">‹</span> Contact</h4><a href="mailto:hello@cielafrica.com">hello@cielafrica.com</a><a href="tel:+254117959105">+254 117 959 105</a><a href="/subscribe">Subscribe to our emails</a></div>
+      </div>
+    </div>
+    <div class="foot__bottom">
+      <span>© 2026 Ciel Africa.</span>
+      <span class="foot__legal"><a href="/terms">Terms</a> · <a href="/privacy">Privacy</a> · <a href="/refunds">Refunds</a> · <a href="/delivery">Delivery</a> · <a href="/cookies">Cookies</a></span>
+    </div>
+  </div>
+</footer>
+<a class="wa-float" href="https://wa.me/254117959105?text=Hello%20Ciel%20Africa%2C%20I%27d%20like%20to%20talk%20about%20a%20project." target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp">
+  <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><path fill="#fff" d="M16.004 0h-.008C7.174 0 0 7.176 0 16c0 3.5 1.128 6.745 3.046 9.38L1.05 31.3l6.126-1.957A15.9 15.9 0 0 0 16.004 32C24.826 32 32 24.822 32 16S24.826 0 16.004 0z"/><path fill="#25D366" d="M16.004 2.667C23.353 2.667 29.33 8.646 29.33 16c0 7.354-5.977 13.333-13.326 13.333a13.27 13.27 0 0 1-7.49-2.303l-.536-.356-3.636 1.16 1.18-3.542-.388-.562A13.23 13.23 0 0 1 2.67 16C2.67 8.646 8.655 2.667 16.004 2.667z"/><path fill="#fff" d="M12.86 8.6c-.26-.58-.53-.59-.78-.6l-.666-.008c-.232 0-.608.087-.927.435-.318.348-1.217 1.19-1.217 2.9 0 1.71 1.246 3.363 1.42 3.595.174.232 2.4 3.845 5.93 5.238 2.934 1.157 3.531.927 4.168.87.637-.058 2.056-.84 2.346-1.652.29-.812.29-1.508.203-1.653-.087-.145-.318-.232-.666-.406s-2.056-1.015-2.375-1.131c-.318-.116-.55-.174-.782.174-.232.348-.898 1.131-1.101 1.363-.203.232-.406.26-.754.087-.348-.174-1.469-.542-2.798-1.726-1.034-.922-1.732-2.06-1.935-2.408-.203-.348-.022-.536.153-.709.156-.156.348-.406.522-.609.174-.203.232-.348.348-.58.116-.232.058-.435-.029-.609-.087-.174-.763-1.892-1.075-2.563z"/></svg>
+</a><script src="data/previews.js?v=20261021i"></script>
+<script src="data/templates.js?v=20261101b"></script>
+<script src="data/products.js?v=20261021i"></script>
+<script src="data/productart.js?v=20261102a"></script>
+<script src="data/work.js?v=20261101b"></script>
+<script src="data/mockups.js?v=20261021i"></script>
+<script src="data/team.js?v=20261021i"></script>
+<script src="assets/js/render.js?v=20261101b"></script>
+<script src="assets/js/site.js?v=20261103d"></script>
+<script src="assets/js/cart.js?v=20261108p"></script>
+<script src="/assets/js/wa-track.js?v=1" defer></script>
+<script defer src="/assets/js/subscribe.js?v=2"></script>
+<script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+Photo Books fonts. All are licensed under the SIL Open Font License 1.1
+(https://openfontlicense.org), distributed through Google Fonts / Fontsource.
+League Spartan, Montserrat, Playfair Display, Bebas Neue, Pacifico, Dancing Script,
+Great Vibes, Abril Fatface, Oswald, Poppins, Righteous, Shrikhand, Satisfy, Amatic SC,
+Permanent Marker, Fredoka, Lobster, Kaushan Script, Josefin Sans, Cormorant Garamond.
+
+Added Nov 2026 (from Fontsource, SIL Open Font License 1.1): Raleway, Lora, Merriweather, Cinzel, Nunito, Quicksand,
+Comfortaa, Sacramento, Parisienne, Allura, Alex Brush, Yellowtail, Libre Baskerville, EB Garamond, Anton, Bodoni Moda.
