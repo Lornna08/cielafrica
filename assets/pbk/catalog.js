@@ -118,22 +118,24 @@
   /* Raster travel covers (from covers.js) */
   var COVERS = (root.PBK_COVERS || []);
   COVERS.forEach(function (c) {
-    var t = { id: 'travel/' + c.id, cat: 'travel', slug: c.id, name: c.name, kind: 'raster', lines: c.lines || [], editable: !!c.plate, bg: c.bg, tc: c.tc, bc: c.bc || c.tc, st: c.st, layered: !!c.art, artBox: c.art || null, sh: c.sh ? 1 : 0, yr: !!c.yr,
+    var cat = c.cat || 'travel';   /* raster covers can also sit in other categories (e.g. event: wedding, honeymoon) */
+    var t = { id: cat + '/' + c.id, cat: cat, slug: c.id, name: c.name, kind: 'raster', lines: c.lines || [], editable: !!c.plate, bg: c.bg, tc: c.tc, bc: c.bc || c.tc, st: c.st, layered: !!c.art, artBox: c.art || null, sh: c.sh ? 1 : 0, yr: !!c.yr,
       art: c.art ? '/assets/pbk/c/a/' + c.id + '.webp?v=' + VER : null, artThumb: c.art ? '/assets/pbk/c/a/s/' + c.id + '.webp?v=' + VER : null,
       flat: '/assets/pbk/c/f/' + c.id + '.webp?v=' + VER, plate: c.plate ? '/assets/pbk/c/p/' + c.id + '.webp?v=' + VER : null };
-    t.mock = function () { return '/assets/pbk/c/m/travel-' + c.id + '.webp?v=' + VER; };
+    t.mock = function () { return '/assets/pbk/c/m/' + cat + '-' + c.id + '.webp?v=' + VER; };
     TPL[t.id] = t; ORDER.push(t.id);
   });
   /* Kenya covers also show under Travel */
   function byCat(cat) {
     var l = ORDER.map(function (id) { return TPL[id]; }).filter(function (t) { return (t.cat === cat || (cat === 'travel' && t.cat === 'kenya')) && visible(t); });
     if (cat === 'travel') l.sort(function (a, b) { return (a.cat === 'kenya') - (b.cat === 'kenya'); });
+    else l.sort(function (a, b) { return (a.kind !== 'raster') - (b.kind !== 'raster'); });   /* illustrated photo covers first */
     return l;
   }
 
   function lineEl(t, l, i) {
     var role = l.role || (i === 0 ? 'title' : 'sub');
-    return { id: role === 'year' ? 'year' : i === 0 ? 'title' : 'sub' + i, t: 'text', role: role, text: l.text, x: l.x, y: l.y, w: l.w, h: l.cap, cap: l.cap, align: l.align, font: 'spartan', color: l.color, shadow: t.sh || 0 };
+    return { id: role === 'year' ? 'year' : i === 0 ? 'title' : 'sub' + i, t: 'text', role: role, text: l.text, x: l.x, y: l.y, w: l.w, h: l.cap, cap: l.cap, align: l.align, font: l.font || 'spartan', color: l.color, shadow: l.font ? 0 : (t.sh || 0) };
   }
   function rasterDoc(t, edit) {
     var doc = { kind: 'cover', bg: t.bg || '#ffffff', brand: t.bc, img: t.flat, els: [], from: t.id };
