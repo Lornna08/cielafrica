@@ -335,6 +335,10 @@
   ],
   "rewrites": [
     {
+      "source": "/api/ig-callback",
+      "destination": "/api/hq?route=ig-callback"
+    },
+    {
       "source": "/photobooks/:page(travel|kenya|event|couple|friends|baby|pets|family|year|someone|blank|design|my-books|checkout|track)",
       "destination": "/photobooks"
     },

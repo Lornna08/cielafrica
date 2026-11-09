@@ -70,9 +70,10 @@
     pie: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>',
     send: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>',
     star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>',
+    ig: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><path d="M17.5 6.5h.01"/></svg>',
     menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>'
   };
-  var NAV = [['overview', 'Overview', I.home, 'Main'], ['analytics', 'Analytics', I.chart], ['reports', 'Reports & exports', I.pie], ['orders', 'Orders', I.orders, 'Commerce'], ['photobooks', 'Photo Books', I.book], ['payments', 'Payments', I.card], ['invoices', 'Invoices & receipts', I.pen], ['products', 'Products', I.box], ['templates', 'Website templates', I.web], ['inbox', 'Inbox', I.inbox, 'Customers & sales'], ['leads', 'Leads', I.target], ['customers', 'Customers', I.people], ['campaigns', 'Email campaigns', I.send], ['reviews', 'Reviews', I.star], ['projects', 'Projects', I.folder], ['website', 'Website editor', I.globe, 'Website'], ['content', 'Content library', I.image], ['policies', 'Policies', I.shield], ['calendar', 'Calendar', I.cal, 'Operations'], ['tasks', 'Tasks', I.tasks], ['activity', 'Activity log', I.act, 'System'], ['settings', 'Setup', I.gear]];
+  var NAV = [['overview', 'Overview', I.home, 'Main'], ['analytics', 'Analytics', I.chart], ['reports', 'Reports & exports', I.pie], ['orders', 'Orders', I.orders, 'Commerce'], ['photobooks', 'Photo Books', I.book], ['payments', 'Payments', I.card], ['invoices', 'Invoices & receipts', I.pen], ['products', 'Products', I.box], ['templates', 'Website templates', I.web], ['inbox', 'Inbox', I.inbox, 'Customers & sales'], ['leads', 'Leads', I.target], ['customers', 'Customers', I.people], ['campaigns', 'Email campaigns', I.send], ['reviews', 'Reviews', I.star], ['instagram', 'Instagram', I.ig], ['projects', 'Projects', I.folder], ['website', 'Website editor', I.globe, 'Website'], ['content', 'Content library', I.image], ['policies', 'Policies', I.shield], ['calendar', 'Calendar', I.cal, 'Operations'], ['tasks', 'Tasks', I.tasks], ['activity', 'Activity log', I.act, 'System'], ['settings', 'Setup', I.gear]];
 
   /* ---------- order sources, normalised ---------- */
   var KIND = { photobook: ['Photo book', '#ff5a1f'], shop: ['Shop', '#1f4fb5'], domain: ['Domain', '#5b3fd1'], whatsapp: ['WhatsApp', '#1fa855'], invoice: ['Invoice', '#0f766e'] };
@@ -270,7 +271,7 @@
     if (!NAV.some(function (n) { return n[0] === v; })) v = 'overview';
     document.querySelectorAll('.drawer,.modal').forEach(function (x) { x.remove(); });
     S.view = v; navs(); root.classList.toggle('is-ov', v === 'overview');
-    var titles = { overview: 'Good ' + (new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening') + ', Lorna', orders: 'Orders', calendar: 'Calendar', tasks: 'Tasks', customers: 'Customers', website: 'Website', settings: 'Setup', inbox: 'Inbox', content: 'Content library', policies: 'Policies', activity: 'Activity log', payments: 'Payments', products: 'Products', templates: 'Website templates', photobooks: 'Photo Books', leads: 'Leads', projects: 'Projects', analytics: 'Analytics', reports: 'Reports & exports', campaigns: 'Email campaigns', invoices: 'Invoices & receipts', reviews: 'Reviews' };
+    var titles = { overview: 'Good ' + (new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening') + ', Lorna', orders: 'Orders', calendar: 'Calendar', tasks: 'Tasks', customers: 'Customers', website: 'Website', settings: 'Setup', inbox: 'Inbox', content: 'Content library', policies: 'Policies', activity: 'Activity log', payments: 'Payments', products: 'Products', templates: 'Website templates', photobooks: 'Photo Books', leads: 'Leads', projects: 'Projects', analytics: 'Analytics', reports: 'Reports & exports', campaigns: 'Email campaigns', invoices: 'Invoices & receipts', reviews: 'Reviews', instagram: 'Instagram' };
     document.getElementById('ttl').innerHTML = esc(titles[v]) + '<small>' + new Date().toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + '</small>';
     document.getElementById('topx').innerHTML = v === 'calendar' ? '<button class="b b--p b--sm" data-newev>' + I.plus + '<span>Event</span></button>' : v === 'tasks' ? '<button class="b b--p b--sm" data-newtk>' + I.plus + '<span>Task</span></button>' : '';
     var tb = document.querySelector('[data-newev]'); if (tb) tb.onclick = function () { eventModal({ date: today() }); };
@@ -285,6 +286,7 @@
     else if (v === 'reports' && window.HQGrow) HQGrow.reports();
     else if (v === 'campaigns' && window.HQGrow) HQGrow.campaigns(h[1]);
     else if (v === 'reviews' && window.HQGrow) HQGrow.reviews();
+    else if (v === 'instagram' && window.HQIg) HQIg.render(h[1], h.slice(2).join('/'));
     else if (v === 'invoices' && window.HQMoney) HQMoney.invoices();
     else if (v === 'photobooks' && h[1] === 'prices' && window.HQSite) HQSite.renderCatalog('photobooks');
     else if (v === 'photobooks') photobooks();
@@ -742,5 +744,6 @@
   if (window.HQGrow) HQGrow.init(window.HQ);
   if (window.HQMoney) HQMoney.init(window.HQ);
   if (window.HQLegal) HQLegal.init(window.HQ);
+  if (window.HQIg) HQIg.init(window.HQ);
   start();
 })();
