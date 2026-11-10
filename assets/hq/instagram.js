@@ -561,6 +561,59 @@
   }
 
 
+  /* ---------- when to post: best times and a safe pace ----------
+     Best times: Buffer’s 2026 study of 9.6 million Instagram posts (in local time), or, once the account has
+     20+ posts, the hours its own posts got the most likes and comments. Pace: 3–5 feed posts a week, 1–2 a day,
+     at least 3 hours apart; accounts that post in bursts get flagged as spam. */
+  var BEST = { 0: [21, 22, 20], 1: [19, 18, 20], 2: [19, 15, 17], 3: [12, 18, 8], 4: [9, 8, 7], 5: [22, 21, 6], 6: [21, 22, 20] };
+  var DAYN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  var isFeed = function (t) { return t !== 'story'; };
+  var ownPosts = function () { return S.media || ((ls('cmedia') || {}).items) || []; };
+  function ownHours() {
+    var l = ownPosts(); if (l.length < 20) return null;
+    var by = {}, all = 0;
+    l.forEach(function (x) { var h = new Date(x.timestamp).getHours(), e = (+x.like_count || 0) + 2 * (+x.comments_count || 0); all += e; (by[h] = by[h] || []).push(e); });
+    var avg = all / l.length || 1;
+    var hs = Object.keys(by).filter(function (h) { return by[h].length >= 2; }).map(function (h) { return [+h, by[h].reduce(function (s, v) { return s + v; }, 0) / by[h].length / avg]; })
+      .filter(function (x) { return x[1] > 1; }).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 3).map(function (x) { return x[0]; });
+    return hs.length >= 2 ? hs : null;
+  }
+  /* every other post around: scheduled here, published from here, and what's already on the profile */
+  function others(id) {
+    var out = [];
+    (S.posts || []).forEach(function (p) { if (p.id === id) return; if ((p.status === 'scheduled' || p.status === 'processing') && p.at) out.push({ at: p.at, feed: isFeed(p.type) }); else if (p.status === 'published' && p.publishedAt) out.push({ at: p.publishedAt, feed: isFeed(p.type) }); });
+    ownPosts().forEach(function (x) { var t = new Date(x.timestamp).getTime(); if (!out.some(function (o) { return Math.abs(o.at - t) < 5 * 6e4; })) out.push({ at: t, feed: true }); });
+    return out;
+  }
+  function dayKey(t) { var d = new Date(t); return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(); }
+  function paceNote(at, type, id) {
+    if (!at) return '';
+    var o = others(id).filter(function (x) { return x.feed === isFeed(type); }), same = o.filter(function (x) { return dayKey(x.at) === dayKey(at); }).length;
+    if (!isFeed(type)) return same >= 5 ? 'That would be story number ' + (same + 1) + ' that day. 1–3 stories a day is plenty.' : '';
+    var near = o.filter(function (x) { return Math.abs(x.at - at) < 3 * 3600e3; })[0];
+    if (near) return 'Another post goes out close to this one (' + when(near.at) + '). Keep feed posts at least 3 hours apart so Instagram doesn’t treat the account as spam.';
+    if (same >= 2) return 'That would be ' + (same + 1) + ' feed posts that day. Keep it to 1–2 a day; posting in bursts is what gets accounts flagged.';
+    var week = o.filter(function (x) { return Math.abs(x.at - at) < 3.5 * 864e5; }).length;
+    if (week >= 5) return 'That’s ' + (week + 1) + ' feed posts in a week. 3–5 a week is the sweet spot.';
+    return '';
+  }
+  /* the next good times this week that don't clash with other posts (one per day) */
+  function bestSlots(type, id, n) {
+    var own = ownHours(), o = others(id).filter(function (x) { return x.feed === isFeed(type); }), out = [], soon = Date.now() + 30 * 6e4;
+    for (var dd = 0; dd < 9 && out.length < (n || 4); dd++) {
+      var day = new Date(); day.setDate(day.getDate() + dd);
+      var hours = own || BEST[day.getDay()], busy = o.filter(function (x) { return dayKey(x.at) === dayKey(day.getTime()); }).length;
+      if (isFeed(type) && busy >= 2) continue;
+      for (var k = 0; k < hours.length; k++) {
+        var t = new Date(day); t.setHours(hours[k], 0, 0, 0); var ts = t.getTime();
+        if (ts < soon || o.some(function (x) { return Math.abs(x.at - ts) < 3 * 3600e3; })) continue;
+        out.push(ts); break;
+      }
+    }
+    return { slots: out, own: !!own };
+  }
+  function slotLabel(t) { var d = new Date(t), today = dayKey(Date.now()) === dayKey(t), tom = dayKey(Date.now() + 864e5) === dayKey(t); return (today ? 'Today' : tom ? 'Tomorrow' : DAYN[d.getDay()]) + ' ' + d.toLocaleTimeString('en-KE', { hour: 'numeric', minute: '2-digit' }); }
+
   /* ---------- the post editor ---------- */
   var RATIO = { photo: [0.8, 1.91], carousel: [0.8, 1.91], story: [0.5625, 0.5625], reel: [0.5625, 0.5625] };
   function editor(p) {
@@ -574,7 +627,7 @@
       '<details class="ig-more"><summary>More options</summary><label class="field" id="igAltF"><span>Alt text (describes the photo for people who can’t see it)</span><input class="hq-in" id="igAlt" maxlength="1000"></label>' +
       '<label class="field" id="igColF"><span>Collaborators (up to 3 usernames)</span><input class="hq-in" id="igCol" placeholder="@friend, @brand"></label>' +
       '<label class="ig-ck" id="igFeedF"><input type="checkbox" id="igFeed"> Also show the reel in the main feed</label></details>' +
-      '<div class="ig-when"><label class="field"><span>Post on</span><input class="hq-in" type="datetime-local" id="igAt"></label><div class="ig-quick">' + [['In 1 hour', 1], ['Tonight 7pm', 'e'], ['Tomorrow 9am', 't']].map(function (q) { return '<button class="b b--sm" data-q="' + q[1] + '">' + q[0] + '</button>'; }).join('') + '</div></div>' +
+      '<div class="ig-when"><label class="field"><span>Post on</span><input class="hq-in" type="datetime-local" id="igAt"></label><div class="ig-quick" id="igBest"></div><p class="faint ig-bn" id="igBestN"></p><p class="faint ig-bn is-warn" id="igPace" hidden></p></div>' +
       '<p class="ig-msg" id="igMsg"></p>' +
       '<div class="ig-acts">' + (p ? '<button class="b b--ghost ig-danger" id="igDel">' + IC.del + '</button>' : '') + '<span class="ig-sp"></span><button class="b" id="igDraft">Save draft</button><button class="b" id="igSched">Schedule</button><button class="b b--p" id="igNow">Post now</button></div>' +
       '</div></div></div>');
@@ -588,7 +641,7 @@
       d.type = t; m.querySelectorAll('[data-ty]').forEach(function (b) { b.classList.toggle('is-on', b.getAttribute('data-ty') === t); });
       $('#igCapF').hidden = t === 'story'; $('#igAltF').hidden = t !== 'photo'; $('#igColF').hidden = t === 'story'; $('#igFeedF').hidden = t !== 'reel';
       $('#igMHint').textContent = { photo: 'One photo. Best shape: square or 4:5 portrait (1080 × 1350).', carousel: '2 to 10 photos or videos. They all show in the first one’s shape, so keep them the same shape.', reel: 'One video, 3 seconds to 15 minutes, upright 9:16 (1080 × 1920), MP4 or MOV.', story: 'One photo or video, upright 9:16 (1080 × 1920). Videos up to 60 seconds.' }[t];
-      draw(); count();
+      draw(); count(); if ($('#igBest')) best();
     }
     function count() { var c = $('#igCap').value, tags = (c.match(/#[\p{L}\p{N}_]+/gu) || []).length; $('#igCnt').textContent = c.length + ' / 2200' + (tags ? ' · ' + tags + ' hashtag' + (tags > 1 ? 's' : '') + (tags > 30 ? ' (30 max)' : '') : ''); }
     function draw() {
@@ -636,6 +689,8 @@
     $('#igSched').onclick = function () { save('scheduled').then(function (it) { m.remove(); H.toast('Scheduled for ' + when(it.at), 'ok'); refreshTab('planner'); }, function () { }); };
     $('#igNow').onclick = function () {
       if (pending()) return;
+      var pn = paceNote(Date.now(), d.type, d.id);
+      if (pn && !this.dataset.ok) { var me = this; HQAsk.confirm(pn + ' Post it anyway?').then(function (ok) { if (ok) { me.dataset.ok = '1'; me.click(); } }); return; }
       var body = collect('draft'); body.at = null;
       busy(true); msg('Saving…');
       api('ig-post-save', body).then(function (r) { d.id = r.item.id; msg('Publishing to Instagram… (videos can take a minute)'); return api('ig-post-now', { id: d.id }); })
@@ -643,7 +698,17 @@
     };
     var del = $('#igDel'); if (del) del.onclick = function () { HQAsk.confirm('Delete this ' + (d.status === 'draft' ? 'draft' : 'post') + '?').then(function (ok) { if (!ok) return; api('ig-post-del', { id: d.id }).then(function () { m.remove(); refreshTab(); }); }); };
     m.querySelectorAll('[data-ty]').forEach(function (b) { b.onclick = function () { var t = b.getAttribute('data-ty'); if (t !== 'carousel' && d.media.length > 1) d.media = d.media.slice(0, 1); type(t); }; });
-    m.querySelectorAll('[data-q]').forEach(function (b) { b.onclick = function () { var q = b.getAttribute('data-q'), t = new Date(); if (q === '1') t = new Date(Date.now() + 36e5); else if (q === 'e') { t.setHours(19, 0, 0, 0); if (t < Date.now()) t.setDate(t.getDate() + 1); } else { t.setDate(t.getDate() + 1); t.setHours(9, 0, 0, 0); } $('#igAt').value = localInput(t.getTime()); }; });
+    /* best times to post (and a warning when posts would be too close together) */
+    function pace() { var at = $('#igAt').value ? new Date($('#igAt').value).getTime() : null, n = paceNote(at, d.type, d.id), e = $('#igPace'); e.textContent = n; e.hidden = !n; }
+    function best() {
+      var b = bestSlots(d.type, d.id, 4);
+      $('#igBest').innerHTML = b.slots.map(function (t) { return '<button class="b b--sm" data-bt="' + t + '">' + slotLabel(t) + '</button>'; }).join('');
+      $('#igBestN').textContent = b.slots.length ? 'Best times' + (b.own ? ', from when your posts got the most likes and comments.' : ', from a 2026 study of 9.6 million posts. Once the account has more posts, they come from your own followers.') + (isFeed(d.type) ? ' 3–5 feed posts a week works best.' : '') : '';
+      m.querySelectorAll('[data-bt]').forEach(function (x) { x.onclick = function () { $('#igAt').value = localInput(+x.getAttribute('data-bt')); pace(); }; });
+      pace();
+    }
+    $('#igAt').addEventListener('input', pace); $('#igAt').addEventListener('change', pace);
+    if (!S.posts) api('ig-posts').then(function (r) { S.posts = r.items; best(); }).catch(function () { });
     $('#igCap').oninput = count;
     type(d.type);
   }

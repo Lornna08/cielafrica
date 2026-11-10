@@ -1498,3 +1498,5 @@ html[data-theme="dark"] .igx-bio a{color:#e0f1ff}
   .igd-back{display:inline-grid}.igd-lh{padding:18px 16px 8px}.igd-lt{padding:6px 16px}.igd-c{padding:8px 16px}
   .igd-m{max-width:85%}
 }
+/* best times + pace (Instagram editor) */
+.ig-bn{font-size:12px;margin:0}.ig-bn.is-warn{color:#b45309;font-weight:600}html[data-theme="dark"] .ig-bn.is-warn{color:#fbbf24}
