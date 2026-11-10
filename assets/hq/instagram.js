@@ -69,7 +69,7 @@
     body.innerHTML = '<div class="card ig-connect"><div class="card__b"><i class="ig-big">' + IC.ig + '</i><h2>Connect Instagram</h2>' +
       '<p class="muted">Post and schedule photos, carousels, reels and stories, answer messages and comments, and see your stats, all from here.</p>' +
       (st.configured ? '<button class="b b--p" id="igGo">Connect Instagram</button><p class="faint">Meta will ask you to sign in (with Instagram or Facebook), pick your business and tick your Instagram account. Use a <b>Business</b> or <b>Creator</b> account.</p>'
-        : '<div class="ig-setup"><b>One step first</b><p>In Vercel (Project → Settings → Environment Variables) add <code>IG_APP_ID</code> = your Meta App ID and <code>IG_APP_SECRET</code> = your App secret (Meta app → App settings → Basic), then redeploy. In your Meta app (Instagram → API setup with Unified login), add this as the redirect URL:</p><code class="ig-copy">' + esc(st.redirect) + '</code></div>') +
+        : '<div class="ig-setup"><b>One step first</b><p>In Vercel (Project → Settings → Environment Variables) add <code>IG_APP_SECRET</code> = your App secret (Meta app → App settings → Basic), then redeploy. In your Meta app (Instagram → API setup with Unified login), add this as the redirect URL:</p><code class="ig-copy">' + esc(st.redirect) + '</code></div>') +
       (st.storage ? '' : '<p class="ig-warn">The private Blob store isn’t connected, so posts can’t be saved.</p>') + '</div></div>';
     var g = body.querySelector('#igGo'); if (g) g.onclick = goConnect;
   }
