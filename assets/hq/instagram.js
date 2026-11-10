@@ -993,14 +993,14 @@
     api('convos').then(function (r) {
       S.convos = r.items; S.me = r.me;
       var seen = ls('seenC') || {};
-      if (!r.items.length) { cl.innerHTML = '<p class="igx-faint igx-pad">No messages yet. When someone messages @' + esc(S.st.account.username) + ', it shows here.</p>'; return; }
+      if (!r.items.length) { cl.innerHTML = '<div class="igx-pad igq-msgfix"><p class="igx-faint">No messages yet. When someone messages @' + esc(S.st.account.username) + ', it shows here.</p><button class="igk-b" data-msgchk>Check messages</button></div>'; cl.querySelector('[data-msgchk]').onclick = msgCheck; return; }
       cl.innerHTML = r.items.map(function (c) {
         var o = other(c, r.me), last = c.messages && c.messages.data && c.messages.data[0], mine = last && last.from && (String(last.from.id) === String(r.me) || last.from.username === S.st.account.username);
         var unread = last && !mine && seen[c.id] !== last.id && S.open !== c.id;
         return '<button class="igd-c' + (S.open === c.id ? ' is-on' : '') + (unread ? ' is-unread' : '') + '" data-c="' + esc(c.id) + '">' + av(null, o.username) + '<span><b>' + esc(o.username || 'Instagram user') + '</b><small>' + (mine ? 'You: ' : '') + esc(last ? (last.message || (last.attachments ? 'Sent an attachment' : '…')) : '') + ' · ' + (c.updated_time ? ago(c.updated_time) : '') + '</small></span>' + (unread ? '<em></em>' : '') + '</button>';
       }).join('');
       cl.querySelectorAll('[data-c]').forEach(function (b) { b.onclick = function () { S.open = b.getAttribute('data-c'); cl.querySelectorAll('.igd-c').forEach(function (x) { x.classList.toggle('is-on', x === b); }); b.classList.remove('is-unread'); var d = b.querySelector('em'); if (d) d.remove(); el.querySelector('.igd').classList.add('is-thread'); loadThread(el, S.open); }; });
-    }).catch(function (e) { if (quiet) return; cl.innerHTML = '<div class="igx-pad igq-msgfix"><p>' + esc(e.message) + '</p>' + (A.owner() ? '<button class="igk-b igk-b--p" data-newtok>Paste a new token</button>' : '') + '</div>'; var nt = cl.querySelector('[data-newtok]'); if (nt) nt.onclick = function () { tokenBox(); }; });
+    }).catch(function (e) { if (quiet) return; cl.innerHTML = '<div class="igx-pad igq-msgfix"><p>Messages aren’t coming through yet.</p><button class="igk-b igk-b--p" data-msgchk>Check messages</button>' + (A.owner() ? '<button class="igk-b" data-newtok>Paste a new token</button>' : '') + '</div>'; var nt = cl.querySelector('[data-newtok]'); if (nt) nt.onclick = function () { tokenBox(); }; cl.querySelector('[data-msgchk]').onclick = msgCheck; });
   }
   function loadThread(el, id, quiet) {
     var th = el.querySelector('#igTh'); if (!th) return;
@@ -1080,6 +1080,18 @@
     body.querySelectorAll('[data-cp]').forEach(function (x) { x.onclick = function () { try { navigator.clipboard.writeText(x.getAttribute('data-cp')); H.toast('Copied', 'ok'); } catch (e) { H.toast('Couldn’t copy.', 'err'); } }; });
   }
   /* connect with a token made in Business Settings → System users → Generate token */
+  /* Messages → Check messages: each thing Instagram needs, ticked or with what to do */
+  function msgCheck() {
+    var m = H.modal('<h2>Checking messages…</h2><div class="igx-load igx-load--s"><i></i></div>');
+    api('msgcheck').then(function (r) {
+      m.querySelector('.igk-modal__p').innerHTML = '<h2>' + (r.ok ? 'Messages are set up ✓' : 'Messages: what’s missing') + '</h2>' +
+        '<ol class="igq-chk2">' + (r.steps || []).map(function (x) { return '<li class="' + (x.ok ? 'is-ok' : 'is-no') + '"><b>' + (x.ok ? '✓ ' : '✗ ') + esc(x.t) + '</b><span>' + esc(x.d) + '</span></li>'; }).join('') + '</ol>' +
+        '<div class="igk-row">' + (A.owner() ? '<button class="igk-b" id="igChkTok">Paste a new token</button>' : '') + '<span class="igq-sp"></span><button class="igk-b" id="igChkAgain">Check again</button><button class="igk-b igk-b--p" data-x>Done</button></div>';
+      var t = m.querySelector('#igChkTok'); if (t) t.onclick = function () { m.remove(); tokenBox(); };
+      m.querySelector('#igChkAgain').onclick = function () { m.remove(); msgCheck(); };
+      if (r.ok && S.view === 'messages') render('messages');
+    }, function (e) { m.querySelector('.igk-modal__p').innerHTML = '<h2>Couldn’t check</h2><p>' + esc(e.message) + '</p><div class="igk-row"><span class="igq-sp"></span><button class="igk-b" data-x>Close</button></div>'; });
+  }
   function tokenBox() {
     var m = H.modal('<h2>Connect with an access token</h2>' +
       '<p class="igk-muted">In Meta Business Settings, open <b>Users → System users</b>, pick your system user (it needs your Instagram account assigned), click <b>Generate token</b>, choose this app, set it to never expire, tick these permissions, then copy the token and paste it here.</p><p class="igq-perms">' + (S.st && S.st.scopes ? S.st.scopes : []).map(function (x) { return '<code>' + esc(x) + '</code>'; }).join(' ') + '</p>' +

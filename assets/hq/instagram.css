@@ -713,3 +713,7 @@ body.ig-dark .igv-p,body.ig-dark .igv-side,body.ig-dark .igv-in{background:#000;
 /* above Ciel Admin's update button and notes */
 .igk-modal{z-index:2147483100}.igr,.igl,.igs{z-index:2147483050}
 .igq-retok,body.ig-dark .igq-retok{background:#0095f6;color:#fff;border-color:#0095f6}
+.igq-chk2{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.igq-chk2 li{display:grid;gap:3px;padding:10px 12px;border-radius:10px;border:1px solid var(--line)}
+.igq-chk2 li.is-ok b{color:var(--g,#15803d)}.igq-chk2 li.is-no b{color:var(--r,#c0262d)}
+.igq-chk2 li span{color:var(--soft);font-size:13px;line-height:1.45}
