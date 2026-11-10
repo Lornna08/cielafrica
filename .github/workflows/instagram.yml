@@ -1,4 +1,6 @@
-# Publishes Instagram posts scheduled in Ciel Admin (cielafrica.com/admin → Instagram).
+# Publishes Instagram posts scheduled in Ciel Admin (cielafrica.com/admin → Instagram)
+# and, twice an hour, checks Instagram for new messages, comments, likes, followers and tags
+# (they show in Ciel Admin's bell and as phone notifications).
 # Every 15 minutes it asks the site to post anything that is due; the site does the work.
 # GitHub may start a scheduled run a few minutes late, so a post can go out up to ~20 minutes after its time.
 name: instagram-scheduler
@@ -12,5 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Publish due posts
-        run: curl -sS --max-time 90 "https://cielafrica.com/api/hq?route=ig-cron" || true
+      - name: Publish due posts (and check for new activity on the :00 and :30 runs)
+        run: |
+          M=$(date -u +%M); W=""
+          if [ $((10#$M % 30)) -lt 15 ]; then W="&watch=1"; fi
+          curl -sS --max-time 90 "https://cielafrica.com/api/hq?route=ig-cron$W" || true
