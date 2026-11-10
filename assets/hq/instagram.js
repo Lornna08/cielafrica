@@ -27,6 +27,8 @@
     search: sv('<circle cx="11" cy="11" r="7.5"/><path d="m21 21-4.3-4.3"/>'),
     plus: sv('<rect x="3" y="3" width="18" height="18" rx="5"/><path d="M12 8v8M8 12h8"/>'),
     heart: sv(HEART), heartOn: sv(HEART, { fill: 'currentColor' }),
+    moon: sv('<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>'),
+    sun: sv('<circle cx="12" cy="12" r="4.2"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
     up: sv('<path d="M12 19V5M5 12l7-7 7 7"/>'),
     mute: sv('<path d="M11 5 6 9H3v6h3l5 4zM22 9l-6 6M16 9l6 6"/>'),
     sound: sv('<path d="M11 5 6 9H3v6h3l5 4zM15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>'),
@@ -200,6 +202,7 @@
     else if (sub === 'profile' || !sub) S.ptab = S.ptab === 'planned' ? 'posts' : S.ptab;
     S.view = alias[sub || ''] || (/^(feed|search|u|messages|activity|planner|designs|library|stats|profile)$/.test(sub) ? sub : 'profile');
     var wantTour = sub === 'tour';
+    applyTheme();
     S.user = S.view === 'u' ? decodeURIComponent(extra || '') : null;
     /* the page frame (menus) is built once and kept; only the part below changes */
     var main = document.querySelector('#body'), keep = S.st && main.querySelector('.igx > #igNav[data-built]');
@@ -225,6 +228,13 @@
     var a = S.st.account, ic = t[0] === 'profile' ? av(a.picture, a.username, 'igx-av--nav') : IC[t[2]];
     return '<button class="' + cls + '" data-v="' + t[0] + '" title="' + t[1] + '" aria-label="' + t[1] + '">' + ic + '<span>' + t[1] + '</span>' + (t[0] === 'messages' || t[0] === 'activity' ? '<em class="igx-dot" data-dot="' + t[0] + '" hidden></em>' : '') + '</button>';
   }
+  /* dark (the default) or light, kept on this device */
+  function dark() { return ls('theme') !== 'light'; }
+  function applyTheme() {
+    document.body.classList.toggle('ig-dark', dark());
+    if (A.onTheme) A.onTheme(dark());
+    document.querySelectorAll('[data-theme-sw]').forEach(function (b) { b.innerHTML = (dark() ? IC.sun : IC.moon) + '<span>' + (dark() ? 'Light mode' : 'Dark mode') + '</span>'; b.setAttribute('aria-label', dark() ? 'Switch to light mode' : 'Switch to dark mode'); b.title = b.getAttribute('aria-label'); });
+  }
   function nav(b) {
     var a = S.st.account, n = b.querySelector('#igNav');
     if (!n.hasAttribute('data-built')) {
@@ -240,6 +250,9 @@
         };
       });
       b.querySelectorAll('[data-more]').forEach(function (x) { x.onclick = connectionModal; });
+      /* the light / dark switch, next to ⋯ */
+      b.querySelectorAll('[data-more]').forEach(function (x) { var t = document.createElement('button'); t.className = x.className.replace(/\s*igx-nb--more/, ''); t.setAttribute('data-theme-sw', ''); x.parentNode.insertBefore(t, x); t.onclick = function () { ls('theme', dark() ? 'light' : 'dark'); applyTheme(); }; });
+      applyTheme();
       n.setAttribute('data-built', '1');
     }
     navActive();
@@ -860,16 +873,17 @@
     else media = media.replace(/<img /g, '<img fetchpriority="high" decoding="async" ');
     media = media.replace(/<video src="([^"]*)"([^>]*?) controls([^>]*)>/g, '<video data-src="$1"$2$3 muted>').replace(/preload="metadata"/g, 'preload="none"');
     var hasV = /igx-vs/.test(media);
-    return '<article class="igx-post" data-i="' + i + '"><header>' + '<span class="igx-ring igx-ring--s">' + av(o.picture, o.username) + '</span><a href="' + (o.me ? '#instagram/profile' : '#instagram/u/' + encodeURIComponent(o.username || '')) + '"><b>' + esc(o.username || '') + '</b></a><span class="igx-faint">• ' + ago(x.timestamp) + '</span><span class="igx-sp"></span><button class="igv-ic" data-dots title="More">' + IC.dots + '</button></header>' +
+    var href = o.me ? '#instagram/profile' : '#instagram/u/' + encodeURIComponent(o.username || '');
+    return '<article class="igx-post" data-i="' + i + '"><header>' + '<a class="igx-ring igx-ring--s" href="' + href + '" aria-label="' + esc(o.username || '') + '">' + av(o.picture, o.username) + '</a><a href="' + href + '"><b>' + esc(o.username || '') + '</b></a><span class="igx-faint">• ' + ago(x.timestamp) + '</span><span class="igx-sp"></span><button class="igv-ic" data-dots title="More">' + IC.dots + '</button></header>' +
       '<div class="igv-m igx-pm">' + media + (hasV ? '<button class="igx-mute" data-snd title="Sound">' + (soundOn() ? IC.sound : IC.mute) + '</button>' : '') + '</div>' +
       '<div class="igv-ar"><button class="igv-ic igv-like' + (liked(x.id) ? ' is-on' : '') + '" data-like title="Like">' + (liked(x.id) ? IC.heartOn : IC.heart) + '</button><button class="igv-ic" data-open title="Comments">' + IC.msg + '</button><button class="igv-ic" data-share title="Copy link">' + IC.send + '</button></div>' +
       '<b class="igv-likes" data-lk="' + x.id + '">' + likesText(x.like_count) + '</b>' +
-      (cap ? '<p class="igx-cap"><b>' + esc(o.username || '') + '</b> <span>' + (short ? rich(short) + '… <button class="igx-faint" data-more>more</button>' : rich(cap)) + '</span></p>' : '') +
+      (cap ? '<p class="igx-cap"><a href="' + href + '"><b>' + esc(o.username || '') + '</b></a> <span>' + (short ? rich(short) + '… <button class="igx-faint" data-more>more</button>' : rich(cap)) + '</span></p>' : '') +
       (x.comments_count ? '<button class="igx-faint igx-vc" data-open>View all ' + full(x.comments_count) + ' comment' + (x.comments_count > 1 ? 's' : '') + '</button>' : '') + '</article>';
   }
   function side(el) {
     var a = S.st.account;
-    el.innerHTML = '<div class="igx-me">' + av(a.picture, a.username) + '<span><b>' + esc(a.username) + '</b><small>' + esc((S.prof && S.prof.profile && S.prof.profile.name) || '') + '</small></span></div>' +
+    el.innerHTML = '<a class="igx-me" href="#instagram/profile">' + av(a.picture, a.username) + '<span><b>' + esc(a.username) + '</b><small>' + esc((S.prof && S.prof.profile && S.prof.profile.name) || '') + '</small></span></a>' +
       '<div class="igx-fsh"><b>Accounts in your feed</b><button class="igx-link" data-go="search">Add</button></div>' +
       ((S.following || []).length ? S.following.map(function (f) { return '<a class="igx-acc" href="#instagram/u/' + encodeURIComponent(f.username) + '">' + av(f.picture, f.username) + '<span><b>' + esc(f.username) + '</b><small>' + esc(f.name || '') + '</small></span></a>'; }).join('') : '<p class="igx-faint">None yet. Search for an account and tap “Add to feed”.</p>');
     el.querySelectorAll('[data-go]').forEach(function (b) { b.onclick = function () { igGo(b.getAttribute('data-go')); }; });
@@ -1445,7 +1459,11 @@
   /* the page's own top bar sits right under Ciel Admin's header, whatever its height */
   function fitTop() { var hd = document.querySelector('.hq-top'); if (hd && hd.offsetHeight) document.body.style.setProperty('--top', hd.offsetHeight + 'px'); }
   window.addEventListener('resize', function () { if (document.body.classList.contains('ig-on')) fitTop(); });
-  function leave() { document.body.style.removeProperty('--top'); tourEnd(); document.body.classList.remove('ig-on'); stopPoll(); closeViewer(); closeReels(); closeList(); if (PV) PV.pause(); document.querySelectorAll('.igk-modal:not(.igq-tourm)').forEach(function (m) { m.remove(); }); }
+  /* Ciel Admin's header follows the Instagram page's light / dark choice while it's open, then goes back */
+  var root = document.documentElement, before = null;
+  A.onTheme = function (on) { if (before === null) before = root.getAttribute('data-theme') || ''; root.setAttribute('data-theme', on ? 'dark' : 'light'); };
+  function restoreTheme() { if (before === null) return; if (before) root.setAttribute('data-theme', before); else root.removeAttribute('data-theme'); before = null; }
+  function leave() { restoreTheme(); document.body.style.removeProperty('--top'); tourEnd(); document.body.classList.remove('ig-on', 'ig-dark'); stopPoll(); closeViewer(); closeReels(); closeList(); if (PV) PV.pause(); document.querySelectorAll('.igk-modal:not(.igq-tourm)').forEach(function (m) { m.remove(); }); }
   window.addEventListener('hashchange', function () { if (!/^#instagram(\/|$)/.test(location.hash)) leave(); });
   window.HQIg = {
     init: function (h) { HQ = h; setTimeout(bg, 6000); setInterval(bg, 240000); },
