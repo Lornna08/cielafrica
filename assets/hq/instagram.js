@@ -68,10 +68,26 @@
     var st = S.st, body = b.querySelector('#igBody');
     body.innerHTML = '<div class="card ig-connect"><div class="card__b"><i class="ig-big">' + IC.ig + '</i><h2>Connect Instagram</h2>' +
       '<p class="muted">Post and schedule photos, carousels, reels and stories, answer messages and comments, and see your stats, all from here.</p>' +
-      (st.configured ? '<button class="b b--p" id="igGo">Connect Instagram</button><p class="faint">Meta will ask you to sign in (with Instagram or Facebook), pick your business and tick your Instagram account. Use a <b>Business</b> or <b>Creator</b> account.</p>'
+      (st.configured ? '<button class="b b--p" id="igGo">Connect Instagram</button><p class="faint">Meta will ask you to sign in (with Instagram or Facebook), pick your business and tick your Instagram account. Use a <b>Business</b> or <b>Creator</b> account.</p><button class="b b--sm b--ghost" id="igTok">Connect with an access token instead</button>'
         : '<div class="ig-setup"><b>One step first</b><p>In Vercel (Project → Settings → Environment Variables) add <code>IG_APP_SECRET</code> = your App secret (Meta app → App settings → Basic), then redeploy. In your Meta app (Instagram → API setup with Unified login), add this as the redirect URL:</p><code class="ig-copy">' + esc(st.redirect) + '</code></div>') +
       (st.storage ? '' : '<p class="ig-warn">The private Blob store isn’t connected, so posts can’t be saved.</p>') + '</div></div>';
     var g = body.querySelector('#igGo'); if (g) g.onclick = goConnect;
+    var t = body.querySelector('#igTok'); if (t) t.onclick = tokenBox;
+  }
+  /* connect with a token made in Business Settings → System users → Generate token */
+  function tokenBox() {
+    var m = H.modal('<h2>Connect with an access token</h2>' +
+      '<p class="muted">In Meta Business Settings, open <b>Users → System users</b>, pick your system user (it needs your Instagram account assigned), click <b>Generate token</b>, choose this app, set it to never expire, tick the Instagram, Pages and <b>business_management</b> permissions, then copy the token and paste it here.</p>' +
+      '<label class="field"><span>Access token</span><input type="password" id="igTk" autocomplete="off" spellcheck="false" placeholder="EAA…"></label>' +
+      '<p class="ig-warn" id="igTkMsg" hidden></p>' +
+      '<div class="row"><span class="ig-sp"></span><button class="b" data-x>Cancel</button><button class="b b--p" id="igTkGo">Connect</button></div>');
+    var go = m.querySelector('#igTkGo'), msg = m.querySelector('#igTkMsg');
+    go.onclick = function () {
+      var v = m.querySelector('#igTk').value.trim(); if (!v) return;
+      go.disabled = true; go.textContent = 'Connecting…'; msg.hidden = true;
+      api('ig-token', { token: v }).then(function (r) { m.remove(); H.toast('Connected @' + r.account.username, 'ok'); render('posts'); })
+        .catch(function (e) { msg.textContent = e.message; msg.hidden = false; go.disabled = false; go.textContent = 'Connect'; });
+    };
   }
 
   /* ---------- planner: drafts, scheduled, failed, recently published ---------- */
