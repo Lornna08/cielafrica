@@ -344,7 +344,7 @@
       if (!cm || key(cm.items) !== key(r.items) || cm.after !== r.after) return showMedia(el);
       /* same posts: keep the grid, only swap in fresh links for pictures whose old link expired */
       el.querySelectorAll('.igx-t[data-i] img').forEach(function (im) { var x = r.items[+im.parentNode.getAttribute('data-i')]; if (x && im.complete && !im.naturalWidth) im.src = thumb(x); });
-    }).catch(function (e) { if (!cm) el.innerHTML = '<p class="igx-empty">' + esc(e.message) + '</p>'; });
+    }).catch(function (e) { if (!cm && S.ptab === tab0) el.innerHTML = '<p class="igx-empty">' + esc(e.message) + '</p>'; });
   }
   function gridSkel() { var h = ''; for (var i = 0; i < 9; i++) h += '<span class="igx-t is-skel"></span>'; return '<div class="igx-g">' + h + '</div>'; }
   function showMedia(el) {
@@ -376,8 +376,9 @@
   function tagged(el) {
     if (S.tagged) return draw();
     el.innerHTML = gridSkel();
-    api('tags').then(function (r) { S.tagged = r.items; draw(); }).catch(function (e) { el.innerHTML = '<p class="igx-empty">' + esc(e.message) + '</p>'; });
+    api('tags').then(function (r) { S.tagged = r.items; draw(); }).catch(function (e) { if (S.ptab === 'tagged') el.innerHTML = '<p class="igx-empty">' + esc(e.message) + '</p>'; });
     function draw() {
+      if (S.ptab !== 'tagged' || !document.body.contains(el)) return;
       if (!S.tagged.length) { el.innerHTML = emptyState(IC.tag, 'Photos of you', 'When people tag you in photos, they’ll appear here.'); return; }
       S.tagged.forEach(function (x) { x.owner = { username: x.username }; });
       el.innerHTML = grid(S.tagged); bindGrid(el, S.tagged, { own: false });
@@ -398,8 +399,9 @@
   /* the profile's Planned tab: what will go out next, as it will look on the grid */
   function plannedGrid(el) {
     var designs = null, got = false;
+    el.removeAttribute('data-sig');   /* the tab area is shared: a mark left from an earlier visit must not stop it redrawing */
     var draw = function () {
-      if (!document.body.contains(el)) return;
+      if (!document.body.contains(el) || S.ptab !== 'planned') return;
       var st = S.pkind === 'story', isK = function (p) { return st ? p.kind === 'story' : (p.kind === 'post' || p.kind === 'carousel'); };
       var up = upcoming().filter(function (p) { return st ? p.type === 'story' : p.type !== 'story'; }), ds = (designs || []).filter(function (p) { return p.status !== 'posted' && isK(p) && !planFor(p.id); }).sort(function (a, b) { return st ? planOrder(a) - planOrder(b) : planOrder(b) - planOrder(a); });
       var nStories = (designs || []).filter(function (p) { return p.status !== 'posted' && p.kind === 'story'; }).length;
