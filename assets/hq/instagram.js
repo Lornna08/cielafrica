@@ -11,7 +11,7 @@
   var store = { get: function (k, d) { try { var v = localStorage.getItem('hq.ig.' + k); return v == null ? (d === undefined ? null : d) : JSON.parse(v); } catch (e) { return d === undefined ? null : d; } }, set: function (k, v) { try { localStorage.setItem('hq.ig.' + k, JSON.stringify(v)); } catch (e) { /* storage full */ } } };
   var A = {
     S: { hashNow: '', get section() { return /^#instagram(\/|$)/.test(location.hash) ? 'instagram' : ''; }, rooms: {} },
-    member: false, views: {}, store: store, igPlannerKit: null, refreshRooms: null, computeBell: null,
+    member: false, themes: true, views: {}, store: store, igPlannerKit: null, refreshRooms: null, computeBell: null,
     owner: function () { return true; }, access: function () { return 'edit'; },
     esc: function (t) { return HQ ? HQ.esc(t) : String(t == null ? '' : t); },
     toast: function (m, bad) { if (HQ) HQ.toast(m, bad ? 'err' : 'ok'); },
@@ -230,7 +230,8 @@
     return '<button class="' + cls + '" data-v="' + t[0] + '" title="' + t[1] + '" aria-label="' + t[1] + '">' + ic + '<span>' + t[1] + '</span>' + (t[0] === 'messages' || t[0] === 'activity' ? '<em class="igx-dot" data-dot="' + t[0] + '" hidden></em>' : '') + '</button>';
   }
   /* dark (the default) or light, kept on this device */
-  function dark() { return ls('theme') !== 'light'; }
+  /* (only where the host app turns it on: Ciel Admin; ABC Club stays light) */
+  function dark() { return !!A.themes && ls('theme') !== 'light'; }
   function applyTheme() {
     document.body.classList.toggle('ig-dark', dark());
     if (A.onTheme) A.onTheme(dark());
@@ -252,7 +253,7 @@
       });
       b.querySelectorAll('[data-more]').forEach(function (x) { x.onclick = connectionModal; });
       /* the light / dark switch, next to ⋯ */
-      b.querySelectorAll('[data-more]').forEach(function (x) { var t = document.createElement('button'); t.className = x.className.replace(/\s*igx-nb--more/, ''); t.setAttribute('data-theme-sw', ''); x.parentNode.insertBefore(t, x); t.onclick = function () { ls('theme', dark() ? 'light' : 'dark'); applyTheme(); }; });
+      if (A.themes) b.querySelectorAll('[data-more]').forEach(function (x) { var t = document.createElement('button'); t.className = x.className.replace(/\s*igx-nb--more/, ''); t.setAttribute('data-theme-sw', ''); x.parentNode.insertBefore(t, x); t.onclick = function () { ls('theme', dark() ? 'light' : 'dark'); applyTheme(); }; });
       applyTheme();
       n.setAttribute('data-built', '1');
     }
