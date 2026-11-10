@@ -48,16 +48,16 @@
   function head(b) {
     var a = S.st.account, h = b.querySelector('#igHead');
     if (!a) { h.innerHTML = ''; return; }
-    var days = Math.round((a.expiresAt - Date.now()) / 864e5);
+    var days = a.expiresAt ? Math.round((a.expiresAt - Date.now()) / 864e5) : 999;
     h.innerHTML = '<div class="ig-top"><div class="ig-who">' + (a.picture ? '<img src="' + esc(a.picture) + '" alt="" referrerpolicy="no-referrer">' : '<i>' + IC.ig + '</i>') +
-      '<span><b>@' + esc(a.username) + '</b><small>' + (days < 7 ? '<span class="ig-warn">Connection ends in ' + days + ' days. Reconnect below.</span>' : 'Connected · renews itself') + '</small></span></div>' +
+      '<span><b>@' + esc(a.username) + '</b><small>' + (days < 7 ? '<span class="ig-warn">Connection ends in ' + days + ' days. Reconnect below.</span>' : (a.expiresAt ? 'Connected · renews itself' : 'Connected')) + '</small></span></div>' +
       '<div class="tabs ig-tabs">' + [['posts', 'Planner'], ['published', 'Posts'], ['messages', 'Messages'], ['stats', 'Stats']].map(function (t) { return '<button data-t="' + t[0] + '" class="' + (S.tab === t[0] ? 'is-on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div>' +
       '<span class="ig-sp"></span><button class="b b--p b--sm" id="igNew">+ New post</button><a class="b b--sm" href="https://www.instagram.com/' + encodeURIComponent(a.username) + '/" target="_blank" rel="noopener">' + IC.ext + '<span>Open</span></a><button class="b b--sm b--ghost" id="igMore" title="Connection">⋯</button></div>';
     h.querySelectorAll('[data-t]').forEach(function (x) { x.onclick = function () { location.hash = 'instagram/' + x.getAttribute('data-t'); }; });
     h.querySelector('#igNew').onclick = function () { editor(null); };
     h.querySelector('#igMore').onclick = function () {
-      var m = H.modal('<h2>Instagram connection</h2><p class="muted">Signed in as <b>@' + esc(a.username) + '</b>' + (a.type ? ' (' + esc(a.type.toLowerCase().replace('_', ' ')) + ' account)' : '') + '. The connection lasts 60 days and renews itself each time it is used.</p>' +
-        '<p class="faint">Connected ' + when(a.connectedAt) + ' · current connection until ' + when(a.expiresAt) + '</p>' +
+      var m = H.modal('<h2>Instagram connection</h2><p class="muted">Signed in as <b>@' + esc(a.username) + '</b>' + (a.pageName ? ' (through the Facebook Page ' + esc(a.pageName) + ')' : '') + '. ' + (a.expiresAt ? 'The connection lasts 60 days and renews itself.' : 'The connection doesn’t expire.') + '</p>' +
+        '<p class="faint">Connected ' + when(a.connectedAt) + (a.expiresAt ? ' · current connection until ' + when(a.expiresAt) : '') + '</p>' +
         '<div class="row"><button class="b" id="igRe">Reconnect</button><button class="b b--ghost ig-danger" id="igOff">Disconnect</button><span class="ig-sp"></span><button class="b" data-x>Close</button></div>');
       m.querySelector('#igRe').onclick = goConnect;
       m.querySelector('#igOff').onclick = function () { HQAsk.confirm('Disconnect @' + a.username + '? Scheduled posts stay saved but won’t be published until you connect again.').then(function (ok) { if (!ok) return; api('ig-disconnect', {}).then(function () { m.remove(); render('posts'); }); }); };
@@ -68,8 +68,8 @@
     var st = S.st, body = b.querySelector('#igBody');
     body.innerHTML = '<div class="card ig-connect"><div class="card__b"><i class="ig-big">' + IC.ig + '</i><h2>Connect Instagram</h2>' +
       '<p class="muted">Post and schedule photos, carousels, reels and stories, answer messages and comments, and see your stats, all from here.</p>' +
-      (st.configured ? '<button class="b b--p" id="igGo">Connect with Instagram</button><p class="faint">You’ll sign in on Instagram and allow Ciel Admin to manage the account. Use a <b>Business</b> or <b>Creator</b> account.</p>'
-        : '<div class="ig-setup"><b>One step first</b><p>Add <code>IG_APP_ID</code> and <code>IG_APP_SECRET</code> in Vercel (Project → Settings → Environment Variables), then redeploy. In your Meta app, add this as the redirect URL:</p><code class="ig-copy">' + esc(st.redirect) + '</code></div>') +
+      (st.configured ? '<button class="b b--p" id="igGo">Connect Instagram</button><p class="faint">Meta will ask you to sign in (with Instagram or Facebook), pick your business and tick your Instagram account. Use a <b>Business</b> or <b>Creator</b> account.</p>'
+        : '<div class="ig-setup"><b>One step first</b><p>In Vercel (Project → Settings → Environment Variables) add <code>IG_APP_ID</code> = your Meta App ID and <code>IG_APP_SECRET</code> = your App secret (Meta app → App settings → Basic), then redeploy. In your Meta app (Instagram → API setup with Unified login), add this as the redirect URL:</p><code class="ig-copy">' + esc(st.redirect) + '</code></div>') +
       (st.storage ? '' : '<p class="ig-warn">The private Blob store isn’t connected, so posts can’t be saved.</p>') + '</div></div>';
     var g = body.querySelector('#igGo'); if (g) g.onclick = goConnect;
   }
