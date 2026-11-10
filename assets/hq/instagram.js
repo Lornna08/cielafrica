@@ -202,6 +202,7 @@
     else if (sub === 'profile' || !sub) S.ptab = S.ptab === 'planned' ? 'posts' : S.ptab;
     S.view = alias[sub || ''] || (/^(feed|search|u|messages|activity|planner|designs|library|stats|profile)$/.test(sub) ? sub : 'profile');
     var wantTour = sub === 'tour';
+    if (sub === 'token') { sub = 'feed'; history.replaceState(null, '', '#instagram/feed'); setTimeout(function () { tokenBox(); }, 600); }
     applyTheme();
     S.user = S.view === 'u' ? decodeURIComponent(extra || '') : null;
     /* the page frame (menus) is built once and kept; only the part below changes */
@@ -275,12 +276,13 @@
   }
   function connectionModal() {
     var a = S.st.account;
-    var m = H.modal('<h2>Instagram connection</h2><p class="igk-muted">Connected as <b>@' + esc(a.username) + '</b>' + (a.pageName ? ' (through the Facebook Page ' + esc(a.pageName) + ')' : '') + '. ' + (a.expiresAt ? 'The connection lasts 60 days and renews itself.' : 'The connection doesn’t expire.') + '</p>' +
+    var m = H.modal('<h2>Instagram connection</h2>' + (A.owner() ? '<button class="igk-b igk-b--p igq-retok" id="igRe2">Paste a new token (reconnect)</button>' : '') + '<p class="igk-muted">Connected as <b>@' + esc(a.username) + '</b>' + (a.pageName ? ' (through the Facebook Page ' + esc(a.pageName) + ')' : '') + '. ' + (a.expiresAt ? 'The connection lasts 60 days and renews itself.' : 'The connection doesn’t expire.') + '</p>' +
 '<p class="igk-faint">Connected ' + when(a.connectedAt) + (a.expiresAt ? ' · current connection until ' + when(a.expiresAt) : '') + '</p>' +
       '<p class="igk-faint">New messages, comments, likes, followers and tags are checked every few minutes while the app is open, and every 30 minutes otherwise. They show in the bell and as notifications on your phone.</p>' +
       '<div class="igk-row"><a class="igk-b" href="https://www.instagram.com/' + encodeURIComponent(a.username) + '/" target="_blank" rel="noopener">' + IC.ext + '<span>Open Instagram</span></a>' + (A.owner() ? '<button class="igk-b" id="igRe">Reconnect</button><button class="igk-b igk-b--ghost igq-danger" id="igOff">Disconnect</button>' : '') + '<button class="igk-b" id="igTour">Take the tour</button><span class="igq-sp"></span><button class="igk-b" data-x>Close</button></div>');
     m.querySelector('#igTour').onclick = function () { m.remove(); tour(); };
     if (m.querySelector('#igRe')) m.querySelector('#igRe').onclick = function () { m.remove(); S.st = null; tokenBox(); };
+    if (m.querySelector('#igRe2')) m.querySelector('#igRe2').onclick = function () { m.remove(); S.st = null; tokenBox(); };
     if (m.querySelector('#igOff')) m.querySelector('#igOff').onclick = function () { ask('Disconnect @' + a.username + '? Scheduled posts stay saved but won’t be published until you connect again.').then(function (ok) { if (!ok) return; api('disconnect', {}).then(function () { m.remove(); S.st = null; S.media = null; render(''); }); }); };
   }
 
@@ -997,7 +999,7 @@
         return '<button class="igd-c' + (S.open === c.id ? ' is-on' : '') + (unread ? ' is-unread' : '') + '" data-c="' + esc(c.id) + '">' + av(null, o.username) + '<span><b>' + esc(o.username || 'Instagram user') + '</b><small>' + (mine ? 'You: ' : '') + esc(last ? (last.message || (last.attachments ? 'Sent an attachment' : '…')) : '') + ' · ' + (c.updated_time ? ago(c.updated_time) : '') + '</small></span>' + (unread ? '<em></em>' : '') + '</button>';
       }).join('');
       cl.querySelectorAll('[data-c]').forEach(function (b) { b.onclick = function () { S.open = b.getAttribute('data-c'); cl.querySelectorAll('.igd-c').forEach(function (x) { x.classList.toggle('is-on', x === b); }); b.classList.remove('is-unread'); var d = b.querySelector('em'); if (d) d.remove(); el.querySelector('.igd').classList.add('is-thread'); loadThread(el, S.open); }; });
-    }).catch(function (e) { if (!quiet) cl.innerHTML = '<p class="igx-pad">' + esc(e.message) + '</p>'; });
+    }).catch(function (e) { if (quiet) return; cl.innerHTML = '<div class="igx-pad igq-msgfix"><p>' + esc(e.message) + '</p>' + (A.owner() ? '<button class="igk-b igk-b--p" data-newtok>Paste a new token</button>' : '') + '</div>'; var nt = cl.querySelector('[data-newtok]'); if (nt) nt.onclick = function () { tokenBox(); }; });
   }
   function loadThread(el, id, quiet) {
     var th = el.querySelector('#igTh'); if (!th) return;
