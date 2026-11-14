@@ -18,7 +18,7 @@
     c.hidden = !n; c.textContent = n > 9 ? '9+' : n;
   }
   function close() { var p = document.querySelector('.np'); if (p) p.remove(); document.removeEventListener('click', outside, true); }
-  function outside(e) { if (!e.target.closest('.np') && !e.target.closest('#nb')) close(); }
+  function outside(e) { if (!e.target.closest('.np') && !e.target.closest('#nb, [data-nb]')) close(); }
   function notifs(btn) {
     if (document.querySelector('.np')) return close();
     var items = H.S.pitems || [], last = seen();

@@ -752,8 +752,8 @@ body.ig-dark .igv-p,body.ig-dark .igv-side,body.ig-dark .igv-in{background:#000;
 .igk-modal h2 svg{width:20px;height:20px;vertical-align:-3px}
 
 /* ---------- Create (Post · Story · Reel), laid out like the Instagram app ---------- */
-.igc-m .igk-modal__p{width:min(1000px,100%);padding:0;gap:0;overflow:clip;display:block}
-.igc{display:grid;grid-template-rows:auto 1fr;max-height:calc(100dvh - 2rem);background:var(--card);color:var(--ink)}
+.igcr-m .igk-modal__p{width:min(1000px,100%);padding:0;gap:0;overflow:clip;display:block}
+.igcr{display:grid;grid-template-rows:auto 1fr;max-height:calc(100dvh - 2rem);background:var(--card);color:var(--ink)}
 .igc-top{display:grid;grid-template-columns:44px 1fr auto;align-items:center;border-bottom:1px solid var(--line);padding:6px 10px;min-height:48px}
 .igc-top b{text-align:center;font-weight:700}
 .igc-x{border:0;background:none;color:var(--ink);width:40px;height:40px;display:grid;place-items:center;cursor:pointer}.igc-x svg{width:22px;height:22px}
@@ -766,14 +766,14 @@ body.ig-dark .igv-p,body.ig-dark .igv-side,body.ig-dark .igv-in{background:#000;
 .igc-stage .igq-up{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.6);color:#fff;border-radius:99px;padding:6px 12px;font-size:13px}
 .igc-n{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;border-radius:99px;padding:3px 9px;font-size:12px;font-style:normal}
 .igc-empty{border:0;background:none;color:var(--ink);display:grid;justify-items:center;gap:6px;cursor:pointer;font:inherit}.igc-empty svg{width:56px;height:56px;stroke-width:1.4}.igc-empty b{font-size:17px}.igc-empty small{color:var(--soft)}
-.igc .igc-empty2{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);border:0;border-radius:8px;background:var(--igb);color:#fff;font:inherit;font-weight:600;font-size:14px;padding:8px 14px;cursor:pointer;white-space:nowrap}
+.igcr .igc-empty2{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);border:0;border-radius:8px;background:var(--igb);color:#fff;font:inherit;font-weight:600;font-size:14px;padding:8px 14px;cursor:pointer;white-space:nowrap}
 .igc-strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}.igc-strip:empty{display:none}
 .igc-strip .igq-mi{flex:0 0 64px;aspect-ratio:4/5;border-radius:8px}.igc-strip .igq-add{flex:0 0 64px;aspect-ratio:4/5;border-radius:8px}
 .igc-strip .igq-mb button{width:22px;height:22px}
 .igc-hint{font-size:12px;color:var(--soft);margin:0}
-.igc .igc-modes{display:flex;justify-content:center;gap:4px;background:var(--ink);border-radius:99px;padding:4px;justify-self:center}
-.igc .igc-modes button{border:0;background:none;color:var(--card);opacity:.6;font:inherit;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;padding:7px 16px;border-radius:99px;cursor:pointer}
-.igc .igc-modes button.is-on{opacity:1;background:var(--card);color:var(--ink)}
+.igcr .igc-modes{display:flex;justify-content:center;gap:4px;background:var(--ink);border-radius:99px;padding:4px;justify-self:center}
+.igcr .igc-modes button{border:0;background:none;color:var(--card);opacity:.6;font:inherit;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;padding:7px 16px;border-radius:99px;cursor:pointer}
+.igcr .igc-modes button.is-on{opacity:1;background:var(--card);color:var(--ink)}
 .igc-right{display:grid;align-content:start;min-width:0}
 .igc-cap{display:grid;grid-template-columns:32px 1fr;gap:10px;padding:14px;border-bottom:1px solid var(--line);position:relative}
 .igc-cap .igc-av{width:32px;height:32px;border-radius:50%;object-fit:cover;display:grid;place-items:center;color:#fff;font-style:normal;font-weight:700}
@@ -789,10 +789,100 @@ body.ig-dark .igv-p,body.ig-dark .igv-side,body.ig-dark .igv-in{background:#000;
 .igc-right .igq-msg{padding:10px 14px 0;margin:0}
 .igc-acts{display:flex;gap:8px;align-items:center;padding:14px;position:sticky;bottom:0;background:var(--card)}
 @media(max-width:760px){
-  .igc-m .igk-modal__p{border-radius:0!important;max-height:100dvh!important;height:100dvh}
-  .igc{max-height:100dvh;height:100dvh}
+  .igcr-m .igk-modal__p{border-radius:0!important;max-height:100dvh!important;height:100dvh}
+  .igcr{max-height:100dvh;height:100dvh}
   .igc-body{grid-template-columns:1fr}
   .igc-left{border-right:0;border-bottom:1px solid var(--line)}
   .igc-stage{max-height:none;width:min(100%,420px)}.igc-stage.is-tall{max-width:min(100%,300px)}
   .igc-acts{padding-bottom:calc(14px + env(safe-area-inset-bottom))}
 }
+
+/* ---------- 2026-11-14b: one Planner, a cleaner phone frame, labelled menu, more in Create ---------- */
+.igx [hidden],.igcr [hidden],.igc-sm [hidden],.igx-sheet [hidden]{display:none!important}
+/* computer and tablet: every menu item has its name (under the icon when space is short) */
+@media(min-width:761px) and (max-width:1480px){
+  .igx-nav{justify-content:flex-start;gap:0}
+  .igx-nb{flex-direction:column;gap:3px;padding:7px 4px 6px;min-width:64px;flex:1 0 auto;font-size:11px;line-height:1.1}
+  .igx-nb span{display:block}
+  .igx-nb svg{width:22px;height:22px}.igx-nb .igx-av--nav{width:22px;height:22px;min-width:22px;min-height:22px}
+  .igx-dot{left:auto;right:calc(50% - 16px);top:4px}
+}
+/* phone: Instagram's own bar replaces Ciel Admin's header (its ☰ menu and bell are in Instagram's bar) */
+@media(max-width:760px){
+  body.ig-on .hq-top{display:none}
+  body.ig-on{--top:0px}
+  .igx-mtop{padding-top:max(6px,env(safe-area-inset-top));gap:0}
+  .igx-mtop .igx-mi{width:38px}
+  .igx-mtop .igx-mi--menu{margin-right:2px}
+  .igx-mu{padding:6px 4px;min-width:0;overflow:hidden}.igx-mu b{font-size:19px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .igx-mbot .igx-mb{flex:1}
+}
+.igx-nbc{position:absolute;top:3px;right:1px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--igred,#ff3040);color:#fff;font:700 10px/17px Inter,system-ui,sans-serif;font-style:normal;text-align:center;box-shadow:0 0 0 2px var(--card,#fff)}
+/* ⋯ More */
+.igx-morem .igx-menu>button[data-a]{display:flex;align-items:center;gap:12px;text-align:left;padding:14px 18px}
+.igx-morem .igx-menu svg{width:22px;height:22px;flex:none}
+/* Planner tabs with icons */
+.igx-ptabs button{display:inline-flex;align-items:center;gap:6px}
+.igx-ptabs button svg{width:16px;height:16px}
+.igx-planner .igx-note--l{text-align:left;margin:0 0 8px}
+@media(max-width:560px){.igx-ptabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}.igx-ptabs button{justify-content:center;padding:7px 4px;font-size:12px;flex-direction:column;gap:2px;border-radius:12px}}
+/* auto-post: the reels row has a "how often" choice */
+.igq-aur{grid-template-columns:auto 1fr auto auto auto}
+.igq-aur>span:nth-child(2){min-width:0}
+.igq-aur select{border:1px solid var(--line);border-radius:8px;padding:5px 6px;font:inherit;font-size:13px;background:var(--card);color:var(--ink)}
+.igq-aur>span:not(.igq-sw):last-of-type{font-size:14px}
+@media(max-width:560px){.igq-aur{grid-template-columns:auto 1fr auto;row-gap:6px}.igq-aur select{grid-column:2}.igq-aur>span:not(.igq-sw):not(:nth-child(2)){display:none}}
+/* Create: caption bar with hashtag sets */
+.igc-cap{grid-template-rows:auto auto}
+.igc-capb{grid-column:2;display:flex;align-items:center;gap:8px}
+.igc-cap .igc-capb #igCnt{position:static;margin-left:auto}
+.igc-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:none;border-radius:999px;padding:5px 11px;font:inherit;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer}
+.igc-chip svg{width:15px;height:15px}.igc-chip:hover{background:var(--igbtn)}
+.igc-row small{max-width:45%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.igc-fc input{text-align:left!important;flex:2!important}
+/* the small sheets opened from Create */
+.igc-sm .igk-modal__p{width:min(520px,100%);max-height:90dvh;overflow:auto;display:grid;gap:12px}
+.igc-sm h2{font-size:18px;margin:0}
+.igc-sm .igx-sech{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.igc-tgs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}.igc-tgs:empty{display:none}
+.igc-tgs button{position:relative;flex:none;width:54px;height:54px;padding:0;border:2px solid transparent;border-radius:8px;overflow:hidden;background:#000;cursor:pointer}
+.igc-tgs button.is-on{border-color:var(--igb,#0095f6)}
+.igc-tgs img,.igc-tgs video{width:100%;height:100%;object-fit:cover;display:block}
+.igc-tgs i{position:absolute;right:3px;bottom:3px;min-width:16px;height:16px;border-radius:8px;background:#000c;color:#fff;font:700 10px/16px Inter,sans-serif;font-style:normal}
+.igc-tgp{position:relative;cursor:crosshair;user-select:none;border-radius:10px;overflow:hidden;background:#000;line-height:0}
+.igc-tgp img{width:100%;max-height:56dvh;object-fit:contain;display:block}
+.igc-tgl{position:absolute;transform:translate(-50%,8px);background:rgba(0,0,0,.78);color:#fff;font:600 12px/1 Inter,sans-serif;padding:7px 9px;border-radius:6px;white-space:nowrap;pointer-events:none}
+.igc-tgl::before{content:"";position:absolute;left:50%;top:-5px;margin-left:-5px;border:5px solid transparent;border-top:0;border-bottom-color:rgba(0,0,0,.78)}
+.igc-tgdot{position:absolute;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;border:2px solid #fff;background:var(--igb,#0095f6);box-shadow:0 0 0 2px rgba(0,0,0,.3)}
+.igc-tgv{border-radius:10px;overflow:hidden;background:#000;line-height:0;max-width:240px;margin:0 auto}.igc-tgv video{width:100%;aspect-ratio:9/16;object-fit:cover}
+.igc-tgc{display:flex;flex-wrap:wrap;gap:6px}
+.igc-tgc span{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:999px;padding:4px 4px 4px 10px;font-size:13px;font-weight:600}
+.igc-tgc button{border:0;background:var(--igbtn);color:var(--ink);width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:11px}
+.igc-tgf{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:10px;padding:5px 5px 5px 10px}
+.igc-tgf input{flex:1;min-width:0;border:0;background:none;font:inherit;font-size:15px;color:var(--ink);outline:none;padding:6px 0}
+.igc-tgf>span{color:var(--soft);font-weight:600}
+.igc-locl{display:grid;gap:2px}
+.igc-locl button{display:flex;align-items:center;gap:10px;border:0;background:none;padding:9px 6px;border-radius:8px;text-align:left;font:inherit;color:var(--ink);cursor:pointer}
+.igc-locl button:hover{background:var(--igbtn)}.igc-locl svg{width:20px;height:20px;flex:none}
+.igc-locl span{display:grid}.igc-locl small{color:var(--soft);font-size:12px}
+.igc-altr{display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:start}
+.igc-altr img{width:64px;height:80px;object-fit:cover;border-radius:6px}
+.igc-altr textarea,.igc-hsf textarea,.igc-hsf input{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;font-size:14px;background:var(--card);color:var(--ink);resize:vertical;box-sizing:border-box}
+.igc-hs{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding:4px 0}
+.igc-hsu{flex:1;min-width:0;display:grid;gap:2px;border:0;background:none;padding:8px 4px;text-align:left;font:inherit;color:var(--ink);cursor:pointer;border-radius:8px}
+.igc-hsu:hover{background:var(--igbtn)}.igc-hsu small{color:var(--igb,#00376b);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.igc-hsf{display:grid;gap:8px}
+.igc-fv{background:#000;border-radius:10px;overflow:hidden;line-height:0;max-width:min(260px,24dvh);margin:0 auto;width:100%}
+.igc-fv video{width:100%;aspect-ratio:9/16;object-fit:contain;background:#000}
+.igc-frame input[type=range],.igc-trr input[type=range]{width:100%;accent-color:var(--igb,#0095f6)}
+.igc-trr{display:grid;gap:6px}.igc-trr label{display:grid;grid-template-columns:44px 1fr;align-items:center;gap:8px;font-size:13px;font-weight:600}
+.igc-trt{margin:0;font-size:14px}.igc-trt .is-warn{color:#c47f00;font-weight:600}
+.igc-cvo{flex-wrap:wrap}
+#igTrP{display:inline-flex;align-items:center;gap:6px}#igTrP svg{width:14px;height:14px}
+.igq-aur input[type=time]{grid-column:5}
+@media(max-width:560px){.igq-aur input[type=time]{grid-column:3}.igq-aur select{grid-column:2/3}}
+/* Create: the body is the part that scrolls (an older rule made it grow past the screen instead) */
+.igcr{align-items:stretch}
+.igc-body{align-self:stretch;overscroll-behavior:contain}
+.igcr .igc-row{font-size:15px}
+.igcr .igc-acts .igk-b--p,.igc-sm .igk-b--p{background:var(--igb,#0095f6);border-color:var(--igb,#0095f6);color:#fff}
