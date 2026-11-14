@@ -1830,6 +1830,318 @@
    "sticker": true
   },
   {
+   "id": "b-s-pv-o01-couple-oak-window",
+   "kind": "story",
+   "title": "Photo books · Open book · golden hour couple",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-o01-couple-oak-window.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-o01-couple-oak-window.jpg"
+   ],
+   "seq": 95
+  },
+  {
+   "id": "b-s-pv-o02-dunes-linen-top",
+   "kind": "story",
+   "title": "Photo books · Open book · dunes from above",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-o02-dunes-linen-top.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-o02-dunes-linen-top.jpg"
+   ],
+   "seq": 96
+  },
+  {
+   "id": "b-s-pv-o03-family-fabric-soft",
+   "kind": "story",
+   "title": "Photo books · Open book · family summer",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-o03-family-fabric-soft.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-o03-family-fabric-soft.jpg"
+   ],
+   "seq": 97
+  },
+  {
+   "id": "b-s-pv-o04-balloon-walnut-golden",
+   "kind": "story",
+   "title": "Photo books · Open book · balloon at sunrise",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-o04-balloon-walnut-golden.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-o04-balloon-walnut-golden.jpg"
+   ],
+   "seq": 98
+  },
+  {
+   "id": "b-s-pv-o05-hike-concrete-leaves",
+   "kind": "story",
+   "title": "Photo books · Open book · the hike",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-o05-hike-concrete-leaves.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-o05-hike-concrete-leaves.jpg"
+   ],
+   "seq": 99
+  },
+  {
+   "id": "b-s-pv-o06-boats-blackmarble-spot",
+   "kind": "story",
+   "title": "Photo books · Open book · boats, spotlight",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-o06-boats-blackmarble-spot.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-o06-boats-blackmarble-spot.jpg"
+   ],
+   "seq": 100
+  },
+  {
+   "id": "b-s-pv-o07-sahara-linen-sun",
+   "kind": "story",
+   "title": "Photo books · Open book · Sahara",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-o07-sahara-linen-sun.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-o07-sahara-linen-sun.jpg"
+   ],
+   "seq": 101
+  },
+  {
+   "id": "b-s-pv-o08-camp-darkwood-lamp",
+   "kind": "story",
+   "title": "Photo books · Open book · camp nights",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-o08-camp-darkwood-lamp.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-o08-camp-darkwood-lamp.jpg"
+   ],
+   "seq": 102
+  },
+  {
+   "id": "b-s-pv-o09-wedding-plaster-soft",
+   "kind": "story",
+   "title": "Photo books · Open book · wedding day",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-o09-wedding-plaster-soft.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-o09-wedding-plaster-soft.jpg"
+   ],
+   "seq": 103
+  },
+  {
+   "id": "b-s-pv-o10-friends-pine-low",
+   "kind": "story",
+   "title": "Photo books · Open book · friends, close up",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-o10-friends-pine-low.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-o10-friends-pine-low.jpg"
+   ],
+   "seq": 104
+  },
+  {
+   "id": "b-s-pv-o11-streets-terrazzo-palm",
+   "kind": "story",
+   "title": "Photo books · Open book · old streets",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-o11-streets-terrazzo-palm.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-o11-streets-terrazzo-palm.jpg"
+   ],
+   "seq": 105
+  },
+  {
+   "id": "b-s-pv-o12-kids-oak-top",
+   "kind": "story",
+   "title": "Photo books · Open book · kids from above",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-o12-kids-oak-top.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-o12-kids-oak-top.jpg"
+   ],
+   "seq": 106
+  },
+  {
+   "id": "b-s-pv-o13-mountain-concrete-blinds",
+   "kind": "story",
+   "title": "Photo books · Open book · mountain ridge",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-o13-mountain-concrete-blinds.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-o13-mountain-concrete-blinds.jpg"
+   ],
+   "seq": 107
+  },
+  {
+   "id": "b-s-pv-o14-sea-marble-arch",
+   "kind": "story",
+   "title": "Photo books · Open book · sea and dunes",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-o14-sea-marble-arch.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-o14-sea-marble-arch.jpg"
+   ],
+   "seq": 108
+  },
+  {
+   "id": "b-s-pv-o15-fire-darkplaster",
+   "kind": "story",
+   "title": "Photo books · Open book · campfire",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-o15-fire-darkplaster.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-o15-fire-darkplaster.jpg"
+   ],
+   "seq": 109
+  },
+  {
+   "id": "b-s-pv-o16-morning-fabric-window",
+   "kind": "story",
+   "title": "Photo books · Open book · slow mornings",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-o16-morning-fabric-window.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-o16-morning-fabric-window.jpg"
+   ],
+   "seq": 110
+  },
+  {
+   "id": "b-s-pv-s17-standing-wall-blinds",
+   "kind": "story",
+   "title": "Photo books · Iceland and Greece against the wall",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-s17-standing-wall-blinds.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-s17-standing-wall-blinds.jpg"
+   ],
+   "seq": 111
+  },
+  {
+   "id": "b-s-pv-s18-leaning-dark-spot",
+   "kind": "story",
+   "title": "Photo books · Japan, gallery light",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-s18-leaning-dark-spot.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-s18-leaning-dark-spot.jpg"
+   ],
+   "seq": 112
+  },
+  {
+   "id": "b-s-pv-s19-stack-low-golden",
+   "kind": "story",
+   "title": "Photo books · Stack of four, golden light",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-s19-stack-low-golden.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-s19-stack-low-golden.jpg"
+   ],
+   "seq": 113
+  },
+  {
+   "id": "b-s-pv-s20-hero-angle-leaves",
+   "kind": "story",
+   "title": "Photo books · Namibia with prints",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-s20-hero-angle-leaves.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-s20-hero-angle-leaves.jpg"
+   ],
+   "seq": 114
+  },
+  {
+   "id": "b-s-pv-s21-closed-on-open-oak",
+   "kind": "story",
+   "title": "Photo books · Our Story on an open book",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-s21-closed-on-open-oak.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-s21-closed-on-open-oak.jpg"
+   ],
+   "seq": 115
+  },
+  {
+   "id": "b-s-pv-s22-zanzibar-concrete-print",
+   "kind": "story",
+   "title": "Photo books · Zanzibar with a print",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-s22-zanzibar-concrete-print.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-s22-zanzibar-concrete-print.jpg"
+   ],
+   "seq": 116
+  },
+  {
+   "id": "b-s-pv-s23-trio-blackmarble",
+   "kind": "story",
+   "title": "Photo books · Three books on black marble",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-s23-trio-blackmarble.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-s23-trio-blackmarble.jpg"
+   ],
+   "seq": 117
+  },
+  {
+   "id": "b-s-pv-s24-standing-trio-soft",
+   "kind": "story",
+   "title": "Photo books · Baby, Family and Year books standing",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pv-s24-standing-trio-soft.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pv-s24-standing-trio-soft.jpg"
+   ],
+   "seq": 118
+  },
+  {
    "id": "b-hl-work",
    "kind": "highlight",
    "title": "Highlight cover · Work",
