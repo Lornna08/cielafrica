@@ -1769,63 +1769,24 @@
     }
     function blobs(list, onEach) { var n = 0; return Promise.all(list.map(function (f) { return fileFor(f).then(function (x) { n++; if (onEach) onEach(n, list.length); return x; }); })); }
     var ready = function (list) { var out = list.map(function (f) { return FC[f.url] && FC[f.url].file; }); return out.every(Boolean) ? out : null; };
-    /* a saved file: a link to a copy in this browser, so it saves even where the picture lives behind the admin login */
+    /* a saved file: a link to a copy in this browser (used when sharing falls back to saving) */
     function saveFile(file, n) { setTimeout(function () { var u = URL.createObjectURL(file), a = document.createElement('a'); a.href = u; a.download = file.name; a.rel = 'noopener'; document.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); URL.revokeObjectURL(u); }, 60000); }, (n || 0) * 450); }
-    /* the save sheet: gets the files ready, then one tap saves them (share sheet on phones, downloads on computers).
-       More than 10 files go in groups of 10, one tap each; only two groups are kept ready at a time and a group is
-       let go once it's saved, so a phone never holds a hundred full-size pictures at once. */
-    function saveSheet(list, title) {
-      var groups = []; for (var i = 0; i < list.length; i += 10) groups.push({ l: list.slice(i, i + 10), st: 'idle' });
-      var share = !!(navigator.canShare && navigator.share && mobile());
-      var m = H.modal('<div class="igq-save"><h2>' + IC.down + ' ' + esc(title) + '</h2><p class="igk-muted" data-m>' + (list.length > 1 ? list.length + ' files' : 'Getting it ready…') + '</p><div class="igq-savel">' +
-        groups.map(function (g, j) { return '<div class="igk-row" data-g="' + j + '"><span>' + (groups.length > 1 ? 'Files ' + (j * 10 + 1) + '–' + (j * 10 + g.l.length) : (g.l.length > 1 ? g.l.length + ' files' : esc(g.l[0].name))) + ' <small data-s></small></span><span class="igq-sp"></span>' +
-          (share ? '<button class="igk-b igk-b--p" data-sh disabled>' + (ios() ? 'Save to Photos' : 'Save / Share') + '</button>' : '') + '<button class="igk-b' + (share ? '' : ' igk-b--p') + '" data-fl disabled>' + (share ? 'Download file' + (g.l.length > 1 ? 's' : '') : 'Download') + '</button></div>'; }).join('') +
-        '</div>' + (share ? '<p class="igk-faint">' + (ios() ? 'In the share sheet tap <b>Save Image</b> (or Save Video) to put it in Photos.' : 'Pick <b>Save to device</b>, Gallery or Files in the share sheet, or use Download: it lands in Downloads and shows in the gallery.') + '</p>' : '') +
-        '<div class="igk-row"><span class="igq-sp"></span><button class="igk-b" data-x>Close</button></div></div>');
-      m.classList.add('igq-savem');
-      var row = function (j) { return m.querySelector('[data-g="' + j + '"]'); };
-      var label = function (j, t) { var r = row(j); if (r) r.querySelector('[data-s]').textContent = t; };
-      var pump = function () {
-        if (!document.body.contains(m)) return;
-        var busy = groups.filter(function (g) { return g.st === 'loading' || g.st === 'ready'; }).length;
-        groups.forEach(function (g, j) {
-          if (g.st !== 'idle' || busy >= 2) return; busy++; g.st = 'loading'; label(j, groups.length > 1 ? '· getting ready…' : '');
-          blobs(g.l, function (n, t) { label(j, '· ' + n + ' / ' + t); }).then(function (fs) {
-            g.fs = fs; g.st = 'ready'; label(j, groups.length > 1 ? '· ready' : ''); row(j).querySelectorAll('button').forEach(function (b) { b.disabled = false; });
-            if (groups.length === 1) m.querySelector('[data-m]').textContent = 'Ready.';
-          }, function (e) { g.st = 'idle'; label(j, ''); var x = m.querySelector('[data-m]'); x.innerHTML = '<span class="igk-err">' + esc(e.message) + '</span> Check the connection, then close and try again.'; });
-        });
-      };
-      var used = function (j) { var g = groups[j]; if (g.st === 'done') return; g.st = 'done'; label(j, '· saved'); setTimeout(function () { if (groups.length > 1) { g.fs = null; g.l.forEach(function (f) { delete FC[f.url]; }); } pump(); }, 1500); };
-      groups.forEach(function (g, j) {
-        var r = row(j), sh = r.querySelector('[data-sh]'), fl = r.querySelector('[data-fl]');
-        if (sh) sh.onclick = function () {
-          var fs = g.fs || ready(g.l); if (!fs) { g.st = 'idle'; pump(); return; }
-          if (!navigator.canShare({ files: fs })) { fs.forEach(saveFile); used(j); H.toast('This phone can’t share these files, so they were downloaded instead.', 'ok'); return; }
-          navigator.share({ files: fs }).then(function () { used(j); H.toast('Saved', 'ok'); }, function (e) { if (e && e.name === 'AbortError') return; fs.forEach(saveFile); used(j); H.toast('Downloading instead…', 'ok'); });
-        };
-        fl.onclick = function () { var fs = g.fs || ready(g.l); if (!fs) { g.st = 'idle'; pump(); return; } fs.forEach(saveFile); used(j); H.toast(fs.length > 1 ? 'Downloading ' + fs.length + ' files' : 'Downloading', 'ok'); };
-      });
-      pump();
-      return m;
+    /* one tap saves the file to the device: a download link on this site's own address (so the browser saves it
+       instead of opening it); uploaded files come through /api/hq, which sends them as attachments */
+    var dlUrl = function (f) { var u = String(f.url || '').replace(/^https?:\/\/(www\.)?cielafrica\.com(?=\/)/, ''); if (/route=ig-file/.test(u)) u += '&dl=' + encodeURIComponent(f.name); return u; };
+    function saveUrl(f, n) {
+      var go = function () { var a = document.createElement('a'); a.href = dlUrl(f); a.download = f.name; a.rel = 'noopener'; document.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); }, 4000); };
+      if (!n) go(); else setTimeout(go, n * 700);
     }
-    /* the full-size files. On a computer they download at once; on a phone the save sheet opens. */
     function download(p) {
       var list = filesOf(p); if (!list.length) return;
-      if (!mobile()) { blobs(list).then(function (fs) { fs.forEach(saveFile); }, function (e) { H.toast(e.message, 'err'); }); H.toast(list.length > 1 ? 'Downloading ' + list.length + ' files' : 'Downloading', 'ok'); return; }
-      saveSheet(list, p.title || 'Download');
+      list.forEach(saveUrl); H.toast(list.length > 1 ? 'Downloading ' + list.length + ' files' : 'Downloading', 'ok');
     }
     function downloadMany(ps) {
       var list = [].concat.apply([], ps.map(filesOf)); if (!list.length) return;
-      ask('Download ' + list.length + ' file' + (list.length > 1 ? 's' : '') + ' at full size?').then(function (ok) {
-        if (!ok) return;
-        if (!mobile()) {
-          H.toast('Downloading ' + list.length + ' files…'); var q = list.slice();
-          var lane = function () { var f = q.shift(); if (!f) return; fileFor(f).then(function (file) { saveFile(file); delete FC[f.url]; setTimeout(lane, 350); }, function (e) { H.toast(e.message, 'err'); lane(); }); };
-          for (var w = 0; w < 4; w++) lane(); return;
-        }
-        saveSheet(list, list.length + ' files');
-      });
+      var go = function () { list.forEach(saveUrl); H.toast('Downloading ' + list.length + ' file' + (list.length > 1 ? 's' : '') + '…', 'ok'); };
+      if (list.length <= 10) return go();
+      ask('Download all ' + list.length + ' files at full size?').then(function (ok) { if (ok) go(); });
     }
     /* hand the picture or video to the Instagram app (phone share sheet): there you can add music from Instagram's
        library, stickers, or a location, which apps outside Instagram aren't allowed to do. The caption is copied first. */
