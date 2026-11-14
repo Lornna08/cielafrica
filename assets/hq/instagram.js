@@ -180,7 +180,7 @@
       '<div class="igx-menu">' +
       (t && !posted && canPost() ? (q ? '<button data-a="open" class="is-b">' + (q.status === 'scheduled' ? 'Change the schedule' : q.status === 'paused' ? 'Open (paused)' : q.status === 'failed' ? 'See why it failed' : 'Open the draft') + '</button>' : (p.sticker ? '' : '<button data-a="now" class="is-b">Post now</button>') + '<button data-a="sched">' + (p.sticker ? 'Open in the post editor' : 'Edit and schedule…') + '</button>') : '') +
       (!posted ? '<button data-a="pause">' + (p.paused ? 'Resume (back in the queue)' : 'Pause (skip it when auto-posting)') + '</button>' : '') +
-      (!posted && t ? '<button data-a="next">Post this one next</button>' : '') +
+      (!posted && t ? '<button data-a="next">Post this one next</button><button data-a="from">Start auto-posting from this one</button>' : '') +
       (p.images && p.images.length ? '<button data-a="share">Share to the Instagram app' + (p.sticker ? ' (add the sticker there)' : ' (add music there)') + '</button><button data-a="dl">Download' + (p.videoUrl ? ' video and cover' : p.images.length > 1 ? ' ' + p.images.length + ' pictures' : '') + '</button><button data-a="big">See it big</button>' : '') +
       (p.caption ? '<button data-a="copy">Copy caption</button>' : '') + (k && k.canEdit() ? '<button data-a="edit">Edit design</button>' : '') +
       (posted ? '<button data-a="unpost">Mark as not posted</button>' : '<button data-a="posted">Mark as posted</button>') + '<button data-x>Cancel</button></div></div>');
@@ -197,8 +197,19 @@
         if (a === 'copy') copyText(p.caption, 'Caption copied');
         if (a === 'edit' && k) k.edit(p, { connected: false });
         if (a === 'pause' || a === 'posted' || a === 'unpost') api('design-save', a === 'pause' ? { id: p.id, paused: !p.paused } : { id: p.id, status: a === 'posted' ? 'posted' : 'ready' }).then(function () { H.toast(a === 'pause' ? (p.paused ? 'Back in the queue' : 'Paused: auto-posting skips it') : a === 'posted' ? 'Marked as posted' : 'Back to ready', 'ok'); kitChange(); }, function (e) { H.toast(e.message, 'err'); });
+        if (a === 'from') startFrom(p);
         if (a === 'next') { var all = (PL.items || []).filter(function (x) { return tabOf(x) === tabOf(p); }).sort(function (x, y) { return planOrder(x) - planOrder(y); }).map(function (x) { return x.id; }).filter(function (id) { return id !== p.id; }); api('design-order', { ids: [p.id].concat(all) }).then(function () { H.toast('It goes out next', 'ok'); kitChange(); }, function (e) { H.toast(e.message, 'err'); }); }
       };
+    });
+  }
+  /* "Start auto-posting from this one": the designs that would go out before it (same tab, in posting order) are marked
+     as posted, so auto-posting begins with this one and nothing already on the profile goes out again */
+  function startFrom(p, done) {
+    var before = (PL.items || []).filter(function (x) { return x.id !== p.id && tabOf(x) === tabOf(p) && x.status !== 'posted' && !x.paused && planOrder(x) < planOrder(p); });
+    if (!before.length) { H.toast('This is already the next one to post', 'ok'); return; }
+    ask('Mark the ' + before.length + ' design' + (before.length > 1 ? 's' : '') + ' before this one as posted? Auto-posting will begin with this one. You can change any of them back later.').then(function (ok) {
+      if (!ok) return;
+      api('design-bulk', { ids: before.map(function (x) { return x.id; }), status: 'posted' }).then(function () { H.toast(before.length + ' marked as posted. Auto-posting starts with this one.', 'ok'); PL.at = 0; if (done) done(); kitChange(true); }, function (e) { H.toast(e.message, 'err'); });
     });
   }
   function copyText(t, ok) { try { navigator.clipboard.writeText(t || '').then(function () { H.toast(ok || 'Copied', 'ok'); }, function () { H.toast('Couldn’t copy.', 'err'); }); } catch (e) { H.toast('Couldn’t copy.', 'err'); } }
@@ -501,11 +512,80 @@
     box.querySelectorAll('input, select').forEach(function (x) { x.onchange = save; });
   }
   function planner(el) {
-    el.innerHTML = '<div class="igx-sec igx-planner"><div class="igx-sech"><h2>Planner</h2><button class="igx-btn" id="igDlAll">' + IC.down + '<span>Download</span></button><button class="igx-btn igx-btn--b" id="igNew3">New post</button></div><div id="igAuto"></div><div id="igPq"></div><div id="igPd"><div class="igx-load"><i></i></div></div><div data-igpack></div></div>';
+    el.innerHTML = '<div class="igx-sec igx-planner"><div class="igx-sech"><h2>Planner</h2><button class="igx-btn" id="igSel">' + IC.check + '<span>Select</span></button><button class="igx-btn" id="igDlAll">' + IC.down + '<span>Download</span></button><button class="igx-btn igx-btn--b" id="igNew3">New post</button></div><div id="igAuto"></div><div id="igPq"></div><div id="igPd"><div class="igx-load"><i></i></div></div><div data-igpack></div></div>';
     el.querySelector('#igNew3').onclick = function () { editor(PT.tab === 'story' ? { type: 'story', caption: '', media: [], at: null, status: 'draft' } : PT.tab === 'reel' ? { type: 'reel', caption: '', media: [], shareToFeed: false, at: null, status: 'draft' } : null); };
     var pq = el.querySelector('#igPq'), pd = el.querySelector('#igPd'), designs = null;
     var inTab = function (p) { return tabOf(p) === PT.tab && (PT.filter === 'all' || (PT.filter === 'posted' ? p.status === 'posted' : p.status !== 'posted')); };
     el.querySelector('#igDlAll').onclick = function () { var k = PK(), l = (designs || []).filter(inTab); if (k && l.length) k.downloadMany(l); };
+    /* Select: tap designs to pick them, then save them all to Photos (phones), download, mark posted, pause or delete */
+    var SEL = { on: false, ids: {}, prep: 0 }, bar = null;
+    var picked = function () { return (designs || []).filter(function (p) { return SEL.ids[p.id]; }); };
+    var selOff = function () { SEL.on = false; SEL.ids = {}; if (bar) { bar.remove(); bar = null; } document.body.classList.remove('igx-selon'); el.querySelector('#igSel span').textContent = 'Select'; draw(true); };
+    el.querySelector('#igSel').onclick = function () { if (SEL.on) return selOff(); SEL.on = true; SEL.ids = {}; el.querySelector('#igSel span').textContent = 'Done'; document.body.classList.add('igx-selon'); draw(true); selBar(); };
+    var canShare = function () { return !!(navigator.share && navigator.canShare && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1 && navigator.share)); };
+    var MAXS = 40;
+    function selBar() {
+      if (!SEL.on) return; var k = PK(), ps = picked(), n = ps.length, files = k ? [].concat.apply([], ps.map(k.files)) : [];
+      if (!bar) { bar = document.createElement('div'); bar.className = 'igx-selbar'; document.body.appendChild(bar); }
+      var sh = canShare();
+      bar.innerHTML = '<div class="igx-selt"><b>' + (n ? n + ' selected' : 'Tap designs to select') + '</b><button data-s="all">' + (n && n === pd.querySelectorAll('[data-d]').length ? 'Clear' : 'Select all') + '</button></div><div class="igx-sela">' +
+        (sh ? '<button data-s="photos" class="is-b"' + (n ? '' : ' disabled') + '>' + IC.down + '<span>Save to Photos</span></button>' : '') +
+        '<button data-s="dl"' + (n ? '' : ' disabled') + '>' + IC.down + '<span>Download</span></button>' +
+        '<button data-s="more"' + (n ? '' : ' disabled') + '>' + IC.dots + '<span>More</span></button></div>';
+      /* more than 40 files: Save to Photos goes in batches of 40, one tap each (Photos takes them all; a phone holds 40 at once fine) */
+      var sig = files.map(function (f) { return f.url; }).join('|'); if (SEL.sig !== sig) { SEL.sig = sig; SEL.bi = 0; }
+      var nb = Math.ceil(files.length / MAXS), bi = Math.min(SEL.bi || 0, Math.max(nb - 1, 0)), chunk = files.slice(bi * MAXS, bi * MAXS + MAXS);
+      var ph = bar.querySelector('[data-s="photos"]');
+      if (ph && n && nb > 1) ph.querySelector('span').textContent = 'Save ' + (bi * MAXS + 1) + '–' + (bi * MAXS + chunk.length) + ' to Photos';
+      if (ph && n) {
+        if (SEL.bi >= nb) { ph.disabled = true; ph.querySelector('span').textContent = 'All saved'; }
+        else if (!k.ready(chunk)) {
+          ph.disabled = true; var mine = ++SEL.prep; ph.querySelector('span').textContent = 'Getting ready…';
+          k.prep(chunk, function (i, t) { if (mine === SEL.prep && bar) { var x = bar.querySelector('[data-s="photos"] span'); if (x) x.textContent = 'Getting ready ' + i + '/' + t; } })
+            .then(function () { if (mine === SEL.prep) selBar(); }, function (e) { if (mine === SEL.prep) { H.toast(e.message, 'err'); var x = bar && bar.querySelector('[data-s="photos"] span'); if (x) x.textContent = 'Couldn’t load: tap Download'; } });
+        }
+      }
+      bar.querySelectorAll('[data-s]').forEach(function (b) {
+        b.onclick = function () {
+          var a = b.getAttribute('data-s');
+          if (a === 'all') { var tiles = [].slice.call(pd.querySelectorAll('[data-d]')), clear = n && n === tiles.length; SEL.ids = {}; if (!clear) tiles.forEach(function (t) { SEL.ids[t.getAttribute('data-d')] = 1; }); marks(); return selBar(); }
+          if (a === 'photos') {
+            var fs = k.ready(chunk); if (!fs) return;
+            if (!navigator.canShare({ files: fs })) { chunk.forEach(k.saveUrl); return H.toast('This phone can’t save them to Photos from here, so they were downloaded.', 'ok'); }
+            navigator.share({ files: fs }).then(function () {
+              H.toast(fs.length + ' saved' + (bi + 1 < nb ? '. Tap again for the next ' + Math.min(MAXS, files.length - (bi + 1) * MAXS) + '.' : ''), 'ok');
+              k.forget(chunk); SEL.bi = bi + 1; selBar();
+            }, function (e) { if (e && e.name !== 'AbortError') { chunk.forEach(k.saveUrl); H.toast('Downloading instead…', 'ok'); } });
+            return;
+          }
+          if (a === 'dl') { files.forEach(k.saveUrl); return H.toast('Downloading ' + files.length + ' file' + (files.length > 1 ? 's' : ''), 'ok'); }
+          if (a === 'more') moreSel(ps);
+        };
+      });
+    }
+    function moreSel(ps) {
+      var n = ps.length, anyPosted = ps.some(function (p) { return p.status === 'posted'; }), anyOpen = ps.some(function (p) { return p.status !== 'posted'; }), anyPaused = ps.some(function (p) { return p.paused; });
+      var m = H.modal('<div class="igx-sheet"><div class="igx-shh"><div><b>' + n + ' design' + (n > 1 ? 's' : '') + '</b></div></div><div class="igx-menu">' +
+        (n === 1 && anyOpen && !ps[0].paused ? '<button data-m="from">Start auto-posting from this one</button>' : '') +
+        (anyOpen ? '<button data-m="posted">Mark as posted</button>' : '') + (anyPosted ? '<button data-m="ready">Mark as not posted</button>' : '') +
+        '<button data-m="pause">Pause (skip when auto-posting)</button>' + (anyPaused ? '<button data-m="resume">Resume</button>' : '') +
+        '<button data-m="del" class="is-r">Delete from the planner</button><button data-x>Cancel</button></div></div>');
+      m.classList.add('igx-menum');
+      m.querySelectorAll('[data-m]').forEach(function (b) {
+        b.onclick = function () {
+          var a = b.getAttribute('data-m'); m.remove();
+          var ids = ps.map(function (p) { return p.id; });
+          var run = function (b, done) { H.toast('Saving…'); api('design-bulk', Object.assign({ ids: ids }, b)).then(function () { H.toast(done, 'ok'); PL.at = 0; selOff(); planItems(function (items) { designs = items; both(); }, true); }, function (e) { H.toast(e.message, 'err'); }); };
+          if (a === 'from') { selOff(); startFrom(ps[0], function () { planItems(function (items) { designs = items; both(); }, true); }); }
+          if (a === 'posted' || a === 'ready') run({ status: a }, a === 'posted' ? n + ' marked as posted' : n + ' back to ready');
+          if (a === 'pause' || a === 'resume') run({ paused: a === 'pause' }, a === 'pause' ? n + ' paused' : n + ' resumed');
+          if (a === 'del') ask('Delete ' + n + ' design' + (n > 1 ? 's' : '') + ' from the planner? This can’t be undone.').then(function (ok) { if (ok) run({ del: true }, n + ' deleted'); });
+        };
+      });
+    }
+    var marks = function () { pd.querySelectorAll('[data-d]').forEach(function (t) { t.classList.toggle('is-sel', !!SEL.ids[t.getAttribute('data-d')]); }); };
+    var stopSel = function () { if (!document.body.contains(el) && bar) { bar.remove(); bar = null; document.body.classList.remove('igx-selon'); window.removeEventListener('hashchange', stopSel); } };
+    window.addEventListener('hashchange', function () { setTimeout(stopSel, 50); });
     var queue = function () {
       var up = upcoming();
       var sig = JSON.stringify(up.map(function (p) { return [p.id, p.status, p.updatedAt]; })); if (pq.getAttribute('data-sig') === sig) return; pq.setAttribute('data-sig', sig);
@@ -524,7 +604,7 @@
       var all = designs.filter(inTab), live = all.filter(function (p) { return !(p.paused && open(p)); }), paused = all.filter(function (p) { return p.paused && open(p); });
       var ord = function (a, b) { return grid ? planOrder(b) - planOrder(a) : planOrder(a) - planOrder(b); };
       live.sort(ord); paused.sort(ord);
-      var ratio = grid ? '3 / 4' : '9 / 16', canDrag = PT.filter !== 'posted' && live.length > 1;
+      var ratio = grid ? '3 / 4' : '9 / 16', canDrag = !SEL.on && PT.filter !== 'posted' && live.length > 1;
       pd.innerHTML = '<div class="igx-ptabs">' + TABS.map(function (t) { return '<button data-t="' + t[0] + '" class="' + (PT.tab === t[0] ? 'is-on' : '') + '">' + t[2] + '<span>' + t[1] + '</span><i>' + designs.filter(function (p) { return tabOf(p) === t[0] && (PT.filter === 'all' || (PT.filter === 'posted' ? !open(p) : open(p))); }).length + '</i></button>'; }).join('') + '</div>' +
         '<div class="igx-seg igx-pf">' + [['all', 'All'], ['open', 'To post'], ['posted', 'Posted']].map(function (f) { return '<button data-f="' + f[0] + '" class="' + (PT.filter === f[0] ? 'is-on' : '') + '">' + f[1] + '</button>'; }).join('') + '</div>' +
         (canDrag ? '<p class="igx-note igx-drag-n">' + IC.move + '<span>' + (grid ? 'This is how the profile grid will look. Hold a design and drag it to where it should sit; the next to post is at the bottom right.' : 'Hold a design and drag it to change the posting order. The first one goes out first.') + '</span></p>' : '') +
@@ -534,6 +614,12 @@
       pd.querySelectorAll('[data-t]').forEach(function (b) { b.onclick = function () { PT.tab = b.getAttribute('data-t'); draw(true); }; });
       pd.querySelectorAll('[data-f]').forEach(function (b) { b.onclick = function () { PT.filter = b.getAttribute('data-f'); draw(true); }; });
       bindDesigns(pd, designs);
+      pd.classList.toggle('is-selmode', SEL.on);
+      if (SEL.on) {
+        pd.querySelectorAll('[data-t],[data-f]').forEach(function (b) { var o = b.onclick; b.onclick = function () { SEL.ids = {}; o(); selBar(); }; });
+        pd.querySelectorAll('[data-d]').forEach(function (t) { t.onclick = function (e) { e.preventDefault(); var id = t.getAttribute('data-d'); if (SEL.ids[id]) delete SEL.ids[id]; else SEL.ids[id] = 1; t.classList.toggle('is-sel', !!SEL.ids[id]); selBar(); }; });
+        marks();
+      }
       if (canDrag) dragSort(pd.querySelector('#igDg'), function (ids) {
         var order = grid ? ids.slice().reverse() : ids;   /* the grid shows the last to post first */
         var rest = designs.filter(function (p) { return tabOf(p) === PT.tab && order.indexOf(p.id) < 0; }).sort(function (a, b) { return planOrder(a) - planOrder(b); }).map(function (p) { return p.id; });
@@ -1882,7 +1968,7 @@
       var del = m.querySelector('#igDd');
       if (del) del.onclick = function () { ask('Delete this design?').then(function (ok) { if (!ok) return; api('design-del', { id: d.id }).then(function () { m.remove(); H.toast('Design deleted'); changed(); }, function (e) { H.toast(e.message, 'err'); }); }); };
     }
-    return { download: download, downloadMany: downloadMany, share: share, preview: function (p) { big(p); }, edit: edit, thumb: function (u) { return u; }, big: big, packPanel: packPanel, canEdit: function () { return true; }, order: order, KINDS: KINDS, ST: [], add: addMany, onChange: null };
+    return { files: filesOf, prep: function (l, on) { return blobs(l, on); }, ready: ready, forget: function (l) { l.forEach(function (f) { delete FC[f.url]; }); }, saveUrl: saveUrl, download: download, downloadMany: downloadMany, share: share, preview: function (p) { big(p); }, edit: edit, thumb: function (u) { return u; }, big: big, packPanel: packPanel, canEdit: function () { return true; }, order: order, KINDS: KINDS, ST: [], add: addMany, onChange: null };
   })();
   A.igPlannerKit = KIT;
   KIT.onChange = kitChange;
