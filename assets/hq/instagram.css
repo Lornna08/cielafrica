@@ -886,3 +886,12 @@ body.ig-dark .igv-p,body.ig-dark .igv-side,body.ig-dark .igv-in{background:#000;
 .igc-body{align-self:stretch;overscroll-behavior:contain}
 .igcr .igc-row{font-size:15px}
 .igcr .igc-acts .igk-b--p,.igc-sm .igk-b--p{background:var(--igb,#0095f6);border-color:var(--igb,#0095f6);color:#fff}
+/* 2026-11-14c: download icon on every planner tile, and the save sheet */
+.igx-tdl{position:absolute;right:6px;bottom:6px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.55);display:grid;place-items:center;cursor:pointer;z-index:2;-webkit-tap-highlight-color:transparent;transition:background .15s}
+.igx-tdl svg{width:16px;height:16px;color:#fff}
+.igx-tdl:hover,.igx-tdl:active{background:rgba(0,0,0,.8)}
+.igx-tdl:focus-visible{outline:2px solid #fff;outline-offset:1px}
+.igx-g--tall .igx-tdl{width:34px;height:34px}
+.igq-save{display:grid;gap:12px;min-width:min(380px,86vw)}.igq-save h2{display:flex;gap:8px;align-items:center;margin:0}.igq-save h2 svg{width:20px;height:20px}
+.igq-savel{display:grid;gap:8px;max-height:46dvh;overflow:auto}.igq-savel .igk-row{gap:8px;flex-wrap:wrap;align-items:center}.igq-savel .igk-row>span:first-child{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%}
+.igk-err{color:#c0392b;font-weight:600}

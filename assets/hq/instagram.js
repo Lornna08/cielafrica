@@ -150,12 +150,13 @@
     return out;
   }
   function dayLabel(k) { if (!k) return ''; var t = nboKey(Date.now()), tm = nboKey(Date.now() + 864e5); if (k === t) return 'Today'; if (k === tm) return 'Tomorrow'; var d = new Date(k + 'T12:00:00Z'); return DAYN[d.getUTCDay()] + ' ' + d.getUTCDate() + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getUTCMonth()]; }
-  function planTile(p, ratio, i, dates) {
+  function planTile(p, ratio, i, dates, noDl) {
     var img = p.thumbs && p.thumbs[0] || p.images && p.images[0], q = planFor(p.id), when = dates && dates[p.id];
     var chip = p.status === 'posted' ? ['Posted', 'igk-chip--g'] : q ? (STATUS[q.status] || STATUS.draft) : p.paused ? ['Paused', 'igk-chip--y'] : when ? [dayLabel(when), 'igk-chip--b'] : null;
     return '<button class="igx-t igx-t--d' + (p.paused ? ' is-paused' : '') + '" data-d="' + esc(p.id) + '" style="aspect-ratio:' + ratio + '">' + (img ? '<img src="' + esc(img) + '" alt="" decoding="async" draggable="false"' + (i > 11 ? ' loading="lazy"' : ' fetchpriority="high"') + '>' : '<span class="igx-noimg">' + IC.img + '<small>No picture yet</small></span>') +
       (p.kind === 'reel' && p.videoUrl ? '<em>' + IC.reels + '</em>' : p.images && p.images.length > 1 ? '<em>' + IC.layers + '</em>' : '') + (p.sticker && p.status !== 'posted' ? '<span class="igx-stk" title="Needs a sticker in the Instagram app">' + IC.ig + '</span>' : '') +
-      (chip ? '<span class="igx-pc"><span class="igk-chip ' + chip[1] + '">' + esc(chip[0]) + '</span></span>' : '') + '</button>';
+      (chip ? '<span class="igx-pc"><span class="igk-chip ' + chip[1] + '">' + esc(chip[0]) + '</span></span>' : '') +
+      (!noDl && (p.images && p.images.length || p.videoUrl) ? '<span class="igx-tdl" data-dl role="button" tabindex="0" title="Download" aria-label="Download">' + IC.down + '</span>' : '') + '</button>';
   }
   /* a post saved in this page: photo or video, a status chip and the start of the caption (no dates on the tiles) */
   function postTile(p) {
@@ -218,7 +219,7 @@
       m.querySelector('#igPkT').innerHTML = want === 'reel' ? '' : [['grid', 'Grid'], ['reel', 'Reels'], ['story', 'Stories']].map(function (t) { return '<button data-t="' + t[0] + '" class="' + (tab === t[0] ? 'is-on' : '') + '">' + t[1] + ' · ' + ok.filter(function (p) { return tabOf(p) === t[0]; }).length + '</button>'; }).join('');
       m.querySelectorAll('#igPkT [data-t]').forEach(function (b) { b.onclick = function () { tab = b.getAttribute('data-t'); draw(items); }; });
       var tall = want === 'reel' || tab !== 'grid';
-      m.querySelector('#igPkG').innerHTML = list.length ? '<div class="igx-g igx-g--pick' + (tall ? ' igx-g--tall' : '') + '">' + list.map(function (p, i) { return planTile(p, tall ? '9 / 16' : '3 / 4', i); }).join('') + '</div>' : '<p class="igx-note">Nothing left to post here.</p>';
+      m.querySelector('#igPkG').innerHTML = list.length ? '<div class="igx-g igx-g--pick' + (tall ? ' igx-g--tall' : '') + '">' + list.map(function (p, i) { return planTile(p, tall ? '9 / 16' : '3 / 4', i, null, true); }).join('') + '</div>' : '<p class="igx-note">Nothing left to post here.</p>';
       m.querySelectorAll('[data-d]').forEach(function (b) { b.onclick = function () { var p = items.filter(function (x) { return x.id === b.getAttribute('data-d'); })[0]; if (p) { m.remove(); cb(p); } }; });
     };
     planItems(draw);
@@ -464,7 +465,15 @@
     return (S.posts || []).filter(function (p) { return p.status !== 'published'; }).sort(function (a, b) { return (a.status === 'failed' ? -1 : 0) - (b.status === 'failed' ? -1 : 0) || (a.at || 9e15) - (b.at || 9e15) || b.updatedAt - a.updatedAt; });
   }
   function bindPosts(el) { el.querySelectorAll('[data-p]').forEach(function (x) { x.onclick = function () { var p = (S.posts || []).filter(function (q) { return q.id === x.getAttribute('data-p'); })[0]; if (p) editor(p); }; }); }
-  function bindDesigns(el, items) { el.querySelectorAll('[data-d]').forEach(function (x) { x.onclick = function () { var p = items.filter(function (q) { return q.id === x.getAttribute('data-d'); })[0]; if (p) planSheet(p); }; }); }
+  function bindDesigns(el, items) {
+    el.querySelectorAll('[data-d]').forEach(function (x) {
+      x.onclick = function (e) {
+        var p = items.filter(function (q) { return q.id === x.getAttribute('data-d'); })[0]; if (!p) return;
+        if (e.target.closest('[data-dl]')) { e.preventDefault(); e.stopPropagation(); var k = PK(); if (k) k.download(p); return; }
+        planSheet(p);
+      };
+    });
+  }
   function watchQueue(el, redraw) {
     if (!upcoming().some(function (p) { return p.status === 'processing' || (p.status === 'scheduled' && p.at < Date.now() + 15 * 6e4); })) return;
     var st = function (l) { return JSON.stringify((l || []).map(function (p) { return p.id + p.status; })); };
@@ -473,7 +482,7 @@
   function loadAuto(cb) { if (AU.a && Date.now() - (AU.at || 0) < 60000) return cb(); api('auto').then(function (r) { AU.a = r.auto; AU.at = Date.now(); cb(); }, function () { cb(); }); }
   /* Planner: auto-posting, what's scheduled, then every design by where it goes (Grid, Reels, Stories, Covers),
      arranged the way it will post. Hold and drag to reorder. */
-  var PT = { tab: 'grid', filter: 'open' };
+  var PT = { tab: 'grid', filter: 'all' };
   function t12(v) { var x = String(v || '').split(':'), h = +x[0], m = x[1] || '00'; return (h % 12 || 12) + ':' + m + (h < 12 ? ' am' : ' pm'); }
   function autoPanel(box, items) {
     var a = AU.a || { on: false, time: '19:00', stories: false, storyTime: '12:00', reels: false, reelTime: '18:00', reelEvery: 3 };
@@ -515,9 +524,9 @@
       var all = designs.filter(inTab), live = all.filter(function (p) { return !(p.paused && open(p)); }), paused = all.filter(function (p) { return p.paused && open(p); });
       var ord = function (a, b) { return grid ? planOrder(b) - planOrder(a) : planOrder(a) - planOrder(b); };
       live.sort(ord); paused.sort(ord);
-      var ratio = grid ? '3 / 4' : '9 / 16', canDrag = PT.filter === 'open' && live.length > 1;
-      pd.innerHTML = '<div class="igx-ptabs">' + TABS.map(function (t) { return '<button data-t="' + t[0] + '" class="' + (PT.tab === t[0] ? 'is-on' : '') + '">' + t[2] + '<span>' + t[1] + '</span><i>' + designs.filter(function (p) { return tabOf(p) === t[0] && open(p); }).length + '</i></button>'; }).join('') + '</div>' +
-        '<div class="igx-seg igx-pf">' + [['open', 'To post'], ['posted', 'Posted'], ['all', 'All']].map(function (f) { return '<button data-f="' + f[0] + '" class="' + (PT.filter === f[0] ? 'is-on' : '') + '">' + f[1] + '</button>'; }).join('') + '</div>' +
+      var ratio = grid ? '3 / 4' : '9 / 16', canDrag = PT.filter !== 'posted' && live.length > 1;
+      pd.innerHTML = '<div class="igx-ptabs">' + TABS.map(function (t) { return '<button data-t="' + t[0] + '" class="' + (PT.tab === t[0] ? 'is-on' : '') + '">' + t[2] + '<span>' + t[1] + '</span><i>' + designs.filter(function (p) { return tabOf(p) === t[0] && (PT.filter === 'all' || (PT.filter === 'posted' ? !open(p) : open(p))); }).length + '</i></button>'; }).join('') + '</div>' +
+        '<div class="igx-seg igx-pf">' + [['all', 'All'], ['open', 'To post'], ['posted', 'Posted']].map(function (f) { return '<button data-f="' + f[0] + '" class="' + (PT.filter === f[0] ? 'is-on' : '') + '">' + f[1] + '</button>'; }).join('') + '</div>' +
         (canDrag ? '<p class="igx-note igx-drag-n">' + IC.move + '<span>' + (grid ? 'This is how the profile grid will look. Hold a design and drag it to where it should sit; the next to post is at the bottom right.' : 'Hold a design and drag it to change the posting order. The first one goes out first.') + '</span></p>' : '') +
         (live.length ? '<div class="igx-g igx-g--d' + (grid ? '' : ' igx-g--tall') + '" id="igDg">' + live.map(function (p, i) { return planTile(p, ratio, i, dates); }).join('') + '</div>' : '<p class="igx-note">Nothing here.</p>') +
         (paused.length ? '<h3 class="igx-gh">Paused · ' + paused.length + '</h3><p class="igx-note igx-note--l">Skipped by auto-post and kept off the planned ' + (grid ? 'grid' : 'order') + '. Tap one and choose Resume to put it back.</p><div class="igx-g igx-g--d' + (grid ? '' : ' igx-g--tall') + '">' + paused.map(function (p, i) { return planTile(p, ratio, i + 40, dates); }).join('') + '</div>' : '') +
@@ -545,7 +554,7 @@
     if (!grid) return;
     var st = null;
     grid.addEventListener('pointerdown', function (e) {
-      var t = e.target.closest('.igx-t[data-d]'); if (!t || e.button > 0) return;
+      var t = e.target.closest('.igx-t[data-d]'); if (!t || e.button > 0 || e.target.closest('[data-dl]')) return;
       st = { t: t, x: e.clientX, y: e.clientY, id: e.pointerId, on: false, touch: e.pointerType !== 'mouse' };
       st.timer = st.touch ? setTimeout(function () { if (st) start(); }, 320) : null;
     });
@@ -1746,34 +1755,93 @@
       if (p.videoUrl) list = [{ url: p.videoUrl, name: fname(p, 0, 'mp4') }].concat(list.map(function (x) { return { url: x.url, name: fname(p, 0, 'cover.jpg') }; }));
       return list;
     }
-    function saveLink(f, n) { setTimeout(function () { var a = document.createElement('a'); a.href = f.url; a.download = f.name; a.rel = 'noopener'; document.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); }, 4000); }, (n || 0) * 450); }
     var mobile = function () { return /iPhone|iPad|Android/i.test(navigator.userAgent); };
-    function blobs(list) { return Promise.all(list.map(function (f) { return fetch(f.url).then(function (r) { if (!r.ok) throw new Error('Couldn’t load ' + f.name); return r.blob(); }).then(function (b) { return new File([b], f.name, { type: b.type || (/\.mp4$/.test(f.name) ? 'video/mp4' : 'image/jpeg') }); }); })); }
-    /* the full-size files: on a phone through the share sheet (Save image / Save video), on a computer as downloads */
+    var ios = function () { return /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); };
+    /* files are fetched once and kept for this visit, so the save button can hand them over straight away:
+       phones only open the share sheet (Save image / Save to Photos) from a tap, never after a wait */
+    var FC = {};
+    function fileFor(f) {
+      var c = FC[f.url]; if (c && c.file) return Promise.resolve(c.file); if (c && c.p) return c.p;
+      var p = fetch(f.url).then(function (r) { if (!r.ok) throw new Error('Couldn’t load ' + f.name + ' (' + r.status + ')'); return r.blob(); })
+        .then(function (b) { var file = new File([b], f.name, { type: b.type && b.type !== 'application/octet-stream' ? b.type : (/\.mp4$/.test(f.name) ? 'video/mp4' : 'image/jpeg') }); FC[f.url] = { file: file }; return file; },
+          function (e) { delete FC[f.url]; throw e; });
+      FC[f.url] = { p: p }; return p;
+    }
+    function blobs(list, onEach) { var n = 0; return Promise.all(list.map(function (f) { return fileFor(f).then(function (x) { n++; if (onEach) onEach(n, list.length); return x; }); })); }
+    var ready = function (list) { var out = list.map(function (f) { return FC[f.url] && FC[f.url].file; }); return out.every(Boolean) ? out : null; };
+    /* a saved file: a link to a copy in this browser, so it saves even where the picture lives behind the admin login */
+    function saveFile(file, n) { setTimeout(function () { var u = URL.createObjectURL(file), a = document.createElement('a'); a.href = u; a.download = file.name; a.rel = 'noopener'; document.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); URL.revokeObjectURL(u); }, 60000); }, (n || 0) * 450); }
+    /* the save sheet: gets the files ready, then one tap saves them (share sheet on phones, downloads on computers).
+       More than 10 files go in groups of 10, one tap each; only two groups are kept ready at a time and a group is
+       let go once it's saved, so a phone never holds a hundred full-size pictures at once. */
+    function saveSheet(list, title) {
+      var groups = []; for (var i = 0; i < list.length; i += 10) groups.push({ l: list.slice(i, i + 10), st: 'idle' });
+      var share = !!(navigator.canShare && navigator.share && mobile());
+      var m = H.modal('<div class="igq-save"><h2>' + IC.down + ' ' + esc(title) + '</h2><p class="igk-muted" data-m>' + (list.length > 1 ? list.length + ' files' : 'Getting it ready…') + '</p><div class="igq-savel">' +
+        groups.map(function (g, j) { return '<div class="igk-row" data-g="' + j + '"><span>' + (groups.length > 1 ? 'Files ' + (j * 10 + 1) + '–' + (j * 10 + g.l.length) : (g.l.length > 1 ? g.l.length + ' files' : esc(g.l[0].name))) + ' <small data-s></small></span><span class="igq-sp"></span>' +
+          (share ? '<button class="igk-b igk-b--p" data-sh disabled>' + (ios() ? 'Save to Photos' : 'Save / Share') + '</button>' : '') + '<button class="igk-b' + (share ? '' : ' igk-b--p') + '" data-fl disabled>' + (share ? 'Download file' + (g.l.length > 1 ? 's' : '') : 'Download') + '</button></div>'; }).join('') +
+        '</div>' + (share ? '<p class="igk-faint">' + (ios() ? 'In the share sheet tap <b>Save Image</b> (or Save Video) to put it in Photos.' : 'Pick <b>Save to device</b>, Gallery or Files in the share sheet, or use Download: it lands in Downloads and shows in the gallery.') + '</p>' : '') +
+        '<div class="igk-row"><span class="igq-sp"></span><button class="igk-b" data-x>Close</button></div></div>');
+      m.classList.add('igq-savem');
+      var row = function (j) { return m.querySelector('[data-g="' + j + '"]'); };
+      var label = function (j, t) { var r = row(j); if (r) r.querySelector('[data-s]').textContent = t; };
+      var pump = function () {
+        if (!document.body.contains(m)) return;
+        var busy = groups.filter(function (g) { return g.st === 'loading' || g.st === 'ready'; }).length;
+        groups.forEach(function (g, j) {
+          if (g.st !== 'idle' || busy >= 2) return; busy++; g.st = 'loading'; label(j, groups.length > 1 ? '· getting ready…' : '');
+          blobs(g.l, function (n, t) { label(j, '· ' + n + ' / ' + t); }).then(function (fs) {
+            g.fs = fs; g.st = 'ready'; label(j, groups.length > 1 ? '· ready' : ''); row(j).querySelectorAll('button').forEach(function (b) { b.disabled = false; });
+            if (groups.length === 1) m.querySelector('[data-m]').textContent = 'Ready.';
+          }, function (e) { g.st = 'idle'; label(j, ''); var x = m.querySelector('[data-m]'); x.innerHTML = '<span class="igk-err">' + esc(e.message) + '</span> Check the connection, then close and try again.'; });
+        });
+      };
+      var used = function (j) { var g = groups[j]; if (g.st === 'done') return; g.st = 'done'; label(j, '· saved'); setTimeout(function () { if (groups.length > 1) { g.fs = null; g.l.forEach(function (f) { delete FC[f.url]; }); } pump(); }, 1500); };
+      groups.forEach(function (g, j) {
+        var r = row(j), sh = r.querySelector('[data-sh]'), fl = r.querySelector('[data-fl]');
+        if (sh) sh.onclick = function () {
+          var fs = g.fs || ready(g.l); if (!fs) { g.st = 'idle'; pump(); return; }
+          if (!navigator.canShare({ files: fs })) { fs.forEach(saveFile); used(j); H.toast('This phone can’t share these files, so they were downloaded instead.', 'ok'); return; }
+          navigator.share({ files: fs }).then(function () { used(j); H.toast('Saved', 'ok'); }, function (e) { if (e && e.name === 'AbortError') return; fs.forEach(saveFile); used(j); H.toast('Downloading instead…', 'ok'); });
+        };
+        fl.onclick = function () { var fs = g.fs || ready(g.l); if (!fs) { g.st = 'idle'; pump(); return; } fs.forEach(saveFile); used(j); H.toast(fs.length > 1 ? 'Downloading ' + fs.length + ' files' : 'Downloading', 'ok'); };
+      });
+      pump();
+      return m;
+    }
+    /* the full-size files. On a computer they download at once; on a phone the save sheet opens. */
     function download(p) {
       var list = filesOf(p); if (!list.length) return;
-      if (mobile() && navigator.canShare) { H.toast('Preparing…'); return blobs(list).then(function (fs) { if (navigator.canShare({ files: fs })) return navigator.share({ files: fs }).catch(function () { }); list.forEach(saveLink); }, function (e) { H.toast(e.message, 'err'); }); }
-      list.forEach(saveLink); H.toast(list.length > 1 ? 'Downloading ' + list.length + ' files' : 'Downloading', 'ok');
+      if (!mobile()) { blobs(list).then(function (fs) { fs.forEach(saveFile); }, function (e) { H.toast(e.message, 'err'); }); H.toast(list.length > 1 ? 'Downloading ' + list.length + ' files' : 'Downloading', 'ok'); return; }
+      saveSheet(list, p.title || 'Download');
     }
     function downloadMany(ps) {
       var list = [].concat.apply([], ps.map(filesOf)); if (!list.length) return;
-      ask('Download ' + list.length + ' file' + (list.length > 1 ? 's' : '') + ' at full size?').then(function (ok) { if (!ok) return; if (mobile()) H.toast('On a phone, files save one at a time. On a computer they all download together.'); list.forEach(saveLink); });
+      ask('Download ' + list.length + ' file' + (list.length > 1 ? 's' : '') + ' at full size?').then(function (ok) {
+        if (!ok) return;
+        if (!mobile()) {
+          H.toast('Downloading ' + list.length + ' files…'); var q = list.slice();
+          var lane = function () { var f = q.shift(); if (!f) return; fileFor(f).then(function (file) { saveFile(file); delete FC[f.url]; setTimeout(lane, 350); }, function (e) { H.toast(e.message, 'err'); lane(); }); };
+          for (var w = 0; w < 4; w++) lane(); return;
+        }
+        saveSheet(list, list.length + ' files');
+      });
     }
     /* hand the picture or video to the Instagram app (phone share sheet): there you can add music from Instagram's
        library, stickers, or a location, which apps outside Instagram aren't allowed to do. The caption is copied first. */
     function share(p) {
       var list = filesOf(p).slice(0, p.videoUrl ? 1 : 10);
       var m = H.modal('<div class="igq-share"><h2>' + IC.music + ' Finish it in the Instagram app</h2><p class="igk-muted">Instagram only lets its own app add songs from its music library, stickers (polls, quizzes, questions, links) and locations. Apps like this one, and Meta’s own tools for developers, can’t.</p><ol class="igq-steps"><li><b>Copy the caption</b>' + (p.caption ? '' : ' (this design has none)') + '</li><li><b>Share</b> the ' + (p.videoUrl ? 'video' : list.length > 1 ? 'pictures' : 'picture') + ' and pick <b>Instagram</b>, then ' + (p.kind === 'story' ? '<b>Story</b>' : p.videoUrl ? '<b>Reels</b>' : '<b>Feed</b>') + '</li><li>' + (p.note ? esc(p.note) : 'Tap <b>' + IC.music + ' Add music</b>, pick a song, paste the caption, share') + '</li><li>Back here, tap <b>Mark as posted</b> so auto-posting skips it</li></ol>' +
-        '<div class="igk-row"><button class="igk-b" data-cp' + (p.caption ? '' : ' disabled') + '>Copy caption</button><span class="igq-sp"></span><button class="igk-b" data-x>Close</button><button class="igk-b igk-b--p" data-sh>Share</button></div></div>');
+        '<div class="igk-row"><button class="igk-b" data-cp' + (p.caption ? '' : ' disabled') + '>Copy caption</button><span class="igq-sp"></span><button class="igk-b" data-x>Close</button><button class="igk-b igk-b--p" data-sh disabled>Getting it ready…</button></div></div>');
       m.querySelector('[data-cp]').onclick = function () { copyText(p.caption, 'Caption copied. Paste it in Instagram.'); };
-      m.querySelector('[data-sh]').onclick = function () {
-        var b = this; b.disabled = true; b.textContent = 'Preparing…';
+      var sh = m.querySelector('[data-sh]');
+      /* fetched as soon as the sheet opens, so the Share tap opens the share sheet at once */
+      blobs(list).then(function () { sh.disabled = false; sh.textContent = 'Share'; }, function (e) { sh.textContent = 'Couldn’t load'; H.toast(e.message, 'err'); });
+      sh.onclick = function () {
+        var fs = ready(list); if (!fs) return;
         if (p.caption) try { navigator.clipboard.writeText(p.caption); } catch (e) { }
-        blobs(list).then(function (fs) {
-          b.disabled = false; b.textContent = 'Share';
-          if (navigator.canShare && navigator.canShare({ files: fs })) return navigator.share({ files: fs }).then(function () { m.remove(); H.toast('Caption copied. Paste it in Instagram.', 'ok'); }, function () { });
-          list.forEach(saveLink); H.toast('This browser can’t hand files to apps. They were downloaded: open Instagram and post them from your gallery.', 'ok');
-        }, function (e) { b.disabled = false; b.textContent = 'Share'; H.toast(e.message, 'err'); });
+        if (navigator.canShare && navigator.canShare({ files: fs })) return navigator.share({ files: fs }).then(function () { m.remove(); H.toast('Caption copied. Paste it in Instagram.', 'ok'); }, function (e) { if (e && e.name !== 'AbortError') { fs.forEach(saveFile); H.toast('Downloaded instead: open Instagram and post it from your gallery.', 'ok'); } });
+        fs.forEach(saveFile); H.toast('This browser can’t hand files to apps. They were downloaded: open Instagram and post them from your gallery.', 'ok');
       };
     }
     function addMany(kind) {
