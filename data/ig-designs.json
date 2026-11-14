@@ -1,5 +1,5 @@
 {
- "v": 2,
+ "v": 3,
  "note": "Ready-made Ciel Africa designs. They appear in Ciel Admin → Instagram → Planner; edits there are saved separately and win over this file.",
  "items": [
   {
@@ -670,6 +670,578 @@
    "note": "Link sticker: cielafrica.com/photobooks"
   },
   {
+   "id": "b-s-pb-01-zanzibar-oak",
+   "kind": "story",
+   "title": "Photo books · Zanzibar on oak",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-01-zanzibar-oak.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-01-zanzibar-oak.jpg"
+   ],
+   "seq": 9
+  },
+  {
+   "id": "b-s-pb-02-stack-europe-marble",
+   "kind": "story",
+   "title": "Photo books · Lisbon, Paris and Rome on marble",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-02-stack-europe-marble.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-02-stack-europe-marble.jpg"
+   ],
+   "seq": 10
+  },
+  {
+   "id": "b-s-pb-03-islands-linen-palm",
+   "kind": "story",
+   "title": "Photo books · Island books on linen",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-03-islands-linen-palm.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-03-islands-linen-palm.jpg"
+   ],
+   "seq": 11
+  },
+  {
+   "id": "b-s-pb-04-wedding-plaster-soft",
+   "kind": "story",
+   "title": "Photo books · Wedding Day and Honeymoon",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-04-wedding-plaster-soft.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-04-wedding-plaster-soft.jpg"
+   ],
+   "seq": 12
+  },
+  {
+   "id": "b-s-pb-05-baby-sheet-soft",
+   "kind": "story",
+   "title": "Photo books · Baby books on linen",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-05-baby-sheet-soft.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-05-baby-sheet-soft.jpg"
+   ],
+   "seq": 13
+  },
+  {
+   "id": "b-s-pb-06-year-walnut-window",
+   "kind": "story",
+   "title": "Photo books · Year books on walnut",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-06-year-walnut-window.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-06-year-walnut-window.jpg"
+   ],
+   "seq": 14
+  },
+  {
+   "id": "b-s-pb-07-asia-grid-concrete",
+   "kind": "story",
+   "title": "Photo books · Six Asia books",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-07-asia-grid-concrete.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-07-asia-grid-concrete.jpg"
+   ],
+   "seq": 15
+  },
+  {
+   "id": "b-s-pb-08-couple-terrazzo-palm",
+   "kind": "story",
+   "title": "Photo books · Couple books on terrazzo",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-08-couple-terrazzo-palm.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-08-couple-terrazzo-palm.jpg"
+   ],
+   "seq": 16
+  },
+  {
+   "id": "b-s-pb-09-family-pine-window",
+   "kind": "story",
+   "title": "Photo books · Family books on pine",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-09-family-pine-window.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-09-family-pine-window.jpg"
+   ],
+   "seq": 17
+  },
+  {
+   "id": "b-s-pb-10-pets-linen-soft",
+   "kind": "story",
+   "title": "Photo books · Pet books on linen",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-10-pets-linen-soft.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-10-pets-linen-soft.jpg"
+   ],
+   "seq": 18
+  },
+  {
+   "id": "b-s-pb-11-friends-plaster-palm",
+   "kind": "story",
+   "title": "Photo books · Friends books on plaster",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-11-friends-plaster-palm.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-11-friends-plaster-palm.jpg"
+   ],
+   "seq": 19
+  },
+  {
+   "id": "b-s-pb-12-pile-africa-oak",
+   "kind": "story",
+   "title": "Photo books · A pile of five travel books",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-12-pile-africa-oak.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-12-pile-africa-oak.jpg"
+   ],
+   "seq": 20
+  },
+  {
+   "id": "b-s-pb-13-gifts-marble-soft",
+   "kind": "story",
+   "title": "Photo books · Gift books for Mum, Dad and you",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-13-gifts-marble-soft.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-13-gifts-marble-soft.jpg"
+   ],
+   "seq": 21
+  },
+  {
+   "id": "b-s-pb-14-greek-fan-terrazzo",
+   "kind": "story",
+   "title": "Photo books · Croatia, Crete, Mykonos and Greece",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-14-greek-fan-terrazzo.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-14-greek-fan-terrazzo.jpg"
+   ],
+   "seq": 22
+  },
+  {
+   "id": "b-s-pb-15-namibia-walnut-blinds",
+   "kind": "story",
+   "title": "Photo books · Namibia on walnut",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-15-namibia-walnut-blinds.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-15-namibia-walnut-blinds.jpg"
+   ],
+   "seq": 23
+  },
+  {
+   "id": "b-s-pb-16-morocco-concrete-palm",
+   "kind": "story",
+   "title": "Photo books · Morocco on concrete",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-16-morocco-concrete-palm.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-16-morocco-concrete-palm.jpg"
+   ],
+   "seq": 24
+  },
+  {
+   "id": "b-s-pb-17-newyork-concrete-blinds",
+   "kind": "story",
+   "title": "Photo books · New York pair",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-17-newyork-concrete-blinds.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-17-newyork-concrete-blinds.jpg"
+   ],
+   "seq": 25
+  },
+  {
+   "id": "b-s-pb-18-uk-four-oak",
+   "kind": "story",
+   "title": "Photo books · London, Edinburgh and Scotland",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-18-uk-four-oak.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-18-uk-four-oak.jpg"
+   ],
+   "seq": 26
+  },
+  {
+   "id": "b-s-pb-19-islands-four-sheet",
+   "kind": "story",
+   "title": "Photo books · Four island books",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-19-islands-four-sheet.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-19-islands-four-sheet.jpg"
+   ],
+   "seq": 27
+  },
+  {
+   "id": "b-s-pb-20-party-marble-window",
+   "kind": "story",
+   "title": "Photo books · Party, Cheers and Birthday",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-20-party-marble-window.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-20-party-marble-window.jpg"
+   ],
+   "seq": 28
+  },
+  {
+   "id": "b-s-pb-21-myyear-linen-palm",
+   "kind": "story",
+   "title": "Photo books · My Year on linen",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-21-myyear-linen-palm.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-21-myyear-linen-palm.jpg"
+   ],
+   "seq": 29
+  },
+  {
+   "id": "b-s-pb-22-latam-cascade-pine",
+   "kind": "story",
+   "title": "Photo books · Mexico, Colombia, Brazil and Costa Rica",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-22-latam-cascade-pine.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-22-latam-cascade-pine.jpg"
+   ],
+   "seq": 30
+  },
+  {
+   "id": "b-s-pb-23-spain-scatter-plaster",
+   "kind": "story",
+   "title": "Photo books · Five Spain books",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-23-spain-scatter-plaster.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-23-spain-scatter-plaster.jpg"
+   ],
+   "seq": 31
+  },
+  {
+   "id": "b-s-pb-24-asia-walnut-soft",
+   "kind": "story",
+   "title": "Photo books · Six Asia books on walnut",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-24-asia-walnut-soft.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-24-asia-walnut-soft.jpg"
+   ],
+   "seq": 32
+  },
+  {
+   "id": "b-s-pb-25-dubai-marble-blinds",
+   "kind": "story",
+   "title": "Photo books · Dubai on marble",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-25-dubai-marble-blinds.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-25-dubai-marble-blinds.jpg"
+   ],
+   "seq": 33
+  },
+  {
+   "id": "b-s-pb-26-iceland-concrete-soft",
+   "kind": "story",
+   "title": "Photo books · Iceland on concrete",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-26-iceland-concrete-soft.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-26-iceland-concrete-soft.jpg"
+   ],
+   "seq": 34
+  },
+  {
+   "id": "b-s-pb-27-france-oak-window",
+   "kind": "story",
+   "title": "Photo books · Nice, France and Paris",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-27-france-oak-window.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-27-france-oak-window.jpg"
+   ],
+   "seq": 35
+  },
+  {
+   "id": "b-s-pb-28-portugal-plaster-palm",
+   "kind": "story",
+   "title": "Photo books · Portugal and Madeira",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-28-portugal-plaster-palm.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-28-portugal-plaster-palm.jpg"
+   ],
+   "seq": 36
+  },
+  {
+   "id": "b-s-pb-29-istanbul-walnut-window",
+   "kind": "story",
+   "title": "Photo books · Istanbul on walnut",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-29-istanbul-walnut-window.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-29-istanbul-walnut-window.jpg"
+   ],
+   "seq": 37
+  },
+  {
+   "id": "b-s-pb-30-nordic-linen-soft",
+   "kind": "story",
+   "title": "Photo books · Norway, Finland and Copenhagen",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-30-nordic-linen-soft.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-30-nordic-linen-soft.jpg"
+   ],
+   "seq": 38
+  },
+  {
+   "id": "b-s-pb-31-sicily-malta-terrazzo",
+   "kind": "story",
+   "title": "Photo books · Sicily and Malta",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-31-sicily-malta-terrazzo.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-31-sicily-malta-terrazzo.jpg"
+   ],
+   "seq": 39
+  },
+  {
+   "id": "b-s-pb-32-oman-tunisia-senegal-pine",
+   "kind": "story",
+   "title": "Photo books · Senegal, Tunisia and Oman",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-32-oman-tunisia-senegal-pine.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-32-oman-tunisia-senegal-pine.jpg"
+   ],
+   "seq": 40
+  },
+  {
+   "id": "b-s-pb-33-australia-sheet-palm",
+   "kind": "story",
+   "title": "Photo books · Australia on linen",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-33-australia-sheet-palm.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-33-australia-sheet-palm.jpg"
+   ],
+   "seq": 41
+  },
+  {
+   "id": "b-s-pb-34-newzealand-oak-blinds",
+   "kind": "story",
+   "title": "Photo books · New Zealand pair",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-34-newzealand-oak-blinds.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-34-newzealand-oak-blinds.jpg"
+   ],
+   "seq": 42
+  },
+  {
+   "id": "b-s-pb-35-canada-concrete-window",
+   "kind": "story",
+   "title": "Photo books · Canada and Quebec",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-35-canada-concrete-window.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-35-canada-concrete-window.jpg"
+   ],
+   "seq": 43
+  },
+  {
+   "id": "b-s-pb-36-usa-plaster-blinds",
+   "kind": "story",
+   "title": "Photo books · California, Miami and Colorado",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-36-usa-plaster-blinds.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-36-usa-plaster-blinds.jpg"
+   ],
+   "seq": 44
+  },
+  {
+   "id": "b-s-pb-37-caribbean-four-linen",
+   "kind": "story",
+   "title": "Photo books · Four Caribbean books",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-37-caribbean-four-linen.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-37-caribbean-four-linen.jpg"
+   ],
+   "seq": 45
+  },
+  {
+   "id": "b-s-pb-38-wedding-marble-soft",
+   "kind": "story",
+   "title": "Photo books · Wedding on marble",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-38-wedding-marble-soft.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-38-wedding-marble-soft.jpg"
+   ],
+   "seq": 46
+  },
+  {
+   "id": "b-s-pb-39-ireland-walnut-window",
+   "kind": "story",
+   "title": "Photo books · Ireland and Scotland",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-39-ireland-walnut-window.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-39-ireland-walnut-window.jpg"
+   ],
+   "seq": 47
+  },
+  {
+   "id": "b-s-pb-40-germany-concrete-soft",
+   "kind": "story",
+   "title": "Photo books · Berlin, Germany and Belgium",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-40-germany-concrete-soft.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-40-germany-concrete-soft.jpg"
+   ],
+   "seq": 48
+  },
+  {
+   "id": "b-s-pb-41-asia-terrazzo-window",
+   "kind": "story",
+   "title": "Photo books · Asia and China",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-41-asia-terrazzo-window.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-41-asia-terrazzo-window.jpg"
+   ],
+   "seq": 49
+  },
+  {
+   "id": "b-s-pb-42-argentina-pine-palm",
+   "kind": "story",
+   "title": "Photo books · Argentina on pine",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-42-argentina-pine-palm.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-42-argentina-pine-palm.jpg"
+   ],
+   "seq": 50
+  },
+  {
+   "id": "b-s-pb-43-mediterranean-sheet-window",
+   "kind": "story",
+   "title": "Photo books · Corsica, Marseille and Lanzarote",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-43-mediterranean-sheet-window.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-43-mediterranean-sheet-window.jpg"
+   ],
+   "seq": 51
+  },
+  {
+   "id": "b-s-pb-44-paris-oak-blinds",
+   "kind": "story",
+   "title": "Photo books · Paris on oak",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/pb-44-paris-oak-blinds.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-pb-44-paris-oak-blinds.jpg"
+   ],
+   "seq": 52
+  },
+  {
    "id": "b-s-day01-1",
    "kind": "story",
    "title": "Story · day 1, 1 of 3",
@@ -680,7 +1252,7 @@
    "thumb": [
     "/assets/ig/t/s-day01-1.jpg"
    ],
-   "seq": 9
+   "seq": 53
   },
   {
    "id": "b-s-day01-2",
@@ -693,7 +1265,7 @@
    "thumb": [
     "/assets/ig/t/s-day01-2.jpg"
    ],
-   "seq": 10,
+   "seq": 54,
    "note": "Poll sticker: “Wait it out” / “Leave and try another”",
    "sticker": true
   },
@@ -708,7 +1280,7 @@
    "thumb": [
     "/assets/ig/t/s-day01-3.jpg"
    ],
-   "seq": 11
+   "seq": 55
   },
   {
    "id": "b-s-day02-1",
@@ -721,7 +1293,7 @@
    "thumb": [
     "/assets/ig/t/s-day02-1.jpg"
    ],
-   "seq": 12,
+   "seq": 56,
    "note": "Quiz sticker: SIM Toolkit (correct) · Secure Transfer Key · Store Ticket",
    "sticker": true
   },
@@ -736,7 +1308,7 @@
    "thumb": [
     "/assets/ig/t/s-day02-2.jpg"
    ],
-   "seq": 13
+   "seq": 57
   },
   {
    "id": "b-s-day02-3",
@@ -749,7 +1321,7 @@
    "thumb": [
     "/assets/ig/t/s-day02-3.jpg"
    ],
-   "seq": 14,
+   "seq": 58,
    "note": "Poll sticker: “Dark mode” / “Light mode”",
    "sticker": true
   },
@@ -764,7 +1336,7 @@
    "thumb": [
     "/assets/ig/t/s-day03-1.jpg"
    ],
-   "seq": 15
+   "seq": 59
   },
   {
    "id": "b-s-day03-2",
@@ -777,7 +1349,7 @@
    "thumb": [
     "/assets/ig/t/s-day03-2.jpg"
    ],
-   "seq": 16,
+   "seq": 60,
    "note": "Questions sticker: “Tell us”",
    "sticker": true
   },
@@ -792,7 +1364,7 @@
    "thumb": [
     "/assets/ig/t/s-day03-3.jpg"
    ],
-   "seq": 17
+   "seq": 61
   },
   {
    "id": "b-s-day04-1",
@@ -805,7 +1377,7 @@
    "thumb": [
     "/assets/ig/t/s-day04-1.jpg"
    ],
-   "seq": 18
+   "seq": 62
   },
   {
    "id": "b-s-day04-2",
@@ -818,7 +1390,7 @@
    "thumb": [
     "/assets/ig/t/s-day04-2.jpg"
    ],
-   "seq": 19,
+   "seq": 63,
    "note": "Poll sticker: “Book online” / “Call to book”",
    "sticker": true
   },
@@ -833,7 +1405,7 @@
    "thumb": [
     "/assets/ig/t/s-day04-3.jpg"
    ],
-   "seq": 20
+   "seq": 64
   },
   {
    "id": "b-s-day05-1",
@@ -846,7 +1418,7 @@
    "thumb": [
     "/assets/ig/t/s-day05-1.jpg"
    ],
-   "seq": 21,
+   "seq": 65,
    "note": "Quiz sticker: Three · Nine (correct) · Twelve",
    "sticker": true
   },
@@ -861,7 +1433,7 @@
    "thumb": [
     "/assets/ig/t/s-day05-2.jpg"
    ],
-   "seq": 22
+   "seq": 66
   },
   {
    "id": "b-s-day05-3",
@@ -874,7 +1446,7 @@
    "thumb": [
     "/assets/ig/t/s-day05-3.jpg"
    ],
-   "seq": 23
+   "seq": 67
   },
   {
    "id": "b-s-day06-1",
@@ -887,7 +1459,7 @@
    "thumb": [
     "/assets/ig/t/s-day06-1.jpg"
    ],
-   "seq": 24,
+   "seq": 68,
    "note": "Questions sticker: “Tell us”",
    "sticker": true
   },
@@ -902,7 +1474,7 @@
    "thumb": [
     "/assets/ig/t/s-day06-2.jpg"
    ],
-   "seq": 25
+   "seq": 69
   },
   {
    "id": "b-s-day06-3",
@@ -915,7 +1487,7 @@
    "thumb": [
     "/assets/ig/t/s-day06-3.jpg"
    ],
-   "seq": 26,
+   "seq": 70,
    "note": "Poll sticker: “Lisbon” / “Sicily”",
    "sticker": true
   },
@@ -930,7 +1502,7 @@
    "thumb": [
     "/assets/ig/t/s-day07-1.jpg"
    ],
-   "seq": 27
+   "seq": 71
   },
   {
    "id": "b-s-day07-2",
@@ -943,7 +1515,7 @@
    "thumb": [
     "/assets/ig/t/s-day07-2.jpg"
    ],
-   "seq": 28
+   "seq": 72
   },
   {
    "id": "b-s-day07-3",
@@ -956,7 +1528,7 @@
    "thumb": [
     "/assets/ig/t/s-day07-3.jpg"
    ],
-   "seq": 29,
+   "seq": 73,
    "note": "Poll sticker: “Mobile money” / “Card”",
    "sticker": true
   },
@@ -971,7 +1543,7 @@
    "thumb": [
     "/assets/ig/t/s-day08-1.jpg"
    ],
-   "seq": 30,
+   "seq": 74,
    "note": "Poll sticker: “Website first” / “App first”",
    "sticker": true
   },
@@ -986,7 +1558,7 @@
    "thumb": [
     "/assets/ig/t/s-day08-2.jpg"
    ],
-   "seq": 31
+   "seq": 75
   },
   {
    "id": "b-s-day08-3",
@@ -999,7 +1571,7 @@
    "thumb": [
     "/assets/ig/t/s-day08-3.jpg"
    ],
-   "seq": 32,
+   "seq": 76,
    "note": "Quiz sticker: Twice, a debit and a credit (correct) · Once a month · In two currencies",
    "sticker": true
   },
@@ -1014,7 +1586,7 @@
    "thumb": [
     "/assets/ig/t/s-day09-1.jpg"
    ],
-   "seq": 33,
+   "seq": 77,
    "note": "Questions sticker: “Tell us”",
    "sticker": true
   },
@@ -1029,7 +1601,7 @@
    "thumb": [
     "/assets/ig/t/s-day09-2.jpg"
    ],
-   "seq": 34
+   "seq": 78
   },
   {
    "id": "b-s-day09-3",
@@ -1042,7 +1614,7 @@
    "thumb": [
     "/assets/ig/t/s-day09-3.jpg"
    ],
-   "seq": 35
+   "seq": 79
   },
   {
    "id": "b-s-day10-1",
@@ -1055,7 +1627,7 @@
    "thumb": [
     "/assets/ig/t/s-day10-1.jpg"
    ],
-   "seq": 36
+   "seq": 80
   },
   {
    "id": "b-s-day10-2",
@@ -1068,7 +1640,7 @@
    "thumb": [
     "/assets/ig/t/s-day10-2.jpg"
    ],
-   "seq": 37,
+   "seq": 81,
    "note": "Poll sticker: “Calls” / “WhatsApp”",
    "sticker": true
   },
@@ -1083,7 +1655,7 @@
    "thumb": [
     "/assets/ig/t/s-day10-3.jpg"
    ],
-   "seq": 38
+   "seq": 82
   },
   {
    "id": "b-s-day11-1",
@@ -1096,7 +1668,7 @@
    "thumb": [
     "/assets/ig/t/s-day11-1.jpg"
    ],
-   "seq": 39,
+   "seq": 83,
    "note": "Quiz sticker: SVG (correct) · JPG · PNG",
    "sticker": true
   },
@@ -1111,7 +1683,7 @@
    "thumb": [
     "/assets/ig/t/s-day11-2.jpg"
    ],
-   "seq": 40
+   "seq": 84
   },
   {
    "id": "b-s-day11-3",
@@ -1124,7 +1696,7 @@
    "thumb": [
     "/assets/ig/t/s-day11-3.jpg"
    ],
-   "seq": 41,
+   "seq": 85,
    "note": "Questions sticker: “Tell us”",
    "sticker": true
   },
@@ -1139,7 +1711,7 @@
    "thumb": [
     "/assets/ig/t/s-day12-1.jpg"
    ],
-   "seq": 42,
+   "seq": 86,
    "note": "Poll sticker: “Serif” / “Sans-serif”",
    "sticker": true
   },
@@ -1154,7 +1726,7 @@
    "thumb": [
     "/assets/ig/t/s-day12-2.jpg"
    ],
-   "seq": 43
+   "seq": 87
   },
   {
    "id": "b-s-day12-3",
@@ -1167,7 +1739,7 @@
    "thumb": [
     "/assets/ig/t/s-day12-3.jpg"
    ],
-   "seq": 44,
+   "seq": 88,
    "note": "Quiz sticker: Adapts to any screen (correct) · Replies to messages · Works offline",
    "sticker": true
   },
@@ -1182,7 +1754,7 @@
    "thumb": [
     "/assets/ig/t/s-day13-1.jpg"
    ],
-   "seq": 45
+   "seq": 89
   },
   {
    "id": "b-s-day13-2",
@@ -1195,7 +1767,7 @@
    "thumb": [
     "/assets/ig/t/s-day13-2.jpg"
    ],
-   "seq": 46,
+   "seq": 90,
    "note": "Poll sticker: “Yes, first” / “No, just hire”",
    "sticker": true
   },
@@ -1210,7 +1782,7 @@
    "thumb": [
     "/assets/ig/t/s-day13-3.jpg"
    ],
-   "seq": 47
+   "seq": 91
   },
   {
    "id": "b-s-day14-1",
@@ -1223,7 +1795,7 @@
    "thumb": [
     "/assets/ig/t/s-day14-1.jpg"
    ],
-   "seq": 48,
+   "seq": 92,
    "note": "Questions sticker: “Ask us anything”",
    "sticker": true
   },
@@ -1238,7 +1810,7 @@
    "thumb": [
     "/assets/ig/t/s-day14-2.jpg"
    ],
-   "seq": 49,
+   "seq": 93,
    "note": "Poll sticker: “A new template” / “Behind the scenes”",
    "sticker": true
   },
@@ -1253,7 +1825,7 @@
    "thumb": [
     "/assets/ig/t/s-day14-3.jpg"
    ],
-   "seq": 50,
+   "seq": 94,
    "note": "Link sticker: cielafrica.com/contact",
    "sticker": true
   },
