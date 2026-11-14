@@ -51,10 +51,14 @@
     clock: sv('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
     user: sv('<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>'),
     check: sv('<path d="M20 6 9 17l-5-5"/>', { w: 2.6 }),
-    stats: sv('<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>')
+    stats: sv('<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'),
+    down: sv('<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>'),
+    move: sv('<path d="M12 2v20M2 12h20M12 2l-3 3M12 2l3 3M12 22l-3-3M12 22l3-3M2 12l3-3M2 12l3 3M22 12l-3-3M22 12l-3 3"/>'),
+    music: sv('<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'),
+    bell: sv('<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/>')
   };
   var TYPE = { photo: ['Photo', IC.img], carousel: ['Carousel', IC.layers], reel: ['Reel', IC.play], story: ['Story', IC.ig] };
-  var STATUS = { draft: ['Draft', ''], scheduled: ['Scheduled', 'igk-chip--b'], processing: ['Publishing…', 'igk-chip--y'], published: ['Published', 'igk-chip--g'], failed: ['Failed', 'igk-chip--r'] };
+  var STATUS = { draft: ['Draft', ''], scheduled: ['Scheduled', 'igk-chip--b'], processing: ['Publishing…', 'igk-chip--y'], published: ['Published', 'igk-chip--g'], failed: ['Failed', 'igk-chip--r'], paused: ['Paused', 'igk-chip--y'] };
   /* Ciel Admin's API helper: GET /api/hq?route=ig-<route>, POST the same with a body */
   function api(route, body, qs) {
     return HQ.api('/api/hq?route=ig-' + route + (qs ? '&' + qs : ''), body).then(function (j) { if (!j || j.error || j.ok === false) { var e = new Error((j && (j.error || j.message)) || 'Something went wrong. Try again.'); e.status = j && j.status; throw e; } return j; });
@@ -109,36 +113,64 @@
       if (diff || !had) cb(j.items);
     }, function () { if (!had) cb([]); });
   }
-  /* what an Instagram post made from this design would be: photo, carousel or story (reel and highlight covers are added in the app) */
-  function planType(p) { var n = (p.images || []).length; if (!n) return null; if (p.kind === 'story') return n === 1 ? 'story' : null; if (p.kind === 'post' || p.kind === 'carousel') return n > 1 ? 'carousel' : 'photo'; return null; }
-  function planThumb(u) { var k = PK(); return k ? k.thumb(u) : u; }
+  /* what an Instagram post made from this design would be: photo, carousel, reel (a video with its cover) or story */
+  function planType(p) {
+    var n = (p.images || []).length;
+    if (p.kind === 'reel') return p.videoUrl ? 'reel' : null;
+    if (!n) return null; if (p.kind === 'story') return n === 1 ? 'story' : null;
+    if (p.kind === 'post' || p.kind === 'carousel') return n > 1 ? 'carousel' : 'photo'; return null;
+  }
+  var tabOf = function (p) { return p.kind === 'story' ? 'story' : (p.kind === 'highlight' || (p.kind === 'reel' && !p.videoUrl)) ? 'cover' : 'feed'; };
+  function planThumb(u, p) { if (p && p.thumbs && p.images) { var i = p.images.indexOf(u); if (i >= 0 && p.thumbs[i]) return p.thumbs[i]; } return u; }
   function planOrder(p) { var k = PK(); return k ? k.order(p) : 0; }
-  function planFor(id) { return (S.posts || []).filter(function (x) { return x.planId === id && x.status !== 'published'; })[0]; }
+  function planFor(id) { return (S.posts || []).filter(function (x) { return x.planId === id && x.status !== 'published' && x.status !== 'failed'; })[0]; }
   var canPost = function () { return A.access('instagram') === 'edit'; };
-  function planTile(p, ratio, i) {
-    var img = p.images && p.images[0], q = planFor(p.id), chip = p.status === 'posted' ? ['Posted', 'igk-chip--g'] : q ? (STATUS[q.status] || STATUS.draft) : null;
-    return '<button class="igx-t igx-t--d" data-d="' + esc(p.id) + '" style="aspect-ratio:' + ratio + '">' + (img ? '<img src="' + esc(planThumb(img)) + '" alt="" decoding="async"' + (i > 11 ? ' loading="lazy"' : ' fetchpriority="high"') + '>' : '<span class="igx-noimg">' + IC.img + '<small>No picture yet</small></span>') +
-      (p.images && p.images.length > 1 ? '<em>' + IC.layers + '</em>' : '') + (chip ? '<span class="igx-pc"><span class="igk-chip ' + chip[1] + '">' + chip[0] + '</span></span>' : '') + '</button>';
+  /* when auto-posting will send each design: one a day from the first free day, in posting order */
+  var AU = { a: null, today: '' };
+  var nboKey = function (t) { return new Date(t + 3 * 3600e3).toISOString().slice(0, 10); };
+  function autoDates(items, story) {
+    var a = AU.a, out = {}; if (!a || !(story ? a.stories : a.on)) return out;
+    var today = nboKey(Date.now()), last = story ? a.lastStory : a.lastFeed, busy = {};
+    (S.posts || []).forEach(function (x) { if ((x.type === 'story') !== !!story) return; var t = x.status === 'published' ? x.publishedAt : (x.status === 'scheduled' || x.status === 'processing') ? x.at : 0; if (t) busy[nboKey(t)] = 1; });
+    var q = items.filter(function (p) { return p.status !== 'posted' && !p.paused && !planFor(p.id) && planType(p) && (story ? p.kind === 'story' && !p.sticker : tabOf(p) === 'feed'); }).sort(function (x, y) { return planOrder(x) - planOrder(y); });
+    var d = new Date(today + 'T12:00:00Z'); if (last === today) d.setUTCDate(d.getUTCDate() + 1);
+    q.forEach(function (p) { var k; for (var g = 0; g < 400; g++) { k = d.toISOString().slice(0, 10); d.setUTCDate(d.getUTCDate() + 1); if (!busy[k]) break; } out[p.id] = k; });
+    return out;
+  }
+  function dayLabel(k) { if (!k) return ''; var t = nboKey(Date.now()), tm = nboKey(Date.now() + 864e5); if (k === t) return 'Today'; if (k === tm) return 'Tomorrow'; var d = new Date(k + 'T12:00:00Z'); return DAYN[d.getUTCDay()] + ' ' + d.getUTCDate() + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getUTCMonth()]; }
+  function planTile(p, ratio, i, dates) {
+    var img = p.thumbs && p.thumbs[0] || p.images && p.images[0], q = planFor(p.id), when = dates && dates[p.id];
+    var chip = p.status === 'posted' ? ['Posted', 'igk-chip--g'] : q ? (STATUS[q.status] || STATUS.draft) : p.paused ? ['Paused', 'igk-chip--y'] : when ? [dayLabel(when), 'igk-chip--b'] : null;
+    return '<button class="igx-t igx-t--d' + (p.paused ? ' is-paused' : '') + '" data-d="' + esc(p.id) + '" style="aspect-ratio:' + ratio + '">' + (img ? '<img src="' + esc(img) + '" alt="" decoding="async" draggable="false"' + (i > 11 ? ' loading="lazy"' : ' fetchpriority="high"') + '>' : '<span class="igx-noimg">' + IC.img + '<small>No picture yet</small></span>') +
+      (p.kind === 'reel' && p.videoUrl ? '<em>' + IC.reels + '</em>' : p.images && p.images.length > 1 ? '<em>' + IC.layers + '</em>' : '') + (p.sticker && p.status !== 'posted' ? '<span class="igx-stk" title="Needs a sticker in the Instagram app">' + IC.ig + '</span>' : '') +
+      (chip ? '<span class="igx-pc"><span class="igk-chip ' + chip[1] + '">' + esc(chip[0]) + '</span></span>' : '') + '</button>';
   }
   /* a post saved in this page: photo or video, a status chip and the start of the caption (no dates on the tiles) */
   function postTile(p) {
-    var m = p.media[0], s = STATUS[p.status] || STATUS.draft, src = m ? (m.plan ? planThumb(m.url) : m.url) : '';
-    return '<button class="igx-t igx-t--p" data-p="' + p.id + '">' + (m ? (m.kind === 'video' ? '<video src="' + esc(src) + '#t=0.5" muted playsinline preload="metadata"></video>' : '<img src="' + esc(src) + '" alt="" decoding="async">') : '<span class="igx-noimg">' + IC.img + '</span>') +
+    var m = p.media[0], s = STATUS[p.status] || STATUS.draft, src = p.type === 'reel' && p.cover && p.cover.url ? p.cover.url : m ? m.url : '', vid = m && m.kind === 'video' && !(p.cover && p.cover.url);
+    return '<button class="igx-t igx-t--p" data-p="' + p.id + '">' + (src ? (vid ? '<video src="' + esc(src) + '#t=0.5" muted playsinline preload="metadata"></video>' : '<img src="' + esc(src) + '" alt="" decoding="async">') : '<span class="igx-noimg">' + IC.img + '</span>') +
       (p.media.length > 1 ? '<em>' + IC.layers + '</em>' : m && m.kind === 'video' ? '<em>' + IC.reels + '</em>' : '') +
-      '<span class="igx-pb"><span class="igk-chip ' + s[1] + '">' + s[0] + '</span>' + (p.error ? '<small>' + esc(p.error) + '</small>' : p.caption ? '<small>' + esc(p.caption.slice(0, 70)) + '</small>' : '') + '</span></button>';
+      '<span class="igx-pb"><span class="igk-chip ' + s[1] + '">' + s[0] + (p.at && (p.status === 'scheduled' || p.status === 'paused') ? ' · ' + esc(when(p.at)) : '') + '</span>' + (p.error ? '<small>' + esc(p.error) + '</small>' : p.caption ? '<small>' + esc(p.caption.slice(0, 70)) + '</small>' : '') + '</span></button>';
   }
   function fromPlan(p) {
-    return { type: planType(p) || 'photo', caption: p.kind === 'story' ? '' : (p.caption || ''), media: (p.images || []).slice(0, 10).map(function (u, i) { return { plan: true, url: u, kind: 'image', path: (p.paths || [])[i] || '' }; }), planId: p.id, altText: '', collaborators: [], shareToFeed: true, at: null, status: 'draft' };
+    var t = planType(p) || 'photo', img = function (u, i) { return { plan: true, url: u, kind: 'image', src: (p.src || [])[i] || '', path: (p.paths || [])[i] || '' }; };
+    var media = t === 'reel' ? [{ plan: true, kind: 'video', url: p.videoUrl, src: p.video || '', path: p.videoPath || '' }] : (p.images || []).slice(0, 10).map(img);
+    return { type: t, caption: p.kind === 'story' ? '' : (p.caption || ''), media: media, cover: t === 'reel' && p.images && p.images[0] ? img(p.images[0], 0) : null, planId: p.id, altText: '', collaborators: [], shareToFeed: p.shareToFeed !== false, audioName: p.audioName || '', at: null, status: 'draft' };
   }
-  /* tapping a design: post it now, schedule it, see it big and save it, copy the caption, edit it */
+  function mediaBody(x) { return x ? { kind: x.kind, src: x.src || '', path: x.path || '', url: x.url || '', w: x.w, h: x.h, name: x.name } : null; }
+  /* tapping a design: post, schedule, pause, download, share to the Instagram app (for music and stickers), edit */
   function planSheet(p) {
     var k = PK(), t = planType(p), q = planFor(p.id), posted = p.status === 'posted';
     var kind = k ? (k.KINDS.filter(function (x) { return x[0] === p.kind; })[0] || [0, 'Post'])[1] : 'Post';
-    var m = H.modal('<div class="igx-sheet"><div class="igx-shh">' + (p.images && p.images[0] ? '<img src="' + esc(planThumb(p.images[0])) + '" alt="">' : '') + '<div><b>' + esc(kind) + (p.images && p.images.length > 1 ? ' · ' + p.images.length + ' pictures' : '') + (posted ? ' · Posted' : '') + '</b>' + (p.caption ? '<p>' + esc(p.caption.slice(0, 160)) + (p.caption.length > 160 ? '…' : '') + '</p>' : '') + '</div></div>' +
+    var m = H.modal('<div class="igx-sheet"><div class="igx-shh">' + (p.images && p.images[0] ? '<img src="' + esc(planThumb(p.images[0], p)) + '" alt="">' : '') + '<div><b>' + esc(p.title || kind) + '</b><small>' + esc(kind) + (p.images && p.images.length > 1 ? ' · ' + p.images.length + ' pictures' : '') + (posted ? ' · Posted' : p.paused ? ' · Paused' : '') + '</small>' + (p.caption ? '<p>' + esc(p.caption.slice(0, 140)) + (p.caption.length > 140 ? '…' : '') + '</p>' : '') + '</div></div>' +
+      (p.note && !posted ? '<p class="igx-shn igx-shn--stk">' + IC.ig + '<span><b>Add in the Instagram app:</b> ' + esc(p.note) + '</span></p>' : '') +
       '<div class="igx-menu">' +
-      (t && !posted && canPost() ? (q ? '<button data-a="open" class="is-b">' + (q.status === 'scheduled' ? 'Change the schedule' : q.status === 'failed' ? 'See why it failed' : 'Open the draft') + '</button>' : '<button data-a="now" class="is-b">Post now</button><button data-a="sched">Schedule…</button>') : '') +
-      (p.kind === 'reel' ? '<p class="igx-shn">Reel cover: film the reel, then pick this picture as its cover in the Instagram app.</p>' : p.kind === 'highlight' ? '<p class="igx-shn">Highlight cover: add it in the Instagram app (Edit highlight → Edit cover).</p>' : '') +
-      (p.images && p.images.length ? '<button data-a="big">See it big and save it</button>' : '') + (p.caption ? '<button data-a="copy">Copy caption</button>' : '') + (k && k.canEdit() ? '<button data-a="edit">Edit in the planner</button>' : '') + '<button data-x>Cancel</button></div></div>');
+      (t && !posted && canPost() ? (q ? '<button data-a="open" class="is-b">' + (q.status === 'scheduled' ? 'Change the schedule' : q.status === 'paused' ? 'Open (paused)' : q.status === 'failed' ? 'See why it failed' : 'Open the draft') + '</button>' : (p.sticker ? '' : '<button data-a="now" class="is-b">Post now</button>') + '<button data-a="sched">' + (p.sticker ? 'Open in the post editor' : 'Edit and schedule…') + '</button>') : '') +
+      (!posted ? '<button data-a="pause">' + (p.paused ? 'Resume (back in the queue)' : 'Pause (skip it when auto-posting)') + '</button>' : '') +
+      (!posted && t ? '<button data-a="next">Post this one next</button>' : '') +
+      (p.images && p.images.length ? '<button data-a="share">Share to the Instagram app' + (p.sticker ? ' (add the sticker there)' : ' (add music there)') + '</button><button data-a="dl">Download' + (p.videoUrl ? ' video and cover' : p.images.length > 1 ? ' ' + p.images.length + ' pictures' : '') + '</button><button data-a="big">See it big</button>' : '') +
+      (p.caption ? '<button data-a="copy">Copy caption</button>' : '') + (k && k.canEdit() ? '<button data-a="edit">Edit design</button>' : '') +
+      (posted ? '<button data-a="unpost">Mark as not posted</button>' : '<button data-a="posted">Mark as posted</button>') + '<button data-x>Cancel</button></div></div>');
     m.classList.add('igx-menum');
     m.querySelectorAll('[data-a]').forEach(function (b) {
       b.onclick = function () {
@@ -147,33 +179,38 @@
         if (a === 'sched') editor(fromPlan(p));
         if (a === 'open') editor(q);
         if (a === 'big' && k) k.preview(p, PL.items || [], { connected: false });
-        if (a === 'copy') { try { navigator.clipboard.writeText(p.caption || ''); H.toast('Caption copied'); } catch (e) { H.toast('Couldn’t copy.', 'err'); } }
+        if (a === 'dl' && k) k.download(p);
+        if (a === 'share' && k) k.share(p);
+        if (a === 'copy') copyText(p.caption, 'Caption copied');
         if (a === 'edit' && k) k.edit(p, { connected: false });
+        if (a === 'pause' || a === 'posted' || a === 'unpost') api('design-save', a === 'pause' ? { id: p.id, paused: !p.paused } : { id: p.id, status: a === 'posted' ? 'posted' : 'ready' }).then(function () { H.toast(a === 'pause' ? (p.paused ? 'Back in the queue' : 'Paused: auto-posting skips it') : a === 'posted' ? 'Marked as posted' : 'Back to ready', 'ok'); kitChange(); }, function (e) { H.toast(e.message, 'err'); });
+        if (a === 'next') { var all = (PL.items || []).filter(function (x) { return tabOf(x) === tabOf(p); }).sort(function (x, y) { return planOrder(x) - planOrder(y); }).map(function (x) { return x.id; }).filter(function (id) { return id !== p.id; }); api('design-order', { ids: [p.id].concat(all) }).then(function () { H.toast('It goes out next', 'ok'); kitChange(); }, function (e) { H.toast(e.message, 'err'); }); }
       };
     });
   }
+  function copyText(t, ok) { try { navigator.clipboard.writeText(t || '').then(function () { H.toast(ok || 'Copied', 'ok'); }, function () { H.toast('Couldn’t copy.', 'err'); }); } catch (e) { H.toast('Couldn’t copy.', 'err'); } }
   function postPlan(p) {
-    var d = fromPlan(p); H.toast('Posting to Instagram…');
-    api('post-save', { type: d.type, caption: d.caption, media: d.media, planId: d.planId, status: 'draft', at: null })
+    var d = fromPlan(p); H.toast(d.type === 'reel' ? 'Sending the reel to Instagram… (a minute or two)' : 'Posting to Instagram…');
+    api('post-save', { type: d.type, caption: d.caption, media: d.media.map(mediaBody), cover: mediaBody(d.cover), audioName: d.audioName, shareToFeed: d.shareToFeed, planId: d.planId, status: 'draft', at: null })
       .then(function (r) { return api('post-now', { id: r.item.id }); })
       .then(function (r) { if (r.finished) { p.status = 'posted'; PL.at = 0; } S.media = null; S.prof = null; S.posts = null; H.toast(r.finished ? 'Posted to Instagram 🎉' : 'Instagram is still preparing it. It will post in a few minutes.', 'ok'); render(S.view === 'profile' ? '' : S.view); },
         function (e) { H.toast(e.message, 'err'); render(S.view === 'profile' ? 'profile' : S.view); });
   }
-  /* New post → Choose from planner */
-  function pickPlan(cb) {
-    var tab = 'post', m = H.modal('<div class="igx-pick"><div class="igx-sech"><h2>Choose from the planner</h2><button class="igk-b igk-b--sm igk-b--ghost" data-x>✕</button></div><div class="igx-seg" id="igPkT"></div><div id="igPkG"><div class="igx-load igx-load--s"><i></i></div></div></div>');
+  /* New post → Choose from the planner */
+  function pickPlan(cb, want) {
+    var tab = want === 'story' ? 'story' : 'feed', m = H.modal('<div class="igx-pick"><div class="igx-sech"><h2>Choose a design</h2><button class="igk-b igk-b--sm igk-b--ghost" data-x>✕</button></div><div class="igx-seg" id="igPkT"></div><div id="igPkG"><div class="igx-load igx-load--s"><i></i></div></div></div>');
     m.classList.add('igx-pickm');
     var draw = function (items) {
       var ok = items.filter(function (p) { return p.status !== 'posted' && planType(p); });
-      var list = ok.filter(function (p) { return tab === 'story' ? p.kind === 'story' : p.kind !== 'story'; }).sort(function (a, b) { return planOrder(a) - planOrder(b); });
-      m.querySelector('#igPkT').innerHTML = [['post', 'Posts'], ['story', 'Stories']].map(function (t) { return '<button data-t="' + t[0] + '" class="' + (tab === t[0] ? 'is-on' : '') + '">' + t[1] + ' · ' + ok.filter(function (p) { return t[0] === 'story' ? p.kind === 'story' : p.kind !== 'story'; }).length + '</button>'; }).join('');
+      var list = ok.filter(function (p) { return want === 'reel' ? planType(p) === 'reel' : tabOf(p) === tab; }).sort(function (a, b) { return planOrder(a) - planOrder(b); });
+      m.querySelector('#igPkT').innerHTML = want === 'reel' ? '' : [['feed', 'Posts and reels'], ['story', 'Stories']].map(function (t) { return '<button data-t="' + t[0] + '" class="' + (tab === t[0] ? 'is-on' : '') + '">' + t[1] + ' · ' + ok.filter(function (p) { return tabOf(p) === t[0]; }).length + '</button>'; }).join('');
       m.querySelectorAll('#igPkT [data-t]').forEach(function (b) { b.onclick = function () { tab = b.getAttribute('data-t'); draw(items); }; });
-      m.querySelector('#igPkG').innerHTML = list.length ? '<div class="igx-g igx-g--pick">' + list.map(function (p, i) { return planTile(p, tab === 'story' ? '9 / 16' : '4 / 5', i); }).join('') + '</div>' : '<p class="igx-note">Nothing left to post here.</p>';
+      m.querySelector('#igPkG').innerHTML = list.length ? '<div class="igx-g igx-g--pick">' + list.map(function (p, i) { return planTile(p, tab === 'story' ? '9 / 16' : '3 / 4', i); }).join('') + '</div>' : '<p class="igx-note">Nothing left to post here.</p>';
       m.querySelectorAll('[data-d]').forEach(function (b) { b.onclick = function () { var p = items.filter(function (x) { return x.id === b.getAttribute('data-d'); })[0]; if (p) { m.remove(); cb(p); } }; });
     };
     planItems(draw);
   }
-  function kitChange() { PL.at = 0; if (A.S.section === 'instagram' && (S.view === 'planner' || (S.view === 'profile' && S.ptab === 'planned'))) render(S.view === 'profile' ? 'planned' : S.view); }
+  function kitChange(auto) { PL.at = 0; if (auto) AU.at = 0; if (A.S.section === 'instagram' && (S.view === 'planner' || S.view === 'designs' || (S.view === 'profile' && S.ptab === 'planned'))) render(S.view === 'profile' ? 'planned' : S.view); }
 
   /* ---------- page + Instagram-style navigation ---------- */
   var NAV = [['feed', 'Home', 'home'], ['search', 'Search', 'search'], ['reels', 'Reels', 'reels'], ['messages', 'Messages', 'dm'], ['activity', 'Activity', 'heart'], ['create', 'Create', 'plus'], ['planner', 'Planner', 'cal'], ['designs', 'Designs', 'grid'], ['stats', 'Insights', 'stats'], ['profile', 'Profile', 'user']];
@@ -279,9 +316,10 @@
     var a = S.st.account;
     var m = H.modal('<h2>Instagram connection</h2>' + (A.owner() ? '<button class="igk-b igk-b--p igq-retok" id="igRe2">Paste a new token (reconnect)</button>' : '') + '<p class="igk-muted">Connected as <b>@' + esc(a.username) + '</b>' + (a.pageName ? ' (through the Facebook Page ' + esc(a.pageName) + ')' : '') + '. ' + (a.expiresAt ? 'The connection lasts 60 days and renews itself.' : 'The connection doesn’t expire.') + '</p>' +
 '<p class="igk-faint">Connected ' + when(a.connectedAt) + (a.expiresAt ? ' · current connection until ' + when(a.expiresAt) : '') + '</p>' +
-      '<p class="igk-faint">New messages, comments, likes, followers and tags are checked every few minutes while the app is open, and every 30 minutes otherwise. They show in the bell and as notifications on your phone.</p>' +
-      '<div class="igk-row"><a class="igk-b" href="https://www.instagram.com/' + encodeURIComponent(a.username) + '/" target="_blank" rel="noopener">' + IC.ext + '<span>Open Instagram</span></a>' + (A.owner() ? '<button class="igk-b" id="igRe">Reconnect</button><button class="igk-b igk-b--ghost igq-danger" id="igOff">Disconnect</button>' : '') + '<button class="igk-b" id="igTour">Take the tour</button><span class="igq-sp"></span><button class="igk-b" data-x>Close</button></div>');
+      '<p class="igk-faint">New messages, comments, likes, followers and tags are checked every few minutes while the app is open, and about every 10 minutes when it’s closed. With instant notifications on, messages, comments and mentions arrive within seconds.</p>' +
+      '<button class="igk-b igk-b--p igq-hookb" id="igHook">' + IC.bell + '<span>Instant notifications</span></button>' + '<div class="igk-row"><a class="igk-b" href="https://www.instagram.com/' + encodeURIComponent(a.username) + '/" target="_blank" rel="noopener">' + IC.ext + '<span>Open Instagram</span></a>' + (A.owner() ? '<button class="igk-b" id="igRe">Reconnect</button><button class="igk-b igk-b--ghost igq-danger" id="igOff">Disconnect</button>' : '') + '<button class="igk-b" id="igTour">Take the tour</button><span class="igq-sp"></span><button class="igk-b" data-x>Close</button></div>');
     m.querySelector('#igTour').onclick = function () { m.remove(); tour(); };
+    m.querySelector('#igHook').onclick = function () { m.remove(); hookBox(); };
     if (m.querySelector('#igRe')) m.querySelector('#igRe').onclick = function () { m.remove(); S.st = null; tokenBox(); };
     if (m.querySelector('#igRe2')) m.querySelector('#igRe2').onclick = function () { m.remove(); S.st = null; tokenBox(); };
     if (m.querySelector('#igOff')) m.querySelector('#igOff').onclick = function () { ask('Disconnect @' + a.username + '? Scheduled posts stay saved but won’t be published until you connect again.').then(function (ok) { if (!ok) return; api('disconnect', {}).then(function () { m.remove(); S.st = null; S.media = null; render(''); }); }); };
@@ -397,37 +435,49 @@
     S.poll = setInterval(function () { if (!document.body.contains(el)) return stopPoll(); api('cron').then(function () { return api('posts'); }).then(function (r2) { if (st(r2.items) !== st(S.posts)) { S.posts = r2.items; S.media = null; PL.at = 0; redraw(); } }).catch(function () { }); }, 30000);
   }
   /* the profile's Planned tab: what will go out next, as it will look on the grid */
+  function loadAuto(cb) { if (AU.a && Date.now() - (AU.at || 0) < 60000) return cb(); api('auto').then(function (r) { AU.a = r.auto; AU.at = Date.now(); cb(); }, function () { cb(); }); }
   function plannedGrid(el) {
     var designs = null, got = false;
     el.removeAttribute('data-sig');   /* the tab area is shared: a mark left from an earlier visit must not stop it redrawing */
     var draw = function () {
       if (!document.body.contains(el) || S.ptab !== 'planned') return;
-      var st = S.pkind === 'story', isK = function (p) { return st ? p.kind === 'story' : (p.kind === 'post' || p.kind === 'carousel'); };
-      var up = upcoming().filter(function (p) { return st ? p.type === 'story' : p.type !== 'story'; }), ds = (designs || []).filter(function (p) { return p.status !== 'posted' && isK(p) && !planFor(p.id); }).sort(function (a, b) { return st ? planOrder(a) - planOrder(b) : planOrder(b) - planOrder(a); });
-      var nStories = (designs || []).filter(function (p) { return p.status !== 'posted' && p.kind === 'story'; }).length;
-      /* like the profile once everything is out: newest top left, the next one to post at the bottom right.
-         Posts with a time come last (they go out first, the soonest at the very end); drafts and failed ones first */
+      var st = S.pkind === 'story';
+      var up = upcoming().filter(function (p) { return st ? p.type === 'story' : p.type !== 'story'; }), ds = (designs || []).filter(function (p) { return p.status !== 'posted' && tabOf(p) === (st ? 'story' : 'feed') && !planFor(p.id); }).sort(function (a, b) { return st ? planOrder(a) - planOrder(b) : planOrder(b) - planOrder(a); });
+      var nStories = (designs || []).filter(function (p) { return p.status !== 'posted' && p.kind === 'story'; }).length, dates = autoDates(designs || [], st);
       var loose = up.filter(function (p) { return p.status !== 'scheduled' && p.status !== 'processing'; }), timed = up.filter(function (p) { return p.status === 'scheduled' || p.status === 'processing'; }).sort(function (a, b) { return (b.at || 0) - (a.at || 0); });
-      var sig = JSON.stringify([S.pkind, up.map(function (p) { return [p.id, p.status, p.updatedAt]; }), ds.map(function (p) { return p.id; })]);
+      var sig = JSON.stringify([S.pkind, up.map(function (p) { return [p.id, p.status, p.updatedAt]; }), ds.map(function (p) { return [p.id, p.paused, p.seq]; }), dates]);
       if (el.getAttribute('data-sig') === sig) return; el.setAttribute('data-sig', sig);
-      el.innerHTML = (nStories ? '<div class="igx-seg igx-pk"><button data-k="post" class="' + (st ? '' : 'is-on') + '">Posts</button><button data-k="story" class="' + (st ? 'is-on' : '') + '">Stories · ' + nStories + '</button></div>' : '') +
-        '<div class="igx-g igx-g--plan' + (st ? ' igx-g--tall' : '') + '"><button class="igx-t igx-t--new" data-new>' + IC.plus + '<span>New ' + (st ? 'story' : 'post') + '</span></button>' + loose.map(postTile).join('') + ds.map(function (p, i) { return planTile(p, st ? '9 / 16' : '3 / 4', i); }).join('') + timed.map(postTile).join('') + '</div>' +
-        (up.length || ds.length ? '<p class="igx-note">' + (st ? 'Stories in posting order. Tap one to post it now or schedule it.' : 'This is how the profile will look once they’re all out: the next post is at the bottom right. Tap a design to post it now or schedule it.') + '</p>' : '<p class="igx-note">Nothing planned yet. Tap <b>New post</b>, or add designs in <a href="#instagram/designs">Designs</a>.</p>');
+      el.innerHTML = (nStories ? '<div class="igx-seg igx-pk"><button data-k="post" class="' + (st ? '' : 'is-on') + '">Posts and reels</button><button data-k="story" class="' + (st ? 'is-on' : '') + '">Stories · ' + nStories + '</button></div>' : '') +
+        '<div class="igx-g igx-g--plan' + (st ? ' igx-g--tall' : '') + '"><button class="igx-t igx-t--new" data-new>' + IC.plus + '<span>New ' + (st ? 'story' : 'post') + '</span></button>' + loose.map(postTile).join('') + ds.map(function (p, i) { return planTile(p, st ? '9 / 16' : '3 / 4', i, dates); }).join('') + timed.map(postTile).join('') + '</div>' +
+        (up.length || ds.length ? '<p class="igx-note">' + (st ? 'Stories in posting order. Tap one to post it now or schedule it.' : 'This is how the profile will look once they’re all out: the next post is at the bottom right. To change the order, open <a href="#instagram/designs">Designs</a> and drag.') + '</p>' : '<p class="igx-note">Nothing planned yet. Tap <b>New post</b>, or add designs in <a href="#instagram/designs">Designs</a>.</p>');
       el.querySelector('[data-new]').onclick = function () { editor(st ? { type: 'story', caption: '', media: [], at: null, status: 'draft' } : null); };
       el.querySelectorAll('[data-k]').forEach(function (b) { b.onclick = function () { S.pkind = b.getAttribute('data-k'); draw(); }; });
       bindPosts(el); bindDesigns(el, designs || []);
     };
     if (S.posts) { got = true; } else el.innerHTML = gridSkel();
     planItems(function (items) { designs = items; if (got) draw(); });
+    loadAuto(function () { if (got) draw(); });
     if (got) draw();
     api('posts').then(function (r) { S.posts = r.items; got = true; draw(); watchQueue(el, draw); }).catch(function (e) { if (!got) el.innerHTML = '<p class="igx-empty">' + esc(e.message) + '</p>'; });
   }
-  /* Planner: scheduled posts and drafts, then every design by type (posts, stories, reel covers, highlights) */
-  var PT = { tab: 'post', filter: 'open' };
+  /* Designs: auto-posting, then every design by type, arranged the way it will post. Hold and drag to reorder. */
+  var PT = { tab: 'feed', filter: 'open' };
+  function t12(v) { var x = String(v || '').split(':'), h = +x[0], m = x[1] || '00'; return (h % 12 || 12) + ':' + m + (h < 12 ? ' am' : ' pm'); }
+  function autoPanel(box, items) {
+    var a = AU.a || { on: false, time: '19:00', stories: false, storyTime: '12:00' };
+    var dF = autoDates(items, false), dS = autoDates(items, true);
+    var next = function (dd, story) { var ids = Object.keys(dd).sort(function (x, y) { return dd[x] < dd[y] ? -1 : 1; }), p = ids[0] && items.filter(function (x) { return x.id === ids[0]; })[0]; return p ? 'Next: <b>' + esc(p.title || 'design') + '</b> · ' + dayLabel(dd[ids[0]]) + ' at ' + t12(story ? a.storyTime : a.time) + ' · ' + ids.length + ' in the queue' : 'Nothing left in the queue.'; };
+    box.innerHTML = '<div class="igq-auto' + (a.on || a.stories ? ' is-on' : '') + '"><div class="igq-auh"><span class="igq-aui">' + IC.clock + '</span><div><b>Auto-post</b><small>One design a day, in the order below. Paused ones are skipped.</small></div></div>' +
+      '<label class="igq-aur"><span class="igq-sw"><input type="checkbox" id="igAuOn"' + (a.on ? ' checked' : '') + '><i></i></span><span>Posts and reels, daily at</span><input type="time" id="igAuT" value="' + esc(a.time) + '"></label>' + (a.on ? '<p class="igq-aun">' + next(dF, false) + '</p>' : '') +
+      '<label class="igq-aur"><span class="igq-sw"><input type="checkbox" id="igAuS"' + (a.stories ? ' checked' : '') + '><i></i></span><span>Stories too, daily at</span><input type="time" id="igAuST" value="' + esc(a.storyTime) + '"></label>' + (a.stories ? '<p class="igq-aun">' + next(dS, true) + ' Stories with a poll, quiz or question sticker aren’t auto-posted: post those from the Instagram app.</p>' : '') + '</div>';
+    var save = function () { api('auto-save', { on: box.querySelector('#igAuOn').checked, time: box.querySelector('#igAuT').value, stories: box.querySelector('#igAuS').checked, storyTime: box.querySelector('#igAuST').value }).then(function (r) { AU.a = r.auto; AU.at = Date.now(); H.toast(r.auto.on || r.auto.stories ? 'Auto-post is on' : 'Auto-post is off', 'ok'); kitChange(true); }, function (e) { H.toast(e.message, 'err'); }); };
+    box.querySelectorAll('input').forEach(function (x) { x.onchange = save; });
+  }
   function planner(el) {
-    el.innerHTML = '<div class="igx-sec igx-planner"><div class="igx-sech"><h2>Designs</h2><a class="igx-btn" href="#instagram/designs" data-igadd>Add or edit</a><button class="igx-btn igx-btn--b" id="igNew3">New post</button></div><div data-igpack></div><div id="igPq"></div><div id="igPd"><div class="igx-load"><i></i></div></div></div>';
+    el.innerHTML = '<div class="igx-sec igx-planner"><div class="igx-sech"><h2>Designs</h2><button class="igx-btn" id="igDlAll">' + IC.down + '<span>Download</span></button><button class="igx-btn igx-btn--b" id="igNew3">New post</button></div><div id="igAuto"></div><div id="igPq"></div><div id="igPd"><div class="igx-load"><i></i></div></div><div data-igpack></div></div>';
     el.querySelector('#igNew3').onclick = function () { editor(null); };
     var pq = el.querySelector('#igPq'), pd = el.querySelector('#igPd'), designs = null;
+    el.querySelector('#igDlAll').onclick = function () { var k = PK(), l = (designs || []).filter(function (p) { return tabOf(p) === PT.tab && (PT.filter === 'all' || (PT.filter === 'posted' ? p.status === 'posted' : p.status !== 'posted')); }); if (k && l.length) k.downloadMany(l); };
     var queue = function () {
       var up = upcoming();
       var sig = JSON.stringify(up.map(function (p) { return [p.id, p.status, p.updatedAt]; })); if (pq.getAttribute('data-sig') === sig) return; pq.setAttribute('data-sig', sig);
@@ -436,27 +486,77 @@
     };
     var draw = function (force) {
       if (!document.body.contains(pd) || !designs) return;
-      var sig = JSON.stringify([PT, (S.posts || []).map(function (p) { return [p.id, p.status, p.planId]; }), designs.map(function (p) { return [p.id, p.status, p.updatedAt]; })]);
+      var dates = autoDates(designs, PT.tab === 'story');
+      var sig = JSON.stringify([PT, (S.posts || []).map(function (p) { return [p.id, p.status, p.planId]; }), designs.map(function (p) { return [p.id, p.status, p.updated, p.paused, p.seq]; }), dates]);
       if (!force && pd.getAttribute('data-sig') === sig) return; pd.setAttribute('data-sig', sig);
-      var TABS = [['post', 'Posts', '4 / 5'], ['story', 'Stories', '9 / 16'], ['reel', 'Reel covers', '9 / 16'], ['highlight', 'Highlights', '1 / 1']];
-      var tabOf = function (p) { return p.kind === 'carousel' ? 'post' : (p.kind || 'post'); };
+      var TABS = [['feed', 'Posts and reels', '3 / 4'], ['story', 'Stories', '9 / 16'], ['cover', 'Covers and highlights', '9 / 16']];
       var open = function (p) { return p.status !== 'posted'; };
-      /* posts: arranged like the profile (newest top left, the next to post bottom right); the rest in posting order */
-      var list = designs.filter(function (p) { return tabOf(p) === PT.tab && (PT.filter === 'all' || (PT.filter === 'posted' ? !open(p) : open(p))); }).sort(function (a, b) { return PT.tab === 'post' ? planOrder(b) - planOrder(a) : planOrder(a) - planOrder(b); });
-      var ratio = TABS.filter(function (t) { return t[0] === PT.tab; })[0][2];
-      pd.innerHTML = '<h3 class="igx-gh">Ready to post</h3><div class="igx-ptabs">' + TABS.map(function (t) { return '<button data-t="' + t[0] + '" class="' + (PT.tab === t[0] ? 'is-on' : '') + '">' + t[1] + ' <i>' + designs.filter(function (p) { return tabOf(p) === t[0] && open(p); }).length + '</i></button>'; }).join('') + '</div>' +
+      /* feed: arranged like the profile (newest top left, the next to post bottom right); stories and covers in posting order */
+      var list = designs.filter(function (p) { return tabOf(p) === PT.tab && (PT.filter === 'all' || (PT.filter === 'posted' ? !open(p) : open(p))); }).sort(function (a, b) { return PT.tab === 'feed' ? planOrder(b) - planOrder(a) : planOrder(a) - planOrder(b); });
+      var ratio = TABS.filter(function (t) { return t[0] === PT.tab; })[0][2], canDrag = PT.filter === 'open' && list.length > 1;
+      pd.innerHTML = '<div class="igx-ptabs">' + TABS.map(function (t) { return '<button data-t="' + t[0] + '" class="' + (PT.tab === t[0] ? 'is-on' : '') + '">' + t[1] + ' <i>' + designs.filter(function (p) { return tabOf(p) === t[0] && open(p); }).length + '</i></button>'; }).join('') + '</div>' +
         '<div class="igx-seg igx-pf">' + [['open', 'To post'], ['posted', 'Posted'], ['all', 'All']].map(function (f) { return '<button data-f="' + f[0] + '" class="' + (PT.filter === f[0] ? 'is-on' : '') + '">' + f[1] + '</button>'; }).join('') + '</div>' +
-        (list.length ? '<div class="igx-g igx-g--d">' + list.map(function (p, i) { return planTile(p, ratio, i); }).join('') + '</div>' : '<p class="igx-note">Nothing here.' + ' <a href="#instagram/designs" data-igadd>Add designs</a>.' + '</p>') +
-        '<p class="igx-note">' + ({ post: 'This is how the profile will look: the next post is at the bottom right. Tap one to post it now, schedule it or save it to your phone.', story: 'In posting order. Stickers (polls, links, questions) are added in the Instagram app.', reel: 'Covers for reels: film the reel, then pick the cover in the Instagram app.', highlight: 'Add each cover in the Instagram app (Edit highlight → Edit cover).' })[PT.tab] + '</p>' +
-        '<div class="igx-more"><a class="igx-btn" href="#instagram/designs" data-igadd>' + IC.grid + '<span>Add, edit or reorder designs</span></a></div>';
+        (canDrag ? '<p class="igx-note igx-drag-n">' + IC.move + '<span>' + (PT.tab === 'feed' ? 'Hold a design and drag it to where it should sit on the grid. The next to post is at the bottom right.' : 'Hold a design and drag it to change the posting order. The first one goes out first.') + '</span></p>' : '') +
+        (list.length ? '<div class="igx-g igx-g--d' + (PT.tab !== 'feed' ? ' igx-g--tall' : '') + '" id="igDg">' + list.map(function (p, i) { return planTile(p, PT.tab === 'feed' ? '3 / 4' : ratio, i, dates); }).join('') + '</div>' : '<p class="igx-note">Nothing here.' + ' <a href="#instagram/designs" data-igadd>Add designs</a>.' + '</p>') +
+        '<p class="igx-note">' + ({ feed: 'Tiles show the grid crop (3:4), as on the profile. Tap one to post it now, schedule it, pause it, download it or share it to the Instagram app to add music.', story: 'Stories marked with the Instagram logo need a poll, quiz, question or link sticker: tap one, then “Share to the Instagram app” and add the sticker there.', cover: 'Highlight covers and spare reel covers: download them and set them in the Instagram app (Edit highlight → Edit cover).' })[PT.tab] + '</p>';
       pd.querySelectorAll('[data-t]').forEach(function (b) { b.onclick = function () { PT.tab = b.getAttribute('data-t'); draw(true); }; });
       pd.querySelectorAll('[data-f]').forEach(function (b) { b.onclick = function () { PT.filter = b.getAttribute('data-f'); draw(true); }; });
       bindDesigns(pd, designs);
+      if (canDrag) dragSort(pd.querySelector('#igDg'), function (ids) {
+        var order = PT.tab === 'feed' ? ids.slice().reverse() : ids;   /* the grid shows the last to post first */
+        var rest = designs.filter(function (p) { return tabOf(p) === PT.tab && order.indexOf(p.id) < 0; }).sort(function (a, b) { return planOrder(a) - planOrder(b); }).map(function (p) { return p.id; });
+        var all = order.concat(rest); all.forEach(function (id, i) { designs.forEach(function (p) { if (p.id === id) p.seq = i + 1; }); });
+        draw(true);
+        api('design-order', { ids: all }).then(function () { PL.at = 0; H.toast('Order saved', 'ok'); }, function (e) { H.toast(e.message, 'err'); });
+      });
     };
-    planItems(function (items) { designs = items; draw(); var k = PK(); if (k && A.owner()) k.packPanel(items); });
-    var go = function () { queue(); draw(); };
+    var both = function () { if (designs) { draw(); var k = PK(); if (k && A.owner()) k.packPanel(designs); autoPanel(el.querySelector('#igAuto'), designs); } };
+    planItems(function (items) { designs = items; both(); });
+    loadAuto(both);
+    var go = function () { queue(); both(); };
     if (S.posts) go();
     api('posts').then(function (r) { S.posts = r.items; go(); watchQueue(el, go); }).catch(function (e) { pq.innerHTML = '<p class="igx-note">' + esc(e.message) + '</p>'; });
+  }
+  /* drag to reorder a grid (mouse: drag; touch: hold for a moment, then drag). A plain tap still opens the design. */
+  function dragSort(grid, done) {
+    if (!grid) return;
+    var st = null;
+    grid.addEventListener('pointerdown', function (e) {
+      var t = e.target.closest('.igx-t[data-d]'); if (!t || e.button > 0) return;
+      st = { t: t, x: e.clientX, y: e.clientY, id: e.pointerId, on: false, touch: e.pointerType !== 'mouse' };
+      st.timer = st.touch ? setTimeout(function () { if (st) start(); }, 320) : null;
+    });
+    function start() {
+      st.on = true; if (navigator.vibrate) try { navigator.vibrate(12); } catch (er) { }
+      var r = st.t.getBoundingClientRect(); st.dx = st.x - r.left; st.dy = st.y - r.top;
+      st.ghost = st.t.cloneNode(true); st.ghost.className += ' igx-ghost'; st.ghost.style.width = r.width + 'px'; st.ghost.style.height = r.height + 'px'; document.body.appendChild(st.ghost);
+      st.t.classList.add('is-drag'); grid.classList.add('is-sorting'); move(st.x, st.y);
+    }
+    function move(x, y) {
+      st.ghost.style.transform = 'translate(' + (x - st.dx) + 'px,' + (y - st.dy) + 'px) scale(1.04)';
+      st.ghost.style.visibility = 'hidden'; var el = document.elementFromPoint(x, y); st.ghost.style.visibility = '';
+      var over = el && el.closest && el.closest('.igx-t[data-d]');
+      if (over && over !== st.t && grid.contains(over)) { var r = over.getBoundingClientRect(), after = (y - r.top) / r.height > .5 || ((y - r.top) / r.height > .2 && (x - r.left) / r.width > .5); grid.insertBefore(st.t, after ? over.nextSibling : over); }
+      var gr = grid.getBoundingClientRect(); if (y < 70) window.scrollBy(0, -12); else if (y > innerHeight - 70 && y < gr.bottom + 40) window.scrollBy(0, 12);
+    }
+    document.addEventListener('pointermove', function (e) {
+      if (!st || e.pointerId !== st.id) return;
+      var far = Math.abs(e.clientX - st.x) + Math.abs(e.clientY - st.y) > 8;
+      if (!st.on) { if (far && st.touch) { clearTimeout(st.timer); st = null; return; } if (far && !st.touch) start(); else return; }
+      e.preventDefault(); move(e.clientX, e.clientY);
+    }, { passive: false });
+    grid.addEventListener('touchmove', function (e) { if (st && st.on) e.preventDefault(); }, { passive: false });
+    grid.addEventListener('contextmenu', function (e) { if (st) e.preventDefault(); });
+    var stop = function (e) {
+      if (!st || (e && e.pointerId !== st.id)) return; clearTimeout(st.timer);
+      if (st.on) {
+        var t = st.t; st.ghost.remove(); t.classList.remove('is-drag'); grid.classList.remove('is-sorting');
+        t.addEventListener('click', function k(ev) { ev.stopImmediatePropagation(); ev.preventDefault(); t.removeEventListener('click', k, true); }, true);
+        setTimeout(function () { done([].slice.call(grid.querySelectorAll('.igx-t[data-d]')).map(function (x) { return x.getAttribute('data-d'); })); }, 0);
+      }
+      st = null;
+    };
+    document.addEventListener('pointerup', stop); document.addEventListener('pointercancel', stop);
   }
 
   /* ---------- the post viewer (like opening a post on instagram.com) ---------- */
@@ -950,7 +1050,7 @@
   /* ---------- notifications ---------- */
   function activity(el) {
     el.innerHTML = '<div class="igx-sec igx-act"><div class="igx-sech"><h2>Notifications</h2><button class="igx-btn" id="igChk">Check now</button></div><div id="igAl"><div class="igx-load"><i></i></div></div>' +
-      '<p class="igx-note">Checked every few minutes while the app is open and every 30 minutes otherwise; new ones also come to the bell and your phone. Instagram shares how many people liked a post, not who.</p></div>';
+      '<p class="igx-note">Messages, comments and mentions arrive instantly once instant notifications are on (⋯ → Instant notifications); everything else is checked about every 10 minutes, and every few minutes while the app is open. Each one also comes to the bell and your phone. Instagram shares how many people liked a post, not who.</p></div>';
     var load = function (force) {
       api('watch', undefined, force ? 'force=1' : '').then(function (r) { if (r.items) S.watch = r.items; draw(); ls('seenA', Date.now()); dots(); }).catch(function (e) { el.querySelector('#igAl').innerHTML = '<p class="igx-empty">' + esc(e.message) + '</p>'; });
     };
@@ -1094,6 +1194,20 @@
       if (r.ok && S.view === 'messages') render('messages');
     }, function (e) { m.querySelector('.igk-modal__p').innerHTML = '<h2>Couldn’t check</h2><p>' + esc(e.message) + '</p><div class="igk-row"><span class="igq-sp"></span><button class="igk-b" data-x>Close</button></div>'; });
   }
+  /* instant notifications: Instagram calls the site the moment a message, comment or mention arrives (webhooks) */
+  function hookBox() {
+    var m = H.modal('<h2>' + IC.bell + ' Instant notifications</h2><div class="igx-load igx-load--s"><i></i></div>');
+    api('hook-setup', {}).then(function (r) {
+      var row = function (l, v) { return '<div class="igq-url"><small>' + l + '</small><code>' + esc(v) + '</code><button class="igk-b igk-b--sm" data-cp="' + esc(v) + '">Copy</button></div>'; };
+      m.querySelector('.igk-modal__p').innerHTML = '<h2>' + IC.bell + ' Instant notifications</h2><p class="igk-muted">Without this, the site checks Instagram about every 10 minutes (and every few minutes while Ciel Admin is open). With it, Instagram tells the site the moment a <b>message</b>, <b>comment</b> or <b>mention</b> arrives, and your phone gets the notification straight away, even with the app closed. Likes and new followers are still checked every 10 minutes (Instagram doesn’t send those).</p>' +
+        '<ol class="igq-steps"><li>Open <a href="https://developers.facebook.com/apps/" target="_blank" rel="noopener">Meta for Developers → your app</a> → <b>Use cases</b> → Instagram → <b>Customize</b> → <b>Webhooks</b> (or Products → Webhooks → <b>Instagram</b>).</li><li>Paste the two values below and tap <b>Verify and save</b>.</li><li>Subscribe to <b>comments</b>, <b>messages</b> and <b>mentions</b>.</li><li>The app must be <b>Live</b> (App mode at the top) for comments from the public to arrive.</li></ol>' +
+        row('Callback URL', r.url) + row('Verify token', r.token) +
+        '<p class="igk-faint">' + (r.page && r.page.ok ? '✓ The Facebook Page' + (r.page.name ? ' “' + esc(r.page.name) + '”' : '') + ' is set to pass Instagram events to the app.' : '✗ Facebook Page: ' + esc((r.page && r.page.msg) || 'not linked')) + '</p>' +
+        '<div class="igk-row"><span class="igq-sp"></span><button class="igk-b" id="igHkT">Check again</button><button class="igk-b igk-b--p" data-x>Done</button></div>';
+      m.querySelectorAll('[data-cp]').forEach(function (x) { x.onclick = function () { copyText(x.getAttribute('data-cp'), 'Copied'); }; });
+      m.querySelector('#igHkT').onclick = function () { m.remove(); hookBox(); };
+    }, function (e) { m.querySelector('.igk-modal__p').innerHTML = '<h2>Instant notifications</h2><p>' + esc(e.message) + '</p><div class="igk-row"><span class="igq-sp"></span><button class="igk-b" data-x>Close</button></div>'; });
+  }
   function tokenBox() {
     var m = H.modal('<h2>Connect with an access token</h2>' +
       '<p class="igk-muted">In Meta Business Settings, open <b>Users → System users</b>, pick your system user (it needs your Instagram account assigned), click <b>Generate token</b>, choose this app, set it to never expire, tick these permissions, then copy the token and paste it here.</p><p class="igq-perms">' + (S.st && S.st.scopes ? S.st.scopes : []).map(function (x) { return '<code>' + esc(x) + '</code>'; }).join(' ') + '</p>' +
@@ -1163,72 +1277,113 @@
   }
   function slotLabel(t) { var d = new Date(t), today = dayKey(Date.now()) === dayKey(t), tom = dayKey(Date.now() + 864e5) === dayKey(t); return (today ? 'Today' : tom ? 'Tomorrow' : DAYN[d.getDay()]) + ' ' + d.toLocaleTimeString('en-KE', { hour: 'numeric', minute: '2-digit' }); }
 
-  /* ---------- the post editor ---------- */
+  /* ---------- Create: like the Instagram app. Pick Post, Story or Reel at the bottom, add photos or a video (yours
+     or a design), write the caption, then Share now or switch on Schedule. ---------- */
   var RATIO = { photo: [0.8, 1.91], carousel: [0.8, 1.91], story: [0.5625, 0.5625], reel: [0.5625, 0.5625] };
   function editor(p) {
     var d = p ? JSON.parse(JSON.stringify(p)) : { type: 'photo', caption: '', media: [], altText: '', collaborators: [], shareToFeed: true, at: null, status: 'draft' };
-    var isNew = !d.id;
-    var m = H.modal('<div class="igq-ed"><div class="igq-edh"><h2>' + (isNew ? 'New post' : 'Edit post') + '</h2><button class="igk-b igk-b--sm igk-b--ghost" data-x>✕</button></div>' +
-      '<div class="igq-edc"><div class="igq-edl">' +
-      '<div class="igk-tabs igq-types">' + Object.keys(TYPE).map(function (k) { return '<button data-ty="' + k + '">' + TYPE[k][1] + '<span>' + TYPE[k][0] + '</span></button>'; }).join('') + '</div>' +
-      '<div class="igq-media" id="igMd"></div><input type="file" id="igFile" hidden multiple accept="image/jpeg,image/png,image/webp,image/heic,video/mp4,video/quicktime">' +
-      '<p class="igk-faint" id="igMHint"></p><button class="igk-b igk-b--sm igq-fromplan" id="igFromPlan">' + IC.cal + '<span>Choose from the planner</span></button></div>' +
-      '<div class="igq-edr"><label class="igk-field" id="igCapF"><span>Caption <i id="igCnt"></i></span><textarea class="igk-hq-in" id="igCap" rows="7" maxlength="2200" placeholder="Write a caption… #hashtags and @mentions work as on Instagram"></textarea></label>' +
-      '<details class="igq-more"><summary>More options</summary><label class="igk-field" id="igAltF"><span>Alt text (describes the photo for people who can’t see it)</span><input class="igk-hq-in" id="igAlt" maxlength="1000"></label>' +
-      '<label class="igk-field" id="igColF"><span>Collaborators (up to 3 usernames)</span><input class="igk-hq-in" id="igCol" placeholder="@friend, @brand"></label>' +
-      '<label class="igq-ck" id="igFeedF"><input type="checkbox" id="igFeed"> Also show the reel in the main feed</label></details>' +
-      '<div class="igq-when"><label class="igk-field"><span>Post on</span><input class="igk-hq-in" type="datetime-local" id="igAt"></label><div class="igq-quick" id="igBest"></div><p class="igk-faint igq-bn" id="igBestN"></p><p class="igk-faint igq-bn is-warn" id="igPace" hidden></p></div>' +
+    var isNew = !d.id, a0 = (S.st && S.st.account) || {};
+    var m = H.modal('<div class="igc">' +
+      '<div class="igc-top"><button class="igc-x" data-x aria-label="Close">' + IC.x + '</button><b id="igcT"></b><button class="igc-go" id="igcTop">Share</button></div>' +
+      '<div class="igc-body"><div class="igc-left"><div class="igc-stage" id="igcStage"></div><div class="igc-strip" id="igMd"></div>' +
+      '<input type="file" id="igFile" hidden multiple accept="image/jpeg,image/png,image/webp,image/heic,video/mp4,video/quicktime"><p class="igc-hint" id="igMHint"></p>' +
+      '<div class="igc-modes" id="igcModes">' + [['post', 'Post'], ['story', 'Story'], ['reel', 'Reel']].map(function (x) { return '<button data-md="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div></div>' +
+      '<div class="igc-right">' +
+      '<div class="igc-cap" id="igCapF">' + av(a0.picture, a0.username, 'igc-av') + '<textarea id="igCap" rows="5" maxlength="2200" placeholder="Write a caption… #hashtags and @mentions work as on Instagram"></textarea><i id="igCnt"></i></div>' +
+      '<button class="igc-row" id="igFromPlan">' + IC.grid + '<span>Choose from your designs</span><em>' + IC.r + '</em></button>' +
+      '<button class="igc-row" id="igcMusic">' + IC.music + '<span>Add music</span><small>In the Instagram app</small><em>' + IC.r + '</em></button>' +
+      '<label class="igc-row" id="igColF">' + IC.user + '<span>Collaborators</span><input id="igCol" placeholder="@friend, @brand"></label>' +
+      '<label class="igc-row" id="igAltF">' + IC.img + '<span>Alt text</span><input id="igAlt" maxlength="1000" placeholder="Describe the photo"></label>' +
+      '<div id="igReelF"><div class="igc-row igc-cover">' + IC.img + '<span>Cover</span><span class="igc-cv" id="igcCv"></span><button class="igk-b igk-b--sm" id="igcCvB">Change</button></div>' +
+      '<label class="igc-row">' + IC.music + '<span>Audio name</span><input id="igAud" maxlength="60" placeholder="Original audio"></label>' +
+      '<label class="igc-row igc-tg" id="igFeedF"><span>Also share to feed and the profile grid</span><span class="igq-sw"><input type="checkbox" id="igFeed"><i></i></span></label></div>' +
+      '<label class="igc-row igc-tg">' + IC.clock + '<span>Schedule</span><span class="igq-sw"><input type="checkbox" id="igcS"><i></i></span></label>' +
+      '<div class="igc-when" id="igcWhen" hidden><input class="igk-hq-in" type="datetime-local" id="igAt"><div class="igq-quick" id="igBest"></div><p class="igk-faint igq-bn" id="igBestN"></p><p class="igk-faint igq-bn is-warn" id="igPace" hidden></p></div>' +
       '<p class="igq-msg" id="igMsg"></p>' +
-      '<div class="igq-acts">' + (!isNew && A.owner() ? '<button class="igk-b igk-b--ghost igq-danger" id="igDel">' + IC.del + '</button>' : '') + '<span class="igq-sp"></span><button class="igk-b" id="igDraft">Save draft</button><button class="igk-b" id="igSched">Schedule</button><button class="igk-b igk-b--p" id="igNow">Post now</button></div>' +
+      '<div class="igc-acts">' + (!isNew && A.owner() ? '<button class="igk-b igk-b--ghost igq-danger" id="igDel" title="Delete">' + IC.del + '</button>' : '') + (!isNew && (d.status === 'scheduled' || d.status === 'paused') ? '<button class="igk-b" id="igPause">' + (d.status === 'paused' ? 'Resume' : 'Pause') + '</button>' : '') + '<span class="igq-sp"></span><button class="igk-b" id="igDraft">Save draft</button><button class="igk-b igk-b--p" id="igNow">Share</button></div>' +
       '</div></div></div>');
-    m.classList.add('igq-modal');
+    m.classList.add('igq-modal', 'igc-m');
     var $ = function (s) { return m.querySelector(s); };
-    $('#igCap').value = d.caption || ''; $('#igAlt').value = d.altText || ''; $('#igCol').value = (d.collaborators || []).map(function (c) { return '@' + c; }).join(', '); $('#igFeed').checked = d.shareToFeed !== false;
+    $('#igCap').value = d.caption || ''; $('#igAlt').value = d.altText || ''; $('#igCol').value = (d.collaborators || []).map(function (c) { return '@' + c; }).join(', '); $('#igFeed').checked = d.shareToFeed !== false; $('#igAud').value = d.audioName || '';
     if (d.at) $('#igAt').value = localInput(d.at);
     $('#igAt').min = localInput(Date.now());
+    $('#igcS').checked = !!d.at && d.status !== 'draft';
     function msg(t, err) { var e = $('#igMsg'); e.textContent = t || ''; e.classList.toggle('is-err', !!err); }
+    function sched() { var on = $('#igcS').checked; $('#igcWhen').hidden = !on; var t = on ? 'Schedule' : (d.type === 'story' ? 'Share to story' : 'Share'); $('#igNow').textContent = t; $('#igcTop').textContent = on ? 'Schedule' : 'Share'; if (on && !$('#igAt').value) { var b = bestSlots(d.type, d.id, 1).slots[0]; if (b) $('#igAt').value = localInput(b); } pace(); }
+    $('#igcS').onchange = sched;
+    var mode = function () { return d.type === 'story' ? 'story' : d.type === 'reel' ? 'reel' : 'post'; };
     function type(t) {
-      d.type = t; m.querySelectorAll('[data-ty]').forEach(function (b) { b.classList.toggle('is-on', b.getAttribute('data-ty') === t); });
-      $('#igCapF').hidden = t === 'story'; $('#igAltF').hidden = t !== 'photo'; $('#igColF').hidden = t === 'story'; $('#igFeedF').hidden = t !== 'reel';
-      $('#igMHint').textContent = { photo: 'One photo. Best shape: square or 4:5 portrait (1080 × 1350).', carousel: '2 to 10 photos or videos. They all show in the first one’s shape, so keep them the same shape.', reel: 'One video, 3 seconds to 15 minutes, upright 9:16 (1080 × 1920), MP4 or MOV.', story: 'One photo or video, upright 9:16 (1080 × 1920). Videos up to 60 seconds.' }[t];
-      draw(); count(); if ($('#igBest')) best();
+      if (t === 'post') t = d.media.length > 1 ? 'carousel' : 'photo';
+      if ((t === 'photo' || t === 'carousel') && d.media.length > 1) t = 'carousel';
+      d.type = t;
+      m.querySelectorAll('[data-md]').forEach(function (b) { b.classList.toggle('is-on', b.getAttribute('data-md') === mode()); });
+      $('#igcT').textContent = (isNew ? 'New ' : 'Edit ') + ({ photo: 'post', carousel: 'post', story: 'story', reel: 'reel' })[t];
+      $('#igCapF').hidden = t === 'story'; $('#igAltF').hidden = t !== 'photo'; $('#igColF').hidden = t === 'story'; $('#igReelF').hidden = t !== 'reel';
+      $('#igMHint').textContent = { photo: 'Photos: 4:5 portrait (1080 × 1350) fills the feed. Add up to 10 for a carousel.', carousel: '2 to 10 photos or videos. They all show in the first one’s shape.', reel: 'One video, upright 9:16 (1080 × 1920), MP4 or MOV, up to 15 minutes.', story: 'One photo or video, upright 9:16 (1080 × 1920). Videos up to 60 seconds.' }[t];
+      draw(); count(); cover(); sched();
     }
     function count() { var c = $('#igCap').value, tags = (c.match(/#[\p{L}\p{N}_]+/gu) || []).length; $('#igCnt').textContent = c.length + ' / 2200' + (tags ? ' · ' + tags + ' hashtag' + (tags > 1 ? 's' : '') + (tags > 30 ? ' (30 max)' : '') : ''); }
+    function src(x) { return x.plan && x.kind !== 'video' ? planThumb(x.url) : x.url; }
     function draw() {
-      var max = d.type === 'carousel' ? 10 : 1;
+      var max = d.type === 'carousel' || d.type === 'photo' ? 10 : 1, x0 = d.media[0], tall = d.type === 'story' || d.type === 'reel';
+      $('#igcStage').className = 'igc-stage' + (tall ? ' is-tall' : '');
+      $('#igcStage').innerHTML = x0 ? (x0.kind === 'video' ? '<video src="' + esc(x0.url) + '" ' + (d.cover && d.cover.url ? 'poster="' + esc(d.cover.url) + '" ' : '') + 'muted playsinline controls preload="metadata"></video>' : '<img src="' + esc(x0.url) + '" alt="">') + (x0.up ? '<span class="igq-up">' + esc(x0.up) + '</span>' : '') + (d.media.length > 1 ? '<em class="igc-n">1/' + d.media.length + '</em>' : '')
+        : '<button class="igc-empty" id="igAdd0">' + IC.img + '<b>' + ({ photo: 'Add photos', carousel: 'Add photos', story: 'Add a photo or video', reel: 'Add a video' })[d.type] + '</b><small>From your phone or computer</small></button><button class="igc-empty2" id="igFromPlan2">or choose from your designs</button>';
       $('#igMd').innerHTML = d.media.map(function (x, i) {
-        return '<div class="igq-mi" data-i="' + i + '">' + (x.kind === 'video' ? '<video src="' + esc(x.url) + '#t=0.5" muted playsinline preload="metadata"></video><em>' + IC.play + '</em>' : '<img src="' + esc(x.plan ? planThumb(x.url) : x.url) + '" alt="">') +
+        return '<div class="igq-mi" data-i="' + i + '">' + (x.kind === 'video' ? '<video src="' + esc(x.url) + '#t=0.5" muted playsinline preload="metadata"></video><em>' + IC.play + '</em>' : '<img src="' + esc(src(x)) + '" alt="">') +
           (x.up ? '<span class="igq-up">' + esc(x.up) + '</span>' : '') +
           '<span class="igq-mb">' + (d.media.length > 1 && i ? '<button data-mv="' + i + '" title="Move left">' + IC.l + '</button>' : '') + '<button data-rm="' + i + '" title="Remove">✕</button></span></div>';
-      }).join('') + (d.media.length < max ? '<button class="igq-add" id="igAdd">' + IC.img + '<span>' + (d.media.length ? 'Add more' : 'Add ' + (d.type === 'reel' ? 'a video' : d.type === 'carousel' ? 'photos or videos' : d.type === 'story' ? 'a photo or video' : 'a photo')) + '</span></button>' : '');
-      var a = $('#igAdd'); if (a) a.onclick = function () { $('#igFile').multiple = d.type === 'carousel'; $('#igFile').click(); };
-      m.querySelectorAll('[data-rm]').forEach(function (b) { b.onclick = function () { d.media.splice(+b.getAttribute('data-rm'), 1); draw(); }; });
+      }).join('') + (d.media.length && d.media.length < max ? '<button class="igq-add" id="igAdd">' + IC.plus + '</button>' : '');
+      [$('#igAdd'), $('#igAdd0')].forEach(function (a) { if (a) a.onclick = function () { $('#igFile').multiple = d.type === 'carousel' || d.type === 'photo'; $('#igFile').click(); }; });
+      var f2 = $('#igFromPlan2'); if (f2) f2.onclick = fromPlanPick;
+      m.querySelectorAll('[data-rm]').forEach(function (b) { b.onclick = function () { d.media.splice(+b.getAttribute('data-rm'), 1); if (d.type === 'carousel' && d.media.length < 2) d.type = 'photo'; type(d.type); }; });
       m.querySelectorAll('[data-mv]').forEach(function (b) { b.onclick = function () { var i = +b.getAttribute('data-mv'), t = d.media[i]; d.media[i] = d.media[i - 1]; d.media[i - 1] = t; draw(); }; });
     }
+    function cover() { var c = $('#igcCv'); if (!c) return; c.innerHTML = d.cover && d.cover.url ? '<img src="' + esc(d.cover.url) + '" alt="">' : '<small>First frame</small>'; }
+    $('#igcCvB').onclick = function () {
+      var mm = H.modal('<h2>Reel cover</h2><p class="igk-muted">The cover shows on the profile grid (cropped to 3:4) and in the Reels tab (9:16). Keep words in the middle.</p><div class="igk-row"><button class="igk-b" data-c="plan">From your designs</button><button class="igk-b" data-c="file">From your phone</button>' + (d.cover ? '<button class="igk-b" data-c="none">Use the first frame</button>' : '') + '<span class="igq-sp"></span><button class="igk-b" data-x>Cancel</button></div>');
+      mm.querySelectorAll('[data-c]').forEach(function (b) {
+        b.onclick = function () {
+          var c = b.getAttribute('data-c'); mm.remove();
+          if (c === 'none') { d.cover = null; cover(); draw(); }
+          if (c === 'plan') planItems(function (items) {
+            var pics = []; items.forEach(function (p) { (p.images || []).forEach(function (u, i) { pics.push({ p: p, u: u, i: i }); }); });
+            var pm = H.modal('<div class="igx-pick"><div class="igx-sech"><h2>Pick a cover</h2><button class="igk-b igk-b--sm igk-b--ghost" data-x>✕</button></div><div class="igx-g igx-g--pick igx-g--tall">' + pics.map(function (x, k) { return '<button class="igx-t" data-k="' + k + '" style="aspect-ratio:9/16"><img src="' + esc(planThumb(x.u, x.p)) + '" alt="" loading="lazy"></button>'; }).join('') + '</div></div>');
+            pm.classList.add('igx-pickm');
+            pm.querySelectorAll('[data-k]').forEach(function (t) { t.onclick = function () { var x = pics[+t.getAttribute('data-k')]; d.cover = { plan: true, kind: 'image', url: x.u, src: (x.p.src || [])[x.i] || '', path: (x.p.paths || [])[x.i] || '' }; pm.remove(); cover(); draw(); }; });
+          });
+          if (c === 'file') { var inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.onchange = function () { var f = inp.files && inp.files[0]; if (!f) return; msg('Uploading the cover…'); toJpegHQ(f, RATIO.reel).then(function (r) { return upload(r.file, r.name, function () { }).then(function (u) { d.cover = { kind: 'image', url: r.preview, path: u.path }; cover(); draw(); msg(''); }); }).catch(function (e) { msg((e && e.message) || 'Upload failed.', true); }); }; inp.click(); }
+        };
+      });
+    };
+    $('#igcMusic').onclick = function () {
+      var mm = H.modal('<div class="igq-share"><h2>' + IC.music + ' Music</h2><p class="igk-muted">Instagram keeps its music library inside the Instagram app: no other app can add a song to a post or reel (not this one, and not Meta’s tools for developers). Two ways to go:</p><ol class="igq-steps"><li><b>Add a song:</b> save this post as a draft, then open it from Designs → <b>Share to the Instagram app</b>. Pick Instagram, tap <b>Add music</b>, paste the caption and share.</li><li><b>Post from here:</b> reels go out with their own sound. Give the sound a name in <b>Audio name</b> (it shows instead of “Original audio”).</li></ol><div class="igk-row"><span class="igq-sp"></span><button class="igk-b igk-b--p" data-x>Got it</button></div></div>');
+    };
     $('#igFile').onchange = function () {
       var files = [].slice.call(this.files || []); this.value = '';
-      var room = (d.type === 'carousel' ? 10 : 1) - d.media.length; if (room <= 0 && d.type !== 'carousel') { d.media = []; room = 1; }
+      var room = (d.type === 'carousel' || d.type === 'photo' ? 10 : 1) - d.media.length; if (room <= 0 && d.type !== 'carousel') { d.media = []; room = 1; }
       files.slice(0, room).forEach(function (f) { addFile(f); });
     };
     function addFile(f) {
       var isV = /^video\//.test(f.type) || /\.(mp4|mov)$/i.test(f.name);
-      if (d.type === 'reel' && !isV) return msg('A reel needs a video. Pick “Photo” for a photo post.', true);
-      if (d.type === 'photo' && isV) { type('reel'); }
-      var item = { kind: isV ? 'video' : 'image', url: '', up: 'Preparing…', name: f.name }; d.media.push(item); draw();
+      if (d.type === 'reel' && !isV) return msg('A reel needs a video. Tap Post for photos.', true);
+      if (d.type === 'photo' && isV && !d.media.length) d.type = 'reel';
+      var item = { kind: isV ? 'video' : 'image', url: '', up: 'Preparing…', name: f.name }; d.media.push(item); type(d.type);
       (isV ? videoInfo(f) : toJpeg(f, RATIO[d.type])).then(function (r) {
         item.url = r.preview; item.w = r.w; item.h = r.h; item.up = 'Uploading…'; draw();
-        if (isV && d.type !== 'carousel' && Math.abs(r.w / r.h - 0.5625) > 0.06) msg('This video isn’t 9:16 upright. Instagram may crop it.', false);
-        return upload(r.file, r.name, function (pc) { item.up = 'Uploading ' + pc + '%'; var u = m.querySelector('.igq-mi[data-i="' + d.media.indexOf(item) + '"] .igq-up'); if (u) u.textContent = item.up; });
+        if (isV && d.type !== 'carousel' && r.w && Math.abs(r.w / r.h - 0.5625) > 0.06) msg('This video isn’t 9:16 upright. Instagram may crop it.', false);
+        return upload(r.file, r.name, function (pc) { item.up = 'Uploading ' + pc + '%'; m.querySelectorAll('.igq-up').forEach(function (u) { if (u.closest('[data-i="' + d.media.indexOf(item) + '"]') || (d.media[0] === item && u.closest('#igcStage'))) u.textContent = item.up; }); });
       }).then(function (f) { item.path = f.path; if (f.url) item.url = f.url; item.up = ''; draw(); }).catch(function (e) { d.media.splice(d.media.indexOf(item), 1); draw(); msg((e && e.message) || 'Upload failed.', true); });
     }
     function collect(status) {
-      var at = $('#igAt').value ? new Date($('#igAt').value).getTime() : null;
-      return { id: d.id, type: d.type, caption: d.type === 'story' ? '' : $('#igCap').value, altText: $('#igAlt').value, collaborators: $('#igCol').value, shareToFeed: $('#igFeed').checked, at: status === 'draft' ? at : at, status: status,
+      var at = $('#igcS').checked && $('#igAt').value ? new Date($('#igAt').value).getTime() : null;
+      return { id: d.id, type: d.type, caption: d.type === 'story' ? '' : $('#igCap').value, altText: $('#igAlt').value, collaborators: $('#igCol').value, shareToFeed: $('#igFeed').checked, audioName: d.type === 'reel' ? $('#igAud').value : '', at: at, status: status,
         planId: d.media.some(function (x) { return x.plan; }) ? (d.planId || '') : '',
-        media: d.media.filter(function (x) { return x.path || x.plan; }).map(function (x) { return x.plan ? { plan: true, url: x.url, kind: 'image' } : { path: x.path, url: x.url, kind: x.kind, w: x.w, h: x.h, name: x.name }; }) };
+        cover: d.type === 'reel' && d.cover ? mediaBody(d.cover) : null,
+        media: d.media.filter(function (x) { return x.path || x.src; }).map(mediaBody) };
     }
-    function busy(on) { m.querySelectorAll('.igq-acts .igk-b').forEach(function (b) { b.disabled = on; }); }
-    function pending() { if (d.media.some(function (x) { return !x.path && !x.plan; })) { msg('Wait for the upload to finish.', true); return true; } }
+    function busy(on) { m.querySelectorAll('.igc-acts .igk-b, #igcTop').forEach(function (b) { b.disabled = on; }); }
+    function pending() { if (d.media.some(function (x) { return !x.path && !x.src; })) { msg('Wait for the upload to finish.', true); return true; } }
     function save(status) {
       if (pending()) return Promise.reject();
       var body = collect(status);
@@ -1237,20 +1392,23 @@
       return api('post-save', body).then(function (r) { d.id = r.item.id; busy(false); return r.item; }, function (e) { busy(false); msg(e.message, true); throw e; });
     }
     $('#igDraft').onclick = function () { save('draft').then(function () { m.remove(); H.toast('Draft saved', 'ok'); refreshTab('planner'); }, function () { }); };
-    $('#igSched').onclick = function () { save('scheduled').then(function (it) { m.remove(); H.toast('Scheduled for ' + when(it.at), 'ok'); refreshTab('planner'); }, function () { }); };
-    $('#igNow').onclick = function () {
+    var pz = $('#igPause'); if (pz) pz.onclick = function () { var to = d.status === 'paused' ? 'scheduled' : 'paused'; if (!$('#igcS').checked) { $('#igcS').checked = true; sched(); } save(to).then(function () { m.remove(); H.toast(to === 'paused' ? 'Paused: it won’t go out until you resume it' : 'Resumed', 'ok'); refreshTab('planner'); }, function () { }); };
+    function go() {
+      if ($('#igcS').checked) return save('scheduled').then(function (it) { m.remove(); H.toast('Scheduled for ' + when(it.at), 'ok'); refreshTab('planner'); }, function () { });
       if (pending()) return;
-      var pn = paceNote(Date.now(), d.type, d.id);
-      if (pn && !this.dataset.ok) { var me = this; ask(pn + ' Post it anyway?').then(function (ok) { if (ok) { me.dataset.ok = '1'; me.click(); } }); return; }
+      if (!d.media.length) return msg('Add a photo or video first.', true);
+      var pn = paceNote(Date.now(), d.type, d.id), btn = $('#igNow');
+      if (pn && !btn.dataset.ok) { ask(pn + ' Post it anyway?').then(function (ok) { if (ok) { btn.dataset.ok = '1'; go(); } }); return; }
       var body = collect('draft'); body.at = null;
       busy(true); msg('Saving…');
-      api('post-save', body).then(function (r) { d.id = r.item.id; msg('Publishing to Instagram… (videos can take a minute)'); return api('post-now', { id: d.id }); })
+      api('post-save', body).then(function (r) { d.id = r.item.id; msg(d.type === 'reel' ? 'Sending the reel to Instagram… videos take a minute or two.' : 'Publishing to Instagram…'); return api('post-now', { id: d.id }); })
         .then(function (r) { m.remove(); H.toast(r.finished ? 'Posted to Instagram' : 'Instagram is still processing the video. It will post in a few minutes.', 'ok'); refreshTab(r.finished ? 'profile' : 'planner'); }, function (e) { busy(false); msg(e.message, true); });
-    };
+    }
+    $('#igNow').onclick = go; $('#igcTop').onclick = go;
     var del = $('#igDel'); if (del) del.onclick = function () { ask('Delete this ' + (d.status === 'draft' ? 'draft' : 'post') + '?').then(function (ok) { if (!ok) return; api('post-del', { id: d.id }).then(function () { m.remove(); refreshTab(); }); }); };
-    m.querySelectorAll('[data-ty]').forEach(function (b) { b.onclick = function () { var t = b.getAttribute('data-ty'); if (t !== 'carousel' && d.media.length > 1) d.media = d.media.slice(0, 1); type(t); }; });
+    m.querySelectorAll('[data-md]').forEach(function (b) { b.onclick = function () { var t = b.getAttribute('data-md'); if (t !== 'post' && d.media.length > 1) d.media = d.media.slice(0, 1); if (t === 'reel' && d.media[0] && d.media[0].kind !== 'video') d.media = []; type(t); }; });
     /* best times to post (and a warning when posts would be too close together) */
-    function pace() { var at = $('#igAt').value ? new Date($('#igAt').value).getTime() : null, n = paceNote(at, d.type, d.id), e = $('#igPace'); e.textContent = n; e.hidden = !n; }
+    function pace() { var at = $('#igcS').checked && $('#igAt').value ? new Date($('#igAt').value).getTime() : null, n = paceNote(at, d.type, d.id), e = $('#igPace'); e.textContent = n; e.hidden = !n; }
     function best() {
       var b = bestSlots(d.type, d.id, 4);
       $('#igBest').innerHTML = b.slots.map(function (t) { return '<button class="igk-b igk-b--sm" data-bt="' + t + '">' + slotLabel(t) + '</button>'; }).join('');
@@ -1259,16 +1417,18 @@
       pace();
     }
     $('#igAt').addEventListener('input', pace); $('#igAt').addEventListener('change', pace);
-    if (!S.posts) api('posts').then(function (r) { S.posts = r.items; best(); }).catch(function () { });
+    if (!S.posts) api('posts').then(function (r) { S.posts = r.items; best(); }).catch(function () { }); else best();
     $('#igCap').oninput = count;
-    /* start from a planner design: its pictures, its caption (if none is written yet) and its type */
-    $('#igFromPlan').onclick = function () {
+    /* start from a design: its pictures or video, its caption (if none is written yet), its cover and its type */
+    function fromPlanPick() {
       pickPlan(function (pl) {
-        var f = fromPlan(pl); d.media = f.media; d.planId = pl.id;
+        var f = fromPlan(pl); d.media = f.media; d.planId = pl.id; d.cover = f.cover; d.shareToFeed = f.shareToFeed; $('#igFeed').checked = f.shareToFeed !== false;
         if (!$('#igCap').value.trim() && f.caption) $('#igCap').value = f.caption;
+        if (f.audioName && !$('#igAud').value) $('#igAud').value = f.audioName;
         type(f.type); msg('');
-      });
-    };
+      }, mode());
+    }
+    $('#igFromPlan').onclick = fromPlanPick;
     type(d.type);
   }
   function refreshTab(t) { S.media = null; S.prof = null; igGo(t || S.view); }
@@ -1285,6 +1445,26 @@
         var g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, cw, ch); g.drawImage(im, sx, sy, sw, sh, 0, 0, cw, ch);
         URL.revokeObjectURL(url);
         c.toBlob(function (b) { if (!b) return no(new Error('Couldn’t read this photo.')); ok({ file: b, name: 'photo.jpg', w: cw, h: ch, preview: URL.createObjectURL(b) }); }, 'image/jpeg', 0.92);
+      };
+      im.onerror = function () { URL.revokeObjectURL(url); no(new Error('This photo type can’t be read here. Save it as JPG or PNG and try again.')); };
+      im.src = url;
+    });
+  }
+  /* designs: a JPEG already in an accepted shape goes up as it is; anything else becomes a JPEG at its own size
+     (up to 4096 px on the long side, 95 % quality), cropped only to a shape Instagram accepts */
+  function toJpegHQ(file, ratio) {
+    return new Promise(function (ok, no) {
+      var url = URL.createObjectURL(file), im = new Image();
+      im.onload = function () {
+        var w = im.naturalWidth, h = im.naturalHeight, r = w / h, inside = !ratio || (r >= ratio[0] - 0.01 && r <= ratio[1] + 0.01);
+        if (/^image\/jpe?g$/i.test(file.type) && inside && Math.max(w, h) <= 4096 && file.size <= 8 * 1048576) return ok({ file: file, name: 'photo.jpg', w: w, h: h, preview: url });
+        var sx = 0, sy = 0, sw = w, sh = h;
+        if (ratio && r < ratio[0] - 0.01) { sh = Math.round(w / ratio[0]); sy = Math.round((h - sh) / 2); }
+        else if (ratio && r > ratio[1] + 0.01) { sw = Math.round(h * ratio[1]); sx = Math.round((w - sw) / 2); }
+        var k = Math.min(1, 4096 / Math.max(sw, sh)), cw = Math.round(sw * k), ch = Math.round(sh * k), c = document.createElement('canvas'); c.width = cw; c.height = ch;
+        var g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, cw, ch); g.imageSmoothingQuality = 'high'; g.drawImage(im, sx, sy, sw, sh, 0, 0, cw, ch);
+        var q = 0.95, out = function () { c.toBlob(function (b) { if (!b) return no(new Error('Couldn’t read this photo.')); if (b.size > 8 * 1048576 && q > 0.8) { q -= 0.05; return out(); } URL.revokeObjectURL(url); ok({ file: b, name: 'photo.jpg', w: cw, h: ch, preview: URL.createObjectURL(b) }); }, 'image/jpeg', q); };
+        out();
       };
       im.onerror = function () { URL.revokeObjectURL(url); no(new Error('This photo type can’t be read here. Save it as JPG or PNG and try again.')); };
       im.src = url;
@@ -1369,7 +1549,7 @@
   /* ---------- Designs (the planner's ready-made posts, stories, reel and highlight covers) ----------
      Kept in lib/hq/instagram.js (hq/ig/designs.json); pictures in the private Blob store like every post. */
   var KIT = (function () {
-    var KINDS = [['post', 'Photo post'], ['carousel', 'Carousel (several photos)'], ['story', 'Story'], ['reel', 'Reel cover'], ['highlight', 'Highlight cover']];
+    var KINDS = [['post', 'Photo post'], ['carousel', 'Carousel (several photos)'], ['story', 'Story'], ['reel', 'Reel (video and its cover)'], ['highlight', 'Highlight cover']];
     var CROP = { post: RATIO.photo, carousel: RATIO.carousel, story: RATIO.story, reel: [0.5625, 0.5625], highlight: [1, 1] };
     var kindName = function (k) { return (KINDS.filter(function (x) { return x[0] === k; })[0] || KINDS[0])[1]; };
     var changed = function () { PL.at = 0; kitChange(); };
@@ -1380,7 +1560,46 @@
       inp.onchange = function () { var fs = [].slice.call(inp.files || []); if (fs.length) cb(fs); };
       inp.click();
     }
-    function sendOne(f, kind) { return toJpeg(f, CROP[kind] || CROP.post).then(function (r) { return upload(r.file, r.name, function () { }); }).then(function (u) { return u.path; }); }
+    /* designs keep their full quality: a JPEG already in a shape Instagram takes goes up untouched; anything else
+       becomes a JPEG at its own size (up to 4096 px, 95 %), cropped only when Instagram wouldn't take the shape */
+    function sendOne(f, kind, onPc) { return toJpegHQ(f, CROP[kind] || CROP.post).then(function (r) { return upload(r.file, r.name, onPc || function () { }); }).then(function (u) { return u.path; }); }
+    function sendVideo(f, onPc) { return videoInfo(f).then(function (r) { return upload(r.file, r.name, onPc || function () { }); }).then(function (u) { return u.path; }); }
+    var fname = function (p, i, ext) { return 'ciel-' + String(p.title || p.kind || 'design').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) + (i ? '-' + i : '') + '.' + ext; };
+    function filesOf(p) {
+      var list = (p.images || []).map(function (u, i) { return { url: u, name: fname(p, p.images.length > 1 ? i + 1 : 0, 'jpg') }; });
+      if (p.videoUrl) list = [{ url: p.videoUrl, name: fname(p, 0, 'mp4') }].concat(list.map(function (x) { return { url: x.url, name: fname(p, 0, 'cover.jpg') }; }));
+      return list;
+    }
+    function saveLink(f, n) { setTimeout(function () { var a = document.createElement('a'); a.href = f.url; a.download = f.name; a.rel = 'noopener'; document.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); }, 4000); }, (n || 0) * 450); }
+    var mobile = function () { return /iPhone|iPad|Android/i.test(navigator.userAgent); };
+    function blobs(list) { return Promise.all(list.map(function (f) { return fetch(f.url).then(function (r) { if (!r.ok) throw new Error('Couldn’t load ' + f.name); return r.blob(); }).then(function (b) { return new File([b], f.name, { type: b.type || (/\.mp4$/.test(f.name) ? 'video/mp4' : 'image/jpeg') }); }); })); }
+    /* the full-size files: on a phone through the share sheet (Save image / Save video), on a computer as downloads */
+    function download(p) {
+      var list = filesOf(p); if (!list.length) return;
+      if (mobile() && navigator.canShare) { H.toast('Preparing…'); return blobs(list).then(function (fs) { if (navigator.canShare({ files: fs })) return navigator.share({ files: fs }).catch(function () { }); list.forEach(saveLink); }, function (e) { H.toast(e.message, 'err'); }); }
+      list.forEach(saveLink); H.toast(list.length > 1 ? 'Downloading ' + list.length + ' files' : 'Downloading', 'ok');
+    }
+    function downloadMany(ps) {
+      var list = [].concat.apply([], ps.map(filesOf)); if (!list.length) return;
+      ask('Download ' + list.length + ' file' + (list.length > 1 ? 's' : '') + ' at full size?').then(function (ok) { if (!ok) return; if (mobile()) H.toast('On a phone, files save one at a time. On a computer they all download together.'); list.forEach(saveLink); });
+    }
+    /* hand the picture or video to the Instagram app (phone share sheet): there you can add music from Instagram's
+       library, stickers, or a location, which apps outside Instagram aren't allowed to do. The caption is copied first. */
+    function share(p) {
+      var list = filesOf(p).slice(0, p.videoUrl ? 1 : 10);
+      var m = H.modal('<div class="igq-share"><h2>' + IC.music + ' Finish it in the Instagram app</h2><p class="igk-muted">Instagram only lets its own app add songs from its music library, stickers (polls, quizzes, questions, links) and locations. Apps like this one, and Meta’s own tools for developers, can’t.</p><ol class="igq-steps"><li><b>Copy the caption</b>' + (p.caption ? '' : ' (this design has none)') + '</li><li><b>Share</b> the ' + (p.videoUrl ? 'video' : list.length > 1 ? 'pictures' : 'picture') + ' and pick <b>Instagram</b>, then ' + (p.kind === 'story' ? '<b>Story</b>' : p.videoUrl ? '<b>Reels</b>' : '<b>Feed</b>') + '</li><li>' + (p.note ? esc(p.note) : 'Tap <b>' + IC.music + ' Add music</b>, pick a song, paste the caption, share') + '</li><li>Back here, tap <b>Mark as posted</b> so auto-posting skips it</li></ol>' +
+        '<div class="igk-row"><button class="igk-b" data-cp' + (p.caption ? '' : ' disabled') + '>Copy caption</button><span class="igq-sp"></span><button class="igk-b" data-x>Close</button><button class="igk-b igk-b--p" data-sh>Share</button></div></div>');
+      m.querySelector('[data-cp]').onclick = function () { copyText(p.caption, 'Caption copied. Paste it in Instagram.'); };
+      m.querySelector('[data-sh]').onclick = function () {
+        var b = this; b.disabled = true; b.textContent = 'Preparing…';
+        if (p.caption) try { navigator.clipboard.writeText(p.caption); } catch (e) { }
+        blobs(list).then(function (fs) {
+          b.disabled = false; b.textContent = 'Share';
+          if (navigator.canShare && navigator.canShare({ files: fs })) return navigator.share({ files: fs }).then(function () { m.remove(); H.toast('Caption copied. Paste it in Instagram.', 'ok'); }, function () { });
+          list.forEach(saveLink); H.toast('This browser can’t hand files to apps. They were downloaded: open Instagram and post them from your gallery.', 'ok');
+        }, function (e) { b.disabled = false; b.textContent = 'Share'; H.toast(e.message, 'err'); });
+      };
+    }
     function addMany(kind) {
       pickFiles(kind, true, function (fs) {
         var done = 0, made = 0; H.toast('Adding ' + fs.length + ' design' + (fs.length > 1 ? 's' : '') + '…');
@@ -1396,32 +1615,28 @@
     function packPanel() {
       var box = document.querySelector('[data-igpack]'); if (!box || box.getAttribute('data-built')) return; box.setAttribute('data-built', '1');
       box.innerHTML = '<div class="igq-addd"><div><b>Add designs</b><small>Pick pictures from your phone or computer. Each one becomes a design you can caption, post now or schedule.</small></div><div class="igq-addb">' +
-        [['post', 'Posts'], ['story', 'Stories'], ['reel', 'Reel covers'], ['highlight', 'Highlights']].map(function (k) { return '<button class="igx-btn" data-add="' + k[0] + '">' + IC.plus + '<span>' + k[1] + '</span></button>'; }).join('') + '</div></div>';
-      box.querySelectorAll('[data-add]').forEach(function (b) { b.onclick = function () { addMany(b.getAttribute('data-add')); }; });
+        [['post', 'Posts'], ['story', 'Stories'], ['reel', 'A reel'], ['highlight', 'Highlights']].map(function (k) { return '<button class="igx-btn" data-add="' + k[0] + '">' + IC.plus + '<span>' + k[1] + '</span></button>'; }).join('') + '</div></div>';
+      box.querySelectorAll('[data-add]').forEach(function (b) { b.onclick = function () { var k = b.getAttribute('data-add'); if (k === 'reel') return edit({ kind: 'reel', paths: [], images: [], caption: '', status: 'ready' }); addMany(k); }; });
     }
     /* full-size look, save to the phone, copy the caption */
     function big(p) {
       var imgs = p.images || []; if (!imgs.length) return edit(p);
       var tall = /story|reel/.test(p.kind);
       var m = H.modal('<div class="igq-big"><div class="igx-sech"><h2>' + esc(kindName(p.kind)) + '</h2><button class="igk-b igk-b--sm igk-b--ghost" data-x>✕</button></div>' +
-        '<div class="igq-bigs">' + imgs.map(function (u) { return '<img src="' + esc(u) + '" alt="" style="aspect-ratio:' + (tall ? '9 / 16' : p.kind === 'highlight' ? '1 / 1' : 'auto') + '">'; }).join('') + '</div>' +
+        '<div class="igq-bigs">' + (p.videoUrl ? '<video src="' + esc(p.videoUrl) + '" poster="' + esc(imgs[0]) + '" controls playsinline preload="metadata" style="aspect-ratio:9 / 16"></video>' : '') + imgs.map(function (u) { return '<img src="' + esc(u) + '" alt="" style="aspect-ratio:' + (tall ? '9 / 16' : p.kind === 'highlight' ? '1 / 1' : 'auto') + '">'; }).join('') + '</div>' +
         (p.caption ? '<p class="igq-bigc">' + esc(p.caption).replace(/\n/g, '<br>') + '</p>' : '') +
-        '<div class="igk-row"><span class="igq-sp"></span>' + (p.caption ? '<button class="igk-b" data-cp>Copy caption</button>' : '') + '<button class="igk-b igk-b--p" data-sv>' + (imgs.length > 1 ? 'Save ' + imgs.length + ' pictures' : 'Save picture') + '</button></div></div>');
+        '<div class="igk-row"><span class="igq-sp"></span>' + (p.caption ? '<button class="igk-b" data-cp>Copy caption</button>' : '') + '<button class="igk-b igk-b--p" data-sv>' + IC.down + '<span>Download</span></button></div></div>');
       m.classList.add('igx-pickm');
       var cp = m.querySelector('[data-cp]'); if (cp) cp.onclick = function () { try { navigator.clipboard.writeText(p.caption || ''); H.toast('Caption copied', 'ok'); } catch (e) { H.toast('Couldn’t copy.', 'err'); } };
-      m.querySelector('[data-sv]').onclick = function () {
-        Promise.all(imgs.map(function (u, i) { return fetch(u).then(function (r) { return r.blob(); }).then(function (b) { return new File([b], 'ciel-' + (p.kind || 'post') + '-' + String(p.id || '').slice(-5) + (imgs.length > 1 ? '-' + (i + 1) : '') + '.jpg', { type: b.type || 'image/jpeg' }); }); })).then(function (files) {
-          if (navigator.canShare && navigator.share && navigator.canShare({ files: files }) && /iPhone|iPad|Android/i.test(navigator.userAgent)) return navigator.share({ files: files }).catch(function () { });
-          files.forEach(function (f, n) { setTimeout(function () { var a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = f.name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000); }, n * 400); });
-        }, function () { H.toast('Couldn’t load the pictures.', 'err'); });
-      };
+      m.querySelector('[data-sv]').onclick = function () { download(p); };
     }
     /* add or change one design: type, pictures, caption, posted or not */
     function edit(p) {
       p = p || { kind: 'post', paths: [], images: [], caption: '', status: 'ready' };
-      var d = { id: p.id, kind: p.kind || 'post', paths: (p.paths || []).slice(), images: (p.images || []).slice(), caption: p.caption || '', status: p.status || 'ready' };
+      var d = { id: p.id, kind: p.kind || 'post', paths: (p.paths || []).slice(), images: (p.images || []).slice(), caption: p.caption || '', status: p.status || 'ready', builtin: !!p.builtin, videoUrl: p.videoUrl || '', videoPath: p.videoPath, title: p.title || '' };
       var m = H.modal('<div class="igq-ded"><div class="igx-sech"><h2>' + (d.id ? 'Edit design' : 'New design') + '</h2><button class="igk-b igk-b--sm igk-b--ghost" data-x>✕</button></div>' +
-        '<label class="igk-fld"><span>Type</span><select id="igDk">' + KINDS.map(function (k) { return '<option value="' + k[0] + '"' + (k[0] === d.kind ? ' selected' : '') + '>' + k[1] + '</option>'; }).join('') + '</select></label>' +
+        (d.builtin ? '' : '<label class="igk-fld"><span>Type</span><select id="igDk">' + KINDS.map(function (k) { return '<option value="' + k[0] + '"' + (k[0] === d.kind ? ' selected' : '') + '>' + k[1] + '</option>'; }).join('') + '</select></label>') +
+        '<label class="igk-fld"><span>Name (only you see it)</span><input id="igDt" maxlength="120" value="' + esc(d.title) + '" placeholder="e.g. Zanzibar book, launch week"></label>' +
         '<div class="igq-dpics" id="igDp"></div>' +
         '<label class="igk-fld"><span>Caption</span><textarea id="igDc" rows="6" maxlength="2200" placeholder="Write the caption, hashtags and all">' + esc(d.caption) + '</textarea></label>' +
         '<label class="igk-fld igq-chk"><input type="checkbox" id="igDs"' + (d.status === 'posted' ? ' checked' : '') + '> <span>Already posted</span></label>' +
@@ -1429,10 +1644,18 @@
       m.classList.add('igx-pickm');
       var pics = function () {
         var box = m.querySelector('#igDp'), many = d.kind === 'carousel';
-        box.innerHTML = d.images.map(function (u, i) { return '<span class="igq-dpic"><img src="' + esc(u) + '" alt="">' + (d.images.length > 1 ? '<button data-l="' + i + '" title="Move left">' + IC.l + '</button>' : '') + '<button data-r="' + i + '" title="Remove">' + IC.x + '</button></span>'; }).join('') +
+        if (d.builtin) { box.innerHTML = (d.videoUrl ? '<span class="igq-dpic igq-dvid"><video src="' + esc(d.videoUrl) + '#t=0.5" muted playsinline preload="metadata"></video><small>Video</small></span>' : '') + d.images.map(function (u) { return '<span class="igq-dpic"><img src="' + esc(u) + '" alt=""></span>'; }).join('') + '<small class="igq-dfix">A ready-made Ciel design: the picture stays as designed. Edit the caption and name here.</small>'; return; }
+        var isReel = d.kind === 'reel';
+        box.innerHTML = (isReel ? '<span class="igq-dpic igq-dvid">' + (d.videoUrl ? '<video src="' + esc(d.videoUrl) + '#t=0.5" muted playsinline preload="metadata"></video>' : '<i>' + IC.reels + '</i>') + '<button data-vid title="' + (d.videoUrl ? 'Change the video' : 'Add the video') + '">' + (d.videoUrl ? IC.reels : IC.plus) + '</button><small>' + (d.videoUrl ? 'Video' : 'Add the video') + '</small></span>' : '') + d.images.map(function (u, i) { return '<span class="igq-dpic"><img src="' + esc(u) + '" alt="">' + (d.images.length > 1 ? '<button data-l="' + i + '" title="Move left">' + IC.l + '</button>' : '') + '<button data-r="' + i + '" title="Remove">' + IC.x + '</button></span>'; }).join('') +
           ((many ? d.images.length < 10 : !d.images.length) ? '<button class="igq-dadd" id="igDa">' + IC.plus + '<span>' + (d.images.length ? 'Add a picture' : 'Add the picture') + '</span></button>' : (!many ? '<button class="igq-dadd" id="igDa">' + IC.img + '<span>Change picture</span></button>' : ''));
         box.querySelectorAll('[data-r]').forEach(function (b) { b.onclick = function () { var i = +b.getAttribute('data-r'); d.images.splice(i, 1); d.paths.splice(i, 1); pics(); }; });
         box.querySelectorAll('[data-l]').forEach(function (b) { b.onclick = function () { var i = +b.getAttribute('data-l'); if (!i) return; [d.images, d.paths].forEach(function (a) { var t = a[i]; a[i] = a[i - 1]; a[i - 1] = t; }); pics(); }; });
+        var vb = box.querySelector('[data-vid]');
+        if (vb) vb.onclick = function () {
+          var inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'video/mp4,video/quicktime';
+          inp.onchange = function () { var f = inp.files && inp.files[0]; if (!f) return; vb.disabled = true; H.toast('Uploading the video…'); sendVideo(f, function (pc) { vb.title = pc + '%'; }).then(function (path) { d.videoPath = path; d.videoUrl = URL.createObjectURL(f); pics(); H.toast('Video added', 'ok'); }, function (e) { vb.disabled = false; H.toast((e && e.message) || 'Upload failed.', 'err'); }); };
+          inp.click();
+        };
         var add = box.querySelector('#igDa');
         if (add) add.onclick = function () {
           pickFiles(d.kind, many, function (fs) {
@@ -1444,17 +1667,17 @@
         };
       };
       pics();
-      m.querySelector('#igDk').onchange = function () { d.kind = this.value; if (d.kind !== 'carousel' && d.images.length > 1) { d.images = d.images.slice(0, 1); d.paths = d.paths.slice(0, 1); } pics(); };
+      if (m.querySelector('#igDk')) m.querySelector('#igDk').onchange = function () { d.kind = this.value; if (d.kind !== 'carousel' && d.images.length > 1) { d.images = d.images.slice(0, 1); d.paths = d.paths.slice(0, 1); } pics(); };
       m.querySelector('#igDv').onclick = function () {
-        var b = this; if (!d.paths.length) return H.toast('Add a picture first.', 'err');
+        var b = this; if (!d.builtin && !d.paths.length) return H.toast('Add a picture first.', 'err');
         b.disabled = true; b.textContent = 'Saving…';
-        api('design-save', { id: d.id, kind: d.kind, paths: d.paths, caption: m.querySelector('#igDc').value, status: m.querySelector('#igDs').checked ? 'posted' : 'ready' })
+        api('design-save', { id: d.id, kind: d.kind, paths: d.builtin ? undefined : d.paths, videoPath: d.builtin ? undefined : d.videoPath, title: m.querySelector('#igDt').value, caption: m.querySelector('#igDc').value, status: m.querySelector('#igDs').checked ? 'posted' : 'ready' })
           .then(function () { m.remove(); H.toast('Design saved', 'ok'); changed(); }, function (e) { b.disabled = false; b.textContent = 'Save'; H.toast(e.message, 'err'); });
       };
       var del = m.querySelector('#igDd');
       if (del) del.onclick = function () { ask('Delete this design?').then(function (ok) { if (!ok) return; api('design-del', { id: d.id }).then(function () { m.remove(); H.toast('Design deleted'); changed(); }, function (e) { H.toast(e.message, 'err'); }); }); };
     }
-    return { preview: function (p) { big(p); }, edit: edit, thumb: function (u) { return u; }, big: big, packPanel: packPanel, canEdit: function () { return true; }, order: order, KINDS: KINDS, ST: [], add: addMany, onChange: null };
+    return { download: download, downloadMany: downloadMany, share: share, preview: function (p) { big(p); }, edit: edit, thumb: function (u) { return u; }, big: big, packPanel: packPanel, canEdit: function () { return true; }, order: order, KINDS: KINDS, ST: [], add: addMany, onChange: null };
   })();
   A.igPlannerKit = KIT;
   KIT.onChange = kitChange;

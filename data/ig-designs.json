@@ -1,0 +1,1021 @@
+{
+ "v": 1,
+ "note": "Ready-made Ciel Africa designs. They appear in Ciel Admin → Instagram → Designs; edits there are saved separately and win over this file.",
+ "items": [
+  {
+   "id": "b-p-h15",
+   "kind": "post",
+   "title": "Four steps, no surprises",
+   "caption": "Four steps, no surprises.\nDiscover: a written plan, a timeline and a fixed quote. Design: a clickable prototype your team tries first. Build: a live staging link and a demo every week. Launch and support: training, monitoring and backups.\n\nStart a project: cielafrica.com/contact\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#SoftwareDevelopment #WebDesign #ProductDesign #CielAfrica",
+   "src": [
+    "/assets/ig/p/h15.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-h15.jpg"
+   ],
+   "seq": 1
+  },
+  {
+   "id": "b-p-h14",
+   "kind": "post",
+   "title": "Muse Portfolio",
+   "caption": "Muse, a portfolio website.\nFor photographers and creators: portfolio, rate card and an enquiry form. A live template you can click through.\n\ncielafrica.com/templates\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#PortfolioWebsite #WebDesign #Photographers #CielAfrica",
+   "src": [
+    "/assets/ig/p/h14.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-h14.jpg"
+   ],
+   "seq": 2
+  },
+  {
+   "id": "b-p-h13",
+   "kind": "post",
+   "title": "Uptime is a design decision",
+   "caption": "Uptime is a design decision.\nMonitoring, backups and fixes, planned from the first day, not after the first outage.\n\ncielafrica.com\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#WebDevelopment #SoftwareEngineering #DevOps #CielAfrica",
+   "src": [
+    "/assets/ig/p/h13.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-h13.jpg"
+   ],
+   "seq": 4
+  },
+  {
+   "id": "b-r-photobook",
+   "kind": "reel",
+   "title": "How to make a photo book",
+   "caption": "How to make a photo book.\nChoose a cover, add your photos, we arrange the pages, you check every page and preview the finished book.\n\ncielafrica.com/photobooks\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#PhotoBook #CielPhotoBooks #Memories #DIY",
+   "video": "/assets/ig/r/photobook.mp4",
+   "src": [
+    "/assets/ig/r/photobook-cover.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/r-photobook-cover.jpg"
+   ],
+   "seq": 3
+  },
+  {
+   "id": "b-p-h12",
+   "kind": "post",
+   "title": "C-Ledger",
+   "caption": "Books that balance.\nC-Ledger is double-entry accounting with a real general ledger: invoices, bills, bank reconciliation and financial reports. Live template.\n\ncielafrica.com/templates\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#Accounting #FinTech #CustomSoftware #CielAfrica",
+   "src": [
+    "/assets/ig/p/h12.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-h12.jpg"
+   ],
+   "seq": 5
+  },
+  {
+   "id": "b-p-h11",
+   "kind": "post",
+   "title": "Understood the first time",
+   "caption": "Understood the first time.\nInterfaces people don’t need a manual for. We design for the person holding the phone, not for a persona.\n\ncielafrica.com\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#UXDesign #UIDesign #ProductDesign #CielAfrica",
+   "src": [
+    "/assets/ig/p/h11.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-h11.jpg"
+   ],
+   "seq": 7
+  },
+  {
+   "id": "b-p-h10",
+   "kind": "post",
+   "title": "From your phone to a hardcover",
+   "caption": "From your phone to a hardcover.\nChoose a cover, add your photos and preview every page. Ciel Photo Books are A4 hardcovers you design yourself, cover to last page.\n\ncielafrica.com/photobooks\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#PhotoBook #CielPhotoBooks #Memories #TravelMemories",
+   "src": [
+    "/assets/ig/p/h10.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-h10.jpg"
+   ],
+   "seq": 9
+  },
+  {
+   "id": "b-r-njia",
+   "kind": "reel",
+   "title": "Inside Njia",
+   "caption": "Inside Njia.\nAn editorial streetwear store: lookbook, collections and checkout in one flow. A real screen recording of the live template.\n\ncielafrica.com/templates\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#FashionEcommerce #WebDesign #Streetwear #CielAfrica",
+   "video": "/assets/ig/r/njia.mp4",
+   "src": [
+    "/assets/ig/r/njia-cover.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/r-njia-cover.jpg"
+   ],
+   "seq": 6
+  },
+  {
+   "id": "b-p-h09",
+   "kind": "post",
+   "title": "Kintra",
+   "caption": "Every shift, covered.\nKintra plans shifts, checks coverage and overtime, tracks attendance and prepares payroll for review. Live template.\n\ncielafrica.com/templates\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#WorkforceManagement #HRSoftware #CustomSoftware #CielAfrica",
+   "src": [
+    "/assets/ig/p/h09.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-h09.jpg"
+   ],
+   "seq": 10
+  },
+  {
+   "id": "b-p-h08",
+   "kind": "post",
+   "title": "M-Pesa, built in",
+   "caption": "M-Pesa, built in.\nDaraja, cards and mobile money, wired into your website, store or system and reconciled: STK Push, Paybill and Till, and every payment matched to its order.\n\ncielafrica.com/contact\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#MPesa #Payments #FinTech #WebDevelopment",
+   "src": [
+    "/assets/ig/p/h08.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-h08.jpg"
+   ],
+   "seq": 12
+  },
+  {
+   "id": "b-p-h07",
+   "kind": "post",
+   "title": "Built for the phone first",
+   "caption": "Built for the phone first.\nEvery template works as well on a phone as on a desk. Try them on yours.\n\ncielafrica.com/templates\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#MobileFirst #ResponsiveDesign #WebDesign #CielAfrica",
+   "src": [
+    "/assets/ig/p/h07.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-h07.jpg"
+   ],
+   "seq": 14
+  },
+  {
+   "id": "b-r-pb-zanzibar",
+   "kind": "reel",
+   "title": "Your trip deserves more than a camera roll",
+   "caption": "Your trip deserves more than a camera roll.\nA Zanzibar travel book, from picking the cover to the order, in about two minutes. A real screen recording.\n\ncielafrica.com/photobooks\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#PhotoBook #Zanzibar #TravelMemories #CielPhotoBooks",
+   "video": "/assets/ig/r/pb-zanzibar.mp4",
+   "src": [
+    "/assets/ig/r/pb-zanzibar-cover.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/r-pb-zanzibar-cover.jpg"
+   ],
+   "seq": 8
+  },
+  {
+   "id": "b-p-h06",
+   "kind": "post",
+   "title": "Work that runs itself",
+   "caption": "Work that runs itself.\nChatbots, AI assistants, document processing and workflow automation that take the repetitive work off your team, while the judgement stays human.\n\ncielafrica.com/contact\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#AIAutomation #Chatbots #WorkflowAutomation #CustomSoftware",
+   "src": [
+    "/assets/ig/p/h06.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-h06.jpg"
+   ],
+   "seq": 15
+  },
+  {
+   "id": "b-p-h05",
+   "kind": "post",
+   "title": "Every step, considered",
+   "caption": "Every step, considered.\nResearch, design, build, test, launch. Nothing skipped.\n\ncielafrica.com\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#ProductDesign #SoftwareDevelopment #WebDesign #CielAfrica",
+   "src": [
+    "/assets/ig/p/h05.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-h05.jpg"
+   ],
+   "seq": 17
+  },
+  {
+   "id": "b-p-h04",
+   "kind": "post",
+   "title": "Nine live templates",
+   "caption": "Nine live templates. Try any of them.\nMokara, Njia, Apex Motion, Ciel Shop, C-Ledger, Reside Ke, Orbit Social, Kintra and Muse. Click through each one, no sign-up needed.\n\ncielafrica.com/templates\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#WebTemplates #WebDesign #SaaS #CielAfrica",
+   "src": [
+    "/assets/ig/p/h04.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-h04.jpg"
+   ],
+   "seq": 18
+  },
+  {
+   "id": "b-r-cielshop",
+   "kind": "reel",
+   "title": "Ciel Shop, a tour",
+   "caption": "Ciel Shop, a tour.\nProducts, stock, batches, orders and warehouses from one dashboard, with sales and margins in the same place. A real screen recording.\n\ncielafrica.com/ciel-shop\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#InventoryManagement #RetailSoftware #Dashboard #CielAfrica",
+   "video": "/assets/ig/r/cielshop.mp4",
+   "src": [
+    "/assets/ig/r/cielshop-cover.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/r-cielshop-cover.jpg"
+   ],
+   "seq": 11
+  },
+  {
+   "id": "b-p-h03",
+   "kind": "post",
+   "title": "Ciel. French for sky",
+   "caption": "Ciel. French for sky.\nCiel Africa designs and builds websites, software and digital products, and makes Ciel Photo Books.\n\ncielafrica.com\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#CielAfrica #SoftwareStudio #WebDevelopment #DigitalProducts",
+   "src": [
+    "/assets/ig/p/h03.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-h03.jpg"
+   ],
+   "seq": 20
+  },
+  {
+   "id": "b-p-h02",
+   "kind": "post",
+   "title": "Four industries, four dashboards",
+   "caption": "Four industries, four dashboards.\nRetail (Ciel Shop), property (Reside Ke), workforce (Kintra) and accounting (C-Ledger). All four are live templates.\n\ncielafrica.com/templates\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#Dashboard #CustomSoftware #SaaS #CielAfrica",
+   "src": [
+    "/assets/ig/p/h02.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-h02.jpg"
+   ],
+   "seq": 22
+  },
+  {
+   "id": "b-p-h01",
+   "kind": "post",
+   "title": "Four questions, first",
+   "caption": "Four questions, first.\nWho will use it? What must it do on day one? What happens when it breaks? How will it grow? We answer these before we build anything.\n\ncielafrica.com/contact\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#SoftwareDevelopment #ProductStrategy #WebDevelopment #CielAfrica",
+   "src": [
+    "/assets/ig/p/h01.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-h01.jpg"
+   ],
+   "seq": 23
+  },
+  {
+   "id": "b-r-mokara",
+   "kind": "reel",
+   "title": "Inside Mokara",
+   "caption": "Inside Mokara Coffee.\nEvery coffee gets its own page: origin, roast and tasting notes, then straight to the basket. A real screen recording of the live template.\n\ncielafrica.com/templates\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#Ecommerce #CoffeeBrand #WebDesign #CielAfrica",
+   "video": "/assets/ig/r/mokara.mp4",
+   "src": [
+    "/assets/ig/r/mokara-cover.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/r-mokara-cover.jpg"
+   ],
+   "seq": 13
+  },
+  {
+   "id": "b-p-books-table",
+   "kind": "post",
+   "title": "Photo books on the table",
+   "caption": "Some stories deserve paper.\nCiel Photo Books: A4 hardcovers you design on your phone, from the cover to the last page.\n\ncielafrica.com/photobooks\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#PhotoBook #CielPhotoBooks #TravelMemories #Hardcover",
+   "src": [
+    "/assets/ig/p/books-table.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-books-table.jpg"
+   ],
+   "seq": 25
+  },
+  {
+   "id": "b-r-orbit",
+   "kind": "reel",
+   "title": "Orbit, a tour",
+   "caption": "Orbit Social, a tour.\nA content calendar, client approvals, a shared media library, analytics and a team inbox for teams running several brands.\n\ncielafrica.com/templates\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#SocialMediaManagement #SaaS #ProductDesign #CielAfrica",
+   "video": "/assets/ig/r/orbit.mp4",
+   "src": [
+    "/assets/ig/r/orbit-cover.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/r-orbit-cover.jpg"
+   ],
+   "seq": 16
+  },
+  {
+   "id": "b-r-apex",
+   "kind": "reel",
+   "title": "Inside Apex Motion",
+   "caption": "Inside Apex Motion.\nA parts store built around fitment: shop by car, by part or by wheel, on a big screen or a phone. A real screen recording.\n\ncielafrica.com/templates\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#Ecommerce #AutoParts #WebDesign #CielAfrica",
+   "video": "/assets/ig/r/apex.mp4",
+   "src": [
+    "/assets/ig/r/apex-cover.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/r-apex-cover.jpg"
+   ],
+   "seq": 19
+  },
+  {
+   "id": "b-r-cledger",
+   "kind": "reel",
+   "title": "C-Ledger, a tour",
+   "caption": "C-Ledger, a tour.\nDouble-entry accounting with invoices, bills, bank reconciliation and financial reports. A real screen recording of the live template.\n\ncielafrica.com/templates\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#Accounting #FinTech #CustomSoftware #CielAfrica",
+   "video": "/assets/ig/r/cledger.mp4",
+   "src": [
+    "/assets/ig/r/cledger-cover.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/r-cledger-cover.jpg"
+   ],
+   "seq": 21
+  },
+  {
+   "id": "b-r-reside",
+   "kind": "reel",
+   "title": "Reside Ke, a tour",
+   "caption": "Reside Ke, a tour.\nListings, leads, a deals pipeline, rentals, commissions and a team calendar, built for estate agents. A real screen recording.\n\ncielafrica.com/templates\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#RealEstate #CRM #PropTech #CielAfrica",
+   "video": "/assets/ig/r/reside.mp4",
+   "src": [
+    "/assets/ig/r/reside-cover.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/r-reside-cover.jpg"
+   ],
+   "seq": 24
+  },
+  {
+   "id": "b-r-pb-start",
+   "kind": "reel",
+   "title": "A photo book, start to finish",
+   "caption": "A photo book, start to finish.\nCover, photos, pages arranged for you, the year on the cover, a preview you can flip through, then the order. A real screen recording.\n\ncielafrica.com/photobooks\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#PhotoBook #CielPhotoBooks #YearInReview #Memories",
+   "video": "/assets/ig/r/pb-start.mp4",
+   "src": [
+    "/assets/ig/r/pb-start-cover.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/r-pb-start-cover.jpg"
+   ],
+   "seq": 26
+  },
+  {
+   "id": "b-s-books-table",
+   "kind": "story",
+   "title": "Photo books on the table",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/books-table.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-books-table.jpg"
+   ],
+   "seq": 1,
+   "note": "Link sticker: cielafrica.com/photobooks"
+  },
+  {
+   "id": "b-s-day01-1",
+   "kind": "story",
+   "title": "Story · day 1, 1 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day01-1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day01-1.jpg"
+   ],
+   "seq": 2
+  },
+  {
+   "id": "b-s-day01-2",
+   "kind": "story",
+   "title": "Story · day 1, 2 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day01-2.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day01-2.jpg"
+   ],
+   "seq": 3,
+   "note": "Poll sticker: “Wait it out” / “Leave and try another”",
+   "sticker": true
+  },
+  {
+   "id": "b-s-day01-3",
+   "kind": "story",
+   "title": "Story · day 1, 3 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day01-3.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day01-3.jpg"
+   ],
+   "seq": 4
+  },
+  {
+   "id": "b-s-day02-1",
+   "kind": "story",
+   "title": "Story · day 2, 1 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day02-1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day02-1.jpg"
+   ],
+   "seq": 5,
+   "note": "Quiz sticker: SIM Toolkit (correct) · Secure Transfer Key · Store Ticket",
+   "sticker": true
+  },
+  {
+   "id": "b-s-day02-2",
+   "kind": "story",
+   "title": "Story · day 2, 2 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day02-2.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day02-2.jpg"
+   ],
+   "seq": 6
+  },
+  {
+   "id": "b-s-day02-3",
+   "kind": "story",
+   "title": "Story · day 2, 3 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day02-3.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day02-3.jpg"
+   ],
+   "seq": 7,
+   "note": "Poll sticker: “Dark mode” / “Light mode”",
+   "sticker": true
+  },
+  {
+   "id": "b-s-day03-1",
+   "kind": "story",
+   "title": "Story · day 3, 1 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day03-1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day03-1.jpg"
+   ],
+   "seq": 8
+  },
+  {
+   "id": "b-s-day03-2",
+   "kind": "story",
+   "title": "Story · day 3, 2 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day03-2.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day03-2.jpg"
+   ],
+   "seq": 9,
+   "note": "Questions sticker: “Tell us”",
+   "sticker": true
+  },
+  {
+   "id": "b-s-day03-3",
+   "kind": "story",
+   "title": "Story · day 3, 3 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day03-3.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day03-3.jpg"
+   ],
+   "seq": 10
+  },
+  {
+   "id": "b-s-day04-1",
+   "kind": "story",
+   "title": "Story · day 4, 1 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day04-1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day04-1.jpg"
+   ],
+   "seq": 11
+  },
+  {
+   "id": "b-s-day04-2",
+   "kind": "story",
+   "title": "Story · day 4, 2 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day04-2.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day04-2.jpg"
+   ],
+   "seq": 12,
+   "note": "Poll sticker: “Book online” / “Call to book”",
+   "sticker": true
+  },
+  {
+   "id": "b-s-day04-3",
+   "kind": "story",
+   "title": "Story · day 4, 3 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day04-3.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day04-3.jpg"
+   ],
+   "seq": 13
+  },
+  {
+   "id": "b-s-day05-1",
+   "kind": "story",
+   "title": "Story · day 5, 1 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day05-1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day05-1.jpg"
+   ],
+   "seq": 14,
+   "note": "Quiz sticker: Three · Nine (correct) · Twelve",
+   "sticker": true
+  },
+  {
+   "id": "b-s-day05-2",
+   "kind": "story",
+   "title": "Story · day 5, 2 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day05-2.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day05-2.jpg"
+   ],
+   "seq": 15
+  },
+  {
+   "id": "b-s-day05-3",
+   "kind": "story",
+   "title": "Story · day 5, 3 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day05-3.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day05-3.jpg"
+   ],
+   "seq": 16
+  },
+  {
+   "id": "b-s-day06-1",
+   "kind": "story",
+   "title": "Story · day 6, 1 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day06-1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day06-1.jpg"
+   ],
+   "seq": 17,
+   "note": "Questions sticker: “Tell us”",
+   "sticker": true
+  },
+  {
+   "id": "b-s-day06-2",
+   "kind": "story",
+   "title": "Story · day 6, 2 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day06-2.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day06-2.jpg"
+   ],
+   "seq": 18
+  },
+  {
+   "id": "b-s-day06-3",
+   "kind": "story",
+   "title": "Story · day 6, 3 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day06-3.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day06-3.jpg"
+   ],
+   "seq": 19,
+   "note": "Poll sticker: “Lisbon” / “Sicily”",
+   "sticker": true
+  },
+  {
+   "id": "b-s-day07-1",
+   "kind": "story",
+   "title": "Story · day 7, 1 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day07-1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day07-1.jpg"
+   ],
+   "seq": 20
+  },
+  {
+   "id": "b-s-day07-2",
+   "kind": "story",
+   "title": "Story · day 7, 2 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day07-2.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day07-2.jpg"
+   ],
+   "seq": 21
+  },
+  {
+   "id": "b-s-day07-3",
+   "kind": "story",
+   "title": "Story · day 7, 3 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day07-3.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day07-3.jpg"
+   ],
+   "seq": 22,
+   "note": "Poll sticker: “Mobile money” / “Card”",
+   "sticker": true
+  },
+  {
+   "id": "b-s-day08-1",
+   "kind": "story",
+   "title": "Story · day 8, 1 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day08-1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day08-1.jpg"
+   ],
+   "seq": 23,
+   "note": "Poll sticker: “Website first” / “App first”",
+   "sticker": true
+  },
+  {
+   "id": "b-s-day08-2",
+   "kind": "story",
+   "title": "Story · day 8, 2 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day08-2.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day08-2.jpg"
+   ],
+   "seq": 24
+  },
+  {
+   "id": "b-s-day08-3",
+   "kind": "story",
+   "title": "Story · day 8, 3 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day08-3.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day08-3.jpg"
+   ],
+   "seq": 25,
+   "note": "Quiz sticker: Twice, a debit and a credit (correct) · Once a month · In two currencies",
+   "sticker": true
+  },
+  {
+   "id": "b-s-day09-1",
+   "kind": "story",
+   "title": "Story · day 9, 1 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day09-1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day09-1.jpg"
+   ],
+   "seq": 26,
+   "note": "Questions sticker: “Tell us”",
+   "sticker": true
+  },
+  {
+   "id": "b-s-day09-2",
+   "kind": "story",
+   "title": "Story · day 9, 2 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day09-2.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day09-2.jpg"
+   ],
+   "seq": 27
+  },
+  {
+   "id": "b-s-day09-3",
+   "kind": "story",
+   "title": "Story · day 9, 3 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day09-3.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day09-3.jpg"
+   ],
+   "seq": 28
+  },
+  {
+   "id": "b-s-day10-1",
+   "kind": "story",
+   "title": "Story · day 10, 1 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day10-1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day10-1.jpg"
+   ],
+   "seq": 29
+  },
+  {
+   "id": "b-s-day10-2",
+   "kind": "story",
+   "title": "Story · day 10, 2 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day10-2.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day10-2.jpg"
+   ],
+   "seq": 30,
+   "note": "Poll sticker: “Calls” / “WhatsApp”",
+   "sticker": true
+  },
+  {
+   "id": "b-s-day10-3",
+   "kind": "story",
+   "title": "Story · day 10, 3 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day10-3.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day10-3.jpg"
+   ],
+   "seq": 31
+  },
+  {
+   "id": "b-s-day11-1",
+   "kind": "story",
+   "title": "Story · day 11, 1 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day11-1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day11-1.jpg"
+   ],
+   "seq": 32,
+   "note": "Quiz sticker: SVG (correct) · JPG · PNG",
+   "sticker": true
+  },
+  {
+   "id": "b-s-day11-2",
+   "kind": "story",
+   "title": "Story · day 11, 2 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day11-2.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day11-2.jpg"
+   ],
+   "seq": 33
+  },
+  {
+   "id": "b-s-day11-3",
+   "kind": "story",
+   "title": "Story · day 11, 3 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day11-3.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day11-3.jpg"
+   ],
+   "seq": 34,
+   "note": "Questions sticker: “Tell us”",
+   "sticker": true
+  },
+  {
+   "id": "b-s-day12-1",
+   "kind": "story",
+   "title": "Story · day 12, 1 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day12-1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day12-1.jpg"
+   ],
+   "seq": 35,
+   "note": "Poll sticker: “Serif” / “Sans-serif”",
+   "sticker": true
+  },
+  {
+   "id": "b-s-day12-2",
+   "kind": "story",
+   "title": "Story · day 12, 2 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day12-2.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day12-2.jpg"
+   ],
+   "seq": 36
+  },
+  {
+   "id": "b-s-day12-3",
+   "kind": "story",
+   "title": "Story · day 12, 3 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day12-3.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day12-3.jpg"
+   ],
+   "seq": 37,
+   "note": "Quiz sticker: Adapts to any screen (correct) · Replies to messages · Works offline",
+   "sticker": true
+  },
+  {
+   "id": "b-s-day13-1",
+   "kind": "story",
+   "title": "Story · day 13, 1 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day13-1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day13-1.jpg"
+   ],
+   "seq": 38
+  },
+  {
+   "id": "b-s-day13-2",
+   "kind": "story",
+   "title": "Story · day 13, 2 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day13-2.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day13-2.jpg"
+   ],
+   "seq": 39,
+   "note": "Poll sticker: “Yes, first” / “No, just hire”",
+   "sticker": true
+  },
+  {
+   "id": "b-s-day13-3",
+   "kind": "story",
+   "title": "Story · day 13, 3 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day13-3.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day13-3.jpg"
+   ],
+   "seq": 40
+  },
+  {
+   "id": "b-s-day14-1",
+   "kind": "story",
+   "title": "Story · day 14, 1 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day14-1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day14-1.jpg"
+   ],
+   "seq": 41,
+   "note": "Questions sticker: “Ask us anything”",
+   "sticker": true
+  },
+  {
+   "id": "b-s-day14-2",
+   "kind": "story",
+   "title": "Story · day 14, 2 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day14-2.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day14-2.jpg"
+   ],
+   "seq": 42,
+   "note": "Poll sticker: “A new template” / “Behind the scenes”",
+   "sticker": true
+  },
+  {
+   "id": "b-s-day14-3",
+   "kind": "story",
+   "title": "Story · day 14, 3 of 3",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/day14-3.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-day14-3.jpg"
+   ],
+   "seq": 43,
+   "note": "Link sticker: cielafrica.com/contact",
+   "sticker": true
+  },
+  {
+   "id": "b-hl-work",
+   "kind": "highlight",
+   "title": "Highlight cover · Work",
+   "caption": "",
+   "src": [
+    "/assets/ig/h/work.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/h-work.jpg"
+   ],
+   "seq": 1
+  },
+  {
+   "id": "b-hl-services",
+   "kind": "highlight",
+   "title": "Highlight cover · Services",
+   "caption": "",
+   "src": [
+    "/assets/ig/h/services.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/h-services.jpg"
+   ],
+   "seq": 2
+  },
+  {
+   "id": "b-hl-people",
+   "kind": "highlight",
+   "title": "Highlight cover · People",
+   "caption": "",
+   "src": [
+    "/assets/ig/h/people.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/h-people.jpg"
+   ],
+   "seq": 3
+  },
+  {
+   "id": "b-hl-books",
+   "kind": "highlight",
+   "title": "Highlight cover · Books",
+   "caption": "",
+   "src": [
+    "/assets/ig/h/books.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/h-books.jpg"
+   ],
+   "seq": 4
+  },
+  {
+   "id": "b-hl-contact",
+   "kind": "highlight",
+   "title": "Highlight cover · Contact",
+   "caption": "",
+   "src": [
+    "/assets/ig/h/contact.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/h-contact.jpg"
+   ],
+   "seq": 5
+  }
+ ]
+}
