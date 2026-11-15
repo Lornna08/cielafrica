@@ -1,7 +1,72 @@
 {
- "v": 8,
+ "v": 9,
  "note": "Ready-made Ciel Africa designs. They appear in Ciel Admin → Instagram → Planner; edits there are saved separately and win over this file.",
  "items": [
+  {
+   "id": "b-p-i01",
+   "kind": "post",
+   "title": "The .com was taken",
+   "caption": "The .com was taken. The .co.ke wasn’t.\nThat was a real search, today. Type your business name and see what’s free in seconds, with clear prices in KES.\n\ncielafrica.com/domains\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#DomainNames #SmallBusiness #WebDesign #CielAfrica",
+   "src": [
+    "/assets/ig/p/i01.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/i01.jpg"
+   ],
+   "seq": 32
+  },
+  {
+   "id": "b-p-i02",
+   "kind": "post",
+   "title": "The night shift",
+   "caption": "Your website works the night shift.\nBookings, orders and enquiries come in while you sleep, and you wake up to them.\n\ncielafrica.com\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#SmallBusiness #WebDesign #OnlineBusiness #CielAfrica",
+   "src": [
+    "/assets/ig/p/i02.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/i02.jpg"
+   ],
+   "seq": 33
+  },
+  {
+   "id": "b-p-i03",
+   "kind": "post",
+   "title": "Designed for thumbs",
+   "caption": "Designed for thumbs, not cursors.\nMost of your customers will meet you on a phone, so the buttons that matter sit where a thumb already rests.\n\ncielafrica.com\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#MobileFirst #UXDesign #WebDesign #CielAfrica",
+   "src": [
+    "/assets/ig/p/i03.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/i03.jpg"
+   ],
+   "seq": 34
+  },
+  {
+   "id": "b-p-i04",
+   "kind": "post",
+   "title": "Twelve live templates",
+   "caption": "Twelve live templates. Tap through any of them.\nRestaurants, shops, clinics, portfolios and more, with no sign-up.\n\ncielafrica.com/templates\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#WebsiteTemplates #WebDesign #SmallBusiness #CielAfrica",
+   "src": [
+    "/assets/ig/p/i04.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/i04.jpg"
+   ],
+   "seq": 35
+  },
+  {
+   "id": "b-p-i05",
+   "kind": "post",
+   "title": "Worth the tap",
+   "caption": "Make the link in your bio worth the tap.\nNot a DM. A real website with your menu, your prices and your booking or order button.\n\ncielafrica.com\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#LinkInBio #SmallBusiness #WebDesign #CielAfrica",
+   "src": [
+    "/assets/ig/p/i05.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/i05.jpg"
+   ],
+   "seq": 36
+  },
   {
    "id": "b-p-g15",
    "kind": "post",
@@ -600,6 +665,51 @@
    ],
    "seq": 13,
    "shareToFeed": false
+  },
+  {
+   "id": "b-r-domains",
+   "kind": "reel",
+   "title": "Find your domain",
+   "caption": "The .com was taken. The .co.ke wasn’t.\nType a name, see what’s free and what it costs, and make it yours. Real search, real prices.\n\ncielafrica.com/domains\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#DomainNames #SmallBusiness #WebDesign #CielAfrica",
+   "video": "/assets/ig/r/domains.mp4",
+   "src": [
+    "/assets/ig/r/domains-cover.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/r-domains-cover.jpg"
+   ],
+   "shareToFeed": false,
+   "seq": 14
+  },
+  {
+   "id": "b-r-wanja",
+   "kind": "reel",
+   "title": "Inside Wanja’s portfolio",
+   "caption": "Meet Wanja.\nHer work first, her rates one tap away, all on her own link.\n\ncielafrica.com/wanja\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#PortfolioWebsite #CreativeBusiness #WebDesign #CielAfrica",
+   "video": "/assets/ig/r/wanja.mp4",
+   "src": [
+    "/assets/ig/r/wanja-cover.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/r-wanja-cover.jpg"
+   ],
+   "shareToFeed": false,
+   "seq": 15
+  },
+  {
+   "id": "b-r-creme",
+   "kind": "reel",
+   "title": "Inside Crème Motion",
+   "caption": "Cakes, made to order.\nA menu you can almost taste, and an order in three taps. Live template.\n\ncielafrica.com/templates\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#BakeryWebsite #CakeBusiness #WebDesign #CielAfrica",
+   "video": "/assets/ig/r/creme.mp4",
+   "src": [
+    "/assets/ig/r/creme-cover.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/r-creme-cover.jpg"
+   ],
+   "shareToFeed": false,
+   "seq": 16
   },
   {
    "id": "b-s-a-story-1-hello",
