@@ -67,8 +67,8 @@
 .igq-warn{color:var(--r,#c0392b);font-weight:600}
 .igq-tabs{margin-left:.4rem}
 .igq-connect .igk-card__b{display:grid;justify-items:center;text-align:center;gap:.7rem;padding:2rem 1.2rem;max-width:520px;margin:0 auto}
-.igq-big{width:64px;height:64px;border-radius:18px;display:grid;place-items:center;color:#fff;background:linear-gradient(45deg,#f9a825,#e1306c 55%,#7b2ff7)}
-.igq-big svg{width:34px;height:34px}
+.igq-logo{width:64px;height:64px;border-radius:18px;display:grid;place-items:center;color:#fff;background:linear-gradient(45deg,#f9a825,#e1306c 55%,#7b2ff7)}
+.igq-logo svg{width:34px;height:34px}
 .igq-setup{background:var(--side2);border-radius:10px;padding:.9rem;text-align:left;display:grid;gap:.4rem;font-size:.86rem}
 .igq-copy{display:block;padding:.5rem .6rem;border-radius:8px;background:var(--card);border:1px solid var(--line);word-break:break-all;user-select:all}
 .igq-h{font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;color:var(--soft);margin:.4rem 0 .2rem;display:flex;gap:.4rem;align-items:center}
@@ -746,6 +746,12 @@ body.ig-dark .igv-p,body.ig-dark .igv-side,body.ig-dark .igv-in{background:#000;
 .igq-dvid>i{display:grid;place-items:center;width:100%;height:100%;background:var(--igbtn)}.igq-dvid>i svg{width:26px;height:26px}
 .igq-dfix{grid-column:1/-1;color:var(--soft);font-size:12px}
 .igq-bigs video{width:100%;border-radius:10px;background:#000}
+.igq-viewm .igk-modal__p{width:min(440px,100%)}
+.igq-big .igx-sech h2{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.igq-vwrap{display:grid;place-items:center;background:#000;border-radius:12px;overflow:hidden}
+.igq-vid{display:block;width:auto;max-width:100%;height:min(64dvh,680px);aspect-ratio:9/16;object-fit:contain;background:#000}
+.igq-bigr{flex-wrap:wrap;gap:8px}
+@media (max-width:600px){.igq-vid{height:min(58dvh,640px)}.igq-viewm .igq-bigc{max-height:16vh}.igq-bigr .igk-b{flex:1 1 auto}.igq-bigr .igq-sp{display:none}}
 .igq-share{display:grid;gap:12px}.igq-share h2{display:flex;gap:8px;align-items:center}.igq-share h2 svg,.igq-steps svg{width:18px;height:18px;vertical-align:-3px}
 .igq-steps{margin:0;padding-left:1.2rem;display:grid;gap:8px;font-size:14px;line-height:1.45}
 .igq-hookb{width:100%;justify-content:center}

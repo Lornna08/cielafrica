@@ -1288,7 +1288,7 @@
 
   function connect(b, st) {
     st = st || S.st || {}; var body = b.querySelector('#igBody'), u = st.urls || {};
-    body.innerHTML = '<div class="igk-card igq-connect"><div class="igk-card__b"><i class="igq-big">' + IC.ig + '</i><h2>Connect Instagram</h2>' +
+    body.innerHTML = '<div class="igk-card igq-connect"><div class="igk-card__b"><i class="igq-logo">' + IC.ig + '</i><h2>Connect Instagram</h2>' +
       '<p class="igk-muted">Post and schedule photos, carousels, reels and stories for <b>@' + esc(((S.st && S.st.account) || {}).username || 'ciel_africa') + '</b>, answer messages and comments, and see your stats, all from here.</p>' +
       (!A.owner() ? '<p class="igq-warn">Instagram isn’t connected yet. You connect @' + esc(((S.st && S.st.account) || {}).username || 'ciel_africa') + ' here; then everyone with access can use this page.</p>' : st.configured ? '<button class="igk-b igk-b--p" id="igTok">Connect with an access token</button><p class="igk-faint">Make the token in Meta Business Settings → Users → System users → Generate token. @' + esc(((S.st && S.st.account) || {}).username || 'ciel_africa') + ' must be a <b>Business</b> or <b>Creator</b> account.</p>'
         : '<div class="igq-setup"><b>One step first</b><p>In Vercel (Project → Settings → Environment Variables) add <code>IG_APP_SECRET</code> = your App secret (your Meta app → App settings → Basic → App secret), then redeploy.</p></div>') +
@@ -1865,6 +1865,8 @@
       if (!n) go(); else setTimeout(go, n * 700);
     }
     function download(p) {
+      /* phones save one file per tap, so a reel opens its sheet with separate Save video and Save cover buttons */
+      if (p.videoUrl && mobile()) return big(p);
       var list = filesOf(p); if (!list.length) return;
       list.forEach(saveUrl); H.toast(list.length > 1 ? 'Downloading ' + list.length + ' files' : 'Downloading', 'ok');
     }
@@ -1909,17 +1911,35 @@
         [['post', 'Posts'], ['story', 'Stories'], ['reel', 'A reel'], ['highlight', 'Highlights']].map(function (k) { return '<button class="igx-btn" data-add="' + k[0] + '">' + IC.plus + '<span>' + k[1] + '</span></button>'; }).join('') + '</div></div>';
       box.querySelectorAll('[data-add]').forEach(function (b) { b.onclick = function () { var k = b.getAttribute('data-add'); if (k === 'reel') return edit({ kind: 'reel', paths: [], images: [], caption: '', status: 'ready' }); addMany(k); }; });
     }
-    /* full-size look, save to the phone, copy the caption */
+    /* full-size look, save to the phone, copy the caption. A reel plays here; on phones its video and cover are
+       fetched as the sheet opens, so "Save video" can hand the file to the share sheet (Save Video → Photos) */
+    function keep(f, label, btn) {
+      var c = FC[f.url] && FC[f.url].file;
+      if (c && mobile() && navigator.canShare && navigator.canShare({ files: [c] })) return navigator.share({ files: [c] }).then(function () { H.toast(label + ' saved', 'ok'); }, function (e) { if (e && e.name !== 'AbortError') { saveFile(c); H.toast('Downloading ' + label.toLowerCase(), 'ok'); } });
+      saveUrl(f); H.toast('Downloading ' + label.toLowerCase(), 'ok');
+    }
     function big(p) {
-      var imgs = p.images || []; if (!imgs.length) return edit(p);
-      var tall = /story|reel/.test(p.kind);
-      var m = H.modal('<div class="igq-big"><div class="igx-sech"><h2>' + esc(kindName(p.kind)) + '</h2><button class="igk-b igk-b--sm igk-b--ghost" data-x>✕</button></div>' +
-        '<div class="igq-bigs">' + (p.videoUrl ? '<video src="' + esc(p.videoUrl) + '" poster="' + esc(imgs[0]) + '" controls playsinline preload="metadata" style="aspect-ratio:9 / 16"></video>' : '') + imgs.map(function (u) { return '<img src="' + esc(u) + '" alt="" style="aspect-ratio:' + (tall ? '9 / 16' : p.kind === 'highlight' ? '1 / 1' : 'auto') + '">'; }).join('') + '</div>' +
-        (p.caption ? '<p class="igq-bigc">' + esc(p.caption).replace(/\n/g, '<br>') + '</p>' : '') +
-        '<div class="igk-row"><span class="igq-sp"></span>' + (p.caption ? '<button class="igk-b" data-cp>Copy caption</button>' : '') + '<button class="igk-b igk-b--p" data-sv>' + IC.down + '<span>Download</span></button></div></div>');
-      m.classList.add('igx-pickm');
+      var imgs = p.images || [], vid = !!p.videoUrl; if (!imgs.length && !vid) return edit(p);
+      var tall = /story|reel/.test(p.kind), files = filesOf(p), vf = vid ? files[0] : null, cf = vid ? files[1] : null;
+      var media = vid
+        ? '<div class="igq-vwrap"><video class="igq-vid" src="' + esc(p.videoUrl) + '"' + (imgs[0] ? ' poster="' + esc(imgs[0]) + '"' : '') + ' controls playsinline preload="metadata"></video></div>'
+        : '<div class="igq-bigs">' + imgs.map(function (u) { return '<img src="' + esc(u) + '" alt="" style="aspect-ratio:' + (tall ? '9 / 16' : p.kind === 'highlight' ? '1 / 1' : 'auto') + '">'; }).join('') + '</div>';
+      var acts = vid
+        ? (p.caption ? '<button class="igk-b" data-cp>Copy caption</button>' : '') + '<span class="igq-sp"></span>' + (cf ? '<button class="igk-b" data-cv>Save cover</button>' : '') + '<button class="igk-b igk-b--p" data-sv>' + IC.down + '<span>Save video</span></button>'
+        : '<span class="igq-sp"></span>' + (p.caption ? '<button class="igk-b" data-cp>Copy caption</button>' : '') + '<button class="igk-b igk-b--p" data-sv>' + IC.down + '<span>Download</span></button>';
+      var m = H.modal('<div class="igq-big"><div class="igx-sech"><h2>' + esc(p.title || kindName(p.kind)) + '</h2><button class="igk-b igk-b--sm igk-b--ghost" data-x aria-label="Close">✕</button></div>' + media +
+        '<div class="igk-row igq-bigr">' + acts + '</div>' + (p.caption ? '<p class="igq-bigc">' + esc(p.caption).replace(/\n/g, '<br>') + '</p>' : '') + '</div>');
+      m.classList.add('igx-pickm'); if (vid) m.classList.add('igq-viewm');
       var cp = m.querySelector('[data-cp]'); if (cp) cp.onclick = function () { try { navigator.clipboard.writeText(p.caption || ''); H.toast('Caption copied', 'ok'); } catch (e) { H.toast('Couldn’t copy.', 'err'); } };
-      m.querySelector('[data-sv]').onclick = function () { download(p); };
+      var sv = m.querySelector('[data-sv]'), cv = m.querySelector('[data-cv]');
+      if (!vid) { sv.onclick = function () { download(p); }; return; }
+      if (mobile()) {
+        var lab = sv.querySelector('span'); sv.disabled = true; lab.textContent = 'Getting the video…';
+        fileFor(vf).then(function () { sv.disabled = false; lab.textContent = 'Save video'; }, function (e) { sv.disabled = false; lab.textContent = 'Save video'; H.toast(e.message, 'err'); });
+        if (cf) fileFor(cf).catch(function () { });
+      }
+      sv.onclick = function () { keep(vf, 'Video'); };
+      if (cv) cv.onclick = function () { keep(cf, 'Cover'); };
     }
     /* add or change one design: type, pictures, caption, posted or not */
     function edit(p) {
