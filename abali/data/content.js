@@ -22,11 +22,11 @@ AB.content = {
 
   /* C. Departments. `img` is a photo in img/p/ (without the size). `tags` are short lines shown when open. */
   departments: [
-    { id: 'general', name: 'General Medicine', short: 'Check-ups, ongoing conditions and first answers when something feels wrong.', tags: ['Adult consultations', 'Chronic care plans', 'Health screening'], img: 'consult' },
+    { id: 'general', name: 'General Medicine', short: 'Check-ups, ongoing conditions and first answers when something feels wrong.', tags: ['Adult consultations', 'Chronic care plans', 'Health screening'], img: 'general' },
     { id: 'paeds', name: 'Paediatrics', short: 'Care for babies, children and teenagers, with time for parents’ questions.', tags: ['Well-baby visits', 'Vaccinations', 'Growth and development'], img: 'peds' },
     { id: 'maternity', name: 'Maternity & Women’s Health', short: 'From planning a pregnancy to the first weeks at home.', tags: ['Antenatal clinics', 'Delivery suites', 'Postnatal support'], img: 'maternity' },
     { id: 'cardio', name: 'Cardiology', short: 'Heart checks, blood pressure and long-term heart care.', tags: ['ECG and monitoring', 'Blood pressure clinic', 'Heart health reviews'], img: 'care-bp' },
-    { id: 'ortho', name: 'Orthopaedics', short: 'Bones, joints and movement, from injuries to long-standing pain.', tags: ['Fracture care', 'Joint pain clinic', 'Physiotherapy'], img: 'care-elder' },
+    { id: 'ortho', name: 'Orthopaedics', short: 'Bones, joints and movement, from injuries to long-standing pain.', tags: ['Fracture care', 'Joint pain clinic', 'Physiotherapy'], img: 'ortho' },
     { id: 'dental', name: 'Dental Care', short: 'Routine dental care and treatment for the whole family.', tags: ['Check-ups and cleaning', 'Fillings', 'Children’s dentistry'], img: 'dental' },
     { id: 'lab', name: 'Laboratory Services', short: 'Blood tests and samples processed on site, with results sent to your doctor.', tags: ['Blood tests', 'Urine and stool tests', 'Results to your doctor'], img: 'lab' },
     { id: 'imaging', name: 'Diagnostic Imaging', short: 'Scans and X-rays read by our radiology team.', tags: ['X-ray', 'Ultrasound', 'CT and MRI'], img: 'imaging' },
@@ -38,7 +38,7 @@ AB.content = {
     kicker: 'Why Abali',
     title: 'Care that feels *coordinated*, because it is.',
     items: [
-      { title: 'Patient-centred care', text: 'Your questions shape the plan. We explain the options and decide with you.', img: 'care-elder', size: 'xl' },
+      { title: 'Patient-centred care', text: 'Your questions shape the plan. We explain the options and decide with you.', img: 'listen', size: 'xl' },
       { title: 'Experienced professionals', text: 'Specialists and nurses who work as one team around each patient.', tone: 'pollen' },
       { title: 'Modern facilities', text: 'Imaging, laboratory and theatres on site, so tests don’t mean another trip.', img: 'imaging-room' },
       { title: 'Clear communication', text: 'Results explained in plain language, with a named contact for follow-up.', tone: 'forest' }
@@ -72,9 +72,9 @@ AB.content = {
   bring: ['A form of ID', 'Your insurance or payment details', 'A list of the medicines you take', 'Any referral letter or earlier results'],
   facilities: [
     { title: 'Private and shared rooms', img: 'room' },
-    { title: 'Laboratory on site', img: 'lab' },
-    { title: 'Imaging suite', img: 'imaging-room' },
-    { title: 'Calm waiting areas', img: 'corridor' }
+    { title: 'Laboratory on site', img: 'lab-tubes' },
+    { title: 'Operating theatres', img: 'theatre' },
+    { title: 'Calm waiting areas', img: 'waiting' }
   ],
   insurance: 'Sample text: list the insurance providers you accept and the payment options here.',
 
