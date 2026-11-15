@@ -43,21 +43,23 @@ CREME.config = {
 
   currency: { prefix: 'KES ', locale: 'en-KE' },
 
-  /* The hero: a video that plays once and rests on its final frame.
-     Give a portrait version for phones. With reduced motion the "end" still is shown. */
+  /* The hero is a photograph of the bakery's own cake, ideally a cut slice that shows the layers.
+     reveal: a line of light opens the frame at `focus` (fractions of the photo) and the camera eases back
+     from `zoom` to the full picture. Give a portrait crop for phones.
+     To use your own film instead, remove `reveal` and set video / videoWebm / poster / still / revealAt. */
   hero: {
     kicker: 'Patisserie & celebration cakes',
     headline: ['Every layer', 'tells a story.'],   // one line per item
     text: 'Hand-layered cakes, fresh cream and fruit-bright fillings, made to order for the moments you want to remember.',
-    primary: { label: 'Explore the collection', href: '#collection' },
+    primary: { label: 'See the menu', href: '#collection' },
     secondary: { label: 'Design your cake', href: '#design' },
-    video: { desktop: 'img/hero/hero-v2-1280.mp4', mobile: 'img/hero/hero-v2-608x1080.mp4' },
-    videoWebm: { desktop: 'img/hero/hero-v2-1280.webm', mobile: 'img/hero/hero-v2-608x1080.webm' },   // optional, smaller; tried first
-    poster: { desktop: 'img/hero/hero-v2-1280-start.webp', mobile: 'img/hero/hero-v2-608x1080-start.webp' },
-    still: { desktop: 'img/hero/hero-v2-1280-end.webp', mobile: 'img/hero/hero-v2-608x1080-end.webp' },
-    revealAt: 4.6,
-    background: '#CDB7A6',                // colour at the top edge of the film; fills the space behind the menu bar                         // seconds into the video when the headline appears
-    alt: 'A pink vintage cake with piped pearls and cherries on a cake stand. A knife cuts a slice and a cake server lifts it out to show chocolate sponge, vanilla cream and raspberry jam.'
+    reveal: {
+      image: { desktop: 'img/hero/slice-2600.webp', tablet: 'img/hero/slice-1500.webp', mobile: 'img/hero/slice-portrait-1170.webp' },
+      focus: { desktop: [0.705, 0.6], mobile: [0.4, 0.58] },        // where the line of light falls and the camera starts
+      position: { desktop: '72% 50%', mobile: '50% 52%' },          // object-position of the photo
+      zoom: 2.3
+    },
+    alt: 'A slice of red velvet cake with cream cheese frosting on a plate, the rest of the cake behind it.'
   },
 
   /* WhatsApp ordering.

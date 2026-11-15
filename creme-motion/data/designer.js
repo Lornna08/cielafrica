@@ -1,13 +1,13 @@
 /* ==========================================================================
    CRÈME MOTION — the cake designer (sample options and prices)
-   Customers build their own cake and see it drawn live with an estimated
+   Customers build their own cake and see a photographic preview with an estimated
    price. Change any option, colour or price here. Flavour prices come from
    CREME.flavorTables.cake in data/menu.js; toppers come from CREME.addons.
    ========================================================================== */
 window.CREME = window.CREME || {};
 
 CREME.designer = {
-  intro: 'Choose a shape, size and flavour, pick your colours and piping, add a message and toppers. We confirm the final design and price with you before baking.',
+  intro: 'Choose the shape, size and flavour, then the colour and finish. The photograph changes with you and the price updates as you go. We confirm the final design and price before we bake.',
 
   shapes: [
     { id: 'round', label: 'Round' },
@@ -55,24 +55,19 @@ CREME.designer = {
     { id: 'drip', label: 'Chocolate drip', price: 450 }
   ],
 
-  /* toppers that are drawn in the preview (any other add-on can still be chosen from the list) */
-  drawn: {
-    'Fresh strawberries and berries': 'berries',
-    'Large custom bow': 'bow',
-    'Sugar pearls': 'pearls',
-    'Butterflies': 'butterflies',
-    'Wavy candles': 'candles',
-    'Number candles': 'numbers',
-    'Small tiara': 'tiara',
-    'Big tiara': 'tiara',
-    'Fondant rose': 'roses',
-    'Fresh flowers (40–50 stems)': 'roses',
-    'Gold spheres': 'spheres',
-    'Acrylic name topper': 'name',
-    'Paper name topper': 'name',
-    'Black graduation cap': 'cap',
-    'Custom graduation cap': 'cap'
-  },
 
-  messageMax: 30
+  messageMax: 30,
+
+  /* Preview photographs (img/studio/<image>.webp with a matching <image>-mask.png that marks the frosting).
+     The studio shows the photo that matches the chosen shape and piping style, or the closest one for that shape,
+     and tints its frosting to the chosen colour. Add your own photographs and masks to show more combinations. */
+  previewPath: 'img/studio/',
+  previews: [
+    { image: 'round-smooth', shape: 'round', piping: ['smooth'] },
+    { image: 'round-vintage', shape: 'round', piping: ['vintage'] },
+    { image: 'round-ruffles', shape: 'round', piping: ['ruffles', 'rosettes'] },
+    { image: 'round-drip', shape: 'round', piping: ['drip'] },
+    { image: 'heart', shape: 'heart', piping: ['vintage', 'ruffles'] },
+    { image: 'tiers', shape: 'tiers', piping: ['smooth'] }
+  ]
 };

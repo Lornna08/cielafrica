@@ -4,10 +4,17 @@ All photographs in `img/p/` come from **[Unsplash](https://unsplash.com)** and a
 
 Changes made for the template: resized to 800 px and 1600 px wide and saved as WebP. They are placeholders: replace them with the bakery's own photographs (same file names, or update `data/menu.js` and `data/content.js`).
 
-`img/hero/` (the cake-cutting film and its stills) is an original 3D render made for CRÈME MOTION. `img/brand/` was made for this template.
+`img/hero/slice-*` and `img/studio/*` are Unsplash photographs too (listed first below). The studio masks (`*-mask.png`) were drawn for this template. `img/brand/` was made for this template.
 
 | File | Photographer | Photo |
 |---|---|---|
+| `hero/slice` | [amirali mirhashemian](https://unsplash.com/@amir_v_ali) | [unsplash.com/photos/EfkMkUXs0fU](https://unsplash.com/photos/EfkMkUXs0fU) |
+| `studio/round-smooth` | [elnaz asadi](https://unsplash.com/@elnazasadi) | [unsplash.com/photos/aYpioIlfL2A](https://unsplash.com/photos/aYpioIlfL2A) |
+| `studio/round-vintage` | [Julie Sd](https://unsplash.com/@juliesdfg) | [unsplash.com/photos/QEZ-F1r_VHQ](https://unsplash.com/photos/QEZ-F1r_VHQ) |
+| `studio/round-ruffles` | [Jonathan Borba](https://unsplash.com/@jonathanborba) | [unsplash.com/photos/AAAX_mN2-SE](https://unsplash.com/photos/AAAX_mN2-SE) |
+| `studio/round-drip` | [David Holifield](https://unsplash.com/@davidholifield) | [unsplash.com/photos/J-46sdLKbRY](https://unsplash.com/photos/J-46sdLKbRY) |
+| `studio/heart` | [Laura Durán](https://unsplash.com/@lauraduranozoria) | [unsplash.com/photos/N-IOf6HmWH4](https://unsplash.com/photos/N-IOf6HmWH4) |
+| `studio/tiers` | [Tom The Photographer](https://unsplash.com/@tomthephotographer) | [unsplash.com/photos/1HBNCP_a1ZA](https://unsplash.com/photos/1HBNCP_a1ZA) |
 | `bento-box` | [Rehina Sultanova](https://unsplash.com/@regsultik) | [unsplash.com/photos/rIiGJGOPLIw](https://unsplash.com/photos/rIiGJGOPLIw) |
 | `bento-green` | [Zahra Tavakoli fard](https://unsplash.com/@tavakoli_z21) | [unsplash.com/photos/y-0tVhIA1BI](https://unsplash.com/photos/y-0tVhIA1BI) |
 | `berry-cake` | [Alina Karpenko](https://unsplash.com/@alinasagirova) | [unsplash.com/photos/IAYQuCqD00g](https://unsplash.com/photos/IAYQuCqD00g) |
