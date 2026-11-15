@@ -12,7 +12,7 @@ sample content and must be replaced for each client. No credentials, accreditati
   the words below it. It pauses when off screen, and shows a still image without WebGL or with reduced motion.
 - **Header.** A floating pill navigation and *Book an appointment*; a full-screen menu on smaller screens. The
   header steps aside while you scroll down and returns when you scroll up.
-- **About.** An editorial statement with small photographs set inside the sentence, a photograph and three pillars.
+- **About.** An editorial statement, a photograph and three pillars.
 - **Services.** Nine departments as an interactive list: on desktop the photograph beside it changes as you point
   at or open a department; on phones each department opens with its own photograph. Each has *Book in …*, which
   scrolls to the form with the department chosen.

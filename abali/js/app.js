@@ -67,10 +67,10 @@
   /* ---------- B. introduction ---------- */
   function intro() {
     var t = D.intro;
-    var st = esc(t.statement).replace(/\[img:([a-z0-9-]+)\]/g, function (_, n) { return '<span class="inl" data-rv>' + pic(n, '', '160px') + '</span>'; });
+    var st = em(t.statement).replace(/\[img:([a-z0-9-]+)\]/g, function (_, n) { return '<span class="inl" data-rv>' + pic(n, '', '160px') + '</span>'; });
     return '<section class="intro sec" id="about"><div class="wrap">' +
       '<p class="kicker" data-rv>' + esc(t.kicker) + '</p><p class="stmt" data-rv>' + st + '</p>' +
-      '<div class="intro-g"><figure class="intro-fig" data-rv><div class="par" data-par="0.08">' + pic('care-bp', 'A nurse checking a patient’s blood pressure', '(max-width:900px) 100vw, 40vw') + '</div><figcaption><b>Your care team, by name.</b> Every patient has a named doctor and nurse.</figcaption></figure>' +
+      '<div class="intro-g"><figure class="intro-fig" data-rv><div class="par" data-par="0.08">' + pic('consult', 'A doctor and a nurse reviewing a patient’s notes together', '(max-width:900px) 100vw, 40vw') + '</div><figcaption><b>Your care team, by name.</b> Every patient has a named doctor and nurse.</figcaption></figure>' +
       '<div class="intro-t"><p class="big" data-rv>' + esc(t.text) + '</p><div class="pillars">' + t.pillars.map(function (p, i) { return '<div class="pl" data-rv style="--d:' + i * 0.08 + 's"><span class="n">0' + (i + 1) + '</span><h3>' + esc(p.title) + '</h3><p>' + esc(p.text) + '</p></div>'; }).join('') + '</div></div></div></div></section>';
   }
 

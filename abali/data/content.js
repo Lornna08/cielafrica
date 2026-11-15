@@ -8,10 +8,10 @@
 window.AB = window.AB || {};
 
 AB.content = {
-  /* B. Introduction. In `statement`, [img:name] places a small round photo inside the sentence. */
+  /* B. Introduction. In `statement`, [img:name] can place a small round photo inside the sentence (optional). */
   intro: {
     kicker: 'About Abali',
-    statement: 'We listen first [img:care-elder], explain every step in plain words [img:consult], and treat you as a whole person [img:peds], not a list of symptoms.',
+    statement: 'We listen first, explain every step in plain words, and treat you as a *whole person*, not a list of symptoms.',
     text: 'Abali brings general practice, specialist clinics, diagnostics and in-patient care into one place, so your records, your results and your care team stay together.',
     pillars: [
       { title: 'One record', text: 'Every test, scan and note in one file your doctors share.' },
@@ -24,7 +24,7 @@ AB.content = {
   departments: [
     { id: 'general', name: 'General Medicine', short: 'Check-ups, ongoing conditions and first answers when something feels wrong.', tags: ['Adult consultations', 'Chronic care plans', 'Health screening'], img: 'consult' },
     { id: 'paeds', name: 'Paediatrics', short: 'Care for babies, children and teenagers, with time for parents’ questions.', tags: ['Well-baby visits', 'Vaccinations', 'Growth and development'], img: 'peds' },
-    { id: 'maternity', name: 'Maternity & Women’s Health', short: 'From planning a pregnancy to the first weeks at home.', tags: ['Antenatal clinics', 'Delivery suites', 'Postnatal support'], img: 'room' },
+    { id: 'maternity', name: 'Maternity & Women’s Health', short: 'From planning a pregnancy to the first weeks at home.', tags: ['Antenatal clinics', 'Delivery suites', 'Postnatal support'], img: 'maternity' },
     { id: 'cardio', name: 'Cardiology', short: 'Heart checks, blood pressure and long-term heart care.', tags: ['ECG and monitoring', 'Blood pressure clinic', 'Heart health reviews'], img: 'care-bp' },
     { id: 'ortho', name: 'Orthopaedics', short: 'Bones, joints and movement, from injuries to long-standing pain.', tags: ['Fracture care', 'Joint pain clinic', 'Physiotherapy'], img: 'care-elder' },
     { id: 'dental', name: 'Dental Care', short: 'Routine dental care and treatment for the whole family.', tags: ['Check-ups and cleaning', 'Fillings', 'Children’s dentistry'], img: 'dental' },
