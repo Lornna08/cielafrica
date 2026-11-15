@@ -2,13 +2,12 @@
 
 All photographs in `img/p/` and `img/hero/` come from **[Unsplash](https://unsplash.com)** and are used under the [Unsplash License](https://unsplash.com/license): free for commercial use, no attribution required. We still thank the photographers. Each download was registered through the Unsplash API.
 
-Changes made for the template: resized (800 and 1600 px wide; the two hero photos also 1280, 1920 and 2560 px) and saved as WebP. The fire, heat haze, sparks and smoke in the opening scene are drawn live in the browser over the photographs. They are placeholders: replace them with the restaurant's own photography (same file names, or update `data/menu.js`, `data/content.js` and `config/site.config.js`). `img/brand/` was made for this template.
+Changes made for the template: resized (800 and 1600 px wide; the hero photo also 1280, 1920 and 2560 px) and saved as WebP. The fire, heat haze, sparks and smoke in the opening scene are drawn live in the browser over the photographs. They are placeholders: replace them with the restaurant's own photography (same file names, or update `data/menu.js`, `data/content.js` and `config/site.config.js`). `img/brand/` was made for this template.
 
 | File | Photographer | Photo |
 |---|---|---|
 | `hero/fire-a-*` | [Emerson Vieira](https://unsplash.com/@emersonvieira) | [unsplash.com/photos/_aR4l6fj6wQ](https://unsplash.com/photos/_aR4l6fj6wQ) |
 | `p/fire-b` | [Emerson Vieira](https://unsplash.com/@emersonvieira) | [unsplash.com/photos/Qi7NlvF-ZsY](https://unsplash.com/photos/Qi7NlvF-ZsY) |
-| `hero/sliced-*` | [Sebastian Doll](https://unsplash.com/@sebonbali) | [unsplash.com/photos/wxt4m8ECpgM](https://unsplash.com/photos/wxt4m8ECpgM) |
 | `p/tomahawk` | [Madie Hamilton](https://unsplash.com/@mham3816) | [unsplash.com/photos/dZ-HI4EuWcA](https://unsplash.com/photos/dZ-HI4EuWcA) |
 | `p/jus-pour` | [Urban Gyllström](https://unsplash.com/@gyllstrom_photo) | [unsplash.com/photos/MaWMfm-HCqQ](https://unsplash.com/photos/MaWMfm-HCqQ) |
 | `p/prawn` | [jirayu koontholjinda](https://unsplash.com/@armkntjnd) | [unsplash.com/photos/wtpibGwNv1k](https://unsplash.com/photos/wtpibGwNv1k) |

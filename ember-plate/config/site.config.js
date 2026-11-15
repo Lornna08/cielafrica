@@ -22,18 +22,22 @@ EP.config = {
     favicon: 'img/brand/favicon.svg'
   },
 
-  /* Colours. Dark surfaces, warm wood and metallic accents. */
+  /* Colours. `default` is the theme visitors see first; with `switcher: true` a sun/moon button in the
+     header lets them change it (their choice is remembered in their browser). Both palettes use the same
+     names: night = page background, coal = raised surfaces, wood = warm panels, ivory = main text,
+     smoke = secondary text, copper = buttons and prices, gold = fine details. Photo areas (the opening
+     scene, signature dishes, gallery viewer) always use the dark colours. */
   theme: {
-    night: '#0D0B0A',       // page background
-    coal: '#14110F',        // raised surfaces
-    wood: '#241A14',        // warm panels
-    ash: '#2E2620',         // borders on dark
-    ivory: '#EFE6D8',       // main text
-    smoke: '#A99C8B',       // secondary text
-    copper: '#C27C46',      // primary accent (buttons, prices)
-    bronze: '#9C7448',
-    gold: '#CDAE78',        // fine details
-    ember: '#E2622B'        // used sparingly: live states, spice
+    default: 'dark',
+    switcher: true,
+    dark: {
+      night: '#0D0B0A', coal: '#14110F', wood: '#241A14', ash: '#2E2620',
+      ivory: '#EFE6D8', smoke: '#A99C8B', copper: '#C27C46', bronze: '#9C7448', gold: '#CDAE78', ember: '#E2622B'
+    },
+    light: {
+      night: '#F6F0E7', coal: '#EEE5D7', wood: '#E7DAC6', ash: '#D8C9B3',
+      ivory: '#1D1712', smoke: '#6B5E4F', copper: '#A8541C', bronze: '#8A6236', gold: '#86622C', ember: '#C2461A'
+    }
   },
 
   /* Fonts: any Google Fonts pair. Change the URL and the two family names. */
@@ -45,36 +49,30 @@ EP.config = {
 
   currency: { prefix: 'KES ', locale: 'en-KE' },
 
-  /* The opening scene. Two photographs: the first is shown with living fire
-     (moving heat haze, flickering flames and rising sparks), the second is
-     revealed through smoke as the visitor scrolls. To use one photograph only,
-     remove `reveal`. To use your own film instead of photographs, set `video`.
-     fire.flames: the area of the first photo where the flames are, as fractions
-     of its width and height [left, top, right, bottom]; sparks rise from here.
-     position: CSS object-position of each photo on wide and on portrait screens. */
+  /* The opening scene: a photograph of the signature dish over fire, made alive in the browser
+     (heat haze and flicker on the flames, rising sparks, rolling smoke and a slow camera push).
+     fire.position: CSS object-position of the photo on wide screens and on phones held upright.
+     zoom / zoomPortrait: 1 = the photo just fills its frame; larger crops in closer.
+     flames: the area of the photo where the fire is, as fractions of its width and height
+     [left, top, right, bottom]; the flicker and sparks stay inside it.
+     smoke: how much smoke rolls through the scene (0 = none, 1 = default, up to about 1.5).
+     To use the restaurant's own film instead, set `video`. */
   hero: {
     kicker: 'Wood-fire grill · Steaks · Seafood',
-    headline: ['Crafted by fire.', 'Remembered by flavour.'],
+    headline: ['Crafted by fire.', 'Remembered by flavour.'],   // one line per item
     text: 'Prime cuts, whole fish and garden vegetables cooked over open flame, served with the warmth of a long dinner among friends.',
     primary: { label: 'Explore our menu', href: '#menu' },
     secondary: { label: 'Reserve a table', href: '#reserve' },
     fire: {
       image: 'img/hero/fire-a', widths: [1280, 1920, 2560],
       alt: 'A tomahawk steak searing over open flames on a grill.',
-      position: { wide: '20% 50%', portrait: '42% 50%' },
-      zoom: 1.1,                    // 1 = fit the screen; larger crops in closer
-      flames: [0.5, 0.06, 0.9, 0.72]
+      position: { wide: '20% 50%', portrait: '60% 50%' },
+      zoom: 1.1,
+      zoomPortrait: 1,
+      flames: [0.5, 0.06, 0.9, 0.72],
+      smoke: 1
     },
-    reveal: {
-      image: 'img/hero/sliced', widths: [1280, 1920, 2560],
-      alt: 'Slices of tomahawk steak with a dark crust and a pink centre, in a cast iron pan.',
-      position: { wide: '50% 55%', portrait: '58% 50%' },
-      kicker: 'The signature',
-      title: 'Flame-kissed tomahawk',
-      text: 'Dry-aged on the bone, seared over hardwood and rested before it is carved at the table.',
-      item: 'tomahawk'              // menu item id the "View dish" button opens
-    },
-    video: ''                       // e.g. 'img/hero/film.mp4' — replaces the photographs
+    video: ''                       // e.g. 'img/hero/film.mp4' — replaces the photograph
   },
 
   /* Ordering. modes: any of 'whatsapp', 'request', 'payment'.
@@ -92,6 +90,14 @@ EP.config = {
     },
     leadMinutes: 30,               // earliest time offered, from now
     note: 'Prices include VAT. We confirm every order before it goes on the grill.'   // sample, replace
+  },
+
+  /* Glovo. Shown once, at the bottom of the page. url: the restaurant's own store page on Glovo.
+     Leave url empty to hide it. (The sample points at Glovo's home page.) */
+  glovo: {
+    url: 'https://glovoapp.com/',
+    label: 'Order on Glovo',
+    text: 'Prefer a delivery app? You can also find us on Glovo.'
   },
 
   /* Delivery and collection */
@@ -163,9 +169,9 @@ EP.config = {
 
   nav: [
     { label: 'Menu', href: '#menu' },
+    { label: 'Order online', href: '#order' },
     { label: 'Signatures', href: '#signatures' },
     { label: 'Experience', href: '#experience' },
-    { label: 'Gallery', href: '#gallery' },
     { label: 'Visit', href: '#visit' }
   ],
 

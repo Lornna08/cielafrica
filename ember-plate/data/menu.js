@@ -17,7 +17,10 @@
      available    true | false | 'limited'   (false shows "Not available today")
      note         short line shown under the price, e.g. 'Serves two'
      signature    true marks it as a house signature
-     image        file name in img/p (without -800.webp), alt, optional pos (CSS object-position)
+     group        optional sub-heading inside a category, e.g. 'Cocktails' or 'Coffee & tea'
+     orderable    false keeps it on the menu but out of online ordering (e.g. alcohol, dine-in only)
+     image        optional: file name in img/p (without -800.webp), alt, optional pos (CSS object-position).
+                  Dishes without a photo still look right on the menu and in ordering.
    ========================================================================== */
 window.EP = window.EP || {};
 
@@ -32,6 +35,7 @@ EP.dietary = {
 };
 
 EP.categories = [
+  { id: 'specials', label: "Chef's specials", blurb: 'What the kitchen is most excited about this week.', feature: true },
   { id: 'starters', label: 'Starters', blurb: 'Small plates to open the table.' },
   { id: 'grills', label: 'Signature grills', blurb: 'Skewers, ribs and birds over hardwood.' },
   { id: 'steaks', label: 'Steaks', blurb: 'Aged on the bone, seared hard, rested well.' },
@@ -40,12 +44,11 @@ EP.categories = [
   { id: 'pasta', label: 'Pasta', blurb: 'Rolled, cut and sauced to order.' },
   { id: 'sides', label: 'Sides', blurb: 'For the middle of the table.' },
   { id: 'desserts', label: 'Desserts', blurb: 'One more course. Always.' },
-  { id: 'drinks', label: 'Drinks', blurb: 'Bar classics and house coolers.' },
-  { id: 'specials', label: "Chef's specials", blurb: 'What the kitchen is most excited about this week.' }
+  { id: 'drinks', label: 'Drinks', blurb: 'Bar classics and house coolers.' }
 ];
 
-/* The category the menu opens on (an id from the list above). Empty = the first one. */
-EP.menuStart = 'grills';
+/* The category the order-online catalogue opens on (an id from the list above). Empty = the first one. */
+EP.orderStart = 'grills';
 
 var DONENESS = { name: 'How would you like it cooked?', type: 'one', required: true, choices: [
   { label: 'Rare' }, { label: 'Medium rare' }, { label: 'Medium' }, { label: 'Medium well' }, { label: 'Well done' }] };
@@ -215,21 +218,51 @@ EP.menu = [
     image: { src: 'berry-tart', alt: 'A chocolate tart topped with raspberries and blueberries on a wooden table.', pos: '35% 55%' } },
 
   /* ---- Drinks ---- */
-  { id: 'old-fashioned', category: 'drinks', name: 'Smoked old fashioned', price: 1200,
+  { id: 'old-fashioned', category: 'drinks', group: 'Cocktails', name: 'Smoked old fashioned', price: 1200, orderable: false,
     description: 'Bourbon, demerara and bitters, stirred down and smoked over oak.',
     ingredients: ['Bourbon', 'Demerara', 'Bitters', 'Orange'], dietary: ['alc'], available: true,
     image: { src: 'old-fashioned', alt: 'An old fashioned with ice next to half an orange on a bar.', pos: '60% 55%' } },
-  { id: 'iced-tea', category: 'drinks', name: 'Iced black tea, citrus', price: 450,
+  { id: 'negroni', category: 'drinks', group: 'Cocktails', name: 'Ember negroni', price: 1200, orderable: false,
+    description: 'Gin, bitter aperitivo and sweet vermouth with a flamed orange peel.',
+    ingredients: ['Gin', 'Bitter aperitivo', 'Sweet vermouth', 'Orange'], dietary: ['alc'], available: true },
+  { id: 'passion-mojito', category: 'drinks', group: 'Cocktails', name: 'Passion fruit mojito', price: 1100, orderable: false,
+    description: 'White rum, passion fruit, lime and mint, topped with soda.',
+    ingredients: ['White rum', 'Passion fruit', 'Lime', 'Mint', 'Soda'], dietary: ['alc'], available: true },
+  { id: 'citrus-cooler', category: 'drinks', group: 'Without alcohol', name: 'Citrus cooler', price: 500,
+    description: 'Fresh orange and lime pressed over ice with ginger syrup and soda.',
+    ingredients: ['Orange', 'Lime', 'Ginger', 'Soda'], dietary: ['vg', 'gf'], available: true,
+    image: { src: 'citrus', alt: 'Lime being squeezed into a glass of citrus cooler.', pos: '50% 45%' } },
+  { id: 'berry-cooler', category: 'drinks', group: 'Without alcohol', name: 'Berry and mint cooler', price: 500,
+    description: 'Crushed berries, mint and lime topped with sparkling water.',
+    ingredients: ['Mixed berries', 'Mint', 'Lime', 'Sparkling water'], dietary: ['vg', 'gf'], available: true,
+    image: { src: 'berry-cooler', alt: 'A red berry cooler with mint on a dark table.', pos: '50% 45%' } },
+  { id: 'iced-tea', category: 'drinks', group: 'Without alcohol', name: 'Iced black tea, citrus', price: 450,
     description: 'Cold-brewed black tea with orange, lime and a little honey.',
     sizes: [{ label: 'Glass', price: 450 }, { label: 'Jug', price: 1300 }],
     ingredients: ['Black tea', 'Orange', 'Lime', 'Honey'], dietary: ['vg', 'gf'], available: true,
     image: { src: 'iced-tea', alt: 'A tall glass of iced tea with a slice of orange, oranges beside it.', pos: '50% 50%' } },
-  { id: 'citrus-cooler', category: 'drinks', name: 'Citrus cooler', price: 500,
-    description: 'Fresh orange and lime pressed over ice with ginger syrup and soda.',
-    ingredients: ['Orange', 'Lime', 'Ginger', 'Soda'], dietary: ['vg', 'gf'], available: true,
-    image: { src: 'citrus', alt: 'Lime being squeezed into a glass of citrus cooler.', pos: '50% 45%' } },
-  { id: 'berry-cooler', category: 'drinks', name: 'Berry and mint cooler', price: 500,
-    description: 'Crushed berries, mint and lime topped with sparkling water.',
-    ingredients: ['Mixed berries', 'Mint', 'Lime', 'Sparkling water'], dietary: ['vg', 'gf'], available: true,
-    image: { src: 'berry-cooler', alt: 'A red berry cooler with mint on a dark table.', pos: '50% 45%' } }
+  { id: 'ginger-fizz', category: 'drinks', group: 'Without alcohol', name: 'Ginger and lemongrass fizz', price: 500,
+    description: 'House ginger and lemongrass syrup, lime and soda.', ingredients: ['Ginger', 'Lemongrass', 'Lime', 'Soda'], dietary: ['vg', 'gf'], available: true },
+  { id: 'fresh-juice', category: 'drinks', group: 'Without alcohol', name: 'Fresh juice of the day', price: 450,
+    description: 'Ask what the market brought in this morning.', ingredients: ['Seasonal fruit'], dietary: ['vg', 'gf'], available: true },
+  { id: 'water', category: 'drinks', group: 'Without alcohol', name: 'Still or sparkling water', price: 250,
+    sizes: [{ label: '500 ml', price: 250 }, { label: '1 litre', price: 400 }],
+    options: [{ name: 'Water', type: 'one', required: true, choices: [{ label: 'Still' }, { label: 'Sparkling' }] }],
+    description: 'Chilled, in glass bottles.', ingredients: ['Water'], dietary: ['vg', 'gf'], available: true },
+  { id: 'house-red', category: 'drinks', group: 'Wine and beer', name: 'House red', price: 900, orderable: false,
+    sizes: [{ label: 'Glass', price: 900 }, { label: 'Bottle', price: 4200 }],
+    description: 'A soft, full red that loves the grill. Ask for the wine list.', ingredients: ['Red wine'], dietary: ['alc'], available: true },
+  { id: 'house-white', category: 'drinks', group: 'Wine and beer', name: 'House white', price: 900, orderable: false,
+    sizes: [{ label: 'Glass', price: 900 }, { label: 'Bottle', price: 4200 }],
+    description: 'Crisp and bright, for seafood and starters.', ingredients: ['White wine'], dietary: ['alc'], available: true },
+  { id: 'lager', category: 'drinks', group: 'Wine and beer', name: 'Craft lager', price: 600, orderable: false,
+    description: 'Cold, clean and brewed close to home.', ingredients: ['Lager'], dietary: ['alc'], available: true },
+  { id: 'espresso', category: 'drinks', group: 'Coffee and tea', name: 'Espresso', price: 300,
+    sizes: [{ label: 'Single', price: 300 }, { label: 'Double', price: 400 }],
+    description: 'Single-origin beans, roasted locally.', ingredients: ['Coffee'], dietary: ['vg', 'gf'], available: true },
+  { id: 'cappuccino', category: 'drinks', group: 'Coffee and tea', name: 'Cappuccino', price: 400,
+    options: [{ name: 'Milk', type: 'one', required: false, choices: [{ label: 'Whole milk' }, { label: 'Oat milk', price: 80 }] }],
+    description: 'Double shot with silky steamed milk.', ingredients: ['Coffee', 'Milk'], dietary: ['v', 'gf'], available: true },
+  { id: 'mint-tea', category: 'drinks', group: 'Coffee and tea', name: 'Fresh mint tea', price: 300,
+    description: 'A pot of fresh mint leaves and hot water, honey on the side.', ingredients: ['Mint', 'Honey'], dietary: ['v', 'gf'], available: true }
 ];

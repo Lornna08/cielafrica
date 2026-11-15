@@ -1,10 +1,9 @@
 /* ==========================================================================
    EMBER & PLATE — the opening scene
-   One WebGL pass over two photographs:
+   One WebGL pass over a photograph:
    - living fire on the first photo: heat haze and a flame flicker, limited to
      the bright, warm pixels inside the flame area set in the config;
-   - a smoke dissolve to the second photo, driven by scroll;
-   - a soft drift of smoke over both, and a slow camera push.
+   - smoke rolling up through the scene in two drifting layers, and a slow camera push.
    Sparks are drawn on a second 2D canvas. Noise comes from a small tileable
    texture made once at start, so the shader stays light on phones.
    ========================================================================== */
@@ -13,8 +12,8 @@
   var VS = 'attribute vec2 p;varying vec2 v;void main(){v=p*.5+.5;gl_Position=vec4(p,0.,1.);}';
   var FS = [
     'precision highp float;',
-    'uniform sampler2D uA,uB,uN;uniform vec2 uRes,uSA,uSB,uPA,uPB;uniform vec4 uFl;',
-    'uniform float uT,uPr,uIn,uZA,uZB,uHasB;varying vec2 v;',
+    'uniform sampler2D uA,uN;uniform vec2 uRes,uSA,uPA;uniform vec4 uFl;',
+    'uniform float uT,uIn,uZA,uSm;varying vec2 v;',
     'float n1(vec2 q){return texture2D(uN,q).r;}',
     'float fb(vec2 q){return texture2D(uN,q).g;}',
     'vec2 cover(vec2 uv,vec2 im,vec2 pos,float z){float rs=uRes.x/uRes.y,ri=im.x/im.y;vec2 s=rs>ri?vec2(1.,ri/rs):vec2(rs/ri,1.);s/=z;return (1.-s)*pos+uv*s;}',
@@ -29,19 +28,13 @@
     ' if(rg>.001){float l=dot(ca,vec3(.299,.587,.114));float w=clamp((ca.r-ca.b)*1.7,0.,1.)*smoothstep(.3,.8,l);float f=fb(vec2(a.x*1.1,a.y*.6-t*.33));ca*=1.+w*rg*(f-.47)*.62;}',
     ' ca*=1.+.022*sin(t*1.7)+.012*sin(t*4.1+1.3);',
     ' vec3 c=ca;',
-    ' if(uHasB>.5&&uPr>.001){',
-    '  vec2 b=cover(uv,uSB,uPB,uZB);vec3 cb=texture2D(uB,b).rgb;',
-    '  vec2 q=vec2(uv.x*asp,uv.y);',
-    '  float n=fb(q*.42+vec2(.13,-t*.012))*.72+fb(q*1.3+vec2(t*.01,-t*.03))*.28;',
-    '  float th=mix(-.35,1.35,uPr)+(.5-uv.y)*.32;',
-    '  float m=smoothstep(n-.16,n+.16,th);',
-    '  float e=m*(1.-m)*4.;',
-    '  vec3 sm=vec3(.36,.33,.30)*(.55+.9*fb(q*2.4+vec2(-t*.02,-t*.05)));',
-    '  c=mix(ca,cb,m);c=mix(c,sm,e*.5);',
-    ' }',
-    /* drifting smoke over the whole scene, strongest near the top */
-    ' vec2 q2=vec2(uv.x*asp,uv.y);float s=fb(q2*.55+vec2(t*.006,-t*.022));s=smoothstep(.5,.92,s);',
-    ' c+=vec3(.42,.38,.34)*s*(.035+.06*uv.y);',
+    /* smoke rolling up through the scene: two layers drifting at different speeds, thinner near the top */
+    ' vec2 q=vec2(uv.x*asp,uv.y);',
+    ' float s1=smoothstep(.46,.9,fb(q*.5+vec2(t*.008,-t*.03)));',
+    ' float s2=smoothstep(.52,.95,fb(q*1.15+vec2(-t*.013,-t*.05)+s1*.25));',
+    ' float band=smoothstep(.02,.4,uv.y)*(1.-.45*smoothstep(.65,1.,uv.y));',
+    ' vec3 sc=vec3(.44,.40,.36)*(.8+.4*fb(q*2.6+vec2(-t*.02,-t*.06)));',
+    ' c=mix(c,sc,clamp((s1*.17+s2*.11)*band*uSm,0.,.42));',
     ' float vg=smoothstep(1.3,.25,length((uv-.5)*vec2(1.25,1.)));c*=mix(1.,vg,.6);',
     ' c*=uIn;',
     ' gl_FragColor=vec4(c,1.);',
@@ -73,7 +66,7 @@
   function load(src) { return new Promise(function (res, rej) { var im = new Image(); im.decoding = 'async'; im.onload = function () { res(im); }; im.onerror = rej; im.src = src; }); }
 
   function Hero(canvas, sparks, o) {
-    this.c = canvas; this.sc = sparks; this.o = o; this.p = 0; this.intro = 0; this.zoomA = 1; this.zoomB = 1.1;
+    this.c = canvas; this.sc = sparks; this.o = o; this.intro = 0; this.zoomA = 1;
     this.run = false; this.visible = true; this.t0 = performance.now(); this.parts = [];
   }
   Hero.prototype.init = function () {
@@ -86,7 +79,7 @@
     gl.useProgram(pr); this.pr = pr;
     var buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
     var loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-    this.u = {}; ['uA', 'uB', 'uN', 'uRes', 'uSA', 'uSB', 'uPA', 'uPB', 'uFl', 'uT', 'uPr', 'uIn', 'uZA', 'uZB', 'uHasB'].forEach(function (n) { self.u[n] = gl.getUniformLocation(pr, n); });
+    this.u = {}; ['uA', 'uN', 'uRes', 'uSA', 'uPA', 'uFl', 'uT', 'uIn', 'uZA', 'uSm'].forEach(function (n) { self.u[n] = gl.getUniformLocation(pr, n); });
     var tex = function (unit, src, w, h, data, repeat) {
       var t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
       gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, !data);
@@ -96,11 +89,9 @@
       return t;
     };
     tex(2, null, 256, 256, noiseTex(256), true);
-    gl.uniform1i(this.u.uN, 2); gl.uniform1i(this.u.uA, 0); gl.uniform1i(this.u.uB, 1);
-    return Promise.all([load(o.a), o.b ? load(o.b) : Promise.resolve(null)]).then(function (ims) {
-      tex(0, ims[0]); self.sizeA = [ims[0].naturalWidth, ims[0].naturalHeight];
-      if (ims[1]) { tex(1, ims[1]); self.sizeB = [ims[1].naturalWidth, ims[1].naturalHeight]; }
-      else { tex(1, null, 1, 1, new Uint8Array([0, 0, 0, 255])); self.sizeB = [1, 1]; }
+    gl.uniform1i(this.u.uN, 2); gl.uniform1i(this.u.uA, 0);
+    return load(o.a).then(function (im) {
+      tex(0, im); self.sizeA = [im.naturalWidth, im.naturalHeight];
       self.resize(); return self;
     });
   };
@@ -110,7 +101,7 @@
     this.w = Math.max(2, Math.round(r.width * dpr)); this.h = Math.max(2, Math.round(r.height * dpr)); this.dpr = dpr; this.cw = r.width; this.ch = r.height;
     this.c.width = this.w; this.c.height = this.h;
     if (this.sc) { var sd = Math.min(window.devicePixelRatio || 1, 2); this.sc.width = Math.round(r.width * sd); this.sc.height = Math.round(r.height * sd); this.sd = sd; }
-    this.portrait = r.width / r.height < .85;
+    this.portrait = window.matchMedia('(max-width: 760px) and (orientation: portrait)').matches || r.width / r.height < .7;
     if (this.gl) this.gl.viewport(0, 0, this.w, this.h);
   };
   Hero.prototype.pos = function (which) {
@@ -128,13 +119,11 @@
   };
   Hero.prototype.frame = function (now) {
     var gl = this.gl, u = this.u, t = (now - this.t0) / 1000, fl = this.o.flames;
-    this.zoomA = (this.o.zoom || 1) + .05 * Math.min(1, t / 9) + this.p * .08;
-    this.zoomB = 1.12 - .12 * Math.min(1, this.p * 1.15);
-    gl.uniform2f(u.uRes, this.w, this.h); gl.uniform2f(u.uSA, this.sizeA[0], this.sizeA[1]); gl.uniform2f(u.uSB, this.sizeB[0], this.sizeB[1]);
-    var pa = this.pos('posA'), pb = this.pos('posB'); gl.uniform2f(u.uPA, pa[0], pa[1]); gl.uniform2f(u.uPB, pb[0], pb[1]);
+    this.zoomA = (this.portrait ? (this.o.zoomPortrait || 1) : (this.o.zoom || 1)) + .05 * Math.min(1, t / 9);
+    gl.uniform2f(u.uRes, this.w, this.h); gl.uniform2f(u.uSA, this.sizeA[0], this.sizeA[1]);
+    var pa = this.pos('posA'); gl.uniform2f(u.uPA, pa[0], pa[1]);
     gl.uniform4f(u.uFl, fl[0], 1 - fl[3], fl[2], 1 - fl[1]);
-    gl.uniform1f(u.uT, t); gl.uniform1f(u.uPr, this.p); gl.uniform1f(u.uIn, this.intro); gl.uniform1f(u.uZA, this.zoomA); gl.uniform1f(u.uZB, this.zoomB);
-    gl.uniform1f(u.uHasB, this.o.b ? 1 : 0);
+    gl.uniform1f(u.uT, t); gl.uniform1f(u.uIn, this.intro); gl.uniform1f(u.uZA, this.zoomA); gl.uniform1f(u.uSm, this.o.smoke == null ? 1 : this.o.smoke);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     this.sparks(t);
   };
@@ -143,7 +132,7 @@
     var x = this.sc.getContext('2d'), sd = this.sd, W = this.sc.width, H = this.sc.height, fl = this.o.flames, self = this;
     var dt = Math.min(.05, t - (this.lt || t)); this.lt = t;
     x.clearRect(0, 0, W, H);
-    var fade = Math.max(0, 1 - this.p * 2.2) * this.intro;
+    var fade = this.intro;
     if (fade <= 0) { this.parts.length = 0; return; }
     var max = this.cw < 760 ? 22 : 40;
     while (this.parts.length < max) {
