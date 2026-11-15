@@ -1,5 +1,5 @@
 {
- "v": 5,
+ "v": 6,
  "note": "Ready-made Ciel Africa designs. They appear in Ciel Admin → Instagram → Planner; edits there are saved separately and win over this file.",
  "items": [
   {
@@ -574,9 +574,9 @@
   {
    "id": "b-r-paykit",
    "kind": "reel",
-   "title": "Pay Kit, pay by phone or card",
-   "caption": "Pay Kit, pay by phone or card.\nAn M-PESA prompt with live status, a live card preview, bank verification and a clear receipt, in one checkout. Live template.\n\ncielafrica.com/pay-kit\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#MPesa #Checkout #Payments #CielAfrica",
-   "video": "/assets/ig/r/paykit-v2.mp4",
+   "title": "Paykit gateway",
+   "caption": "Paykit gateway.\nAn M-PESA prompt with live status, a live card preview, bank verification and a clear receipt, in one checkout. Live template.\n\ncielafrica.com/pay-kit\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#MPesa #Checkout #Payments #CielAfrica",
+   "video": "/assets/ig/r/paykit-v3.mp4",
    "src": [
     "/assets/ig/r/paykit-cover.jpg"
    ],
