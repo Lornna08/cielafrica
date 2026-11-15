@@ -1,9 +1,9 @@
 /* CIEL PAY KIT — checkout for M-PESA (STK push) and cards. Settings live in config.js.
    Nothing here holds keys. A payment is shown as received only when your server says so
-   (or, in demo mode, when the demo panel says so, clearly marked as a demo). */
+   (or, as a live template, when the template panel says so, clearly marked as a live template). */
 (function () {
   'use strict';
-  var C = window.PAY, D = !!C.demo;
+  var C = window.PAY, D = !!C.template;
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var nf = new Intl.NumberFormat(C.currency.locale || 'en-KE');
@@ -40,7 +40,7 @@
       }).join('') + '</div>' +
       '<div class="tot num"><div><span>Subtotal</span><span>' + money(sub) + '</span></div>' + (O.delivery ? '<div><span>Delivery</span><span>' + money(O.delivery) + '</span></div>' : '') + '<div class="g"><span>Total</span><span>' + money(TOTAL) + '</span></div></div>' +
       '<div class="foot">' + I.shield + '<span>Secure checkout. Your M-PESA PIN and card details are never shared with ' + esc(C.merchant.name) + '.</span></div>' +
-      (D ? '<div class="foot" style="padding-top:12px;margin-top:0"><span class="demo-tag" style="margin-left:0">DEMO</span><span>No money moves on this page.</span></div>' : '') +
+      (D ? '<div class="foot" style="padding-top:12px;margin-top:0"><span class="demo-tag" style="margin-left:0">LIVE TEMPLATE</span><span>No money moves on this page.</span></div>' : '') +
       '</aside>';
   }
 
@@ -177,7 +177,7 @@
     var o = S.out.mpesa, codes = { cancel: '1032', unreach: '1037', funds: '1', pin: '2001' };
     if (o === 'timeout') return;   // the clock runs out by itself
     T.demo = setTimeout(function () {
-      if (o === 'ok') finish({ status: 'success', receipt: 'DEMO' + Math.random().toString(36).slice(2, 8).toUpperCase() });
+      if (o === 'ok') finish({ status: 'success', receipt: 'LT' + Math.random().toString(36).slice(2, 8).toUpperCase() });
       else finish({ status: 'failed', resultCode: codes[o] });
     }, o === 'ok' ? 6500 : 5200);
   }
@@ -194,7 +194,7 @@
       st = view('<div class="res"><div class="tick">' + burst() + '<svg viewBox="0 0 92 92"><circle class="c" cx="46" cy="46" r="46"/><path class="k" d="M28 47.5l12 12 24-26"/></svg></div>' +
         '<h2 tabindex="-1" id="rh">Payment received</h2><p>Thank you. ' + esc(C.merchant.name) + ' has your payment for order ' + esc(O.reference) + '.</p>' +
         '<div class="rcpt"><div class="top"><span>Amount paid</span><b class="num">' + money(TOTAL) + '</b></div><dl>' + rows.map(function (x) { return '<dt>' + x[0] + '</dt><dd class="' + (x[2] || '') + '">' + esc(x[1]) + '</dd>'; }).join('') + '</dl></div>' +
-        (D ? '<p class="demo-note">Demo receipt. No money moved and nothing was sent.</p>' : (C.receipt.note ? '<p class="hint" style="margin-top:14px">' + esc(C.receipt.note) + '</p>' : '')) +
+        (D ? '<p class="demo-note">Live template receipt. No money moved and nothing was sent.</p>' : (C.receipt.note ? '<p class="hint" style="margin-top:14px">' + esc(C.receipt.note) + '</p>' : '')) +
         '<div class="acts" style="justify-content:center"><button class="btn2" id="dl">Download receipt</button><a class="go" style="width:auto;padding:0 22px;height:44px;margin:0;font-size:14px;border-radius:11px;text-decoration:none" href="' + esc(C.merchant.backUrl) + '">Back to store ' + I.arrow + '</a></div></div>');
       $('#dl', st).addEventListener('click', function () { window.print(); });
       say('Payment received.');
@@ -251,7 +251,7 @@
       '<div class="row2" style="margin-top:6px"><label class="fld" style="margin-top:0"><span>Expiry</span><div class="ctl" id="c-exp"><input id="cxp" inputmode="numeric" autocomplete="cc-exp" placeholder="MM / YY" aria-describedby="e-exp"></div><div class="err" id="e-exp" role="alert"></div></label>' +
       '<label class="fld" style="margin-top:0"><span>Security code</span><div class="ctl" id="c-cvc"><input id="ccv2" inputmode="numeric" autocomplete="cc-csc" placeholder="CVC" aria-describedby="e-cvc"><span class="suf">' + I.lock + '</span></div><div class="err" id="e-cvc" role="alert"></div></label></div>' +
       '<button class="go" type="submit" id="cpay">Pay <span class="num">' + money(TOTAL) + '</span></button>' +
-      '<p class="safe">' + I.lock + (C.card.provider ? 'Secured by ' + esc(C.card.provider) + '. ' : '') + 'Demo: use a test number such as 4242 4242 4242 4242. Nothing is sent.</p></form>');
+      '<p class="safe">' + I.lock + (C.card.provider ? 'Secured by ' + esc(C.card.provider) + '. ' : '') + 'Live template: use a test number such as 4242 4242 4242 4242. Nothing is sent.</p></form>');
     var cn = $('#cn'), nm = $('#cnm2'), xp = $('#cxp'), cv = $('#ccv2'), cc = $('#cc');
     var digits = function () { return cn.value.replace(/\D/g, ''); };
     var draw = function () {
@@ -300,7 +300,7 @@
   function payBtn(on) { var b = $('#cpay'); if (!b) return; b.disabled = on; b.innerHTML = on ? '<span class="spin"></span>Processing…' : 'Pay <span class="num">' + money(TOTAL) + '</span>'; }
   function payDemo(c) {
     S.cd.stage = 'busy'; methodsLocked(true); payBtn(true); say('Processing your payment.');
-    var o = S.out.card, done = function (state) { S.cd.stage = 'result'; S.cd.res = { state: state, brand: c.brand, last4: c.last4, receipt: 'DEMO-' + Math.random().toString(36).slice(2, 8).toUpperCase() }; result(); };
+    var o = S.out.card, done = function (state) { S.cd.stage = 'result'; S.cd.res = { state: state, brand: c.brand, last4: c.last4, receipt: 'LT-' + Math.random().toString(36).slice(2, 8).toUpperCase() }; result(); };
     T.c = setTimeout(function () {
       if (o === 'ok') done('success');
       else if (o === 'decline') done('failed');
@@ -309,7 +309,7 @@
   }
   function tds(c, cb) {
     var p = $('.pay'); p.insertAdjacentHTML('beforeend', '<div class="tds" role="dialog" aria-modal="true" aria-labelledby="tdh"><div class="box"><div class="bank">' + I.shield + 'Your bank</div><h3 id="tdh">Confirm it’s you</h3><p>Enter the 6-digit code your bank sent to approve ' + money(TOTAL) + ' to ' + esc(C.merchant.name) + ' with ' + esc(c.brand) + ' •••• ' + esc(c.last4) + '.</p>' +
-      '<div class="otp">' + '<input inputmode="numeric" maxlength="1" aria-label="Digit 1">'.repeat(6) + '</div><button class="go" id="tdgo" style="margin-top:20px" disabled>Confirm</button><p class="hint" style="margin-top:12px">Demo: any six digits work.</p></div></div>');
+      '<div class="otp">' + '<input inputmode="numeric" maxlength="1" aria-label="Digit 1">'.repeat(6) + '</div><button class="go" id="tdgo" style="margin-top:20px" disabled>Confirm</button><p class="hint" style="margin-top:12px">Live template: any six digits work.</p></div></div>');
     var box = $('.tds'), ins = box.querySelectorAll('.otp input'), go = $('#tdgo');
     ins.forEach(function (x, i) { x.setAttribute('aria-label', 'Digit ' + (i + 1));
       x.addEventListener('input', function () { x.value = x.value.replace(/\D/g, '').slice(-1); if (x.value && ins[i + 1]) ins[i + 1].focus(); go.disabled = [].some.call(ins, function (y) { return !y.value; }); });
@@ -331,13 +331,13 @@
     });
   }
 
-  /* ================= DEMO PANEL ================= */
+  /* ================= LIVE TEMPLATE PANEL ================= */
   var OPTS = {
     mpesa: [['ok', 'Approved'], ['cancel', 'Cancelled on phone'], ['funds', 'Not enough balance'], ['pin', 'Wrong PIN'], ['unreach', 'Phone unreachable'], ['timeout', 'No answer (time runs out)']],
     card: [['ok', 'Approved'], ['3ds', 'Bank asks for a code'], ['decline', 'Declined by bank']]
   };
   function demoPanel() {
-    document.body.insertAdjacentHTML('beforeend', '<div class="demo" role="region" aria-label="Demo controls"><b>DEMO</b><label class="sr" for="dout">Outcome</label><span>Outcome</span><select id="dout"></select></div>');
+    document.body.insertAdjacentHTML('beforeend', '<div class="demo" role="region" aria-label="Live template controls"><b>LIVE TEMPLATE</b><label class="sr" for="dout">Outcome</label><span>Outcome</span><select id="dout"></select></div>');
     $('#dout').addEventListener('change', function () { S.out[S.method] = this.value; });
   }
   function demoOptions() { var s = $('#dout'); if (!s) return; s.innerHTML = OPTS[S.method].map(function (o) { return '<option value="' + o[0] + '"' + (S.out[S.method] === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join(''); }

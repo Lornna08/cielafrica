@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<base href="/pay-kit/">
+<script>/* the base above is for cielafrica.com/pay-kit; anywhere else (your own domain, another folder, or opened from disk) paths resolve from this page's folder */
+(function () { var b = document.querySelector("base"), p = location.pathname; if (location.protocol === "file:") b.href = "./"; else if (p.indexOf("/pay-kit") !== 0) b.href = p.replace(/[^\/]*$/, ""); })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Checkout | Pay Kit by Ciel Africa</title>
 <meta name="description" content="A checkout page for M-PESA STK push and card payments: phone prompt with live status, card form with a live card preview, clear failures and receipts.">
@@ -13,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@500&display=swap">
-<link rel="stylesheet" href="pay.css?v=20261115a">
+<link rel="stylesheet" href="pay.css?v=20261115b">
 </head>
 <body>
 <style>.cstrip{position:relative;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:12px;height:40px;padding:0 max(16px,calc((100% - 1320px)/2 + 16px));background:#121212;color:#cfcfcf;font:500 13px/1 system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -27,7 +30,7 @@
 <main class="shell" id="app" aria-live="off"></main>
 <div class="sr" id="live" aria-live="polite"></div>
 <noscript><p style="padding:40px;font-family:sans-serif">This checkout needs JavaScript turned on.</p></noscript>
-<script src="config.js?v=20261115a"></script>
-<script src="pay.js?v=20261115a"></script>
+<script src="config.js?v=20261115b"></script>
+<script src="pay.js?v=20261115b"></script>
 </body>
 </html>

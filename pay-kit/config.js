@@ -4,10 +4,10 @@
    Edit this file only. Nothing in pay.js or pay.css needs to change.
    ========================================================================== */
 window.PAY = {
-  /* DEMO MODE. true = nothing is sent anywhere and no money moves. The page
-     plays the real screens with a small "Demo" panel to choose the outcome.
+  /* LIVE TEMPLATE MODE. true = nothing is sent anywhere and no money moves. The page
+     plays the real screens with a small "Live template" panel to choose the outcome.
      Set to false once your server endpoints below are live. */
-  demo: true,
+  template: true,
 
   merchant: {
     name: 'Mokara Coffee',            // sample merchant, replace
@@ -31,7 +31,7 @@ window.PAY = {
       { name: 'House Espresso, 250 g',   qty: 1, price: 1100, image: '../mokara/img/p/espresso-house-blend-front-480.webp' }
     ],
     delivery: 250,
-    note: 'Sample order for the demo.'
+    note: 'Sample order.'
   },
 
   methods: ['mpesa', 'card'],         // order of the tabs; remove one to hide it
@@ -63,11 +63,11 @@ window.PAY = {
   },
 
   /* CARDS. Card details must be handled by a PCI-compliant payment provider.
-     When demo is false the page does NOT collect card numbers: it sends the
+     When template is false the page does NOT collect card numbers: it sends the
      order to checkoutEndpoint, which creates a hosted checkout session with
      your provider (Paystack, Flutterwave, Pesapal, Stripe, DPO …) and
      returns { url }. The customer pays there and comes back to returnUrl.
-     The card form on this page is shown in demo mode only. */
+     The card form on this page is shown in live template mode only. */
   card: {
     provider: '',                     // shown as "Secured by …", e.g. 'Paystack'
     checkoutEndpoint: '',
