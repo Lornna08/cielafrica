@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Checkout | Pay Kit by Ciel Africa</title>
+<meta name="description" content="A checkout page for M-PESA STK push and card payments: phone prompt with live status, card form with a live card preview, clear failures and receipts.">
+<meta name="theme-color" content="#0E1411">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Pay Kit: M-PESA and card checkout | Ciel Africa">
+<meta property="og:description" content="A checkout page for M-PESA STK push and card payments, with a live phone prompt, a live card preview and honest payment states.">
+<link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="pay.css?v=20261115a">
+</head>
+<body>
+<style>.cstrip{position:relative;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:12px;height:40px;padding:0 max(16px,calc((100% - 1320px)/2 + 16px));background:#121212;color:#cfcfcf;font:500 13px/1 system-ui,-apple-system,"Segoe UI",sans-serif}
+.cstrip a{display:inline-flex;align-items:center;gap:7px;color:#fff;text-decoration:none;white-space:nowrap;padding:6px 0}
+.cstrip a:hover{color:#FF8A78}.cstrip a:focus-visible{outline:2px solid #FF8A78;outline-offset:2px;border-radius:4px}
+.cstrip b{color:#E94B35;font-weight:700;font-size:15px;line-height:1}
+.cstrip span{flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:640px){.cstrip span{display:none}}@media print{.cstrip{display:none}}</style>
+<div class="cstrip" role="navigation" aria-label="Ciel Africa"><a href="../index.html"><b>‹</b>Back to Ciel Africa</a><span>Pay Kit: a digital product by Ciel Africa</span><a href="../products.html">All products<b>›</b></a></div>
+
+<main class="shell" id="app" aria-live="off"></main>
+<div class="sr" id="live" aria-live="polite"></div>
+<noscript><p style="padding:40px;font-family:sans-serif">This checkout needs JavaScript turned on.</p></noscript>
+<script src="config.js?v=20261115a"></script>
+<script src="pay.js?v=20261115a"></script>
+</body>
+</html>
