@@ -44,7 +44,7 @@ CREME.config = {
   currency: { prefix: 'KES ', locale: 'en-KE' },
 
   /* The hero is a photograph of the bakery's own cake, ideally a cut slice that shows the layers.
-     reveal.image: the photo for desktop, a smaller copy for tablets and a portrait crop for phones;
+     reveal.image: the photo, with smaller copies listed in srcset (and optionally a separate crop for phones);
      reveal.position: where each crop is anchored (CSS object-position).
      To use your own film instead, remove `reveal` and set video / videoWebm / poster / still / revealAt. */
   hero: {
@@ -54,10 +54,10 @@ CREME.config = {
     primary: { label: 'See the menu', href: '#collection' },
     secondary: { label: 'Design your cake', href: '#design' },
     reveal: {
-      image: { desktop: 'img/hero/slice-2600.webp', tablet: 'img/hero/slice-1500.webp', mobile: 'img/hero/slice-portrait-1170.webp' },
-      position: { desktop: '72% 50%', mobile: '50% 52%' }           // object-position of the photo
+      image: { desktop: 'img/hero/layers-2400.webp', srcset: 'img/hero/layers-1200.webp 1200w, img/hero/layers-1800.webp 1800w, img/hero/layers-2400.webp 2400w' },   // add mobile: 'path' for a separate phone crop
+      position: { desktop: '50% 62%', mobile: '55% 62%' }           // object-position of the photo
     },
-    alt: 'A slice of red velvet cake with cream cheese frosting on a plate, the rest of the cake behind it.'
+    alt: 'A slice of chocolate layer cake with ganache and chocolate chips, chocolate muffins behind it.'
   },
 
   /* WhatsApp ordering.

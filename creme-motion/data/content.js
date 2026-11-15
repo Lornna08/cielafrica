@@ -9,7 +9,7 @@ CREME.experience = {
   kicker: 'The cake experience',
   title: 'Made slowly. Revealed in layers.',
   chapters: [
-    { title: 'The layers', text: 'Sponges baked the day before, levelled by hand and soaked just enough to stay tender to the last forkful.', image: 'layers-dark', alt: 'A slice of chocolate layer cake showing dark sponge and cream layers', pos: '50% 60%' },
+    { title: 'The layers', text: 'Sponges baked the day before, levelled by hand and soaked just enough to stay tender to the last forkful.', image: 'velvet-slice', alt: 'A slice of red velvet cake with cream cheese frosting between its layers', pos: '68% 62%' },
     { title: 'The cream', text: 'Swiss meringue buttercream whipped until it holds a peak and melts the moment it meets the tongue.', image: 'piping-ombre', alt: 'Buttercream piped in pink ombré rosettes', pos: '50% 50%' },
     { title: 'The fillings', text: 'Fresh strawberries, slow-cooked compotes, curds and caramels, made in our kitchen, never from a tin.', image: 'funfetti-slice', alt: 'A slice of layered cake showing sponge and buttercream', pos: '50% 50%' },
     { title: 'The frosting', text: 'Smoothed, combed or piped. Every finish is shaped by hand with a palette knife and a steady breath.', image: 'piping-bags', alt: 'Piping bags filled with chocolate and vanilla buttercream', pos: '50% 50%' },

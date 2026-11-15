@@ -195,7 +195,7 @@
     var h = C.hero, wi = 0, R = h.reveal;
     var lines = h.headline.map(function (ln) { return '<span class="ln">' + ln.split(' ').map(function (w) { return '<span class="w" style="--i:' + (wi++) + '">' + esc(w) + '</span>'; }).join(' ') + '</span>'; }).join('');
     var media = R ? '<div class="hero-img"><picture>' + (R.image.mobile ? '<source media="(max-width: 700px) and (orientation: portrait)" srcset="' + R.image.mobile + '">' : '') +
-        '<img src="' + R.image.desktop + '"' + (R.image.tablet ? ' srcset="' + R.image.tablet + ' 1500w, ' + R.image.desktop + ' 2600w" sizes="100vw"' : '') + ' alt="' + esc(h.alt) + '" fetchpriority="high" decoding="async"></picture></div>'
+        '<img src="' + R.image.desktop + '"' + (R.image.srcset ? ' srcset="' + R.image.srcset + '" sizes="100vw"' : '') + ' alt="' + esc(h.alt) + '" fetchpriority="high" decoding="async"></picture></div>'
       : '<video muted playsinline preload="auto" aria-hidden="true" tabindex="-1"></video><img class="still" alt="' + esc(h.alt) + '">';
     return '<section class="hero' + (R ? ' is-reveal' : ' is-video') + '" id="top" aria-label="Welcome">' +
       '<div class="hero-media" data-hero-media>' + media + '<div class="hero-shade" aria-hidden="true"></div></div>' +

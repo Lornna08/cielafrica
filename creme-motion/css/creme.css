@@ -889,3 +889,4 @@ section[id] { scroll-margin-top: calc(var(--nav-h) + 8px); }
 /* hero: a still photograph, no opening animation */
 .hero-img img { transform: none !important; transition: none !important; animation: none !important; }
 .hero.is-reveal .hero-shade { opacity: 1; transition: none; }
+@media (max-width: 360px) { .hero .cta .btn { font-size: 13px; padding: 0 10px; } .hero .kicker { font-size: 11px; letter-spacing: .12em; } }

@@ -4,11 +4,11 @@ All photographs in `img/p/` come from **[Unsplash](https://unsplash.com)** and a
 
 Changes made for the template: resized to 800 px and 1600 px wide and saved as WebP. They are placeholders: replace them with the bakery's own photographs (same file names, or update `data/menu.js` and `data/content.js`).
 
-`img/hero/slice-*` and `img/studio/*` are Unsplash photographs too (listed first below). The studio masks (`*-mask.png`) were drawn for this template. `img/brand/` was made for this template.
+`img/hero/layers-*` and `img/studio/*` are Unsplash photographs too (listed first below). The studio masks (`*-mask.png`) were drawn for this template. `img/brand/` was made for this template.
 
 | File | Photographer | Photo |
 |---|---|---|
-| `hero/slice` | [amirali mirhashemian](https://unsplash.com/@amir_v_ali) | [unsplash.com/photos/EfkMkUXs0fU](https://unsplash.com/photos/EfkMkUXs0fU) |
+| `p/velvet-slice` | [amirali mirhashemian](https://unsplash.com/@amir_v_ali) | [unsplash.com/photos/EfkMkUXs0fU](https://unsplash.com/photos/EfkMkUXs0fU) |
 | `studio/round-smooth` | [elnaz asadi](https://unsplash.com/@elnazasadi) | [unsplash.com/photos/aYpioIlfL2A](https://unsplash.com/photos/aYpioIlfL2A) |
 | `studio/round-vintage` | [Julie Sd](https://unsplash.com/@juliesdfg) | [unsplash.com/photos/QEZ-F1r_VHQ](https://unsplash.com/photos/QEZ-F1r_VHQ) |
 | `studio/round-ruffles` | [Jonathan Borba](https://unsplash.com/@jonathanborba) | [unsplash.com/photos/AAAX_mN2-SE](https://unsplash.com/photos/AAAX_mN2-SE) |
@@ -35,7 +35,7 @@ Changes made for the template: resized to 800 px and 1600 px wide and saved as W
 | `heart-love` | [Emmanuel Boldo](https://unsplash.com/@novatoboldo) | [unsplash.com/photos/iAfEwhByjqU](https://unsplash.com/photos/iAfEwhByjqU) |
 | `heart-pink` | [Kurt Harvey](https://unsplash.com/@khd_film) | [unsplash.com/photos/m4uypz8-zHU](https://unsplash.com/photos/m4uypz8-zHU) |
 | `heart-red` | [Emmanuel Boldo](https://unsplash.com/@novatoboldo) | [unsplash.com/photos/pzgU6kFoQLY](https://unsplash.com/photos/pzgU6kFoQLY) |
-| `layers-dark` | [Pranjall Kumar](https://unsplash.com/@pranjallk1995) | [unsplash.com/photos/lRAApjOIaFs](https://unsplash.com/photos/lRAApjOIaFs) |
+| `hero/layers` | [Pranjall Kumar](https://unsplash.com/@pranjallk1995) | [unsplash.com/photos/lRAApjOIaFs](https://unsplash.com/photos/lRAApjOIaFs) |
 | `milky-tin` | [sheri silver](https://unsplash.com/@sheri_silver) | [unsplash.com/photos/Cd-q-bnmmRo](https://unsplash.com/photos/Cd-q-bnmmRo) |
 | `mini-flower` | [Caitlyn Way](https://unsplash.com/@caitlynjoy) | [unsplash.com/photos/j9deGo-PrNs](https://unsplash.com/photos/j9deGo-PrNs) |
 | `mini-hearts` | [Muneer ahmed ok](https://unsplash.com/@muneerok) | [unsplash.com/photos/AKI3g3Xsm5A](https://unsplash.com/photos/AKI3g3Xsm5A) |
