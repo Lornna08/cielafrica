@@ -193,3 +193,5 @@
   .hx__cap{display:none}
 }
 @media(prefers-reduced-motion:reduce){.hxp{animation:none}}
+/* card stills sit under the preview video and show until its first frame */
+.htpl__media .htpl__still{z-index:0}.htpl__media video{z-index:1;background:transparent}
