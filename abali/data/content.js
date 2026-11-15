@@ -47,10 +47,10 @@ AB.content = {
 
   /* E. Specialists: SAMPLE profiles. Replace names, roles, photos and details with your own team. */
   specialists: [
-    { id: 'amara', name: 'Dr. Amara Mensah', role: 'Paediatrics', dept: 'paeds', img: 'doc-amara', days: 'Mon, Wed, Fri', languages: 'English, Swahili', bio: 'Leads the children’s clinic. Known for unhurried appointments and for explaining things to children as well as their parents.' },
-    { id: 'kofi', name: 'Dr. Kofi Adeyemi', role: 'Cardiology', dept: 'cardio', img: 'doc-kofi', days: 'Tue, Thu', languages: 'English, French', bio: 'Runs the heart health and blood pressure clinics, with a focus on long-term plans patients can actually follow.' },
-    { id: 'tunde', name: 'Dr. Tunde Okafor', role: 'Orthopaedics', dept: 'ortho', img: 'doc-tunde', days: 'Mon, Thu, Sat', languages: 'English, Yoruba', bio: 'Treats fractures, sports injuries and joint pain, working closely with the physiotherapy team on recovery.' },
-    { id: 'lena', name: 'Dr. Lena Moreno', role: 'Maternity & Women’s Health', dept: 'maternity', img: 'doc-lena', days: 'Mon to Fri', languages: 'English, Spanish', bio: 'Supports women through pregnancy, delivery and the weeks after, with antenatal classes for first-time parents.' }
+    { id: 'kofi', name: 'Dr. Brian Otieno', role: 'Cardiology', dept: 'cardio', img: 'doc-kofi', days: 'Tue, Thu', languages: 'English, Swahili, Dholuo', bio: 'Runs the heart health and blood pressure clinics, with a focus on long-term plans patients can actually follow.' },
+    { id: 'lena', name: 'Dr. Njeri Kamau', role: 'Maternity & Women’s Health', dept: 'maternity', img: 'doc-lena', days: 'Mon to Fri', languages: 'English, Swahili, Kikuyu', bio: 'Supports women through pregnancy, delivery and the weeks after, with antenatal classes for first-time parents.' },
+    { id: 'tunde', name: 'Dr. David Kiprotich', role: 'Orthopaedics', dept: 'ortho', img: 'doc-tunde', days: 'Mon, Thu, Sat', languages: 'English, Swahili, Kalenjin', bio: 'Treats fractures, sports injuries and joint pain, working closely with the physiotherapy team on recovery.' },
+    { id: 'amara', name: 'Dr. Achieng Odhiambo', role: 'Paediatrics', dept: 'paeds', img: 'doc-amara', days: 'Mon, Wed, Fri', languages: 'English, Swahili', bio: 'Leads the children’s clinic. Known for unhurried appointments and for explaining things to children as well as their parents.' }
   ],
 
   /* F. Figures: EXAMPLE numbers for the template. Replace with verified figures, or remove. */

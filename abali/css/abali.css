@@ -511,6 +511,8 @@ code { font-size: .92em; background: rgba(19, 33, 29, .07); padding: 1px 6px; bo
   .chip:nth-child(2) { margin: 18px 0 0; } .chip:nth-child(3) { display: none; }
   .cue { display: none; }
 
+  .sec { padding: 60px 0; }
+  .intro { padding-bottom: 8px; }
   .stmt { font-size: clamp(28px, 8vw, 40px); }
   .pillars { grid-template-columns: 1fr; gap: 0; }
   .pl { display: grid; grid-template-columns: 40px 1fr; padding: 20px 0; }
