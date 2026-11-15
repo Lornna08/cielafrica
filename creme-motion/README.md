@@ -5,10 +5,8 @@ A Ciel Africa template for cake shops, bakeries, patisseries, dessert studios an
 content and must be replaced for each client.
 
 ## What's inside
-- **Signature hero**: one photograph of a cut cake. A line of light draws down through the layers, the frame parts
-  at that line and the camera eases back from a close-up of the layers to the whole scene; then the headline rises in.
-  A portrait crop is used on phones. With *reduced motion* the photograph is simply shown. A bakery can swap in its own
-  photograph, or its own filmed cut (set `hero.video`).
+- **Hero**: one full-bleed photograph of a cut cake showing its layers, with the headline settling in over it. A
+  portrait crop is used on phones. A bakery can swap in its own photograph, or its own filmed cut (set `hero.video`).
 - **How ordering works**: three short steps under the hero.
 - **The menu**: a typographic category index that stays under the header, an even grid of photographed cakes with
   name, starting price, *Choose options* and a WhatsApp shortcut, and a *Design your own cake* card in the grid.
@@ -57,7 +55,7 @@ You only edit four files and the photos. Nothing in `js/` or `css/` needs to cha
    - `brand`: name, short name, tagline, logo (`logo: 'img/brand/logo.svg'`; leave empty for a wordmark), favicon.
    - `theme`: the colours. `fonts`: a Google Fonts URL and the two family names.
    - `hero`: kicker, headline lines, text, buttons, alt text and `reveal` (the photograph for desktop, tablet and
-     phone, the point where the line of light falls, and the zoom). Or remove `reveal` and give a `video`.
+     phone, and how each is positioned). Or remove `reveal` and give a `video`.
    - **`whatsapp.number`**: the business WhatsApp number, international format, digits only (for example
      `2547XXXXXXXX`). Also the greeting, closing and general lines used in messages.
    - `order`: the how-to-order line, reply time and payment note.
@@ -86,9 +84,8 @@ With a number set, buttons open that chat directly.
 
 ### The hero photograph
 Use a photograph of the bakery's own cake, ideally a cut slice that shows the layers, at about 2600 px wide (plus a
-1500 px copy and a portrait crop around 1170 × 2080 for phones). Set `hero.reveal.focus` to the point (fractions of the
-photo) where the layers are: the line of light falls there and the camera starts from there. Keep the left of the
-desktop photo (and the lower part of the phone photo) calm so the headline stays readable.
+1500 px copy and a portrait crop around 1170 × 2080 for phones). Set `hero.reveal.position` so the layers stay in view (fractions of the
+photo) where the layers are. Keep the left of the desktop photo (and the lower part of the phone photo) calm so the headline stays readable.
 
 ### Studio previews
 `img/studio/` holds the preview photographs (`<name>.webp`, 960 × 1200) and a mask for each (`<name>-mask.png`, white
@@ -96,7 +93,7 @@ where the frosting is). List them in `data/designer.js → previews` with the sh
 
 ## Accessibility and performance
 Keyboard navigation throughout (dialogs, gallery, carousel, menu), visible focus, skip link, alt text on every
-photo, labelled form fields with error messages, and `prefers-reduced-motion` support (no reveal, no parallax, no
+photo, labelled form fields with error messages, and `prefers-reduced-motion` support (no parallax, no
 autoplay). Images are WebP with `srcset` and lazy loading; the hero photograph is about 0.2 MB on desktop and 0.13 MB on phones, and is preloaded.
 
 ## Hosting

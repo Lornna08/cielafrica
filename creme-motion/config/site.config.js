@@ -44,8 +44,8 @@ CREME.config = {
   currency: { prefix: 'KES ', locale: 'en-KE' },
 
   /* The hero is a photograph of the bakery's own cake, ideally a cut slice that shows the layers.
-     reveal: a line of light opens the frame at `focus` (fractions of the photo) and the camera eases back
-     from `zoom` to the full picture. Give a portrait crop for phones.
+     reveal.image: the photo for desktop, a smaller copy for tablets and a portrait crop for phones;
+     reveal.position: where each crop is anchored (CSS object-position).
      To use your own film instead, remove `reveal` and set video / videoWebm / poster / still / revealAt. */
   hero: {
     kicker: 'Patisserie & celebration cakes',
@@ -55,9 +55,7 @@ CREME.config = {
     secondary: { label: 'Design your cake', href: '#design' },
     reveal: {
       image: { desktop: 'img/hero/slice-2600.webp', tablet: 'img/hero/slice-1500.webp', mobile: 'img/hero/slice-portrait-1170.webp' },
-      focus: { desktop: [0.705, 0.6], mobile: [0.4, 0.58] },        // where the line of light falls and the camera starts
-      position: { desktop: '72% 50%', mobile: '50% 52%' },          // object-position of the photo
-      zoom: 2.3
+      position: { desktop: '72% 50%', mobile: '50% 52%' }           // object-position of the photo
     },
     alt: 'A slice of red velvet cake with cream cheese frosting on a plate, the rest of the cake behind it.'
   },

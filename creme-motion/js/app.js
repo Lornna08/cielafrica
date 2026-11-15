@@ -190,14 +190,12 @@
       '<div class="menu-cta"><button type="button" class="btn wa" data-wa-general tabindex="-1">' + I.wa + 'Order on WhatsApp</button>' + (hasPhone ? '<a class="btn light" href="' + phoneHref(C.contact.phone) + '" tabindex="-1">' + I.phone + 'Call to order</a>' : '') + '</div>' +
       '<div class="menu-foot">' + (hasPhone ? '<span>' + esc(C.contact.phone) + '</span>' : '') + (C.contact.email ? '<span>' + esc(C.contact.email) + '</span>' : '') + '</div></div></div>';
   }
-  /* The hero is a photograph. With hero.reveal set it opens with a line of light that parts the frame, then the
-     camera eases back from the cake's layers to the whole scene. With hero.video set, a film plays instead. */
+  /* The hero is a photograph (hero.reveal), shown as it is from the first frame. With hero.video set, a film plays instead. */
   function heroHTML() {
     var h = C.hero, wi = 0, R = h.reveal;
     var lines = h.headline.map(function (ln) { return '<span class="ln">' + ln.split(' ').map(function (w) { return '<span class="w" style="--i:' + (wi++) + '">' + esc(w) + '</span>'; }).join(' ') + '</span>'; }).join('');
     var media = R ? '<div class="hero-img"><picture>' + (R.image.mobile ? '<source media="(max-width: 700px) and (orientation: portrait)" srcset="' + R.image.mobile + '">' : '') +
-        '<img src="' + R.image.desktop + '"' + (R.image.tablet ? ' srcset="' + R.image.tablet + ' 1500w, ' + R.image.desktop + ' 2600w" sizes="100vw"' : '') + ' alt="' + esc(h.alt) + '" fetchpriority="high" decoding="async"></picture></div>' +
-        '<i class="hero-cur l" aria-hidden="true"></i><i class="hero-cur r" aria-hidden="true"></i><i class="hero-line" aria-hidden="true"></i>'
+        '<img src="' + R.image.desktop + '"' + (R.image.tablet ? ' srcset="' + R.image.tablet + ' 1500w, ' + R.image.desktop + ' 2600w" sizes="100vw"' : '') + ' alt="' + esc(h.alt) + '" fetchpriority="high" decoding="async"></picture></div>'
       : '<video muted playsinline preload="auto" aria-hidden="true" tabindex="-1"></video><img class="still" alt="' + esc(h.alt) + '">';
     return '<section class="hero' + (R ? ' is-reveal' : ' is-video') + '" id="top" aria-label="Welcome">' +
       '<div class="hero-media" data-hero-media>' + media + '<div class="hero-shade" aria-hidden="true"></div></div>' +
@@ -865,29 +863,14 @@
     var H = C.hero, sec = $('.hero'), rep = $('.replay', sec), R = H.reveal, timers = [];
     var reveal = function () { sec.classList.add('in'); timers.push(setTimeout(function () { sec.classList.add('settled'); }, RM ? 0 : 1800)); };
     if (R) {
+      // the photograph is simply there from the start; only the words settle in
       var img = $('.hero-img img', sec), box = $('.hero-img', sec);
       var portrait = function () { return window.matchMedia('(max-width: 700px) and (orientation: portrait)').matches; };
-      // put the zoom origin (and the line of light) on the cake's layers, wherever object-fit places them
-      var place = function () {
-        var W = box.clientWidth, Hh = box.clientHeight, iw = img.naturalWidth || 1, ih = img.naturalHeight || 1, mob = portrait() && R.image.mobile;
-        var f = (mob ? R.focus.mobile : R.focus.desktop) || [0.5, 0.5], pos = ((mob ? R.position.mobile : R.position.desktop) || '50% 50%').split(' ').map(parseFloat);
-        img.style.objectPosition = pos[0] + '% ' + pos[1] + '%';
-        var s = Math.max(W / iw, Hh / ih), dw = iw * s, dh = ih * s, ox = (W - dw) * pos[0] / 100, oy = (Hh - dh) * pos[1] / 100;
-        var fx = Math.round(ox + f[0] * dw), fy = Math.round(oy + f[1] * dh);
-        sec.style.setProperty('--fx', fx + 'px'); sec.style.setProperty('--fy', fy + 'px'); sec.style.setProperty('--z', R.zoom || 2.2);
-      };
-      var play = function () {
-        timers.forEach(clearTimeout); timers = []; place();
-        sec.classList.remove('h-line', 'h-open', 'h-dolly', 'h-drift', 'in', 'settled', 'h-fin'); void sec.offsetWidth;
-        if (RM) { sec.classList.add('h-fin', 'h-open', 'h-dolly'); reveal(); return; }
-        timers.push(setTimeout(function () { sec.classList.add('h-line'); }, 250));     // a line of light draws down through the cake
-        timers.push(setTimeout(function () { sec.classList.add('h-open', 'h-dolly'); }, 1150));  // the frame parts and the camera eases back
-        timers.push(setTimeout(reveal, 2900));
-        timers.push(setTimeout(function () { sec.classList.add('h-fin', 'h-drift'); rep.hidden = false; }, 5000));
-      };
-      if (img.complete && img.naturalWidth) play(); else { img.addEventListener('load', play, { once: true }); img.addEventListener('error', function () { sec.classList.add('h-fin', 'h-open'); reveal(); }, { once: true }); }
-      window.addEventListener('resize', place);
-      rep.onclick = function () { window.scrollTo({ top: 0, behavior: 'auto' }); rep.hidden = true; play(); };
+      var place = function () { var mob = portrait() && R.image.mobile; img.style.objectPosition = (mob ? R.position.mobile : R.position.desktop) || '50% 50%'; };
+      place(); window.addEventListener('resize', place);
+      sec.classList.add('h-fin', 'h-open', 'h-dolly');
+      if (RM) reveal(); else requestAnimationFrame(function () { setTimeout(reveal, 150); });
+      rep.remove();
       return;
     }
     // film (a client's own footage)

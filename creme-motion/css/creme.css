@@ -885,3 +885,7 @@ section[id] { scroll-margin-top: calc(var(--nav-h) + 8px); }
 @media (max-width: 900px) { .st-navp b { font-size: 16px; } .st-navp small { font-size: 10px; } }
 @media (max-width: 900px) and (max-height: 700px) { .hero .lead { display: none; } .hero h1 { margin-bottom: 20px; } }
 @media (max-width: 900px) { .hero { min-height: 470px; } }
+
+/* hero: a still photograph, no opening animation */
+.hero-img img { transform: none !important; transition: none !important; animation: none !important; }
+.hero.is-reveal .hero-shade { opacity: 1; transition: none; }
