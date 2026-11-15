@@ -1,5 +1,5 @@
 {
- "v": 4,
+ "v": 5,
  "note": "Ready-made Ciel Africa designs. They appear in Ciel Admin → Instagram → Planner; edits there are saved separately and win over this file.",
  "items": [
   {
@@ -561,7 +561,7 @@
    "kind": "reel",
    "title": "Inside Ember & Plate",
    "caption": "Inside Ember & Plate.\nA restaurant website with a living-fire opening scene, a menu laid out like a printed one, online ordering and table reservations. Light or dark, one tap. Live template.\n\ncielafrica.com/templates\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#RestaurantWebsite #WebDesign #FoodBusiness #CielAfrica",
-   "video": "/assets/ig/r/ember.mp4",
+   "video": "/assets/ig/r/ember-v2.mp4",
    "src": [
     "/assets/ig/r/ember-cover.jpg"
    ],
@@ -576,7 +576,7 @@
    "kind": "reel",
    "title": "Pay Kit, pay by phone or card",
    "caption": "Pay Kit, pay by phone or card.\nAn M-PESA prompt with live status, a live card preview, bank verification and a clear receipt, in one checkout. Live template.\n\ncielafrica.com/pay-kit\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#MPesa #Checkout #Payments #CielAfrica",
-   "video": "/assets/ig/r/paykit.mp4",
+   "video": "/assets/ig/r/paykit-v2.mp4",
    "src": [
     "/assets/ig/r/paykit-cover.jpg"
    ],
