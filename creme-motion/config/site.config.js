@@ -50,13 +50,14 @@ CREME.config = {
     headline: ['Every layer', 'tells a story.'],   // one line per item
     text: 'Hand-layered cakes, fresh cream and fruit-bright fillings, made to order for the moments you want to remember.',
     primary: { label: 'Explore the collection', href: '#collection' },
-    secondary: { label: 'Order a custom cake', href: '#custom' },
-    video: { desktop: 'img/hero/hero-1440.mp4', mobile: 'img/hero/hero-720x1280.mp4' },
-    videoWebm: { desktop: 'img/hero/hero-1440.webm', mobile: 'img/hero/hero-720x1280.webm' },   // optional, smaller; tried first
-    poster: { desktop: 'img/hero/hero-1440-start.webp', mobile: 'img/hero/hero-720x1280-start.webp' },
-    still: { desktop: 'img/hero/hero-1440-end.webp', mobile: 'img/hero/hero-720x1280-end.webp' },
-    revealAt: 3.9,                         // seconds into the video when the headline appears
-    alt: 'A layered chocolate and raspberry cake on a stand, cut to reveal a slice with three sponge layers, vanilla cream and raspberry jam.'
+    secondary: { label: 'Design your cake', href: '#design' },
+    video: { desktop: 'img/hero/hero-v2-1280.mp4', mobile: 'img/hero/hero-v2-608x1080.mp4' },
+    videoWebm: { desktop: 'img/hero/hero-v2-1280.webm', mobile: 'img/hero/hero-v2-608x1080.webm' },   // optional, smaller; tried first
+    poster: { desktop: 'img/hero/hero-v2-1280-start.webp', mobile: 'img/hero/hero-v2-608x1080-start.webp' },
+    still: { desktop: 'img/hero/hero-v2-1280-end.webp', mobile: 'img/hero/hero-v2-608x1080-end.webp' },
+    revealAt: 4.6,
+    background: '#CDB7A6',                // colour at the top edge of the film; fills the space behind the menu bar                         // seconds into the video when the headline appears
+    alt: 'A pink vintage cake with piped pearls and cherries on a cake stand. A knife cuts a slice and a cake server lifts it out to show chocolate sponge, vanilla cream and raspberry jam.'
   },
 
   /* WhatsApp ordering.
@@ -67,13 +68,23 @@ CREME.config = {
     number: '',
     greeting: "Hello! I'd like to order",
     closing: 'Please confirm availability.',
-    customIntro: "Hello! I'd like to request a custom cake.",
-    floatingButton: true
+    customIntro: "Hello! I'd like to order a custom cake I designed on your website.",
+    general: "Hello! I'd like to order a cake. Could you share what is available for my date?"
   },
 
-  /* Custom cake form. If endpoint is set, the form is POSTed there as
-     multipart/form-data (including the reference image). If it is empty the
-     enquiry is sent as a WhatsApp message instead. */
+  /* How customers can order. WhatsApp is always offered. "Send order request"
+     POSTs to orders.endpoint when set, otherwise it opens an email to
+     contact.email. A Call button appears wherever contact.phone is set. */
+  order: {
+    headline: 'Choose a cake, pick your size and flavour, then send it on WhatsApp, as an order request or by phone.',
+    replyTime: 'We usually reply within an hour during opening hours.',      // sample, replace
+    payment: 'We confirm the total before baking. A deposit secures your date.'  // sample, replace
+  },
+
+  /* Order requests (checkout and the cake designer). If endpoint is set,
+     requests are POSTed there as multipart/form-data, including the reference
+     image and a ready-made summary. If it is empty, "Send order request" opens
+     an email to contact.email instead. */
   orders: {
     endpoint: '',                          // e.g. 'https://formspree.io/f/xxxx' or your own API
     leadDays: 3,                           // earliest date offered on the form
@@ -130,25 +141,20 @@ CREME.config = {
     images: ['pastry-table', 'piping-bags', 'piping-tips']
   },
 
-  /* Options offered on the custom cake form. Add, remove or rename freely. */
+  /* Occasions offered in the cake designer. Shapes, sizes, colours and piping live in data/designer.js. */
   customForm: {
-    occasions: ['Birthday', 'Wedding', 'Anniversary', 'Baby shower', 'Graduation', 'Corporate event', 'Just because', 'Other'],
-    sizes: ['6 inch (8–10 servings)', '8 inch (14–18 servings)', '10 inch (24–30 servings)', 'Two tiers (40–50 servings)', 'Three tiers (70–90 servings)', 'Not sure yet'],
-    flavors: ['Chocolate fudge', 'Vanilla bean', 'Red velvet', 'Lemon & elderflower', 'Carrot & walnut', 'Strawberries & cream', 'Pistachio & raspberry', 'Not sure yet'],
-    designs: ['Minimal & elegant', 'Floral', 'Drip & toppings', 'Naked / semi-naked', 'Themed', 'Match my reference photo'],
-    servingsMax: 300
+    occasions: ['Birthday', 'Wedding', 'Anniversary', 'Baby shower', 'Graduation', 'Bridal shower', 'Corporate event', 'Just because', 'Other']
   },
 
   nav: [
-    { label: 'Home', href: '#top' },
-    { label: 'Our Collection', href: '#collection' },
-    { label: 'Custom Cakes', href: '#custom' },
+    { label: 'Cakes', href: '#collection' },
+    { label: 'Design your cake', href: '#design' },
     { label: 'About', href: '#about' },
     { label: 'Contact', href: '#contact' }
   ],
 
   seo: {
     title: 'Velvet & Crumb | Cakes and desserts, baked to order',
-    description: 'Celebration and wedding cakes, cupcakes, mini cakes, dessert boxes and pastries, baked to order. A bakery website template by Ciel Africa.'
+    description: 'Celebration and vintage cakes, bento boxes, cupcakes, milky cakes and wedding tiers, baked to order. Design your own cake online. A bakery website template by Ciel Africa.'
   }
 };

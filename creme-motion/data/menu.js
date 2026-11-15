@@ -1,360 +1,351 @@
 /* ==========================================================================
    CRÈME MOTION — the menu (sample content)
-   Categories and products. Every product, price and description here is
-   sample content for the template. Replace it with the bakery's own.
+   Categories, products, add-ons (toppers) and the flavour price list.
+   Every product, price and description here is sample content: replace it
+   with the bakery's own. Prices are numbers in the currency set in
+   config/site.config.js.
 
-   Product fields
-   - id: short unique name, used in links (#product/<id>)
-   - category: one of the category ids below
-   - images: [{ src, alt, pos }] — src is a file name in img/p without the
-     size suffix (img/p/<src>-800.webp and -1600.webp); pos is an optional
-     CSS object-position, e.g. '50% 60%'
-   - price: the starting price (number). Each size can set its own price.
-   - sizes: [{ label, price, serves }]   flavors: ['...'] (optional)
-   - availability: 'available' | 'preorder' | 'limited' | 'soldout'
-   - lead: how much notice is needed, shown on the product
-   - details: [['Label', 'Value'], ...]
+   How prices work
+   - sizes: [{ label, serves, price }]
+   - flavors: optional. Either plain names ['Vanilla', 'Chocolate'] (no change
+     to the price) or { name, prices: [...] } with one price per size (this
+     replaces the size price), or { name, extra: 300 } / extra: [200, 300, ...]
+     (added to the size price).
+   - flavorTable: 'cake' or 'cupcake' uses the shared price lists below, so the
+     same list feeds every product and the cake designer.
+   - options: extra choices with a price each, e.g. the frosting.
+   - addons: true offers the add-ons list (toppers) below.
+   - message: true shows a "message on the cake" field.
    ========================================================================== */
 window.CREME = window.CREME || {};
 
 CREME.categories = [
-  { id: 'celebration', label: 'Celebration Cakes' },
-  { id: 'wedding', label: 'Wedding Cakes' },
-  { id: 'cupcakes', label: 'Cupcakes' },
-  { id: 'mini', label: 'Mini Cakes' },
-  { id: 'boxes', label: 'Dessert Boxes' },
-  { id: 'pastries', label: 'Cookies & Pastries' },
-  { id: 'seasonal', label: 'Seasonal Specials' }
+  { id: 'celebration', label: 'Celebration Cakes', image: 'cherry-vintage' },
+  { id: 'bento', label: 'Bento & Combo Boxes', image: 'bento-box' },
+  { id: 'cupcakes', label: 'Cupcakes', image: 'cupcakes-dozen' },
+  { id: 'mini', label: 'Mini Cakes', image: 'mini-hearts' },
+  { id: 'milky', label: 'Milky Cakes', image: 'tres-leches' },
+  { id: 'tiered', label: 'Tiered & Wedding', image: 'tier-pink-bow' },
+  { id: 'seasonal', label: 'Seasonal Specials', image: 'berry-cake' }
 ];
 
-CREME.availability = {
-  available: 'Available to order',
-  preorder: 'Pre-order',
-  limited: 'Limited this week',
-  soldout: 'Sold out'
+/* Shared flavour price lists (sample prices). Cake sizes: 1 kg, 1.5 kg, 2 kg, 3 kg. */
+CREME.flavorTables = {
+  cake: {
+    sizes: [{ label: '1 kg', serves: '8–10' }, { label: '1.5 kg', serves: '12–15' }, { label: '2 kg', serves: '16–20' }, { label: '3 kg', serves: '25–30' }],
+    flavors: [
+      { name: 'Vanilla', prices: [2100, 3100, 4100, 6200] },
+      { name: 'Vanilla Oreo', prices: [2400, 3500, 4700, 7050] },
+      { name: 'Chocolate', prices: [2600, 3800, 5100, 7700] },
+      { name: 'Chocolate Chip', prices: [2900, 4300, 5750, 8600] },
+      { name: 'Chocolate Mint', prices: [2900, 4300, 5750, 8600] },
+      { name: 'Chocolate Fudge', prices: [3150, 4650, 6200, 9300] },
+      { name: 'Chocolate Oreo', prices: [2950, 4350, 5800, 8700] },
+      { name: 'Black / White Forest', prices: [3100, 4600, 6150, 9200] },
+      { name: 'Lemon Poppy Seed', prices: [3900, 5850, 7800, 11700] },
+      { name: 'Red Velvet', prices: [3150, 4650, 6200, 9300] },
+      { name: 'Bubblegum', prices: [2600, 3850, 5150, 7700] },
+      { name: 'Blueberry Layer', prices: [3300, 4950, 6600, 9900] },
+      { name: 'Vanilla Raspberry', prices: [3100, 4600, 6150, 9200] },
+      { name: 'Coconut', prices: [2900, 4300, 5750, 8600] },
+      { name: 'Fruit flavour (lemon, strawberry, passion, pineapple, orange, piña colada, blueberry or mint)', short: 'Fruit flavour', prices: [2300, 3400, 4550, 6800] },
+      { name: 'Salted Caramel', prices: [3600, 5350, 7200, 10800] },
+      { name: 'Rich Fruit Cake', prices: [3100, 4650, 6200, 9300] }
+    ]
+  },
+  cupcake: {
+    sizes: [{ label: 'Box of 6' }, { label: 'Box of 12' }, { label: 'Box of 24' }],
+    flavors: [
+      { name: 'Vanilla', prices: [850, 1050, 2500] },
+      { name: 'Marble', prices: [850, 1100, 2550] },
+      { name: 'Chocolate', prices: [900, 1250, 2900] },
+      { name: 'Chocolate Chip', prices: [1000, 1300, 2950] },
+      { name: 'Chocolate Mint', prices: [1000, 1300, 2950] },
+      { name: 'Raspberry', prices: [850, 1100, 2550] },
+      { name: 'Red Velvet', prices: [900, 1250, 2700] },
+      { name: 'Fruit flavour', prices: [850, 1150, 2700] },
+      { name: 'Assorted (two flavours)', prices: [1050, 1550, 3100] }
+    ]
+  }
 };
+
+/* Frosting choices used by most cakes */
+CREME.frosting = { id: 'frosting', label: 'Frosting', choices: [{ name: 'Buttercream' }, { name: 'Whipped cream', price: 650 }, { name: 'Black or deep-coloured buttercream', price: 350 }] };
+
+/* Add-ons and toppers (sample prices) */
+CREME.addons = [
+  { group: 'Edible', name: 'Black graduation cap', price: 550 },
+  { group: 'Edible', name: 'Custom graduation cap', price: 650 },
+  { group: 'Edible', name: 'Fondant rose', price: 300 },
+  { group: 'Edible', name: 'Sugar pearls', price: 120 },
+  { group: 'Edible', name: 'Chocolate toppers', price: 350 },
+  { group: 'Edible', name: 'Oreo cookies', price: 250 },
+  { group: 'Edible', name: 'Large custom bow', price: 1050 },
+  { group: 'Edible', name: 'Rainbow', price: 1000 },
+  { group: 'Edible', name: 'Unicorn horn (large)', price: 1050 },
+  { group: 'Edible', name: 'Teddy bear', price: 650 },
+  { group: 'Edible', name: 'Character figure (medium)', price: 650 },
+  { group: 'Edible', name: 'Fresh strawberries and berries', price: 450 },
+  { group: 'Edible', name: 'Baby shoes', price: 550 },
+  { group: 'Edible', name: 'Edible photo print', price: 1050 },
+  { group: 'Decorations', name: 'A6 custom card', price: 300 },
+  { group: 'Decorations', name: 'Ribbons (6)', price: 250 },
+  { group: 'Decorations', name: 'Themed paper toppers', price: 950 },
+  { group: 'Decorations', name: 'Acrylic name topper', price: 650 },
+  { group: 'Decorations', name: 'Paper name topper', price: 350 },
+  { group: 'Decorations', name: 'Wavy candles', price: 350 },
+  { group: 'Decorations', name: 'Butterflies', price: 400 },
+  { group: 'Decorations', name: 'Number placard', price: 200 },
+  { group: 'Decorations', name: 'Number candles', price: 150 },
+  { group: 'Decorations', name: 'Small tiara', price: 350 },
+  { group: 'Decorations', name: 'Big tiara', price: 550 },
+  { group: 'Decorations', name: 'Polaroid photos (10)', price: 550 },
+  { group: 'Decorations', name: 'Gold spheres', price: 1000 },
+  { group: 'Decorations', name: 'Fresh flowers (40–50 stems)', price: 3200 }
+];
 
 CREME.products = [
   {
-    id: 'chocolate-fudge-cake', category: 'celebration', featured: true,
-    name: 'Chocolate Fudge Cake',
-    short: 'Three dark sponges, fudge frosting and a glossy ganache drip.',
-    description: 'Our deepest chocolate cake: three moist cocoa sponges layered with whipped chocolate fudge frosting, finished with a ganache drip and chocolate curls.',
+    id: 'signature-cake', category: 'celebration', featured: true,
+    name: 'Signature Buttercream Cake',
+    short: 'Your favourite flavour, soft layers and smooth buttercream, by the kilo.',
+    description: 'Our everyday celebration cake: two or three tender layers filled and finished in silky buttercream, piped and decorated in your colours. Choose the weight and any of our flavours; the price updates as you choose.',
     images: [
-      { src: 'choc-slice', alt: 'A tall slice of layered chocolate fudge cake on a white plate', pos: '50% 55%' },
-      { src: 'choc-swirl', alt: 'A whole chocolate cake topped with piped chocolate swirls and a ganache drip' },
-      { src: 'choc-slice-2', alt: 'A slice of chocolate layer cake with a fork on a marble table' }
+      { src: 'cherry-vintage', alt: 'A white buttercream cake with piped vintage borders and glossy red cherries', pos: '50% 30%' },
+      { src: 'cherry-vintage-2', alt: 'Close view of piped buttercream ruffles and cherries on a celebration cake' },
+      { src: 'purple-cake', alt: 'A lilac buttercream cake topped with blueberries on a wooden stand' }
     ],
-    price: 3800,
-    sizes: [
-      { label: '6 inches', price: 3800, serves: '8–10' },
-      { label: '8 inches', price: 5200, serves: '14–18' },
-      { label: '10 inches', price: 7400, serves: '24–30' }
-    ],
-    flavors: ['Classic fudge', 'Salted caramel fudge', 'Mocha fudge'],
-    availability: 'available', lead: '2 days',
-    details: [['Sponge', 'Cocoa and buttermilk'], ['Filling', 'Whipped chocolate fudge'], ['Finish', 'Ganache drip, chocolate curls'], ['Contains', 'Gluten, dairy, eggs, soy'], ['Keeps', '3 days in the fridge; serve at room temperature']]
+    flavorTable: 'cake', options: ['frosting'], addons: true, message: true,
+    lead: '2 days',
+    details: [['Sizes', '1 kg to 3 kg; bigger cakes and tiers on request'], ['Frosting', 'Buttercream; whipped cream or deep colours at a small extra cost'], ['Fruit flavours', 'Lemon, strawberry, mint, raspberry, passion, pineapple, orange, piña colada, blueberry'], ['Toppers', 'Choose from the add-ons, priced separately']]
   },
   {
-    id: 'vanilla-bloom', category: 'celebration',
-    name: 'Vanilla Bloom',
-    short: 'Vanilla bean sponge in soft ivory buttercream with sugar flowers.',
-    description: 'Light vanilla bean sponge with vanilla Swiss meringue buttercream and a layer of berry compote, finished in a textured ivory coat with handmade sugar flowers.',
+    id: 'vintage-heart', category: 'celebration', featured: true,
+    name: 'Vintage Heart Cake',
+    short: 'A heart-shaped cake with lavish vintage piping and a message on top.',
+    description: 'The heart cake everyone photographs first: piped borders, scallops and a hand-written message, in any colour combination you like.',
     images: [
-      { src: 'bloom-cake', alt: 'An ivory buttercream cake decorated with pink carnations and pearl sprinkles' },
-      { src: 'peony-cake', alt: 'A white rustic buttercream cake crowned with pink peonies and roses' }
+      { src: 'heart-red', alt: 'A pink heart-shaped cake with red vintage piping and the word Love written on top' },
+      { src: 'heart-pink', alt: 'A soft pink heart cake with layered piped ruffles' },
+      { src: 'heart-love', alt: 'A heart cake with red and cream piping in warm light' }
     ],
-    price: 4200,
-    sizes: [
-      { label: '6 inches', price: 4200, serves: '8–10' },
-      { label: '8 inches', price: 5800, serves: '14–18' },
-      { label: '10 inches', price: 8200, serves: '24–30' }
-    ],
-    flavors: ['Vanilla & berry', 'Vanilla & lemon curd', 'Vanilla & passion fruit'],
-    availability: 'available', lead: '3 days',
-    details: [['Sponge', 'Vanilla bean'], ['Filling', 'Buttercream and berry compote'], ['Finish', 'Textured buttercream, sugar or fresh flowers'], ['Contains', 'Gluten, dairy, eggs'], ['Keeps', '3 days in the fridge']]
+    sizes: [{ label: '1 kg', serves: '8–10', price: 2700 }, { label: '1.5 kg', serves: '12–15', price: 3950 }, { label: '2 kg', serves: '16–20', price: 5250 }],
+    flavors: ['Vanilla', { name: 'Chocolate', extra: [450, 650, 900] }, { name: 'Red Velvet', extra: [950, 1400, 1900] }, { name: 'Vanilla Raspberry', extra: [900, 1350, 1800] }, { name: 'Salted Caramel', extra: [1450, 2100, 2850] }],
+    options: ['frosting'], addons: true, message: true, lead: '3 days',
+    details: [['Piping', 'Vintage borders, scallops and swags'], ['Message', 'Up to 30 characters, piped by hand']]
   },
   {
-    id: 'strawberries-and-cream', category: 'celebration',
-    name: 'Strawberries & Cream',
-    short: 'Chiffon sponge, Chantilly cream and fresh strawberries.',
-    description: 'A cloud-light chiffon sponge soaked in vanilla syrup and layered with Chantilly cream and sliced fresh strawberries. Best on the day.',
+    id: 'garden-floral', category: 'celebration',
+    name: 'Garden Floral Cake',
+    short: 'Buttercream florals and fresh blooms in soft, romantic colours.',
+    description: 'A tall cake in painted buttercream with hand-piped flowers or fresh blooms, finished with a touch of gold.',
     images: [
-      { src: 'shortcake-slices', alt: 'Slices of strawberry shortcake showing cream and strawberry layers' },
-      { src: 'shortcake-slice', alt: 'A single slice of strawberry cream cake on a wooden table' },
-      { src: 'strawberry-cream', alt: 'A cream cake decorated with halved strawberries and piped cream' }
+      { src: 'floral-pink', alt: 'A tall lilac and pink cake with a gold edge and white flowers on top' },
+      { src: 'bloom-cake', alt: 'An ivory buttercream cake decorated with pink carnations' },
+      { src: 'peony-cake', alt: 'A white cake crowned with pink peonies' }
     ],
-    price: 3600,
-    sizes: [
-      { label: '6 inches', price: 3600, serves: '8–10' },
-      { label: '8 inches', price: 4900, serves: '14–18' }
-    ],
-    flavors: ['Classic vanilla', 'Matcha sponge'],
-    availability: 'limited', lead: '2 days',
-    details: [['Sponge', 'Vanilla chiffon'], ['Filling', 'Chantilly cream, fresh strawberries'], ['Contains', 'Gluten, dairy, eggs'], ['Keeps', 'Best eaten the day it is collected']]
+    sizes: [{ label: '1.5 kg', serves: '12–15', price: 4350 }, { label: '2 kg', serves: '16–20', price: 5650 }, { label: '3 kg', serves: '25–30', price: 8450 }],
+    flavors: ['Vanilla', { name: 'Vanilla Raspberry', extra: [1000, 1350, 2000] }, { name: 'Lemon Poppy Seed', extra: [2450, 3250, 4900] }, { name: 'Red Velvet', extra: [1250, 1650, 2500] }],
+    options: ['frosting'], addons: true, message: true, lead: '3 days',
+    details: [['Flowers', 'Piped buttercream, or fresh flowers (add-on)'], ['Finish', 'Gold leaf edge']]
   },
   {
-    id: 'cookies-and-cream-drip', category: 'celebration',
-    name: 'Cookies & Cream Drip',
-    short: 'Vanilla and chocolate sponge with a dark chocolate drip.',
-    description: 'Alternating vanilla and chocolate sponges with cookie crumb buttercream, wrapped in smooth white buttercream with a dark chocolate drip.',
+    id: 'number-cake', category: 'celebration',
+    name: 'Number or Letter Cake',
+    short: 'Your age or initials, layered with cream and topped with treats.',
+    description: 'Each number or letter is two layers of cake piped with cream and dressed with berries, macarons, flowers or sweets. Choose how many characters you need.',
     images: [
-      { src: 'drip-white', alt: 'A white buttercream cake with a dark chocolate drip on a cake stand' },
-      { src: 'drip-cakes', alt: 'Two white cakes with chocolate drips on a white table' }
+      { src: 'number-candle', alt: 'A cake with a number two candle and colourful sprinkles' },
+      { src: 'funfetti-slice', alt: 'A slice of sprinkle cake on a striped plate with ribbons' }
     ],
-    price: 4000,
-    sizes: [
-      { label: '6 inches', price: 4000, serves: '8–10' },
-      { label: '8 inches', price: 5500, serves: '14–18' }
-    ],
-    flavors: ['Cookies & cream', 'Vanilla & chocolate'],
-    availability: 'available', lead: '2 days',
-    details: [['Sponge', 'Vanilla and chocolate'], ['Filling', 'Cookie crumb buttercream'], ['Finish', 'Chocolate drip'], ['Contains', 'Gluten, dairy, eggs, soy']]
+    sizes: [{ label: 'Per number or letter', serves: '6–8 each', price: 3600 }],
+    unit: 'number or letter', qtyLabel: 'Numbers / letters',
+    flavors: ['Vanilla', 'Chocolate Oreo', 'Chocolate Fudge', 'Mint', 'Raspberry Lemon', 'Blueberry Layer', 'Salted Caramel', 'Bubblegum', 'Coconut', 'Fruit flavour', 'Assorted (two flavours)'],
+    options: [{ id: 'cream', label: 'Cream', choices: [{ name: 'Buttercream' }, { name: 'Whipped cream', price: 700 }] }],
+    addons: true, message: true, lead: '3 days',
+    details: [['Size', 'About 1.5 kg per character'], ['Toppings', 'Included; extras from the add-ons']]
   },
   {
-    id: 'ivory-garden-tiers', category: 'wedding', featured: true,
-    name: 'Ivory Garden',
-    short: 'Three tiers of textured buttercream with cascading greenery.',
-    description: 'A three-tier wedding cake in combed ivory buttercream with a cascade of fresh flowers and greenery. Each tier can be a different flavour.',
+    id: 'bento-cake', category: 'bento', featured: true,
+    name: 'Bento Cake',
+    short: 'A little 0.5 kg cake in a takeaway box, with your message.',
+    description: 'A small, perfectly decorated cake for one or two, boxed with a candle. The sweetest way to say happy birthday.',
     images: [
-      { src: 'wedding-ivory', alt: 'A three-tier ivory wedding cake with cream roses and eucalyptus' },
-      { src: 'wedding-sage', alt: 'A two-tier white wedding cake decorated with succulents' }
+      { src: 'bento-box', alt: 'A small cream bento cake with Happy Birthday written on it, in an open lunch box with a candle' },
+      { src: 'bento-green', alt: 'A mint green bento cake in a box on a wooden table' }
     ],
-    price: 28000,
-    sizes: [
-      { label: 'Two tiers', price: 28000, serves: '40–50' },
-      { label: 'Three tiers', price: 42000, serves: '70–90' },
-      { label: 'Four tiers', price: 58000, serves: '110–130' }
-    ],
-    flavors: ['Vanilla & berry', 'Lemon & elderflower', 'Chocolate fudge', 'Red velvet'],
-    availability: 'preorder', lead: '3 weeks',
-    details: [['Includes', 'A tasting box for two, delivery and set-up'], ['Flowers', 'Fresh, food-safe, chosen with your florist'], ['Deposit', '50% to book your date'], ['Contains', 'Gluten, dairy, eggs']]
+    sizes: [{ label: 'Bento (0.5 kg)', serves: '2–3', price: 1350 }],
+    flavors: ['Vanilla', 'Marble', 'Chocolate', { name: 'Chocolate Chip', extra: 150 }, { name: 'Red Velvet', extra: 150 }, 'Fruit flavour'],
+    addons: true, message: true, lead: '1 day',
+    details: [['Includes', 'Box and a candle'], ['Message', 'Up to 25 characters']]
   },
   {
-    id: 'rose-and-gold-tiers', category: 'wedding',
-    name: 'Rose & Gold',
-    short: 'Smooth white tiers with sugar roses and a touch of gold.',
-    description: 'Tall, smooth tiers with handmade sugar roses, pearl piping and gold leaf details. Designed for evening receptions.',
+    id: 'bento-duo', category: 'bento',
+    name: 'Bento & Cupcake Duo',
+    short: 'A bento cake with two matching cupcakes.',
+    description: 'A 0.5 kg bento cake and two cupcakes, decorated to match and boxed together.',
     images: [
-      { src: 'wedding-gold', alt: 'A four-tier wedding cake with sugar flowers and gold details lit by candles' },
-      { src: 'wedding-rose', alt: 'A three-tier white cake with pink fresh flowers beside champagne glasses' }
+      { src: 'bento-green', alt: 'A green bento cake in a white box' },
+      { src: 'cupcake-box', alt: 'Decorated cupcakes in a window box with flowers' }
     ],
-    price: 34000,
-    sizes: [
-      { label: 'Three tiers', price: 34000, serves: '70–90' },
-      { label: 'Four tiers', price: 52000, serves: '110–130' }
-    ],
-    flavors: ['Vanilla & raspberry', 'Pistachio & rose', 'Chocolate & salted caramel'],
-    availability: 'preorder', lead: '4 weeks',
-    details: [['Includes', 'Tasting, delivery and set-up'], ['Decoration', 'Sugar roses, pearl piping, edible gold leaf'], ['Deposit', '50% to book your date'], ['Contains', 'Gluten, dairy, eggs, nuts (pistachio option)']]
+    sizes: [{ label: 'Bento + 2 cupcakes', serves: '3–4', price: 1600 }],
+    flavors: ['Vanilla', 'Bubblegum', 'Pineapple', 'Lemon', 'Passion', 'Chocolate', 'Mint', 'Strawberry', 'Orange'],
+    addons: true, message: true, lead: '2 days',
+    details: [['Cake', '0.5 kg'], ['Cupcakes', 'Two, in the same colours']]
   },
   {
-    id: 'vanilla-cupcakes', category: 'cupcakes', featured: true,
-    name: 'Vanilla Bean Cupcakes',
-    short: 'Tall swirls of vanilla buttercream with a golden crumb.',
-    description: 'Soft vanilla bean cupcakes with a generous swirl of whipped buttercream and a sprinkle of gold sugar.',
+    id: 'bento-five', category: 'bento', featured: true,
+    name: 'Bento Box of Five',
+    short: 'A bento cake surrounded by four cupcakes, the classic gift box.',
+    description: 'Our most-gifted box: a 0.5 kg bento cake in the middle and four cupcakes around it, all piped in your colours.',
     images: [
-      { src: 'cupcakes-vanilla', alt: 'Vanilla cupcakes with swirls of buttercream in silver cases' },
-      { src: 'cupcakes-vanilla-2', alt: 'Rows of vanilla cupcakes with buttercream and gold sprinkles' },
-      { src: 'cupcake-single', alt: 'A single vanilla cupcake with a buttercream swirl' }
+      { src: 'cupcake-box', alt: 'Cupcakes decorated in pastel colours in a gift box' },
+      { src: 'bento-box', alt: 'A bento cake in an open box' }
     ],
-    price: 1800,
-    sizes: [
-      { label: 'Box of 6', price: 1800 },
-      { label: 'Box of 12', price: 3300 },
-      { label: 'Box of 24', price: 6200 }
-    ],
-    flavors: ['Vanilla bean', 'Chocolate', 'Red velvet', 'Lemon', 'Mixed box'],
-    availability: 'available', lead: '1 day',
-    details: [['Frosting', 'Whipped buttercream'], ['Personalise', 'Toppers and colours on request'], ['Contains', 'Gluten, dairy, eggs'], ['Keeps', '2 days in an airtight box']]
+    sizes: [{ label: 'Bento + 4 cupcakes', serves: '5–6', price: 2450 }],
+    flavors: ['Vanilla', 'Marble', 'Chocolate', 'Fruit flavour', 'Vanilla Oreo', { name: 'Chocolate Mint', extra: 250 }, { name: 'Chocolate Chip', extra: 250 }, { name: 'Red Velvet', extra: 250 }, { name: 'Raspberry', extra: 250 }, { name: 'Assorted (two flavours)', extra: 250 }],
+    addons: true, message: true, lead: '2 days',
+    details: [['Cake', '0.5 kg'], ['Cupcakes', 'Four, matching']]
   },
   {
-    id: 'pastel-cupcakes', category: 'cupcakes',
-    name: 'Pastel Garden Cupcakes',
-    short: 'Two-tone piped buttercream in soft spring colours.',
-    description: 'Vanilla and chocolate cupcakes piped with two-tone pastel buttercream. A favourite for baby showers and birthdays.',
+    id: 'bento-eight', category: 'bento',
+    name: 'Bento Party Box of Eight',
+    short: 'A bento cake and seven cupcakes for sharing.',
+    description: 'For office surprises and small parties: a 0.5 kg bento cake with seven cupcakes, boxed and ready to share.',
     images: [
-      { src: 'cupcakes-pastel', alt: 'Cupcakes with two-tone pastel buttercream in a gift box' }
+      { src: 'cupcakes-retro', alt: 'A box of colourful frosted cupcakes' },
+      { src: 'bento-green', alt: 'A green bento cake in a box' }
     ],
-    price: 2000,
-    sizes: [
-      { label: 'Box of 6', price: 2000 },
-      { label: 'Box of 12', price: 3700 }
-    ],
-    flavors: ['Vanilla', 'Chocolate', 'Mixed'],
-    availability: 'available', lead: '2 days',
-    details: [['Colours', 'Choose up to three'], ['Contains', 'Gluten, dairy, eggs']]
+    sizes: [{ label: 'Bento + 7 cupcakes', serves: '8–10', price: 3750 }],
+    flavors: ['Vanilla & Chocolate Oreo', 'Chocolate Mint', 'Chocolate Chip', 'Raspberry', 'Red Velvet', 'Coconut', 'Salted Caramel', 'Bubblegum', 'Assorted'],
+    addons: true, message: true, lead: '2 days',
+    details: [['Cake', '0.5 kg'], ['Cupcakes', 'Seven']]
   },
   {
-    id: 'strawberry-petit-gateau', category: 'mini',
-    name: 'Strawberry Petit Gâteau',
-    short: 'Individual mousse cakes with fresh strawberries.',
-    description: 'Little strawberry mousse cakes on an almond sponge, glazed and topped with fresh berries. Sold in boxes for sharing.',
+    id: 'cupcakes', category: 'cupcakes', featured: true,
+    name: 'Classic Cupcakes',
+    short: 'Soft cupcakes with a tall buttercream swirl, by the box.',
+    description: 'Freshly baked cupcakes piped with buttercream in your colours. Choose a box size and a flavour, or an assorted box of two flavours.',
     images: [
-      { src: 'mini-strawberry', alt: 'Three square strawberry mousse cakes topped with strawberries and blueberries' },
-      { src: 'mini-fraisier', alt: 'A strawberry fraisier cake with a pink glaze and fresh strawberries' }
+      { src: 'cupcakes-dozen', alt: 'A dozen vanilla and chocolate cupcakes with buttercream swirls, seen from above' },
+      { src: 'cupcakes-vanilla', alt: 'Vanilla cupcakes with buttercream swirls' },
+      { src: 'cupcake-single', alt: 'A single cupcake with a buttercream swirl' }
     ],
-    price: 2400,
-    sizes: [
-      { label: 'Box of 4', price: 2400 },
-      { label: 'Box of 8', price: 4500 }
-    ],
-    availability: 'available', lead: '2 days',
-    details: [['Base', 'Almond sponge'], ['Contains', 'Gluten, dairy, eggs, almonds'], ['Keeps', '2 days in the fridge']]
+    flavorTable: 'cupcake', addons: true, lead: '1 day',
+    details: [['Frosting', 'Buttercream'], ['Assorted box', 'Two flavours of your choice']]
   },
   {
-    id: 'pistachio-tartlets', category: 'mini',
-    name: 'Pistachio Cream Tartlets',
-    short: 'Crisp sablé shells with pistachio cream and raspberry.',
-    description: 'Butter sablé tart shells filled with raspberry jam and piped pistachio cream, finished with chopped pistachios.',
+    id: 'print-cupcakes', category: 'cupcakes',
+    name: 'Edible Print Cupcakes',
+    short: 'Cupcakes topped with your photo, logo or design.',
+    description: 'Send us a photo, a logo or a theme and we print it on edible discs for every cupcake. Perfect for birthdays, launches and branded events.',
     images: [
-      { src: 'mini-pistachio', alt: 'Small tartlets topped with piped green pistachio cream' }
+      { src: 'cupcakes-bright', alt: 'Brightly frosted cupcakes with sprinkles in a box' },
+      { src: 'cupcakes-retro', alt: 'A box of decorated cupcakes' }
     ],
-    price: 2600,
-    sizes: [
-      { label: 'Box of 6', price: 2600 },
-      { label: 'Box of 12', price: 4900 }
-    ],
-    availability: 'limited', lead: '2 days',
-    details: [['Contains', 'Gluten, dairy, eggs, pistachio'], ['Keeps', '2 days in the fridge']]
+    sizes: [{ label: 'Box of 6', price: 1550 }, { label: 'Box of 12', price: 2100 }],
+    flavors: ['Vanilla', 'Marble', 'Chocolate', 'Chocolate Chip', 'Chocolate Mint', 'Red Velvet', 'Lemon', 'Strawberry', 'Passion', 'Blueberry'],
+    upload: true, lead: '3 days',
+    details: [['How to order', 'Pick your flavour and frosting colour, then send the images on WhatsApp'], ['Limit', 'Up to 6 different prints per box']]
   },
   {
-    id: 'mini-chocolate-bundts', category: 'mini',
-    name: 'Mini Chocolate Bundts',
-    short: 'Rich little bundt cakes, perfect for gifting.',
-    description: 'Dark chocolate mini bundt cakes with a crisp edge and a tender centre. Add a chocolate glaze or keep them plain.',
+    id: 'trio-delight', category: 'mini', featured: true,
+    name: 'Trio Delight',
+    short: 'Three mini cakes, three flavours, up to 2 kg in total.',
+    description: 'Can’t choose? Three little cakes, each in a different flavour, decorated as a set. Lovely for small celebrations and dessert tables.',
     images: [
-      { src: 'mini-bundt', alt: 'Mini chocolate bundt cakes cooling on a wire rack' }
+      { src: 'mini-strawberry', alt: 'Three small square cakes topped with strawberries and blueberries' },
+      { src: 'mini-flower', alt: 'A small white cake with a flower, on a dessert table' }
     ],
-    price: 1600,
-    sizes: [
-      { label: 'Box of 6', price: 1600 },
-      { label: 'Box of 12', price: 3000 }
-    ],
-    flavors: ['Plain', 'Chocolate glaze', 'Orange glaze'],
-    availability: 'available', lead: '1 day',
-    details: [['Contains', 'Gluten, dairy, eggs, soy']]
+    sizes: [{ label: 'Three mini cakes', serves: '12–16', price: 3300 }],
+    pick: { label: 'Choose three flavours', count: 3, from: ['Vanilla', 'Raspberry', 'Vanilla Oreo', 'Chocolate Oreo', 'Chocolate', 'Chocolate Mint', 'Chocolate Chip', 'Red Velvet', 'Fruit flavour', 'Lemon', 'Strawberry', 'Passion', 'Piña colada'] },
+    addons: true, message: true, lead: '3 days',
+    details: [['Weight', 'Up to 2 kg in total'], ['Decoration', 'Matching set']]
   },
   {
-    id: 'macaron-gift-box', category: 'boxes', featured: true,
-    name: 'Macaron Gift Box',
-    short: 'A rainbow of French macarons in a keepsake box.',
-    description: 'Crisp-shelled French macarons with ganache and buttercream fillings, packed in a gift box with a ribbon and a handwritten card.',
+    id: 'mini-heart', category: 'mini',
+    name: 'Mini Heart Cake',
+    short: 'A small heart cake with piped hearts and a sweet message.',
+    description: 'A 0.6 kg heart cake piped with tiny hearts and your words. A thoughtful little surprise.',
     images: [
-      { src: 'box-macaron', alt: 'A box of colourful macarons on a dark background' },
-      { src: 'box-macaron-pink', alt: 'A pink gift box filled with pink macarons' },
-      { src: 'macaron-stack', alt: 'A stack of pastel macarons' }
+      { src: 'mini-hearts', alt: 'Hands holding a small round cake decorated with colourful piped hearts' },
+      { src: 'heart-candles', alt: 'A white heart cake with lit candles' }
     ],
-    price: 2200,
-    sizes: [
-      { label: '12 macarons', price: 2200 },
-      { label: '24 macarons', price: 4100 }
-    ],
-    flavors: ['Assorted', 'Raspberry', 'Pistachio', 'Salted caramel', 'Chocolate'],
-    availability: 'available', lead: '2 days',
-    details: [['Includes', 'Gift box, ribbon, handwritten card'], ['Contains', 'Almonds, dairy, eggs'], ['Keeps', '5 days in the fridge']]
+    sizes: [{ label: 'Mini (0.6 kg)', serves: '3–4', price: 1650 }],
+    flavors: ['Vanilla', 'Chocolate', { name: 'Red Velvet', extra: 200 }, 'Strawberry', 'Lemon'],
+    message: true, addons: true, lead: '1 day',
+    details: [['Includes', 'Box and candle']]
   },
   {
-    id: 'cookie-box', category: 'boxes',
-    name: 'The Cookie Box',
-    short: 'Six kinds of thick, chewy cookies in one box.',
-    description: 'Our favourite cookies in one box: brown butter chocolate chip, double chocolate, oat and raisin, almond, white chocolate and the cookie of the month.',
+    id: 'milky-tin', category: 'milky', featured: true,
+    name: 'Milky Tres Leches Tin',
+    short: 'Light sponge soaked in three milks and topped with whipped cream.',
+    description: 'A classic milky cake: a light sponge soaked in evaporated milk, condensed milk and cream, finished with whipped cream. Served chilled in its tin.',
     images: [
-      { src: 'box-cookies', alt: 'A gift box of assorted gourmet cookies' },
-      { src: 'box-cookies-2', alt: 'A box filled with chocolate and chocolate chip cookies' }
+      { src: 'tres-leches', alt: 'A slice of tres leches cake with raspberries on a white plate' },
+      { src: 'milky-tin', alt: 'Squares of milky cake on a plate with a fork beside a baking tin' }
     ],
-    price: 1900,
-    sizes: [
-      { label: 'Box of 6', price: 1900 },
-      { label: 'Box of 12', price: 3500 }
-    ],
-    availability: 'available', lead: '1 day',
-    details: [['Contains', 'Gluten, dairy, eggs, nuts'], ['Keeps', '5 days in an airtight tin']]
+    sizes: [{ label: 'Tin (about 800 g)', serves: '4–6', price: 1250 }],
+    flavors: ['Classic vanilla', 'Rich chocolate', { name: 'Biscoff & caramel', extra: 150 }, 'Passion fruit'],
+    lead: '1 day',
+    details: [['Keep', 'Refrigerated; best within 2 days'], ['Serve', 'Chilled']]
   },
   {
-    id: 'brown-butter-cookies', category: 'pastries',
-    name: 'Brown Butter Chocolate Chip',
-    short: 'Crisp edges, soft middles and pools of dark chocolate.',
-    description: 'Thick cookies made with browned butter, dark brown sugar and chopped dark chocolate, finished with flaky salt.',
+    id: 'two-tier', category: 'tiered', featured: true,
+    name: 'Two-Tier Celebration Cake',
+    short: 'Two tiers, one show-stopper. From 3 kg.',
+    description: 'For milestone birthdays, baby showers and engagements: two tiers decorated with bows, flowers or piping. Each tier can be a different flavour.',
     images: [
-      { src: 'cookies-stack', alt: 'A stack of thick chocolate chip cookies on a wooden table' },
-      { src: 'cookies-choc', alt: 'Chocolate chip cookies stacked on a plate' },
-      { src: 'cookies-white', alt: 'A pile of chocolate chip cookies on a white surface' }
+      { src: 'tier-pink-bow', alt: 'A pink two-tier cake with a large bow and flowers on top' },
+      { src: 'tier-striped', alt: 'A two-tier cake with green and white stripes and pink flowers' }
     ],
-    price: 1200,
-    sizes: [
-      { label: '4 cookies', price: 1200 },
-      { label: '8 cookies', price: 2200 }
-    ],
-    availability: 'available', lead: 'Same day if ordered before 10:00',
-    details: [['Contains', 'Gluten, dairy, eggs, soy']]
+    sizes: [{ label: '3 kg', serves: '25–30', price: 9600 }, { label: '4 kg', serves: '32–40', price: 12500 }, { label: '5 kg', serves: '40–50', price: 15300 }],
+    flavors: ['Vanilla', { name: 'Chocolate', extra: [1500, 2000, 2500] }, { name: 'Red Velvet', extra: [3000, 4000, 5000] }, { name: 'Two different flavours', extra: [1200, 1600, 2000] }],
+    options: ['frosting'], addons: true, message: true, lead: '5 days',
+    details: [['Tiers', 'Two; three tiers on request'], ['Delivery', 'Delivered and set up']]
   },
   {
-    id: 'butter-croissants', category: 'pastries',
-    name: 'Butter Croissants',
-    short: 'Laminated over three days for a honeycomb crumb.',
-    description: 'All-butter croissants, laminated by hand and baked every morning. Order plain, almond or pain au chocolat.',
+    id: 'ivory-wedding', category: 'tiered',
+    name: 'Ivory Wedding Cake',
+    short: 'Elegant ivory tiers with flowers, made for your day.',
+    description: 'Smooth or textured ivory tiers with fresh or sugar flowers. We start with a tasting and design it with you and your florist.',
     images: [
-      { src: 'croissants', alt: 'Golden butter croissants on baking paper' },
-      { src: 'croissants-dark', alt: 'Two croissants dusted with flour on a dark surface' },
-      { src: 'pain-chocolat', alt: 'Trays of pain au chocolat in a bakery' }
+      { src: 'wedding-ivory', alt: 'A three-tier ivory wedding cake with cream roses' },
+      { src: 'wedding-rose', alt: 'A three-tier white cake with pink flowers beside champagne glasses' },
+      { src: 'wedding-gold', alt: 'A tall wedding cake with sugar flowers and gold details' }
     ],
-    price: 900,
-    sizes: [
-      { label: 'Box of 4', price: 900 },
-      { label: 'Box of 8', price: 1700 }
-    ],
-    flavors: ['Plain butter', 'Almond', 'Pain au chocolat', 'Mixed'],
-    availability: 'available', lead: '1 day',
-    details: [['Baked', 'Every morning'], ['Contains', 'Gluten, dairy, eggs (almond option: nuts)']]
+    sizes: [{ label: '4 kg (2 tiers)', serves: '32–40', price: 14600 }, { label: '6 kg (3 tiers)', serves: '50–60', price: 21200 }, { label: '8 kg (3 tiers)', serves: '70–80', price: 27800 }],
+    flavors: ['Vanilla', 'Vanilla Raspberry', 'Lemon Poppy Seed', 'Red Velvet', 'Chocolate Fudge', 'Different flavour per tier'],
+    options: ['frosting'], addons: true, lead: '3 weeks',
+    details: [['Includes', 'Tasting, delivery and set-up'], ['Booking', 'Confirmed with a deposit']]
   },
   {
-    id: 'summer-berry-tart', category: 'seasonal', featured: true,
-    name: 'Summer Berry Tart',
-    short: 'Vanilla custard and a crown of fresh berries.',
-    description: 'A crisp sweet pastry case filled with vanilla crème pâtissière and piled with strawberries, blueberries and raspberries. Available while the berries are at their best.',
+    id: 'berry-cake', category: 'seasonal',
+    name: 'Fresh Berry Cake',
+    short: 'Vanilla sponge, whipped cream and a crown of fresh berries.',
+    description: 'Light vanilla layers with whipped cream and fresh berries inside and on top. Made while the berries are at their best.',
     images: [
-      { src: 'berry-tart', alt: 'A berry tart topped with strawberries, blueberries and blackberries' },
-      { src: 'berry-tarts', alt: 'Two fruit tarts with strawberries and blueberries on a wooden table' },
-      { src: 'tartlets', alt: 'Rows of fruit tartlets seen from above' }
+      { src: 'berry-cake', alt: 'A layered sponge cake with cream, topped with fresh raspberries' },
+      { src: 'blackberry-cake', alt: 'A white cake topped with blackberries and lilac flowers on a green stand' },
+      { src: 'berry-naked', alt: 'A semi-naked cake with strawberries and blueberries' }
     ],
-    price: 3200,
-    sizes: [
-      { label: '8 inch tart', price: 3200, serves: '8' },
-      { label: 'Box of 6 tartlets', price: 2400 }
-    ],
-    availability: 'limited', lead: '2 days',
-    details: [['Season', 'While berries last'], ['Contains', 'Gluten, dairy, eggs']]
+    sizes: [{ label: '1 kg', serves: '8–10', price: 3450 }, { label: '1.5 kg', serves: '12–15', price: 4950 }, { label: '2 kg', serves: '16–20', price: 6550 }],
+    flavors: ['Vanilla', 'Lemon', { name: 'Chocolate', extra: [300, 450, 600] }],
+    message: true, lead: '2 days',
+    details: [['Fruit', 'Strawberries, raspberries, blueberries or blackberries, as in season'], ['Keep', 'Refrigerated']]
   },
   {
-    id: 'pistachio-rose-cheesecake', category: 'seasonal',
-    name: 'Pistachio Rose Cheesecake',
-    short: 'Baked pistachio cheesecake with rose petals.',
-    description: 'A creamy baked cheesecake with pistachio paste on a buttery crumb base, finished with chopped pistachios and dried rose petals.',
+    id: 'valentine-bento', category: 'seasonal',
+    name: 'Valentine’s Heart Bento',
+    short: 'A heart-shaped bento cake with roses and a love note.',
+    description: 'A small heart cake in a box with piped roses, pearls and your message. Available around Valentine’s Day and anniversaries.',
     images: [
-      { src: 'pistachio-cheesecake', alt: 'A pistachio cheesecake decorated with rose petals and chopped pistachios' }
+      { src: 'heart-pink', alt: 'A pink heart cake with piped ruffles' },
+      { src: 'heart-candles', alt: 'A white heart cake with candles' }
     ],
-    price: 4400,
-    sizes: [
-      { label: '7 inches', price: 4400, serves: '10–12' },
-      { label: '9 inches', price: 6200, serves: '16–18' }
-    ],
-    availability: 'preorder', lead: '3 days',
-    details: [['Contains', 'Gluten, dairy, eggs, pistachio'], ['Keeps', '4 days in the fridge']]
-  },
-  {
-    id: 'lemon-tart', category: 'seasonal',
-    name: 'Sunlit Lemon Tart',
-    short: 'Sharp lemon curd in a crisp sablé shell.',
-    description: 'A bright, silky lemon curd tart topped with fresh fruit. Sharp, clean and the perfect end to a long lunch.',
-    images: [
-      { src: 'lemon-tart', alt: 'A lemon tart topped with lemon slices, strawberries and berries' }
-    ],
-    price: 2900,
-    sizes: [
-      { label: '8 inch tart', price: 2900, serves: '8' }
-    ],
-    availability: 'soldout', lead: '2 days',
-    details: [['Contains', 'Gluten, dairy, eggs']]
+    sizes: [{ label: 'Heart bento (0.6 kg)', serves: '2–3', price: 1750 }],
+    flavors: ['Vanilla', 'Red Velvet', 'Chocolate', 'Strawberry'],
+    message: true, addons: true, lead: '2 days',
+    details: [['Includes', 'Box, candle and a love note card']]
   }
 ];
