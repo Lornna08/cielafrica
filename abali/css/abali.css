@@ -565,3 +565,7 @@ code { font-size: .92em; background: rgba(19, 33, 29, .07); padding: 1px 6px; bo
 .intro-fig { aspect-ratio: 5 / 4; }
 .intro-fig .par img { object-position: 50% 25%; }
 .mm-in:focus, .dw:focus { outline: none; }
+/* the header keeps its own background until the green menu has covered the page, then clears */
+.menu-open .hdr { transition: transform .45s var(--ease), background .2s .32s, box-shadow .2s .32s; }
+.menu-open .hdr .logo { transition: color .2s .32s; }
+.menu-open .hdr .mark rect { transition: fill .2s .32s; }

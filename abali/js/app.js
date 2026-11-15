@@ -192,7 +192,7 @@
   /* ---------- layers (menu, profile): focus kept inside, Escape closes ---------- */
   var lastFocus = null;
   function openLayer(el) {
-    lastFocus = document.activeElement; el.hidden = false; document.documentElement.classList.add('locked');
+    lastFocus = document.activeElement; el.hidden = false; void el.offsetWidth; document.documentElement.classList.add('locked');   // the reflow lets the opening transition run
     requestAnimationFrame(function () { el.classList.add('open'); var f = el.querySelector('[tabindex="-1"]') || el.querySelector('a, button'); if (f) f.focus({ preventScroll: true }); });
   }
   function closeLayer(el) {
@@ -242,7 +242,8 @@
   function onScroll() {
     var y = scrollY, vh = innerHeight;
     hdr.classList.toggle('solid', y > 30);
-    hdr.classList.toggle('away', y > lastY && y > vh * 0.9 && !document.documentElement.classList.contains('menu-open')); lastY = y;
+    var dy = y - lastY;   // only react to a real change of direction, so tiny or repeated scroll positions never make the header flicker
+    if (Math.abs(dy) > 6) { hdr.classList.toggle('away', dy > 0 && y > vh * 0.9 && !document.documentElement.classList.contains('menu-open')); lastY = y; }
     var hk = Math.min(1, Math.max(0, y / (heroEl.offsetHeight * 0.9)));
     if (helix) helix.scroll = hk;
     if (!RM) { heroIn.style.transform = 'translate3d(0,' + (y * 0.18) + 'px,0)'; heroIn.style.opacity = String(1 - hk * 1.1); }
