@@ -564,3 +564,4 @@ code { font-size: .92em; background: rgba(19, 33, 29, .07); padding: 1px 6px; bo
 @media (max-height: 820px) { .cue { display: none; } }
 .intro-fig { aspect-ratio: 5 / 4; }
 .intro-fig .par img { object-position: 50% 25%; }
+.mm-in:focus, .dw:focus { outline: none; }

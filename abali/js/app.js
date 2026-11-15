@@ -44,7 +44,7 @@
       '<nav class="pill" aria-label="Main">' + C.nav.map(function (n) { return '<a href="' + n.href + '">' + esc(n.label) + '</a>'; }).join('') + '</nav>' +
       '<a class="btn btn--dark book" href="#book"><span>Book<span class="lg"> an appointment</span></span><i class="dot">' + I.arrow + '</i></a>' +
       '<button class="menu-b" type="button" aria-expanded="false" aria-controls="mm"><span class="bars"><i></i><i></i></span><span class="sr">Menu</span></button></div></header>' +
-      '<div class="mm" id="mm" role="dialog" aria-modal="true" aria-label="Menu" hidden><div class="mm-in">' +
+      '<div class="mm" id="mm" role="dialog" aria-modal="true" aria-label="Menu" hidden><div class="mm-in" tabindex="-1">' +
       '<nav aria-label="Menu">' + C.nav.map(function (n, i) { return '<a href="' + n.href + '" style="--i:' + i + '"><span>0' + (i + 1) + '</span>' + esc(n.label) + '</a>'; }).join('') + '</nav>' +
       '<div class="mm-foot"><a class="btn btn--pollen" href="#book">Book an appointment<i class="dot">' + I.arrow + '</i></a>' +
       (C.contact.emergency ? '<a class="mm-em" href="tel:' + esc(C.contact.emergency.replace(/\s/g, '')) + '">' + I.pulse + 'Emergency: ' + esc(C.contact.emergency) + '</a>' : '<p class="mm-em">' + I.pulse + esc(C.contact.emergencyNote) + '</p>') + '</div></div></div>';
@@ -193,7 +193,7 @@
   var lastFocus = null;
   function openLayer(el) {
     lastFocus = document.activeElement; el.hidden = false; document.documentElement.classList.add('locked');
-    requestAnimationFrame(function () { el.classList.add('open'); var f = el.querySelector('[data-x], a, button'); if (f) f.focus(); });
+    requestAnimationFrame(function () { el.classList.add('open'); var f = el.querySelector('[tabindex="-1"]') || el.querySelector('a, button'); if (f) f.focus({ preventScroll: true }); });
   }
   function closeLayer(el) {
     el.classList.remove('open'); document.documentElement.classList.remove('locked');

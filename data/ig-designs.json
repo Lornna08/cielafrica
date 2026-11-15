@@ -1,5 +1,5 @@
 {
- "v": 6,
+ "v": 7,
  "note": "Ready-made Ciel Africa designs. They appear in Ciel Admin → Instagram → Planner; edits there are saved separately and win over this file.",
  "items": [
   {
@@ -584,6 +584,21 @@
     "/assets/ig/t/r-paykit-cover.jpg"
    ],
    "seq": 12,
+   "shareToFeed": false
+  },
+  {
+   "id": "b-r-abali",
+   "kind": "reel",
+   "title": "Inside Abali Hospital",
+   "caption": "Inside Abali Hospital.\nA hospital website with a living green helix drawn in the browser, nine departments, specialist profiles you can book from, and a full-screen menu on phones. Live template.\n\ncielafrica.com/templates\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#HospitalWebsite #HealthcareWebsite #WebDesign #CielAfrica",
+   "video": "/assets/ig/r/abali.mp4",
+   "src": [
+    "/assets/ig/r/abali-cover.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/r-abali-cover.jpg"
+   ],
+   "seq": 13,
    "shareToFeed": false
   },
   {
