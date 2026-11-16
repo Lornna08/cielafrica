@@ -1,5 +1,5 @@
 {
- "v": 12,
+ "v": 13,
  "note": "Ready-made Ciel Africa designs. They appear in Ciel Admin → Instagram → Planner; edits there are saved separately and win over this file.",
  "items": [
   {
@@ -8,10 +8,10 @@
    "title": "You can almost smell it",
    "caption": "You can almost smell it.\nA coffee store that feels like the first sip. Mokara is one of our live templates.\n\ncielafrica.com/mokara\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#SpecialtyCoffee #CoffeeShop #WebDesign #CielAfrica",
    "src": [
-    "/assets/ig/p/j06.jpg"
+    "/assets/ig/p/j06-sb.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/j06.jpg"
+    "/assets/ig/t/j06-sb.jpg"
    ],
    "seq": 37
   },
@@ -21,10 +21,10 @@
    "title": "Monochrome, never monotone",
    "caption": "Monochrome, never monotone.\nA streetwear store that walks its own lane. Njia is one of our live templates.\n\ncielafrica.com/njia\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#Streetwear #FashionBrand #OnlineStore #CielAfrica",
    "src": [
-    "/assets/ig/p/j07.jpg"
+    "/assets/ig/p/j07-sb.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/j07.jpg"
+    "/assets/ig/t/j07-sb.jpg"
    ],
    "seq": 38
   },
@@ -34,10 +34,10 @@
    "title": "Let the work speak first",
    "caption": "Let the work speak first.\nA portfolio that steps aside for the photographs. Muse is one of our live templates.\n\ncielafrica.com/muse\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#PortfolioWebsite #Photographer #CreativeBusiness #CielAfrica",
    "src": [
-    "/assets/ig/p/j08.jpg"
+    "/assets/ig/p/j08-sb.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/j08.jpg"
+    "/assets/ig/t/j08-sb.jpg"
    ],
    "seq": 39
   },
@@ -47,10 +47,10 @@
    "title": "Built to turn heads",
    "caption": "Built to turn heads.\nA parts store with the engine already running. Apex Motion is one of our live templates.\n\ncielafrica.com/apex-motion\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#CarCulture #OnlineStore #WebDesign #CielAfrica",
    "src": [
-    "/assets/ig/p/j09.jpg"
+    "/assets/ig/p/j09-sb.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/j09.jpg"
+    "/assets/ig/t/j09-sb.jpg"
    ],
    "seq": 40
   },
@@ -60,10 +60,10 @@
    "title": "Dinner starts before the door",
    "caption": "Dinner starts before the door.\nA restaurant website that smells of woodsmoke. Ember & Plate is one of our live templates.\n\ncielafrica.com/ember-plate\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#RestaurantWebsite #FoodBusiness #WebDesign #CielAfrica",
    "src": [
-    "/assets/ig/p/j10.jpg"
+    "/assets/ig/p/j10-sb.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/j10.jpg"
+    "/assets/ig/t/j10-sb.jpg"
    ],
    "seq": 41
   },
@@ -72,12 +72,12 @@
    "kind": "reel",
    "title": "Make them crave the first sip",
    "caption": "Make them crave the first sip.\nSlow mornings, bottled. A live coffee store you can wander through.\n\ncielafrica.com/mokara\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#SpecialtyCoffee #CoffeeLovers #WebDesign #CielAfrica",
-   "video": "/assets/ig/r/mokara-v2.mp4",
+   "video": "/assets/ig/r/mokara-v3.mp4",
    "src": [
-    "/assets/ig/r/mokara-v2-cover.jpg"
+    "/assets/ig/r/mokara-v3-cover.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/r-mokara-v2-cover.jpg"
+    "/assets/ig/t/r-mokara-v3-cover.jpg"
    ],
    "seq": 17,
    "shareToFeed": false
@@ -133,10 +133,10 @@
    "title": "Story · Mokara, your first sip",
    "caption": "",
    "src": [
-    "/assets/ig/s/t01.jpg"
+    "/assets/ig/s/t01-sb.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/s-t01.jpg"
+    "/assets/ig/t/s-t01-sb.jpg"
    ],
    "seq": 119
   },
@@ -146,10 +146,10 @@
    "title": "Story · Njia, quiet confidence",
    "caption": "",
    "src": [
-    "/assets/ig/s/t02.jpg"
+    "/assets/ig/s/t02-sb.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/s-t02.jpg"
+    "/assets/ig/t/s-t02-sb.jpg"
    ],
    "seq": 120
   },
@@ -159,10 +159,10 @@
    "title": "Story · Muse, your work on its own wall",
    "caption": "",
    "src": [
-    "/assets/ig/s/t03.jpg"
+    "/assets/ig/s/t03-sb.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/s-t03.jpg"
+    "/assets/ig/t/s-t03-sb.jpg"
    ],
    "seq": 121
   },
@@ -172,10 +172,10 @@
    "title": "Story · Apex Motion, speed made visible",
    "caption": "",
    "src": [
-    "/assets/ig/s/t04.jpg"
+    "/assets/ig/s/t04-sb.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/s-t04.jpg"
+    "/assets/ig/t/s-t04-sb.jpg"
    ],
    "seq": 122
   },
@@ -185,10 +185,10 @@
    "title": "Story · Ember & Plate, taste the smoke",
    "caption": "",
    "src": [
-    "/assets/ig/s/t05.jpg"
+    "/assets/ig/s/t05-sb.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/s-t05.jpg"
+    "/assets/ig/t/s-t05-sb.jpg"
    ],
    "seq": 123
   },
@@ -198,10 +198,10 @@
    "title": "Story · Abali, care on the screen",
    "caption": "",
    "src": [
-    "/assets/ig/s/t06.jpg"
+    "/assets/ig/s/t06-sb.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/s-t06.jpg"
+    "/assets/ig/t/s-t06-sb.jpg"
    ],
    "seq": 124
   },
@@ -211,10 +211,10 @@
    "title": "Story · Crème Motion, a stage for sweet things",
    "caption": "",
    "src": [
-    "/assets/ig/s/t07.jpg"
+    "/assets/ig/s/t07-sb.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/s-t07.jpg"
+    "/assets/ig/t/s-t07-sb.jpg"
    ],
    "seq": 125
   },
@@ -224,10 +224,10 @@
    "title": "Story · Wanja, her own address",
    "caption": "",
    "src": [
-    "/assets/ig/s/t08.jpg"
+    "/assets/ig/s/t08-sb.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/s-t08.jpg"
+    "/assets/ig/t/s-t08-sb.jpg"
    ],
    "seq": 126
   },
@@ -237,10 +237,10 @@
    "title": "Story · poll, which one pulls you in",
    "caption": "",
    "src": [
-    "/assets/ig/s/t09.jpg"
+    "/assets/ig/s/t09-sb.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/s-t09.jpg"
+    "/assets/ig/t/s-t09-sb.jpg"
    ],
    "seq": 127
   },
@@ -276,10 +276,10 @@
    "title": "The night shift",
    "caption": "Your website works the night shift.\nWhile the lights are off, the door stays open.\n\ncielafrica.com\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#SmallBusiness #WebDesign #OnlineBusiness #CielAfrica",
    "src": [
-    "/assets/ig/p/i02.jpg"
+    "/assets/ig/p/i02-sb.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/i02.jpg"
+    "/assets/ig/t/i02-sb.jpg"
    ],
    "seq": 33
   },
@@ -289,10 +289,10 @@
    "title": "Fit in one hand",
    "caption": "Most first impressions fit in one hand.\nSo we design for the palm first, and everything else after.\n\ncielafrica.com\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#MobileFirst #UXDesign #WebDesign #CielAfrica",
    "src": [
-    "/assets/ig/p/i03b.jpg"
+    "/assets/ig/p/i03-sb.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/i03b.jpg"
+    "/assets/ig/t/i03-sb.jpg"
    ],
    "seq": 34
   },
@@ -302,10 +302,10 @@
    "title": "Ours are felt",
    "caption": "Some websites are seen. Ours are felt.\nDesign work shaped one detail at a time, until it feels like yours.\n\ncielafrica.com/templates\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#WebDesign #DesignStudio #SmallBusiness #CielAfrica",
    "src": [
-    "/assets/ig/p/i04b.jpg"
+    "/assets/ig/p/i04-sb.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/i04b.jpg"
+    "/assets/ig/t/i04-sb.jpg"
    ],
    "seq": 35
   },
@@ -315,10 +315,10 @@
    "title": "Worth the tap",
    "caption": "Make the link in your bio worth the tap.\nFrom a scroll, to a tap, to a craving. Velvet & Crumb is one of our live templates.\n\ncielafrica.com/templates\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#LinkInBio #SmallBusiness #WebDesign #CielAfrica",
    "src": [
-    "/assets/ig/p/i05b.jpg"
+    "/assets/ig/p/i05-sb.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/i05b.jpg"
+    "/assets/ig/t/i05-sb.jpg"
    ],
    "seq": 36
   },
