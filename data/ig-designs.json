@@ -1,5 +1,5 @@
 {
- "v": 10,
+ "v": 11,
  "note": "Ready-made Ciel Africa designs. They appear in Ciel Admin → Instagram → Planner; edits there are saved separately and win over this file.",
  "items": [
   {
@@ -474,14 +474,14 @@
   {
    "id": "b-r-photobook",
    "kind": "reel",
-   "title": "How to make a photo book",
-   "caption": "How to make a photo book.\nChoose a cover, add your photos, we arrange the pages, you check every page and preview the finished book.\n\ncielafrica.com/photobooks\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#PhotoBook #CielPhotoBooks #Memories #DIY",
-   "video": "/assets/ig/r/photobook.mp4",
+   "title": "Some trips end",
+   "caption": "Some trips end. The book doesn’t.\nBegin with a place, gather the moments, and turn every page before it’s ever printed.\n\ncielafrica.com/photobooks\nCall or WhatsApp 0117 959 105 · hello@cielafrica.com\n\n#PhotoBook #CielPhotoBooks #TravelMemories #Zanzibar",
+   "video": "/assets/ig/r/photobook-v2.mp4",
    "src": [
-    "/assets/ig/r/photobook-cover.jpg"
+    "/assets/ig/r/photobook-v2-cover.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/r-photobook-cover.jpg"
+    "/assets/ig/t/r-photobook-v2-cover.jpg"
    ],
    "seq": 1,
    "shareToFeed": false
