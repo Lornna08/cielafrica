@@ -10,8 +10,10 @@
   function seen() { try { return +localStorage.getItem(SEEN) || 0; } catch (e) { return 0; } }
   function setSeen(t) { try { localStorage.setItem(SEEN, String(t)); } catch (e) { } }
   function ago(t) { var s = (Date.now() - t) / 1000; return s < 60 ? 'just now' : s < 3600 ? Math.floor(s / 60) + ' min ago' : s < 86400 ? Math.floor(s / 3600) + ' h ago' : H.d2(t); }
-  var KI = { order: ['Order', 'o'], whatsapp: ['WhatsApp', 'g'], pages: ['Pages', 'p'], message: ['Message', 'b'], printer: ['Printer', 'p'], renewal: ['Renewal', 'o'], subscriber: ['Subscriber', 'g'], review: ['Review', 'o'], instagram: ['Instagram', 'p'] };
+  var KI = { lead: ['Lead', 'r'], order: ['Order', 'o'], whatsapp: ['WhatsApp', 'g'], pages: ['Pages', 'p'], message: ['Message', 'b'], printer: ['Printer', 'p'], renewal: ['Renewal', 'o'], subscriber: ['Subscriber', 'g'], review: ['Review', 'o'], instagram: ['Instagram', 'p'] };
 
+  /* what happened to the phone alert, shown only when it did not reach a phone */
+  var PW = { quiet: 'not sent to your phone: quiet hours', off: 'not sent to your phone: switched off', 'no-device': 'not sent: no phone has notifications on', error: 'phone alert failed' };
   function bell() {
     var c = document.getElementById('nbc'); if (!c) return;
     var n = (H.S.pitems || []).filter(function (x) { return x.at > seen(); }).length;
@@ -24,7 +26,7 @@
     var items = H.S.pitems || [], last = seen();
     var p = document.createElement('div'); p.className = 'np';
     p.innerHTML = '<div class="np__h"><b>Notifications</b><button class="b b--sm" data-all>Mark all read</button></div><div class="np__l">' +
-      (items.length ? items.map(function (x, i) { var k = KI[x.kind] || KI.message; return '<a href="' + esc(x.url && x.url.indexOf('/admin') === 0 ? x.url : '/admin') + '" data-i="' + i + '" class="np__i' + (x.at > last ? ' is-new' : '') + '"><span class="np__k np__k--' + k[1] + '">' + k[0] + '</span><div><b>' + esc(x.title) + '</b>' + (x.body ? '<p>' + esc(x.body) + '</p>' : '') + '<small>' + ago(x.at) + '</small></div></a>'; }).join('') : '<p class="np__e">Nothing yet. New orders, WhatsApp orders, pages received and website messages appear here.</p>') +
+      (items.length ? items.map(function (x, i) { var k = KI[x.kind] || KI.message; return '<a href="' + esc(x.url && x.url.indexOf('/admin') === 0 ? x.url : '/admin') + '" data-i="' + i + '" class="np__i' + (x.at > last ? ' is-new' : '') + '"><span class="np__k np__k--' + k[1] + '">' + k[0] + '</span><div><b>' + esc(x.title) + '</b>' + (x.body ? '<p>' + esc(x.body) + '</p>' : '') + '<small>' + ago(x.at) + (PW[x.pushed] ? ' · <span class="np__pw">' + PW[x.pushed] + '</span>' : '') + '</small></div></a>'; }).join('') : '<p class="np__e">Nothing yet. New orders, WhatsApp orders, pages received and website messages appear here.</p>') +
       '</div><div class="np__f"><span id="npS">Phone notifications</span><button class="b b--sm" id="npB">…</button></div><div class="np__f np__f2"><button class="np__lnk" id="npC">Choose what reaches your phone</button></div><div class="np__p" id="npP" hidden></div>';
     document.body.appendChild(p);
     var r = btn.getBoundingClientRect(); p.style.top = (r.bottom + 8) + 'px'; p.style.right = Math.max(8, Math.min(innerWidth - r.right, innerWidth - p.offsetWidth - 8)) + 'px';
@@ -33,14 +35,14 @@
     var upd = function () { H.pushState().then(function (st) { var b = p.querySelector('#npB'), s = p.querySelector('#npS'); if (!b) return; b.textContent = st === 'on' ? 'Turn off' : 'Turn on'; b.className = 'b b--sm' + (st === 'on' ? '' : ' b--p'); b.style.display = (st === 'denied' || st === 'none' || st === 'ios') ? 'none' : ''; s.textContent = st === 'on' ? 'Phone notifications are on for this device' : st === 'denied' ? 'Notifications are blocked in this browser’s settings' : st === 'ios' ? 'On iPhone, install Ciel Admin to the Home Screen first' : st === 'none' ? 'This browser can’t show notifications' : 'Get these on this device, even when Ciel Admin is closed'; btn.classList.toggle('is-on', st === 'on'); }); };
     p.querySelector('#npC').onclick = function () {
       var box = p.querySelector('#npP'); box.hidden = !box.hidden; if (box.hidden) return; box.innerHTML = '<p class="np__e">Loading…</p>';
-      var NAMES = [['order', 'New orders and payments'], ['whatsapp', 'WhatsApp orders'], ['pages', 'Photo book pages received'], ['message', 'Website messages and leads'], ['printer', 'Printer updates'], ['renewal', 'Domain renewals'], ['subscriber', 'New email subscribers'], ['review', 'New customer reviews'], ['instagram', 'Instagram: messages, comments, likes, followers, posts']];
+      var NAMES = [['lead', 'New leads (contact form and project briefs)'], ['order', 'New orders and payments'], ['whatsapp', 'WhatsApp orders'], ['pages', 'Photo book pages received'], ['message', 'Other website messages'], ['printer', 'Printer updates'], ['renewal', 'Domain renewals'], ['subscriber', 'New email subscribers'], ['review', 'New customer reviews'], ['instagram', 'Instagram: messages, comments, likes, followers, posts']];
       H.api('/api/hq?route=notify-prefs').then(function (x) {
         var pr = x.prefs;
         box.innerHTML = NAMES.map(function (n) { return '<label class="np__ck"><input type="checkbox" data-k="' + n[0] + '"' + (pr.kinds[n[0]] === false ? '' : ' checked') + '> ' + n[1] + '</label>'; }).join('') +
-          '<label class="np__ck"><input type="checkbox" id="npQ"' + (pr.quiet.on ? ' checked' : '') + '> Quiet hours</label><div class="np__q">from <input type="time" id="npQf" value="' + esc(pr.quiet.from) + '"> to <input type="time" id="npQt" value="' + esc(pr.quiet.to) + '"></div><p class="np__note">Everything still appears here under the bell.</p>';
+          '<label class="np__ck"><input type="checkbox" id="npQ"' + (pr.quiet.on ? ' checked' : '') + '> Quiet hours</label><div class="np__q">from <input type="time" id="npQf" value="' + esc(pr.quiet.from) + '"> to <input type="time" id="npQt" value="' + esc(pr.quiet.to) + '"></div><label class="np__ck"><input type="checkbox" id="npQL"' + (pr.quiet.leads === false ? '' : ' checked') + '> New leads still come through in quiet hours</label><p class="np__note">Everything still appears here under the bell.</p>';
         box.onchange = function () {
           var k = {}; box.querySelectorAll('[data-k]').forEach(function (c) { k[c.getAttribute('data-k')] = c.checked; });
-          H.api('/api/hq?route=notify-prefs-save', { kinds: k, quiet: { on: box.querySelector('#npQ').checked, from: box.querySelector('#npQf').value, to: box.querySelector('#npQt').value } }).then(function () { H.toast('Saved'); }, function (e) { H.toast(e.message); });
+          H.api('/api/hq?route=notify-prefs-save', { kinds: k, quiet: { on: box.querySelector('#npQ').checked, from: box.querySelector('#npQf').value, to: box.querySelector('#npQt').value, leads: box.querySelector('#npQL').checked } }).then(function () { H.toast('Saved'); }, function (e) { H.toast(e.message); });
         };
       }, function (e) { box.innerHTML = '<p class="np__e">' + esc(e.message) + '</p>'; });
     };

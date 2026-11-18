@@ -66,7 +66,7 @@ module.exports = async function handler(req, res){
 
   const subject = (isWanja
       ? `New brand enquiry — ${name||email}${data.Brand ? ' · ' + data.Brand : ''}`
-      : `New ${isBrief || data.Details ? 'project brief' : 'enquiry'} — ${name||email}${ref ? ' · ' + ref : ''}`
+      : `New lead: ${isBrief || data.Details ? 'project brief' : 'enquiry'} — ${name||email}${ref ? ' · ' + ref : ''}`
     ).replace(/[\r\n]+/g,' ').slice(0, 160);
   const html = `
     <div style="font-family:Arial,sans-serif;color:#141414;max-width:560px">
@@ -75,18 +75,23 @@ module.exports = async function handler(req, res){
       <table style="border-collapse:collapse;width:100%;font-size:14px">${rows}</table>
     </div>`;
 
-  // keep every website message in Ciel HQ's inbox (private Blob store) and ping the owner's devices
+  // every website enquiry is a lead: keep it in Ciel Admin (private Blob store) as high priority and alert the owner's phone
   if (!isWanja) {
+    const kind = isBrief || data.Details ? 'brief' : 'message';
+    const pick = re => { const k = Object.keys(data).find(x => re.test(x) && String(data[x]).trim()); return k ? String(data[k]).replace(/\s+/g, ' ').trim() : ''; };
+    let id = '';
     try {
       const BS = require('../lib/photobooks/blobstore');
       if (BS.on()) {
-        const at = Date.now(), id = at.toString(36) + require('crypto').randomBytes(4).toString('hex');
+        const at = Date.now(); id = at.toString(36) + require('crypto').randomBytes(4).toString('hex');
         const fields = Object.keys(data).filter(k => !k.startsWith('## ') && String(data[k]).trim() !== '').slice(0, 40).map(k => [String(k).slice(0, 60), String(data[k]).slice(0, 3000)]);
-        await BS.putJSON('hq/inbox/' + id + '.json', { id, kind: isBrief || data.Details ? 'brief' : 'message', status: 'new', createdAt: at, subject, ref,
-          customer: { name: String(name).slice(0, 80), email: String(email).slice(0, 190), phone: String(data.Phone || data.phone || data.WhatsApp || '').slice(0, 30) }, fields });
-        await require('../lib/hq/notify').event({ kind: 'message', title: 'New message from ' + (name || email), body: subject.slice(0, 140), url: '/admin#inbox/' + id });
+        await BS.putJSON('hq/inbox/' + id + '.json', { id, kind, status: 'new', stage: 'new', priority: 'high', createdAt: at, subject, ref,
+          customer: { name: String(name).slice(0, 80), email: String(email).slice(0, 190), phone: pick(/phone|whatsapp/i).slice(0, 30) }, fields });
       }
     } catch (e) { console.error('contact inbox error', e && e.message); }
+    // the alert goes out even if saving failed, so a lead is never silent
+    const what = kind === 'brief' ? ['Project brief', pick(/^(service|product|template|looking for)$/i), pick(/budget/i)].filter(Boolean).join(' · ') : 'Enquiry · ' + (pick(/message|details/i) || subject);
+    await require('../lib/hq/notify').event({ kind: 'lead', title: 'New lead · ' + (name || email), body: what.slice(0, 140), url: id ? '/admin#leads/' + id : '/admin#leads', tag: 'lead-' + (id || Date.now()), urgent: true });
   }
 
   // If email isn't configured yet, don't fail the user — accept and log.
@@ -103,7 +108,9 @@ module.exports = async function handler(req, res){
     const r = await fetch('https://api.resend.com/emails', {
       method:'POST',
       headers:{ 'Authorization':`Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type':'application/json' },
-      body: JSON.stringify({ from: FROM, to, reply_to: email, subject, html })
+      body: JSON.stringify({ from: FROM, to, reply_to: email, subject, html,
+        // website leads arrive flagged as important in the mailbox
+        headers: isWanja ? undefined : { 'X-Priority': '1 (Highest)', 'X-MSMail-Priority': 'High', Importance: 'high' } })
     });
     if (!r.ok) {
       const t = await r.text();

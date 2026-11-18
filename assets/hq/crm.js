@@ -14,6 +14,9 @@
   function S() { return H.S; }
   function leads() { return S().inbox.filter(function (m) { return m.kind !== 'whatsapp'; }); }
   function stage(m) { return m.stage || (m.status === 'new' ? 'new' : m.status === 'done' ? 'archived' : 'reviewing'); }
+  /* a new website lead is high priority until you say otherwise */
+  var PR = { urgent: 0, high: 1, normal: 2, low: 3 };
+  function prio(m) { return m.priority || (stage(m) === 'new' ? 'high' : 'normal'); }
   function field(m, re) { var f = (m.fields || []).filter(function (x) { return re.test(x[0]); })[0]; return f ? f[1] : ''; }
   function who(m) { var c = m.customer || {}; return c.name || c.email || c.phone || 'Visitor'; }
   function upd(m, patch) { return H.api('/api/hq?route=lead-update', Object.assign({ id: m.id }, patch)).then(function (r) { var l = S().inbox; for (var i = 0; i < l.length; i++) if (l[i].id === m.id) l[i] = r.item; H.navs(); return r.item; }); }
@@ -29,9 +32,9 @@
     var b = H.body('<div class="kpis"><div class="card kpi"><span>Open leads</span><b>' + open.length + '</b><small>' + leads().filter(function (m) { return stage(m) === 'new'; }).length + ' new</small></div><div class="card kpi"><span>Start a Project briefs</span><b>' + leads().filter(function (m) { return m.kind === 'brief'; }).length + '</b><small>all time</small></div><div class="card kpi"><span>Won</span><b>' + won + '</b><small>' + (won + lost ? Math.round(won / (won + lost) * 100) + '% of decided' : 'nothing decided yet') + '</small></div><div class="card kpi"><span>Follow-ups due</span><b>' + leads().filter(function (m) { return m.followUp && m.followUp <= H.today() && !/completed|declined|archived/.test(stage(m)); }).length + '</b><small>today or overdue</small></div></div>' +
       '<div class="row"><input class="hq-in" id="lq" type="search" placeholder="Search leads" value="' + esc(S().leadQ || '') + '" style="max-width:280px"><label class="check"><input type="checkbox" id="la"' + (showArch ? ' checked' : '') + '> Show archived</label><span class="muted pipe__tip" style="margin-left:auto;font-size:.8rem"><span class="pipe__tipd">Drag a card to move it · tap to open</span><span class="pipe__tipm">Tap a lead to open it and change its stage</span></span></div>' +
       '<div class="pipe">' + cols.map(function (c) {
-        var items = L.filter(function (m) { return stage(m) === c[0]; }).sort(function (a, b) { return b.createdAt - a.createdAt; });
+        var items = L.filter(function (m) { return stage(m) === c[0]; }).sort(function (a, b) { return (PR[prio(a)] - PR[prio(b)]) || (b.createdAt - a.createdAt); });
         return '<div class="pipe__col" data-st="' + c[0] + '"><div class="pipe__h"><b>' + c[1] + '</b><span>' + items.length + '</span></div>' + items.map(function (m) {
-          var budget = field(m, /budget/i), svc = field(m, /service|need|type|project/i), pr = m.priority && m.priority !== 'normal' ? '<span class="chip chip--' + (m.priority === 'urgent' ? 'r' : m.priority === 'high' ? 'y' : '') + '">' + m.priority + '</span>' : '';
+          var budget = field(m, /budget/i), svc = field(m, /service|need|type|project/i), pp = prio(m), pr = pp !== 'normal' ? '<span class="chip chip--' + (pp === 'urgent' || pp === 'high' ? 'r' : '') + '">' + pp + '</span>' : '';
           return '<div class="lead" draggable="true" data-id="' + esc(m.id) + '"><div class="lead__t"><b>' + esc(who(m)) + '</b>' + pr + '</div><small>' + esc((svc || m.subject || '').slice(0, 70)) + '</small><div class="lead__f"><span class="chip">' + (m.kind === 'brief' ? 'Brief' : 'Message') + '</span>' + (budget ? '<span>' + esc(budget.slice(0, 24)) + '</span>' : '') + '<span class="faint">' + days(m.createdAt) + '</span>' + (m.followUp ? '<span class="' + (m.followUp <= H.today() ? 'lead__due' : 'faint') + '">↻ ' + esc(m.followUp.slice(5)) + '</span>' : '') + '</div></div>';
         }).join('') + '</div>';
       }).join('') + '</div>' + (leads().length ? '' : '<p class="empty">New Start a Project briefs and contact-form messages land here automatically.</p>'));
@@ -50,12 +53,12 @@
     });
   }
   function leadDrawer(m) {
-    var c = m.customer || {}, ph = String(c.phone || '').replace(/\D/g, '').replace(/^0/, '254');
+    var c = m.customer || {}, ph = String(c.phone || field(m, /phone|whatsapp/i) || '').replace(/\D/g, '').replace(/^0/, '254');
     var h = '<div class="row"><span class="chip">' + (m.kind === 'brief' ? 'Start a Project brief' : 'Contact message') + '</span><span class="muted" style="font-size:.8rem">' + H.dt(m.createdAt) + '</span></div>' +
-      '<div class="g2"><label class="field"><span>Stage</span><select class="hq-in" id="lSt">' + STAGES.map(function (s) { return '<option value="' + s[0] + '"' + (stage(m) === s[0] ? ' selected' : '') + '>' + s[1] + '</option>'; }).join('') + '</select></label><label class="field"><span>Priority</span><select class="hq-in" id="lPr">' + PRI.map(function (p) { return '<option value="' + p[0] + '"' + ((m.priority || 'normal') === p[0] ? ' selected' : '') + '>' + p[1] + '</option>'; }).join('') + '</select></label></div>' +
+      '<div class="g2"><label class="field"><span>Stage</span><select class="hq-in" id="lSt">' + STAGES.map(function (s) { return '<option value="' + s[0] + '"' + (stage(m) === s[0] ? ' selected' : '') + '>' + s[1] + '</option>'; }).join('') + '</select></label><label class="field"><span>Priority</span><select class="hq-in" id="lPr">' + PRI.map(function (p) { return '<option value="' + p[0] + '"' + (prio(m) === p[0] ? ' selected' : '') + '>' + p[1] + '</option>'; }).join('') + '</select></label></div>' +
       '<label class="field"><span>Follow up on</span><input class="hq-in" type="date" id="lFu" value="' + esc(m.followUp || '') + '"></label>' +
       '<div class="row">' + (c.email ? '<button class="b b--p" id="lMail">Reply by email</button>' : '') + (ph ? '<a class="b" href="tel:+' + esc(ph) + '">Call</a><a class="b" target="_blank" rel="noopener" href="https://wa.me/' + esc(ph) + '">WhatsApp</a>' : '') + '</div>' +
-      '<dl class="dl"><dt>Name</dt><dd>' + esc(c.name || '—') + '</dd><dt>Email</dt><dd>' + esc(c.email || '—') + '</dd><dt>Phone</dt><dd>' + esc(c.phone || '—') + '</dd>' + (m.fields || []).filter(function (f) { return !/^(name|email|phone)$/i.test(f[0]); }).map(function (f) { return '<dt>' + esc(f[0]) + '</dt><dd style="white-space:pre-wrap">' + esc(f[1]) + '</dd>'; }).join('') + '</dl>' +
+      '<dl class="dl"><dt>Name</dt><dd>' + esc(c.name || '—') + '</dd><dt>Email</dt><dd>' + esc(c.email || '—') + '</dd><dt>Phone</dt><dd>' + esc(c.phone || field(m, /phone|whatsapp/i) || '—') + '</dd>' + (m.fields || []).filter(function (f) { return !/^(name|email|phone)$/i.test(f[0]); }).map(function (f) { return '<dt>' + esc(f[0]) + '</dt><dd style="white-space:pre-wrap">' + esc(f[1]) + '</dd>'; }).join('') + '</dl>' +
       '<b>Internal notes</b><ul class="hist" id="lNotes">' + (m.notes || []).slice().reverse().map(function (n) { return '<li><span class="muted" style="font-size:.76rem">' + H.dt(n.at) + '</span><br>' + esc(n.text).replace(/\n/g, '<br>') + '</li>'; }).join('') + '</ul><textarea class="hq-in" id="lN" rows="2" placeholder="Add a note (only you see this)"></textarea><button class="b b--sm" id="lNs" style="justify-self:start">Add note</button>' +
       '<div class="row" style="border-top:1px solid var(--line);padding-top:12px">' + (m.project ? '<a class="b b--d" href="#projects/' + esc(m.project) + '">Open project</a>' : '<button class="b b--d" id="lProj">Convert to project</button>') + '<button class="b" id="lTask">Create task</button>' + (stage(m) !== 'archived' ? '<button class="b b--ghost" id="lArc">Archive</button>' : '') + '</div>';
     var d = H.drawer(esc(who(m)), h);
@@ -167,5 +170,5 @@
     d.querySelectorAll('.hist [data-i]').forEach(function (li) { li.onclick = function () { var e = tl[+li.getAttribute('data-i')]; d.remove(); if (e.href) location.hash = e.href; else if (e.lead) { var m = leads().filter(function (y) { return y.id === e.lead; })[0]; if (m) leadDrawer(m); } }; });
   }
 
-  window.HQCrm = { init: function (h) { H = h; }, leads: renderLeads, projects: renderProjects, customers: renderCustomers, leadDrawer: leadDrawer, people: people };
+  window.HQCrm = { init: function (h) { H = h; }, leads: renderLeads, projects: renderProjects, customers: renderCustomers, leadDrawer: leadDrawer, people: people, prio: prio, open: function (id) { var m = leads().filter(function (x) { return x.id === id; })[0]; if (m) leadDrawer(m); } };
 })();

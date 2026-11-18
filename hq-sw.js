@@ -9,7 +9,7 @@ self.addEventListener('fetch', function (e) {
 });
 self.addEventListener('push', function (e) {
   var d = {}; try { d = e.data ? e.data.json() : {}; } catch (er) { d = { title: 'Ciel Admin', body: e.data ? e.data.text() : '' }; }
-  e.waitUntil(self.registration.showNotification(d.title || 'Ciel Admin', { body: d.body || '', icon: '/assets/img/icon-192.png', badge: '/assets/img/favicon-32.png', tag: d.tag || undefined, renotify: !!d.tag, data: { url: d.url || '/admin' } }).then(function () {
+  e.waitUntil(self.registration.showNotification(d.title || 'Ciel Admin', { body: d.body || '', icon: '/assets/img/icon-192.png', badge: '/assets/img/favicon-32.png', tag: d.tag || undefined, renotify: !!d.tag, requireInteraction: !!d.urgent, vibrate: d.urgent ? [200, 100, 200, 100, 300] : undefined, data: { url: d.url || '/admin' } }).then(function () {
     return self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (cs) { cs.forEach(function (c) { c.postMessage({ type: 'hq-push' }); }); });
   }));
 });

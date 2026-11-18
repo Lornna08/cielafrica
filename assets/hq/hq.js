@@ -231,6 +231,28 @@
   function standalone() { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone; }
   function isIOS() { return /iphone|ipad|ipod/i.test(navigator.userAgent); }
   function b64u(s) { var p = '='.repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')), a = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; }
+  /* on Overview: new website leads sit at the very top until opened or moved on in Leads */
+  function leadStrip() {
+    var host = document.getElementById('body'); if (!host) return;
+    var L = S.inbox.filter(function (m) { return m.kind !== 'whatsapp' && (m.stage || (m.status === 'new' ? 'new' : '')) === 'new'; }).sort(function (a, c) { return c.createdAt - a.createdAt; });
+    if (!L.length) return;
+    var since = function (t) { var mn = Math.round((Date.now() - t) / 6e4); return mn < 60 ? Math.max(1, mn) + ' min' : mn < 1440 ? Math.round(mn / 60) + ' h' : Math.round(mn / 1440) + ' day' + (mn < 2880 ? '' : 's'); };
+    var d = document.createElement('div'); d.className = 'ov-leads';
+    d.innerHTML = '<b class="ov-leads__h">' + (L.length === 1 ? 'New lead waiting' : L.length + ' new leads waiting') + '</b>' + L.slice(0, 3).map(function (m) { var c = m.customer || {}; return '<a class="ov-leads__i" href="#leads/' + esc(m.id) + '"><span><b>' + esc(c.name || c.email || 'Visitor') + '</b><small>' + (m.kind === 'brief' ? 'Project brief' : 'Enquiry') + ' · waiting ' + since(m.createdAt) + '</small></span><span class="b b--p b--sm">Open</span></a>'; }).join('') + (L.length > 3 ? '<a class="ov-leads__all" href="#leads">See all ' + L.length + '</a>' : '');
+    host.insertBefore(d, host.firstChild);
+  }
+  /* on Overview: say plainly when this phone or computer won't get alerts for new leads and orders */
+  function pushNudge() {
+    pushState().then(function (st) {
+      if (st === 'on' || S.view !== 'overview' || document.getElementById('ovPush')) return;
+      var host = document.getElementById('body'); if (!host) return;
+      var msg = st === 'denied' ? 'Notifications are blocked for cielafrica.com on this device, so new leads and orders won’t alert you. Allow them in the browser or phone settings.' : st === 'ios' ? 'To get alerts for new leads on iPhone, add Ciel Admin to the Home Screen (Share → Add to Home Screen), then open it from there.' : st === 'none' ? 'This browser can’t show alerts. Open Ciel Admin in Chrome or the installed app to be alerted about new leads.' : 'Alerts for new leads and orders are off on this device.';
+      var d = document.createElement('div'); d.className = 'ov-push'; d.id = 'ovPush';
+      d.innerHTML = '<span>' + esc(msg) + '</span>' + (st === 'off' ? '<button class="b b--p b--sm">Turn on alerts</button>' : '');
+      host.insertBefore(d, host.firstChild);
+      var bt = d.querySelector('button'); if (bt) bt.onclick = function () { enablePush().then(function () { pushState().then(function (x) { if (x === 'on') d.remove(); }); }); };
+    }, function () { });
+  }
   function pushState() {
     if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return Promise.resolve(isIOS() && !standalone() ? 'ios' : 'none');
     if (Notification.permission === 'denied') return Promise.resolve('denied');
@@ -279,7 +301,7 @@
     if (v === 'website') { if (window.HQSite) HQSite.render(h[1] || 'home'); }
     else if (v === 'policies') { if (window.HQLegal) HQLegal.render(h[1]); }
     else if (v === 'products' || v === 'templates') { if (window.HQSite) HQSite.renderCatalog(v); }
-    else if (v === 'leads' && window.HQCrm) HQCrm.leads();
+    else if (v === 'leads' && window.HQCrm) { HQCrm.leads(); if (h[1]) HQCrm.open(h[1]); }
     else if (v === 'projects' && window.HQCrm) HQCrm.projects(h[1]);
     else if (v === 'customers' && window.HQCrm) HQCrm.customers();
     else if (v === 'analytics' && window.HQAnalytics) HQAnalytics.render();
@@ -291,6 +313,7 @@
     else if (v === 'photobooks' && h[1] === 'prices' && window.HQSite) HQSite.renderCatalog('photobooks');
     else if (v === 'photobooks') photobooks();
     else ({ overview: overview, orders: orders, inbox: inbox, calendar: calendar, tasks: tasks, customers: customers, content: content, activity: activity, payments: payments, settings: settings })[v]();
+    if (v === 'overview') { leadStrip(); pushNudge(); }
     if (v === 'orders' && h[1]) { var o = S.orders.filter(function (x) { return x.ref === h[1]; })[0]; if (o) orderDrawer(o); }
     if (v === 'inbox' && h[1]) { S.itab = 'web'; inbox(); var m = S.inbox.filter(function (x) { return x.id === h[1]; })[0]; if (m) msgDrawer(m); }
     window.scrollTo(0, keep === true ? sy : 0);
@@ -339,7 +362,11 @@
       if (o.kind === 'domain' && o.status === 'pending_registration') attention.push(['b', o.ref + ': register ' + (o.raw.domain || ''), 'Paid, waiting for registration', '#orders/' + o.ref]);
     });
     S.inbox.forEach(function (m) { if (m.followUp && m.followUp <= today() && !/completed|declined|archived/.test(m.stage || '')) attention.push(['y', 'Follow up: ' + (m.customer.name || m.customer.email || 'lead'), (m.subject || '').slice(0, 80), '#leads']); });
-    newMsgs.forEach(function (m) { attention.push(['p', 'Message from ' + (m.customer.name || m.customer.email || 'a visitor'), (m.subject || '').slice(0, 80), '#inbox/' + m.id]); });
+    /* new website leads go to the top until they are opened or moved on in Leads */
+    var since = function (t) { var mn = Math.round((Date.now() - t) / 6e4); return mn < 60 ? Math.max(1, mn) + ' min' : mn < 1440 ? Math.round(mn / 60) + ' h' : Math.round(mn / 1440) + ' day' + (mn < 2880 ? '' : 's'); };
+    var lf = function (m) { return (m.fields || []).filter(function (f) { return /service|need|project|budget|message/i.test(f[0]); }).map(function (f) { return String(f[1]).replace(/\s+/g, ' '); }).join(' · ').slice(0, 80); };
+    var newLeads = S.inbox.filter(function (m) { return m.kind !== 'whatsapp' && (m.stage || (m.status === 'new' ? 'new' : '')) === 'new'; }).sort(function (a, c) { return c.createdAt - a.createdAt; });
+    newLeads.slice().reverse().forEach(function (m) { attention.unshift(['r', 'New lead · ' + (m.customer.name || m.customer.email || 'a visitor') + (m.kind === 'brief' ? ' · project brief' : ''), 'Waiting ' + since(m.createdAt) + (lf(m) ? ' · ' + lf(m) : ''), '#leads/' + m.id]); });
     overdue.forEach(function (t) { attention.push(['r', 'Overdue: ' + t.title, 'Was due ' + d2(t.due + 'T12:00'), '#tasks']); });
     /* domains to renew in the next 60 days (customers are emailed at 60, 30 and 7 days and on the day) */
     if (S.renewals == null) { S.renewals = []; api('/api/domains?route=admin/renewals').then(function (x) { S.renewals = (x.renewals || []).filter(function (r) { return r.days != null && r.days <= 60; }); if (S.renewals.length && (location.hash || '#overview') === '#overview') overview(); }, function () { }); }
@@ -608,7 +635,7 @@
   }
   function msgDrawer(m) {
     if (m.kind === 'whatsapp') { var o = S.orders.filter(function (x) { return x.id === m.id; })[0]; if (o) return orderDrawer(o); }
-    var c = m.customer || {}, ph = String(c.phone || '').replace(/\D/g, '').replace(/^0/, '254');
+    var c = m.customer || {}, ph = String(c.phone || ((m.fields || []).filter(function (f) { return /phone|whatsapp/i.test(f[0]); })[0] || [])[1] || '').replace(/\D/g, '').replace(/^0/, '254');
     var h = '<div class="row"><span class="chip chip--' + (MK[m.kind] || MK.message)[1] + '">' + (MK[m.kind] || MK.message)[0] + '</span><span class="muted">' + dt(m.createdAt) + '</span></div>' +
       '<dl class="dl"><dt>From</dt><dd>' + esc(c.name || '—') + (c.email ? '<br><a href="mailto:' + esc(c.email) + '?subject=' + encodeURIComponent('Re: ' + (m.subject || 'your message')) + '">' + esc(c.email) + '</a>' : '') + (ph ? '<br><a target="_blank" rel="noopener" href="https://wa.me/' + esc(ph) + '">WhatsApp +' + esc(ph) + '</a>' : '') + '</dd>' +
       (m.fields || []).map(function (f) { return '<dt>' + esc(f[0]) + '</dt><dd style="white-space:pre-wrap">' + esc(f[1]) + '</dd>'; }).join('') + '</dl>' +
