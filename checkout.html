@@ -28,7 +28,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/base.css?v=20261026a">
 <link rel="stylesheet" href="assets/css/components.css?v=20261101p">
-<script src="/assets/js/meta-pixel.js?v=20261118a" async></script>
+<script src="/assets/js/meta-pixel.js?v=20261118b"></script>
 </head>
 <body>
 <noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=1368811611869665&amp;ev=PageView&amp;noscript=1"></noscript>
@@ -99,20 +99,24 @@
 <script src="data/team.js?v=20261021i"></script>
 <script src="assets/js/render.js?v=20261101b"></script>
 <script src="assets/js/site.js?v=20261103d"></script>
-<script src="assets/js/cart.js?v=20261108p"></script>
+<script src="assets/js/cart.js?v=20261118a"></script>
 <script>(function(){
       function fmt(n){return Number(n).toLocaleString('en-US');}
       var C=window.CIEL&&CIEL.cart;
       function paint(){
         var items=C?(C.siteItems?C.siteItems():C.items()):[];
         var box=document.getElementById('coLines');
-        if(!items.length){ box.innerHTML='<p style="color:var(--ink-faint)">Your cart is empty. <a href="products.html" style="color:var(--orange)">Browse products</a></p>'; document.getElementById('coTotal').textContent='0'; document.getElementById('payAmt').textContent='0'; return; }
+        if(!items.length){ box.innerHTML='<p style="color:var(--ink-faint)">Your cart is empty. <a href="products.html" style="color:var(--orange)">Browse products</a></p>'; document.getElementById('coTotal').textContent='0'; (document.getElementById('payAmt')||{}).textContent='0'; return; }
         box.innerHTML=items.map(function(i){return '<div class="co__line"><span>'+i.name+' <small>&times;'+i.qty+'</small></span><span>KES '+fmt(i.price*i.qty)+'</span></div>';}).join('');
         var tot=(C.siteTotal?C.siteTotal():C.total());
         document.getElementById('coTotal').textContent=fmt(tot);
-        document.getElementById('payAmt').textContent=fmt(tot);
+        (document.getElementById('payAmt')||{}).textContent=fmt(tot);
       }
       paint();
+      /* Meta Pixel: InitiateCheckout once per cart per visit; Purchase only on M-Pesa confirmation */
+      function pxItems(list){ return list.map(function(i){return {id:i.id,qty:i.qty,price:i.price};}); }
+      (function(){ var it=C?(C.siteItems?C.siteItems():C.items()):[]; if(!it.length||!window.CielPixel) return;
+        var sig=it.map(function(i){return i.id+'x'+i.qty;}).join(','); CielPixel.track('InitiateCheckout',CielPixel.cart(pxItems(it),C.siteTotal?C.siteTotal():C.total()),{session:'co:'+sig}); })();
       var form=document.getElementById('payForm');
       form.addEventListener('submit',function(e){
         e.preventDefault();
@@ -151,7 +155,7 @@
           .then(function(r){return r.json().catch(function(){return {demo:true};});})
           .then(function(res){
             if(res&&res.demo){ demo(); return; }
-            if(res&&res.amount&&res.amount!==amount){ document.getElementById('payAmt').textContent=fmt(res.amount); document.getElementById('coTotal').textContent=fmt(res.amount); }
+            if(res&&res.amount&&res.amount!==amount){ (document.getElementById('payAmt')||{}).textContent=fmt(res.amount); document.getElementById('coTotal').textContent=fmt(res.amount); }
             if(!res||!res.ok){ fail('Payment could not start: '+((res&&res.error)||'please try again')+'.'); return; }
             st.innerHTML='<span class="co__spin"></span>Request sent to '+phone+'. Enter your M-Pesa PIN on your phone to complete payment…';
             /* 2) Poll for the result — wait first so we don't query before the user has acted */
@@ -161,7 +165,7 @@
               fetch('/api/stkquery',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({checkoutRequestID:crid},meta))})
                 .then(function(r){return r.json().catch(function(){return {status:'pending'};});})
                 .then(function(q){
-                  if(q&&q.status==='paid'){ success('&#10003; <b>Payment confirmed — thank you!</b> '+(q.download?'<a href="'+q.download+'" style="color:inherit;font-weight:700;text-decoration:underline">Open your downloads</a>. We\'ve also emailed the link to '+(cemail||'you')+' (it works for 30 days).':'We\'ll be in touch on '+(cemail||phone)+' to deliver your order.')); }
+                  if(q&&q.status==='paid'){ try{ if(window.CielPixel){ CielPixel.track('Purchase',CielPixel.cart(pxItems(items),res.amount||amount),{id:'co-'+crid,once:'co-'+crid}); } }catch(x){} success('&#10003; <b>Payment confirmed — thank you!</b> '+(q.download?'<a href="'+q.download+'" style="color:inherit;font-weight:700;text-decoration:underline">Open your downloads</a>. We\'ve also emailed the link to '+(cemail||'you')+' (it works for 30 days).':'We\'ll be in touch on '+(cemail||phone)+' to deliver your order.')); }
                   else if(q&&q.status==='failed'){ fail('Payment was not completed (cancelled, wrong PIN, or timed out). Your cart is still here — you can try again.'); }
                   else if(tries>=max){ fail('We haven\'t received confirmation yet. If you completed payment, email hello@cielafrica.com with your M-Pesa message — we\'ll sort it out. Your cart is kept.'); }
                   else { setTimeout(poll,5000); }

@@ -248,7 +248,7 @@
     st.className = 'bf-status'; st.textContent = '';
     fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload()) })
       .then(function (r) { return r.json().catch(function () { return { ok: r.ok }; }); })
-      .then(function (res) { if (!res || !res.ok) throw new Error((res && res.error) || 'error'); try { localStorage.removeItem(KEY); } catch (e) {} location.href = 'thanks.html'; })
+      .then(function (res) { if (!res || !res.ok) throw new Error((res && res.error) || 'error'); try { localStorage.removeItem(KEY); } catch (e) {} try { if (window.CielPixel) CielPixel.after('Lead', { content_name: 'Project brief', content_category: 'Quote request' }); } catch (e) {} location.href = 'thanks.html'; })
       .catch(function () { btn.disabled = false; render(false); st.className = 'bf-status bf-status--err'; st.innerHTML = 'Something went wrong sending your brief. Try again, send it on WhatsApp, or email <a href="mailto:hello@cielafrica.com">hello@cielafrica.com</a>.'; });
   }
   function waLink() {

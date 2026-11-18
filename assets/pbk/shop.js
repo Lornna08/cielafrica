@@ -39,6 +39,9 @@
     var shot = ST.project(id).then(function (p) { if (!p) return null; var src = photoSource('prev'); return src.load(p.cover).then(function () { return R.toCanvas(p.cover, 480, { photo: src.url, empty: 'none' }); }).then(function (c) { src.done && src.done(); return c.toDataURL('image/jpeg', 0.82); }); }).catch(function () { return null; });
     return Promise.race([shot, new Promise(function (ok) { setTimeout(function () { ok(null); }, 2000); })]).then(function (c) { if (c && c.length < 280000) body.cover = c; return body; });
   }
+  /* Meta Pixel (assets/js/meta-pixel.js): photo-book lines as Meta contents, priced in KES */
+  function pxRows(rows) { return rows.map(function (r) { var it = r.item || r; return { id: 'pb-' + ((it.pb && it.pb.product) || it.product || 'book'), qty: it.qty || 1, price: it.price || 0 }; }); }
+  function px(ev, rows, value, opts) { try { if (!window.CielPixel || rows.some(function (r) { var it = r.item || r; return it.pb ? it.pb.test : it.test; })) return; var p = CielPixel.cart(pxRows(rows), value); p.content_category = 'Photo Books'; CielPixel.track(ev, p, opts); } catch (e) { } }
   function isTest(p) { var t = C.TPL[p.tpl]; return !!(t && t.test); }
   function add(p, product, opts) {
     var n = p.pages.length, test = isTest(p), price = test ? (BOOK.testPrice || 5) : unit(product, n);
@@ -368,6 +371,7 @@
       var rows = r[0], cp = r[1];
       if (!rows.length) { document.getElementById('coMain').innerHTML = '<div class="pk-empty"><p>No photo books in your cart yet.</p><a class="btn btn--p" data-go href="' + BASE + '">Create a photo book</a></div>'; document.getElementById('coSide').innerHTML = ''; return; }
       draw(rows, cp);
+      px('InitiateCheckout', rows, null, { session: 'pb:' + rows.map(function (r) { return r.item.id + 'x' + r.item.qty; }).join(',') });
       if (/[?&]wa=1/.test(location.search)) setTimeout(function () { var n = document.querySelector('[data-f="name"]'); if (n) { n.scrollIntoView({ block: 'center', behavior: 'smooth' }); if (!n.value) n.focus({ preventScroll: true }); } if (window.CielNote) CielNote('Add your name and mobile number, then tap Order on WhatsApp below.', { kind: 'tip' }); }, 400);
     });
     function draw(rows, cp) {
@@ -480,6 +484,7 @@
           open(null);
         });
         function open(ref) {
+          try { if (window.CielPixel) CielPixel.track('Contact', { content_name: 'WhatsApp order', content_category: 'Photo Books' }); } catch (e) { }
           var url = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(waText(ref));
           if (w && !w.closed) { w.location.href = url; status('<b>WhatsApp is open with your order' + (ref ? ' ' + esc(ref) : '') + '.</b> Send the message and we’ll reply with how to pay. <a href="' + url + '" target="_blank" rel="noopener">Open WhatsApp again</a>', 'is-ok'); }
           else status('<b>Your order' + (ref ? ' ' + esc(ref) : '') + ' is ready.</b> <a class="btn btn--p btn--sm" href="' + url + '" target="_blank" rel="noopener">Open WhatsApp</a>', 'is-ok');
@@ -601,13 +606,14 @@
             api('pbk-status', { intent: r.intent }).then(function (s) {
               if (s.status === 'pending') { if (Date.now() - t0 < 150000) return poll(); status('We haven’t had a confirmation yet. If you paid, wait a moment and tap <button class="pkco__link" id="coRe">check again</button>.', 'is-warn'); document.getElementById('coRe').onclick = function () { t0 = Date.now() - 120000; status('<span class="pkco__spin"></span> Checking…'); poll(); }; btn.disabled = false; return; }
               if (s.status === 'failed') { status(esc(s.desc || 'The payment was not completed.') + ' You can try again.', 'is-err'); btn.disabled = false; return; }
-              paid(s, rows);
+              paid(s, rows, r.amount);
             }).catch(function (e) { if (Date.now() - t0 < 150000) return poll(); status(esc(e.message), 'is-err'); btn.disabled = false; });
           }, 4000);
         })();
       }).catch(function (e) { status(esc(e.message), 'is-err'); btn.disabled = false; });
     }
-    function paid(s, rows) {
+    function paid(s, rows, amount) {
+      if (amount != null) px('Purchase', rows, amount, { id: 'pb-' + s.ref, once: 'pb-' + s.ref });
       markOrdered(s.ref, rows);
       savePurchases(s.ref, s.receipts, rows).then(function () {
         rows.forEach(function (r) { CIEL.cart.remove(r.item.id); });
@@ -635,7 +641,7 @@
   /** asks whether a Paybill order has been confirmed; once it is, the PDFs unlock on this device */
   function manualCheck(m) {
     return api('pbk-manual-status', { intent: m.intent }).then(function (s) {
-      if (s.status === 'paid') return savePurchases(m.ref, s.receipts, m.items).then(function () { manualDone(m.ref); return s; });
+      if (s.status === 'paid') { px('Purchase', (m.items || []).map(function (i) { return { product: i.product, qty: 1, price: 0 }; }), m.total, { id: 'pb-' + m.ref, once: 'pb-' + m.ref }); return savePurchases(m.ref, s.receipts, m.items).then(function () { manualDone(m.ref); return s; }); }
       if (s.status === 'rejected') manualDone(m.ref);
       return s;
     });

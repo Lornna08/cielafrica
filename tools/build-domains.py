@@ -46,7 +46,7 @@ FOOT = '''<footer class="foot">
 
 # Meta Pixel: public domain pages only, never the order-tracking or admin pages
 PIXEL_PAGES = ('domains.html', 'domains-terms.html')
-PIXEL = '<script src="/assets/js/meta-pixel.js?v=20261118a" async></script>\n'
+PIXEL = '<script src="/assets/js/meta-pixel.js?v=20261118b"></script>\n'
 PIXEL_NS = '<noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=1368811611869665&amp;ev=PageView&amp;noscript=1"></noscript>'
 
 def page(file, title, desc, canonical, active, body, scripts, robots=None, base=None):

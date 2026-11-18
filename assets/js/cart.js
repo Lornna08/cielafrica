@@ -8,6 +8,9 @@ window.CIEL = window.CIEL || {};
   function write(c){ try{localStorage.setItem(KEY,JSON.stringify(c));}catch(e){} paint(); }
   function fmt(n){ return Number(n).toLocaleString('en-US'); }
 
+  /* Meta Pixel (assets/js/meta-pixel.js): one AddToCart per add, KES */
+  function px(ev,i,cat){ try{ if(window.CielPixel){ var p=CielPixel.cart([i]); p.content_name=i.name; if(cat)p.content_category=cat; CielPixel.track(ev,p); } }catch(e){} }
+
   var Cart = CIEL.cart = {
     items:function(){ return read(); },
     count:function(){ return read().reduce(function(s,i){return s+i.qty;},0); },
@@ -16,12 +19,14 @@ window.CIEL = window.CIEL || {};
       var c=read(), f=c.find(function(i){return i.id===id;});
       if(f)f.qty++; else c.push({id:id,name:name,price:Number(price),qty:1});
       write(c); openDrawer(); toast(name+' added to cart');
+      px('AddToCart',{id:id,name:name,price:Number(price),qty:1});
     },
     /* photo books: { id, name, price, qty, pb:{p,product,pages}, thumb } — priced again on the server at checkout */
     addItem:function(it,silent){
       var c=read(), f=c.find(function(i){return i.id===it.id;});
       if(f){ Object.assign(f,it,{qty:it.pb&&it.pb.product==='digital'?1:(f.qty+(it.qty||1))}); } else c.push(Object.assign({qty:1},it));
       write(c); if(!silent){ openDrawer(); toast(it.name+' added to cart'); }
+      if(!(it.pb&&it.pb.test)) px('AddToCart',{id:it.pb?'pb-'+it.pb.product:it.id,name:it.name,price:Number(it.price),qty:it.qty||1},it.pb?'Photo Books':null);
     },
     update:function(id,patch){ var c=read(),f=c.find(function(i){return i.id===id;}); if(f) Object.assign(f,patch); write(c); },
     siteItems:function(){ return read().filter(function(i){return !i.pb;}); },

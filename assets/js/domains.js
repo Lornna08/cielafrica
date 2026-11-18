@@ -179,6 +179,7 @@
     S = { domain: domain, t: t, years: t.periods[0], idem: newIdem(), customer: (S && S.customer) || {}, q: null, order: null };
     $('#dmCoT').textContent = domain;
     co.showModal(); stepOne();
+    pxDomain('InitiateCheckout', results[domain] && results[domain].price ? results[domain].price.total : null, { session: 'dm:' + domain });
   }
   function totals(q) {
     if (!q) return '';
@@ -283,7 +284,10 @@
     $('#coAgain').addEventListener('click', startStk);
     $('#coEdit').addEventListener('click', function () { stepTwo(); $('#coAgree').checked = true; });
   }
+  /* Meta Pixel (assets/js/meta-pixel.js): checkout opened, and Purchase only once M-Pesa confirms */
+  function pxDomain(ev, value, opts) { try { if (!window.CielPixel || !S) return; var p = CielPixel.cart([{ id: 'domain-' + split(S.domain).tld.replace(/^\./, ''), qty: 1, price: value || 0 }], value); p.content_name = S.domain; p.content_category = 'Domains'; if (value == null) { delete p.value; delete p.currency; } CielPixel.track(ev, p, opts); } catch (e) { } }
   function success() {
+    if (S && S.order) pxDomain('Purchase', S.q ? S.q.total : null, { id: 'dm-' + S.order.ref, once: 'dm-' + S.order.ref });
     steps(2);
     coB.innerHTML = '<div class="dmwait"><div class="dmwait__ph" style="background:var(--ok)">' + ICON.ok + '</div><h3>Payment received</h3><p><b>' + esc(S.domain) + '</b> is being registered in your name. We’ve emailed your receipt and details to <b>' + esc(S.customer.email) + '</b>.</p><div><p style="font-size:.84rem;margin-bottom:.4rem">Your order reference</p><div class="dmref">' + esc(S.order.ref) + '</div></div>' + (S.order.link ? '<p style="font-size:.92rem"><a href="' + esc(S.order.link) + '" style="text-decoration:underline">View your order</a></p>' : '') + '</div>';
     coF.innerHTML = '<span></span><button class="btn btn--dark" data-close type="button">Done</button>';
