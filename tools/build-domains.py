@@ -44,6 +44,11 @@ FOOT = '''<footer class="foot">
   <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><path fill="#fff" d="M16.004 0h-.008C7.174 0 0 7.176 0 16c0 3.5 1.128 6.745 3.046 9.38L1.05 31.3l6.126-1.957A15.9 15.9 0 0 0 16.004 32C24.826 32 32 24.822 32 16S24.826 0 16.004 0z"/><path fill="#25D366" d="M16.004 2.667C23.353 2.667 29.33 8.646 29.33 16c0 7.354-5.977 13.333-13.326 13.333a13.27 13.27 0 0 1-7.49-2.303l-.536-.356-3.636 1.16 1.18-3.542-.388-.562A13.23 13.23 0 0 1 2.67 16C2.67 8.646 8.655 2.667 16.004 2.667z"/><path fill="#fff" d="M12.86 8.6c-.26-.58-.53-.59-.78-.6l-.666-.008c-.232 0-.608.087-.927.435-.318.348-1.217 1.19-1.217 2.9 0 1.71 1.246 3.363 1.42 3.595.174.232 2.4 3.845 5.93 5.238 2.934 1.157 3.531.927 4.168.87.637-.058 2.056-.84 2.346-1.652.29-.812.29-1.508.203-1.653-.087-.145-.318-.232-.666-.406s-2.056-1.015-2.375-1.131c-.318-.116-.55-.174-.782.174-.232.348-.898 1.131-1.101 1.363-.203.232-.406.26-.754.087-.348-.174-1.469-.542-2.798-1.726-1.034-.922-1.732-2.06-1.935-2.408-.203-.348-.022-.536.153-.709.156-.156.348-.406.522-.609.174-.203.232-.348.348-.58.116-.232.058-.435-.029-.609-.087-.174-.763-1.892-1.075-2.563z"/></svg>
 </a>'''
 
+# Meta Pixel: public domain pages only, never the order-tracking or admin pages
+PIXEL_PAGES = ('domains.html', 'domains-terms.html')
+PIXEL = '<script src="/assets/js/meta-pixel.js?v=20261118a" async></script>\n'
+PIXEL_NS = '<noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=1368811611869665&amp;ev=PageView&amp;noscript=1"></noscript>'
+
 def page(file, title, desc, canonical, active, body, scripts, robots=None, base=None):
     rob = f'<meta name="robots" content="{robots}">\n' if robots else ''
     basetag = ''
@@ -66,15 +71,16 @@ def page(file, title, desc, canonical, active, body, scripts, robots=None, base=
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png?v=20261021i">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png?v=20261021i">
-<link rel="manifest" href="site.webmanifest?v=20261021i">
+<link rel="manifest" href="site.webmanifest?v=20261116a">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/base.css?v=20261021i">
 <link rel="stylesheet" href="assets/css/components.css?v=20261024l">
 <link rel="stylesheet" href="assets/css/domains.css?v={V}">
-</head>
+{PIXEL if file in PIXEL_PAGES else ''}</head>
 <body class="dm">
+{PIXEL_NS if file in PIXEL_PAGES else ''}
 <a href="#main" class="sr-only">Skip to content</a>
 {nav(active) if active is not None else ''}
 <main id="main">
