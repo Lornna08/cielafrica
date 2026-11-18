@@ -767,7 +767,11 @@ html[data-theme="dark"] #hq .hq-top{background:rgba(11,11,13,.86)}
 
 /* page title: the site's ‹ mark */
 #hq .hq-ph h1{font-weight:700;letter-spacing:-.035em;font-size:clamp(1.6rem,2.6vw,2.2rem);line-height:1.05}
-#hq .hq-ph h1::before{content:"‹";color:var(--o);margin-right:.32em;font-weight:700}
+#hq .hq-ph h1{display:flex;align-items:baseline;flex-wrap:wrap;column-gap:.32em}
+#hq .hq-ph h1 small{flex-basis:100%}
+/* the ‹ mark beside the page title is the Back button */
+#hq .hq-back{all:unset;box-sizing:border-box;cursor:pointer;color:var(--o);font-weight:700;line-height:1;padding:.05em .28em .12em;margin-left:-.28em;border-radius:10px;-webkit-tap-highlight-color:transparent}
+#hq .hq-back:hover,#hq .hq-back:focus-visible{background:var(--o2)}#hq .hq-back:focus-visible{outline:2px solid var(--o)}
 #hq .hq-ph h1 small{font-family:Inter,sans-serif;letter-spacing:0;font-weight:500;margin-top:.45rem}
 #hq.is-ov .hq-ph{display:none}
 #hq.is-ov .hq-ph+.hq-body{padding-top:1.4rem}
@@ -1286,3 +1290,8 @@ html[data-theme="dark"] .ig-24{background:#2b2410;color:#e8c568}
 .ov-leads__i{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.55rem .7rem;border-radius:10px;background:var(--card);color:var(--ink);text-decoration:none}
 .ov-leads__i small{display:block;color:var(--soft);font-size:.78rem}.ov-leads__all{font-size:.82rem;color:var(--r);font-weight:600}
 .lead .chip.chip--r{background:var(--r2);color:var(--r)}
+
+/* panels: a Back button on the left; on phones it replaces the × */
+.drawer__bk{display:none;align-items:center;gap:.25rem;border:0;background:none;color:var(--o);font:700 1.35rem/1 "Space Grotesk",sans-serif;padding:.2rem .4rem .3rem 0;cursor:pointer}
+.drawer__bk span{font:600 .9rem Inter,sans-serif}
+@media(max-width:760px){.drawer__bk{display:inline-flex}.drawer__h>.b[data-x]{display:none}}

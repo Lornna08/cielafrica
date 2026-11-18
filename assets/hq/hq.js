@@ -159,7 +159,7 @@
     var nb = document.getElementById('nb');
     nb.onclick = function () { if (window.HQTools) HQTools.notifs(nb); };
     document.getElementById('sk').onclick = function () { if (window.HQTools) HQTools.palette(); };
-    window.addEventListener('hashchange', route);
+    window.addEventListener('hashchange', function () { S.hops = (S.hops || 0) + 1; route(); });
     refresh(false);
     live();
   }
@@ -287,6 +287,13 @@
     d.querySelector('[data-rl]').onclick = function () { var f = d.querySelector('iframe'); f.src = f.src; };
     return d;
   }
+  /* Back: the page you came from inside Ciel Admin; otherwise up a level (a lead → Leads), then Overview */
+  function goBack() {
+    if (document.querySelector('.drawer,.modal')) { document.querySelectorAll('.drawer,.modal').forEach(function (x) { x.remove(); }); return; }
+    var h = (location.hash || '#overview').slice(1).split('/');
+    if (S.hops > 0) { S.hops -= 2; history.back(); return; }
+    location.hash = h.length > 1 ? h[0] : 'overview';
+  }
   function route(keep) {
     var sy = window.scrollY;
     var h = (location.hash || '#overview').slice(1).split('/'), v = h[0];
@@ -294,8 +301,9 @@
     document.querySelectorAll('.drawer,.modal').forEach(function (x) { x.remove(); });
     S.view = v; navs(); root.classList.toggle('is-ov', v === 'overview');
     var titles = { overview: 'Good ' + (new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening') + ', Lorna', orders: 'Orders', calendar: 'Calendar', tasks: 'Tasks', customers: 'Customers', website: 'Website', settings: 'Setup', inbox: 'Inbox', content: 'Content library', policies: 'Policies', activity: 'Activity log', payments: 'Payments', products: 'Products', templates: 'Website templates', photobooks: 'Photo Books', leads: 'Leads', projects: 'Projects', analytics: 'Analytics', reports: 'Reports & exports', campaigns: 'Email campaigns', invoices: 'Invoices & receipts', reviews: 'Reviews', instagram: 'Instagram' };
-    document.getElementById('ttl').innerHTML = esc(titles[v]) + '<small>' + new Date().toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + '</small>';
+    document.getElementById('ttl').innerHTML = (v === 'overview' ? '' : '<button class="hq-back" id="hqBack" type="button" aria-label="Back" title="Back">‹</button>') + '<span class="hq-ttl">' + esc(titles[v]) + '</span><small>' + new Date().toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + '</small>';
     document.getElementById('topx').innerHTML = v === 'calendar' ? '<button class="b b--p b--sm" data-newev>' + I.plus + '<span>Event</span></button>' : v === 'tasks' ? '<button class="b b--p b--sm" data-newtk>' + I.plus + '<span>Task</span></button>' : '';
+    var bk = document.getElementById('hqBack'); if (bk) bk.onclick = goBack;
     var tb = document.querySelector('[data-newev]'); if (tb) tb.onclick = function () { eventModal({ date: today() }); };
     var tt = document.querySelector('[data-newtk]'); if (tt) tt.onclick = function () { taskModal({ status: 'todo' }); };
     if (v === 'website') { if (window.HQSite) HQSite.render(h[1] || 'home'); }
@@ -450,9 +458,9 @@
   }
   function drawer(title, html, onClose) {
     var d = document.createElement('div'); d.className = 'drawer';
-    d.innerHTML = '<div class="drawer__p"><div class="drawer__h"><h2>' + title + '</h2><button class="b b--sm b--ghost" data-x>' + I.x + '</button></div><div class="drawer__b">' + html + '</div></div>';
+    d.innerHTML = '<div class="drawer__p"><div class="drawer__h"><button class="drawer__bk" type="button" data-x aria-label="Back">‹<span>Back</span></button><h2>' + title + '</h2><button class="b b--sm b--ghost" data-x>' + I.x + '</button></div><div class="drawer__b">' + html + '</div></div>';
     document.body.appendChild(d);
-    function close() { d.remove(); if (onClose) onClose(); }
+    function close() { d.remove(); var h = location.hash.slice(1).split('/'); if (h.length > 1 && /^(leads|orders|inbox)$/.test(h[0])) history.replaceState(null, '', '#' + h[0]); if (onClose) onClose(); }
     d.addEventListener('click', function (e) { if (e.target === d || e.target.closest('[data-x]')) close(); });
     document.addEventListener('keydown', function k(e) { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', k); } });
     return d;
@@ -761,7 +769,7 @@
     if (window.HQMoney) HQMoney.setupCards(b);
   }
 
-  window.HQ = { pushState: pushState, enablePush: enablePush, disablePush: disablePush, I: I, NAV: NAV, KIND: KIND, orderDrawer: orderDrawer, api: api, toast: toast, esc: esc, dt: dt, d2: d2, money: money, today: today, body: body, modal: modal, drawer: drawer, S: S, navs: navs, route: route, saveItem: saveItem, delItem: delItem, taskModal: taskModal, eventModal: eventModal };
+  window.HQ = { back: goBack, pushState: pushState, enablePush: enablePush, disablePush: disablePush, I: I, NAV: NAV, KIND: KIND, orderDrawer: orderDrawer, api: api, toast: toast, esc: esc, dt: dt, d2: d2, money: money, today: today, body: body, modal: modal, drawer: drawer, S: S, navs: navs, route: route, saveItem: saveItem, delItem: delItem, taskModal: taskModal, eventModal: eventModal };
   if (window.HQCrm) HQCrm.init(window.HQ);
   if (window.HQSite) HQSite.init(window.HQ);
   if (window.HQMail) HQMail.init(window.HQ);

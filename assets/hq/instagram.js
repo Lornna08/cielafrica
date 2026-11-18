@@ -5,6 +5,8 @@
    Server: lib/hq/instagram.js (routes ig-* in lib/hq/handler.js). Styles: assets/hq/instagram.css.
    ============================================================ */
 (function () {
+  /* the orange ‹ Back, as on every other Ciel Admin page (phone bar only) */
+  var BK = '<button class="igx-mi igx-bk" type="button" data-hqback aria-label="Back" title="Back">‹</button>';
   'use strict';
   /* ---------- the little bit of the host app this page uses (ABC's officials' app calls it A) ---------- */
   var HQ = null;
@@ -274,7 +276,7 @@
     (S.st ? Promise.resolve(S.st) : api('status')).then(function (st) {
       S.st = st;
       if (!st.account) {
-        S.st = null; b.querySelector('#igNav').hidden = true; b.querySelector('#igMTop').hidden = true; b.querySelector('#igMBot').hidden = true;
+        S.st = null; b.querySelector('#igNav').hidden = true; b.querySelector('#igMTop').innerHTML = BK; b.querySelector('#igMTop').hidden = false; b.querySelector('#igMBot').hidden = true; b.querySelector('#igMTop [data-hqback]').onclick = function () { window.HQ.back(); };
         if (S.view === 'planner') return planner(b.querySelector('#igBody'));   /* the designs work before Instagram is connected */
         return connect(b, st);
       }
@@ -325,9 +327,10 @@
     var a = S.st.account, n = b.querySelector('#igNav');
     if (!n.hasAttribute('data-built')) {
       n.innerHTML = '<span class="igx-brand">' + IC.ig + '<b>Instagram</b></span>' + NAV.map(function (t) { return navBtn(t, 'igx-nb'); }).join('') + '<span class="igx-sp"></span><button class="igx-nb igx-nb--more" data-more title="Connection">' + IC.dots + '<span>More</span></button>';
-      b.querySelector('#igMTop').innerHTML = (document.getElementById('burger') ? '<button class="igx-mi igx-mi--menu" data-menu aria-label="Ciel Admin menu" title="Menu">' + IC.menu + '</button>' : '') + '<button class="igx-mu" data-v="profile"><b>' + esc(a.username) + '</b></button><span class="igx-sp"></span>' + MTOP.map(function (t) { return navBtn(t, 'igx-mi'); }).join('') +
+      b.querySelector('#igMTop').innerHTML = BK + (document.getElementById('burger') ? '<button class="igx-mi igx-mi--menu" data-menu aria-label="Ciel Admin menu" title="Menu">' + IC.menu + '</button>' : '') + '<button class="igx-mu" data-v="profile"><b>' + esc(a.username) + '</b></button><span class="igx-sp"></span>' + MTOP.map(function (t) { return navBtn(t, 'igx-mi'); }).join('') +
         (document.getElementById('nb') ? '<button class="igx-mi" data-nb aria-label="Ciel Admin notifications" title="Notifications">' + IC.bell + '<em class="igx-nbc" data-nbc hidden></em></button>' : '') + '<button class="igx-mi" data-more title="More" aria-label="More">' + IC.dots + '</button>';
       b.querySelector('#igMBot').innerHTML = MBOT.map(function (t) { return navBtn(t, 'igx-mb'); }).join('');
+      b.querySelector('#igMTop [data-hqback]').onclick = function () { window.HQ.back(); };
       b.querySelectorAll('#igNav [data-v], #igMTop [data-v], #igMBot [data-v]').forEach(function (x) {
         x.onclick = function () {
           var v = x.getAttribute('data-v'); if (v === 'create') return editor(null);

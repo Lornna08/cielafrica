@@ -919,3 +919,5 @@ body.ig-dark .igv-p,body.ig-dark .igv-side,body.ig-dark .igv-in{background:#000;
 @media (max-width:760px){.igx-selbar{bottom:calc(60px + env(safe-area-inset-bottom))}.igx-sela button span{font-size:13px}}
 body.igx-selon .igx-planner{padding-bottom:150px}
 .is-selmode .igx-t>em{display:none}
+
+.igx-bk{color:var(--o,#ff5a1f)!important;font:700 1.9rem/1 "Space Grotesk",sans-serif!important;width:34px!important;padding-bottom:4px!important}
