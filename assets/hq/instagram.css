@@ -1018,3 +1018,7 @@ body.ig-dark .pl-m{--igbtn:#262626;--igbtn2:#363636}
 /* keep everything inside the screen width (long tab rows scroll instead of widening the page) */
 .pl>*,.pl-bar>*,#igPd,#igPq,#igAuto{min-width:0;max-width:100%}
 .pl-tabs{flex:1 1 auto;min-width:0}
+.pl-svb{display:grid;gap:14px;padding:16px 18px 20px}.pl-svb p{font-size:14px;color:var(--soft)}.pl-svb b{color:var(--ink)}
+.pl-save{max-width:420px}
+.pl-a{white-space:nowrap;padding:0 10px;min-width:0}.pl-a span{overflow:hidden;text-overflow:ellipsis}
+@media(max-width:620px){.pl-a{font-size:13px;gap:5px}.pl-a svg{width:16px;height:16px}}

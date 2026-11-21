@@ -184,7 +184,7 @@
     /* the three things people do most, as big buttons; everything else under More */
     var main = (can ? (q ? '<button data-a="open" class="pl-a pl-a--p">' + IC.cal + '<span>' + (q.status === 'scheduled' ? 'Change schedule' : q.status === 'failed' ? 'See what went wrong' : 'Open draft') + '</span></button>'
         : (p.sticker ? '' : '<button data-a="now" class="pl-a pl-a--p">' + IC.send + '<span>Post now</span></button>') + '<button data-a="sched" class="pl-a">' + IC.cal + '<span>' + (p.sticker ? 'Open in editor' : 'Schedule') + '</span></button>') : '') +
-      (p.images && p.images.length ? '<button data-a="dl" class="pl-a">' + IC.down + '<span>Download</span></button>' : '');
+      (p.images && p.images.length ? '<button data-a="dl" class="pl-a">' + IC.down + '<span>' + (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && navigator.share ? 'Save to Photos' : 'Download') + '</span></button>' : '');
     var more = (!posted && t ? '<button data-a="next">' + IC.up + '<span>Post this one next</span></button><button data-a="from">' + IC.play + '<span>Start auto-posting from here</span></button>' : '') +
       (!posted ? '<button data-a="pause">' + IC.clock + '<span>' + (p.paused ? 'Resume auto-posting it' : 'Pause (auto-post skips it)') + '</span></button>' : '') +
       (p.images && p.images.length ? '<button data-a="share">' + IC.ig + '<span>Share to the Instagram app' + (p.sticker ? ' (add the sticker)' : ' (add music)') + '</span></button><button data-a="big">' + IC.ext + '<span>See it full size</span></button>' : '') +
@@ -198,6 +198,7 @@
       '<div class="pl-acts">' + main + '</div>' +
       '<details class="pl-more"><summary>' + IC.dots + '<span>More options</span></summary><div class="pl-ml">' + more + '</div></details></div></div></div>');
     m.classList.add('pl-m');
+    if (k && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && p.images && p.images.length) { try { k.prep(k.files(p)).catch(function () { }); } catch (e) { } }
     m.querySelectorAll('[data-a]').forEach(function (b) {
       b.onclick = function () {
         var a = b.getAttribute('data-a'); m.remove();
@@ -1895,7 +1896,26 @@
       var go = function () { var a = document.createElement('a'); a.href = dlUrl(f); a.download = f.name; a.rel = 'noopener'; document.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); }, 4000); };
       if (!n) go(); else setTimeout(go, n * 700);
     }
+    /* phones: straight into Photos / Gallery through the share sheet (Save Image / Save Video), never Files.
+       The share sheet only opens from a tap, so the files are fetched first (the design's sheet starts that as it
+       opens); if they aren't in yet, a small sheet with a Save button appears and the next tap saves. */
+    function canSave(fs) { try { return !!(navigator.share && navigator.canShare && navigator.canShare({ files: fs })); } catch (e) { return false; } }
+    function toPhotos(p) {
+      var list = filesOf(p); if (!list.length) return;
+      var say = function () { H.toast(ios() ? 'Saved to Photos' : 'Saved to your gallery', 'ok'); };
+      var fs = ready(list);
+      if (fs && canSave(fs)) return navigator.share({ files: fs }).then(say, function (e) { if (e && e.name !== 'AbortError') { fs.forEach(saveFile); H.toast('Downloading instead…', 'ok'); } });
+      var m = H.modal('<div class="pl-sheet pl-save"><div class="pl-sh"><div><h3>Save to ' + (ios() ? 'Photos' : 'your gallery') + '</h3><small>' + (p.videoUrl ? 'Video and cover' : list.length > 1 ? list.length + ' pictures' : 'Full quality') + '</small></div><button class="pl-x" data-x aria-label="Close">' + IC.x + '</button></div><div class="pl-svb"><p>Tap Save, then choose <b>' + (ios() ? (p.videoUrl ? 'Save Video' : list.length > 1 ? 'Save ' + list.length + ' Images' : 'Save Image') : 'Save to gallery or Photos') + '</b>.</p><button class="pl-a pl-a--p" data-sv disabled>' + IC.down + '<span>Getting it ready…</span></button></div></div>');
+      m.classList.add('pl-m'); var sv = m.querySelector('[data-sv]');
+      blobs(list).then(function () { sv.disabled = false; sv.querySelector('span').textContent = 'Save'; }, function (e) { sv.querySelector('span').textContent = 'Couldn’t load it'; H.toast(e.message, 'err'); });
+      sv.onclick = function () {
+        var f2 = ready(list); if (!f2) return;
+        if (!canSave(f2)) { f2.forEach(saveFile); m.remove(); return H.toast('Downloading…', 'ok'); }
+        navigator.share({ files: f2 }).then(function () { m.remove(); say(); }, function (e) { if (e && e.name !== 'AbortError') { f2.forEach(saveFile); m.remove(); H.toast('Downloading instead…', 'ok'); } });
+      };
+    }
     function download(p) {
+      if (mobile() && navigator.share) return toPhotos(p);
       /* phones save one file per tap, so a reel opens its sheet with separate Save video and Save cover buttons */
       if (p.videoUrl && mobile()) return big(p);
       var list = filesOf(p); if (!list.length) return;
@@ -1957,7 +1977,7 @@
         : '<div class="igq-bigs">' + imgs.map(function (u) { return '<img src="' + esc(u) + '" alt="" style="aspect-ratio:' + (tall ? '9 / 16' : p.kind === 'highlight' ? '1 / 1' : 'auto') + '">'; }).join('') + '</div>';
       var acts = vid
         ? (p.caption ? '<button class="igk-b" data-cp>Copy caption</button>' : '') + '<span class="igq-sp"></span>' + (cf ? '<button class="igk-b" data-cv>Save cover</button>' : '') + '<button class="igk-b igk-b--p" data-sv>' + IC.down + '<span>Save video</span></button>'
-        : '<span class="igq-sp"></span>' + (p.caption ? '<button class="igk-b" data-cp>Copy caption</button>' : '') + '<button class="igk-b igk-b--p" data-sv>' + IC.down + '<span>Download</span></button>';
+        : '<span class="igq-sp"></span>' + (p.caption ? '<button class="igk-b" data-cp>Copy caption</button>' : '') + '<button class="igk-b igk-b--p" data-sv>' + IC.down + '<span>' + (mobile() && navigator.share ? 'Save to Photos' : 'Download') + '</span></button>';
       var m = H.modal('<div class="igq-big"><div class="igx-sech"><h2>' + esc(p.title || kindName(p.kind)) + '</h2><button class="igk-b igk-b--sm igk-b--ghost" data-x aria-label="Close">✕</button></div>' + media +
         '<div class="igk-row igq-bigr">' + acts + '</div>' + (p.caption ? '<p class="igq-bigc">' + esc(p.caption).replace(/\n/g, '<br>') + '</p>' : '') + '</div>');
       m.classList.add('igx-pickm'); if (vid) m.classList.add('igq-viewm');
