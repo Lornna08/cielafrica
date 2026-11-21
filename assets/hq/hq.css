@@ -1334,3 +1334,10 @@ html[data-theme="dark"] .ig-24{background:#2b2410;color:#e8c568}
 .ph__s li::before{content:counter(ph);grid-row:1/3;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--o);color:#fff;font:700 .8rem Inter,sans-serif}
 .ph__s li span{font-size:.86rem;line-height:1.5;color:var(--soft)}.ph__s li span b{color:var(--ink)}
 .ph__w{font-size:.8rem;color:var(--faint);margin:0}
+/* PDF preview: the real pages, drawn as pictures */
+.pv-pages{display:grid;gap:14px;justify-items:center;padding:12px}
+.pv-page{display:block;max-width:100%;height:auto;background:#fff;border-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,.08),0 8px 28px rgba(0,0,0,.14)}
+.pv-n{font-size:.75rem;color:var(--faint);margin:0}
+.pv-modal{width:min(760px,96vw)!important}.pv-m{display:grid;gap:.8rem}
+.pv-box{max-height:76vh;overflow:auto;border-radius:12px;background:var(--side2,#eee)}
+#dPv{overflow:auto}

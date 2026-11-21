@@ -52,6 +52,27 @@
      logo + big title, orange rule, From / Bill to, project, dark-headed items table, orange total band,
      payment schedule + payment details; a second page for recurring services, delivery time,
      assumptions and who prepared it; footer with page numbers on every page. */
+  /* draws the real PDF pages as pictures, so the preview looks the same on every phone and computer */
+  var pjsP = null;
+  function pdfjs() { return pjsP || (pjsP = window.pdfjsLib ? Promise.resolve(window.pdfjsLib) : new Promise(function (ok, no) { var s = document.createElement('script'); s.src = '/assets/vendor/pdfjs-3.11.174.min.js'; s.onload = function () { window.pdfjsLib.GlobalWorkerOptions.workerSrc = '/assets/vendor/pdfjs-3.11.174.worker.min.js'; ok(window.pdfjsLib); }; s.onerror = function () { pjsP = null; no(new Error('Couldn’t load the preview.')); }; document.head.appendChild(s); })); }
+  function drawPages(bytes, el) {
+    return pdfjs().then(function (pj) { return pj.getDocument({ data: bytes.slice(0) }).promise; }).then(function (pdf) {
+      el.innerHTML = '<div class="pv-pages"></div>'; var box = el.firstChild, w = Math.max(280, el.clientWidth - 24), dpr = Math.min(2.5, window.devicePixelRatio || 1);
+      var chain = Promise.resolve();
+      for (var i = 1; i <= pdf.numPages; i++) (function (n) { chain = chain.then(function () { return pdf.getPage(n).then(function (pg) {
+        var v0 = pg.getViewport({ scale: 1 }), sc = w / v0.width, vp = pg.getViewport({ scale: sc * dpr }), c = document.createElement('canvas');
+        c.width = vp.width; c.height = vp.height; c.style.width = w + 'px'; c.className = 'pv-page'; c.setAttribute('aria-label', 'Page ' + n + ' of ' + pdf.numPages);
+        box.appendChild(c); return pg.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+      }); }); })(i);
+      return chain.then(function () { if (pdf.numPages > 1) { var t = document.createElement('p'); t.className = 'pv-n'; t.textContent = pdf.numPages + ' pages'; box.appendChild(t); } });
+    });
+  }
+  /* preview only: from the invoice form, before saving */
+  function previewDoc(doc) {
+    var m = H.modal('<div class="pv-m"><div class="row" style="justify-content:space-between;gap:.5rem"><h2>Preview · ' + esc(doc.number || 'New') + '</h2><button class="b b--sm b--ghost" data-x>' + H.I.x + '</button></div><div class="pv-box" id="pvB"><div class="sk" style="height:60vh"></div></div></div>');
+    m.querySelector('.modal__p').classList.add('pv-modal');
+    makePdf(doc).then(function (b) { return drawPages(b, m.querySelector('#pvB')); }).catch(function (e) { m.querySelector('#pvB').innerHTML = '<p class="muted" style="padding:1rem">' + esc(e.message) + '</p>'; });
+  }
   function makePdf(doc) {
     return Promise.all([lib(), biz(), fetch('/assets/img/logo-dark.png?v=20261021i').then(function (r) { return r.arrayBuffer(); }).catch(function () { return null; })]).then(function (x) {
       var L = x[0], B = x[1], logo = x[2];
@@ -244,7 +265,7 @@
     biz().then(function (B) { m.querySelector('#dMs').value = emailText(doc, B); m.querySelector('#dWm').value = waText(doc, B); });
     m.querySelectorAll('#dT [data-t]').forEach(function (b) { b.onclick = function () { m.querySelectorAll('#dT button').forEach(function (x) { x.classList.toggle('is-on', x === b); }); m.querySelectorAll('[data-p]').forEach(function (p) { p.hidden = p.getAttribute('data-p') !== b.getAttribute('data-t'); }); }; });
     var bytes = null, url = null, extra = [];
-    makePdf(doc).then(function (b) { bytes = b; url = URL.createObjectURL(new Blob([b], { type: 'application/pdf' })); var pv = m.querySelector('#dPv'); if (/iphone|ipad|android/i.test(navigator.userAgent)) pv.innerHTML = '<div class="doc-ready">' + IC.pdf + '<b>' + esc(fileName(doc)) + '</b><span>' + Math.max(1, Math.round(b.length / 1024)) + ' KB · ready</span><a class="b b--sm" href="' + url + '" target="_blank" rel="noopener">Look at it</a></div>'; else pv.innerHTML = '<iframe src="' + url + '#view=FitH" title="Preview"></iframe>'; }, function (e) { m.querySelector('#dPv').innerHTML = '<p class="muted" style="padding:1rem">' + esc(e.message) + '</p>'; });
+    makePdf(doc).then(function (b) { bytes = b; url = URL.createObjectURL(new Blob([b], { type: 'application/pdf' })); var pv = m.querySelector('#dPv'); drawPages(b, pv).catch(function () { pv.innerHTML = '<iframe src="' + url + '#view=FitH" title="Preview"></iframe>'; }); }, function (e) { m.querySelector('#dPv').innerHTML = '<p class="muted" style="padding:1rem">' + esc(e.message) + '</p>'; });
     function need(fn) { return function () { if (!bytes) return H.toast('One moment, the PDF is still being made…'); fn(); }; }
     function drawAtt() { m.querySelector('#dAl').innerHTML = extra.map(function (a, i) { return '<span class="mx2-chip">' + esc(a.name) + ' · ' + Math.max(1, Math.round(a.size / 1024)) + ' KB<button data-ra="' + i + '" aria-label="Remove">×</button></span>'; }).join(''); m.querySelectorAll('[data-ra]').forEach(function (x) { x.onclick = function (e) { e.preventDefault(); extra.splice(+x.getAttribute('data-ra'), 1); drawAtt(); }; }); }
     m.querySelector('#dAt').onchange = function () {
@@ -389,7 +410,7 @@
         '<div class="card inv-pay"><label class="field"' + (RC ? ' hidden' : '') + '><span>Status</span><select class="hq-in" id="iS"><option value="unpaid"' + (v.status !== 'paid' && v.status !== 'cancelled' ? ' selected' : '') + '>Not paid yet</option><option value="paid"' + (v.status === 'paid' ? ' selected' : '') + '>Paid</option><option value="cancelled"' + (v.status === 'cancelled' ? ' selected' : '') + '>Cancelled</option></select></label>' +
         '<div class="g2" id="iPaid"><label class="field"><span>Paid on</span><input class="hq-in" id="iPd" type="date" value="' + esc(v.paidAt || H.today()) + '"></label><label class="field"><span>M-Pesa code (optional)</span><input class="hq-in" id="iCo" value="' + esc(v.code || '') + '" placeholder="e.g. SKL3XXXXXX"></label><label class="field"><span>Method</span><select class="hq-in" id="iMe">' + ['M-Pesa', 'Bank transfer', 'Cash', 'Card', 'Other'].map(function (x) { return '<option' + ((v.method || 'M-Pesa') === x ? ' selected' : '') + '>' + x + '</option>'; }).join('') + '</select></label></div></div>' +
         (v.sentAt ? '<p class="ox__n">Last sent by ' + (v.sentVia === 'whatsapp' ? 'WhatsApp' : 'email') + (v.sentTo ? ' to ' + esc(v.sentTo) : '') + ' · ' + H.dt(v.sentAt) + '</p>' : '') +
-        '<div class="row inv-acts">' + (RC ? '<button class="b b--p" id="iRec">' + IC.send + '<span>Save &amp; send receipt</span></button><button class="b" id="iSave">Save</button>' : '<button class="b b--p" id="iPdf">' + IC.send + '<span>Save &amp; send invoice</span></button><button class="b" id="iSave">Save</button><button class="b" id="iRec">' + IC.send + '<span>Send receipt</span></button>') + (v.id ? '<button class="b b--ghost" id="iDelB" style="margin-left:auto;color:var(--r)">Delete</button>' : '') + '</div></div>');
+        '<div class="row inv-acts"><button class="b b--ghost" type="button" id="iPv">' + IC.pdf + '<span>Preview</span></button>' + (RC ? '<button class="b b--p" id="iRec">' + IC.send + '<span>Save &amp; send receipt</span></button><button class="b" id="iSave">Save</button>' : '<button class="b b--p" id="iPdf">' + IC.send + '<span>Save &amp; send invoice</span></button><button class="b" id="iSave">Save</button><button class="b" id="iRec">' + IC.send + '<span>Send receipt</span></button>') + (v.id ? '<button class="b b--ghost" id="iDelB" style="margin-left:auto;color:var(--r)">Delete</button>' : '') + '</div></div>');
       m.querySelector('.modal__p').classList.add('inv-modal');
       var L = m.querySelector('#iL');
       function lines() { L.innerHTML = v.items.map(function (l, i) { return '<div class="inv-li"><input class="hq-in" data-f="desc" data-i="' + i + '" value="' + esc(l.desc) + '" placeholder="e.g. Website design, 5 pages"><input class="hq-in" data-f="qty" data-i="' + i + '" type="number" min="0" step="any" value="' + (l.qty == null ? 1 : l.qty) + '"><input class="hq-in" data-f="price" data-i="' + i + '" type="number" min="0" step="any" value="' + (l.price || '') + '"><button class="b b--sm b--ghost" data-rm="' + i + '" aria-label="Remove line">' + H.I.x + '</button></div>'; }).join(''); bind(); tot(); }
@@ -427,6 +448,7 @@
       }
       function store() { grab(); if (!v.client) { H.toast(RC ? 'Add who paid.' : 'Add the client’s name.', 'err'); return Promise.reject(new Error('client')); } if (!v.items.some(function (l) { return l.desc && l.price; })) { H.toast('Add at least one line with a price.', 'err'); return Promise.reject(new Error('lines')); } return H.saveItem('invoices', v).then(function (it) { v = JSON.parse(JSON.stringify(it)); m.querySelector('h2').textContent = it.number; if (!m.querySelector('#iDelB')) { var d = document.createElement('button'); d.className = 'b b--ghost'; d.id = 'iDelB'; d.style.cssText = 'margin-left:auto;color:var(--r)'; d.textContent = 'Delete'; d.onclick = del; m.querySelector('.inv-acts').appendChild(d); } if (H.refreshOrders) H.refreshOrders(); return it; }); }
       function del() { HQAsk.confirm('Delete ' + (RC ? 'receipt ' : 'invoice ') + v.number + '? It also leaves Reports.').then(function (ok) { if (!ok) return; H.delItem('invoices', v.id).then(function () { m.remove(); if (H.refreshOrders) H.refreshOrders(); H.toast('Deleted'); if ((location.hash || '').indexOf('#invoices') === 0) invoices(); }); }); }
+      m.querySelector('#iPv').onclick = function () { if (grab() === false) return; previewDoc(fromInvoice(Object.assign({}, v, { number: v.number || (RC ? 'Receipt' : 'Invoice') }), RC || v.kind === 'receipt')); };
       m.querySelector('#iSave').onclick = function () { store().then(function () { H.toast('Saved ' + v.number, 'ok'); m.remove(); if ((location.hash || '').indexOf('#invoices') === 0) invoices(); }, function () { }); };
       var ip = m.querySelector('#iPdf'); if (ip) ip.onclick = function () { store().then(function (it) { m.remove(); docPanel(fromInvoice(it, false), { onSent: sentFor(it) }); }, function () { }); };
       m.querySelector('#iRec').onclick = function () { store().then(function (it) { m.remove(); docPanel(fromInvoice(it, true), { onSent: sentFor(it) }); }, function () { }); };
@@ -486,5 +508,5 @@
     var t = window.__hqTop; if (t) { var li = document.createElement('li'); li.innerHTML = '<span class="st opt">i</span><div><b>Screen check</b><p>' + (t.app ? 'Home-screen app' : 'Browser') + ' · screen ' + esc(t.screen) + ' · window ' + esc(t.win) + ' · status bar ' + t.env + 'px reported, header leaves ' + t.used + 'px. If the top of Ciel Admin is ever hard to reach, send a screenshot of this line with your message.</p></div>'; var ul = b.querySelector('.list.setup'); if (ul) ul.appendChild(li); }
   }
 
-  window.HQMoney = { init: function (h) { H = h; }, makePdf: makePdf, fromInvoice: fromInvoice, invoices: invoices, editInvoice: edit, invToOrder: invToOrder, extras: extras, costModal: costModal, CATS: CATS, setupCards: setupCards, docPanel: docPanel, fromOrder: fromOrder };
+  window.HQMoney = { init: function (h) { H = h; }, makePdf: makePdf, fromInvoice: fromInvoice, previewDoc: previewDoc, invoices: invoices, editInvoice: edit, invToOrder: invToOrder, extras: extras, costModal: costModal, CATS: CATS, setupCards: setupCards, docPanel: docPanel, fromOrder: fromOrder };
 })();

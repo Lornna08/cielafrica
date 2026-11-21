@@ -55,7 +55,9 @@ module.exports = async function handler(req, res){
 
   const name  = data.Name || data.name || '';
   const email = data.Email || data.email || '';
-  if (!email) return res.status(400).json({ ok:false, error:'Email is required' });
+  const phoneIn = String(data.Phone || data.phone || data.WhatsApp || data['Phone / WhatsApp'] || data['WhatsApp or phone'] || '').trim();
+  // the project form only needs a way to reach you: an email or a phone/WhatsApp number
+  if (!email && !(isBrief && /\d{7,}/.test(phoneIn.replace(/\D/g, '')))) return res.status(400).json({ ok:false, error: isBrief ? 'Add a phone number or an email so we can reach you' : 'Email is required' });
 
   const rows = Object.keys(data)
     .filter(k => String(data[k]).trim() !== '')
@@ -71,7 +73,7 @@ module.exports = async function handler(req, res){
   const html = `
     <div style="font-family:Arial,sans-serif;color:#141414;max-width:560px">
       <h2 style="margin:0 0 4px">${isWanja ? 'New enquiry from your portfolio' : 'New message from cielafrica.com'}</h2>
-      <p style="color:#777;margin:0 0 16px">Reply directly to this email to reach ${esc(name||'them')}.</p>
+      <p style="color:#777;margin:0 0 16px">${email ? `Reply directly to this email to reach ${esc(name||'them')}.` : `No email given: reach ${esc(name||'them')} on WhatsApp or by phone.`}</p>
       <table style="border-collapse:collapse;width:100%;font-size:14px">${rows}</table>
     </div>`;
 
@@ -108,7 +110,7 @@ module.exports = async function handler(req, res){
     const r = await fetch('https://api.resend.com/emails', {
       method:'POST',
       headers:{ 'Authorization':`Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type':'application/json' },
-      body: JSON.stringify({ from: FROM, to, reply_to: email, subject, html,
+      body: JSON.stringify({ from: FROM, to, reply_to: email || undefined, subject, html,
         // website leads arrive flagged as important in the mailbox
         headers: isWanja ? undefined : { 'X-Priority': '1 (Highest)', 'X-MSMail-Priority': 'High', Importance: 'high' } })
     });

@@ -10,7 +10,10 @@ self.addEventListener('fetch', function (e) {
 self.addEventListener('push', function (e) {
   var d = {}; try { d = e.data ? e.data.json() : {}; } catch (er) { d = { title: 'Ciel Admin', body: e.data ? e.data.text() : '' }; }
   /* leads, orders/payments and WhatsApp arrive as high-priority alerts: sound and vibration, shown on top and on the lock screen, kept until tapped */
-  var opts = { body: d.body || '', icon: '/assets/img/icon-192.png', badge: '/assets/img/hq-badge.png', tag: d.tag || undefined, renotify: !!d.tag, timestamp: Date.now(), data: { url: d.url || '/admin' } };
+  /* Android already shows the app's name and the white Ciel mark in the status bar; a big logo on the right only
+     squeezes the message, so phones get the full width for the text. */
+  var android = /Android/i.test((self.navigator && self.navigator.userAgent) || '');
+  var opts = { body: d.body || '', icon: android ? undefined : '/assets/img/icon-192.png', badge: '/assets/img/hq-badge.png?v=2', tag: d.tag || undefined, renotify: !!d.tag, timestamp: Date.now(), data: { url: d.url || '/admin' } };
   if (d.urgent) { opts.requireInteraction = true; opts.silent = false; opts.vibrate = [300, 120, 300, 120, 500]; opts.actions = [{ action: 'open', title: 'Open' }]; }
   e.waitUntil(self.registration.showNotification(d.title || 'Ciel Admin', opts).then(function () {
     /* a dot on the app icon until Ciel Admin is opened */

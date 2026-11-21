@@ -215,3 +215,12 @@
   .bf-saved{margin-top:.7rem}
 }
 @media (prefers-reduced-motion:reduce){.bf *{transition:none!important}}
+/* friendly three-step version (2026-11-22) */
+.bf-tiles--easy{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem}
+.bf-tiles--easy .bf-tile{min-height:128px;align-content:start;text-align:left}
+.bf-tiles--easy .bf-tile small{display:block;font-size:.8rem;line-height:1.35;opacity:.7;margin-top:.15rem;font-weight:500}
+@media(max-width:980px){.bf-tiles--easy{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){.bf-tiles--easy .bf-tile{min-height:112px;padding:.85rem}}
+.bf-chip--ic{display:inline-flex;align-items:center;gap:.45rem}
+.bf-fine{font-size:.8rem;color:var(--muted,#6b6661);margin:.4rem 0 0;line-height:1.5}.bf-fine a{text-decoration:underline}
+.bf-empty{font-size:.85rem;opacity:.65;margin:.3rem 0 0}
