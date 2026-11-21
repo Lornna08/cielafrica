@@ -1295,3 +1295,14 @@ html[data-theme="dark"] .ig-24{background:#2b2410;color:#e8c568}
 .drawer__bk{display:none;align-items:center;gap:.25rem;border:0;background:none;color:var(--o);font:700 1.35rem/1 "Space Grotesk",sans-serif;padding:.2rem .4rem .3rem 0;cursor:pointer}
 .drawer__bk span{font:600 .9rem Inter,sans-serif}
 @media(max-width:760px){.drawer__bk{display:inline-flex}.drawer__h>.b[data-x]{display:none}}
+/* Needs attention: remove with a long press or right-click */
+#attn li[data-k]{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;transition:background .15s}
+#attn li.is-held{background:var(--o2);border-radius:12px}
+.attn-more{justify-content:center}.attn-tip{margin:0;padding:.55rem 1rem .9rem;font-size:.76rem;color:var(--soft)}
+@media(hover:none){.attn-tip{display:block}}
+.attn-menu{position:fixed;z-index:120;display:grid;min-width:230px;padding:6px;border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:0 18px 50px rgba(0,0,0,.28)}
+.attn-menu button{all:unset;cursor:pointer;padding:.7rem .85rem;border-radius:9px;font:600 .9rem Inter,sans-serif;color:var(--ink)}
+.attn-menu button[data-rm]{color:var(--r)}.attn-menu button:hover,.attn-menu button:focus-visible{background:var(--o2)}
+.cnote__undo{border:0;background:none;color:var(--o);font:700 .85rem Inter,sans-serif;cursor:pointer;padding:.2rem .5rem;margin-left:auto}
+.np__tip{margin:.5rem 0 .6rem;padding:.65rem .75rem;border-radius:10px;background:var(--o2);font-size:.78rem;line-height:1.45;color:var(--ink)}
+.np__tip b{display:block;margin-bottom:.15rem}

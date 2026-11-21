@@ -9,7 +9,12 @@ self.addEventListener('fetch', function (e) {
 });
 self.addEventListener('push', function (e) {
   var d = {}; try { d = e.data ? e.data.json() : {}; } catch (er) { d = { title: 'Ciel Admin', body: e.data ? e.data.text() : '' }; }
-  e.waitUntil(self.registration.showNotification(d.title || 'Ciel Admin', { body: d.body || '', icon: '/assets/img/icon-192.png', badge: '/assets/img/favicon-32.png', tag: d.tag || undefined, renotify: !!d.tag, requireInteraction: !!d.urgent, vibrate: d.urgent ? [200, 100, 200, 100, 300] : undefined, data: { url: d.url || '/admin' } }).then(function () {
+  /* leads, orders/payments and WhatsApp arrive as high-priority alerts: sound and vibration, shown on top and on the lock screen, kept until tapped */
+  var opts = { body: d.body || '', icon: '/assets/img/icon-192.png', badge: '/assets/img/hq-badge.png', tag: d.tag || undefined, renotify: !!d.tag, timestamp: Date.now(), data: { url: d.url || '/admin' } };
+  if (d.urgent) { opts.requireInteraction = true; opts.silent = false; opts.vibrate = [300, 120, 300, 120, 500]; opts.actions = [{ action: 'open', title: 'Open' }]; }
+  e.waitUntil(self.registration.showNotification(d.title || 'Ciel Admin', opts).then(function () {
+    /* a dot on the app icon until Ciel Admin is opened */
+    if (d.urgent && self.navigator && self.navigator.setAppBadge) self.navigator.setAppBadge().catch(function () { });
     return self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (cs) { cs.forEach(function (c) { c.postMessage({ type: 'hq-push' }); }); });
   }));
 });

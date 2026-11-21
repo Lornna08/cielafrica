@@ -103,13 +103,17 @@
     S.orders = (S.base || []).concat(S.inbox.filter(function (x) { return x.kind === 'whatsapp'; }).map(fromWA), window.HQMoney ? (S.invoices || []).map(HQMoney.invToOrder) : []).sort(function (a, b) { return (b.at || 0) - (a.at || 0); });
   }
   function loadLists() {
-    return Promise.all(['tasks', 'events', 'notes', 'projects', 'invoices', 'expenses'].map(function (c) { return api('/api/hq?route=list&c=' + c).then(function (r) { S[c] = r.items || []; }, function (e) { S[c] = []; S.listErr = e.message; }); }));
+    return Promise.all(['tasks', 'events', 'notes', 'projects', 'invoices', 'expenses'].map(function (c) { return api('/api/hq?route=list&c=' + c).then(function (r) { S[c] = r.items || []; }, function (e) { S[c] = []; S.listErr = e.message; }); }).concat(api('/api/hq?route=attn').then(function (r) { S.attnOff = r.off || {}; }, function () { S.attnOff = S.attnOff || {}; })));
   }
   function saveItem(c, item) { return api('/api/hq?route=save', { c: c, item: item }).then(function (r) { var l = S[c], i = l.findIndex(function (x) { return x.id === r.item.id; }); if (i >= 0) l[i] = r.item; else l.push(r.item); return r.item; }); }
   function delItem(c, id) { return api('/api/hq?route=save', { c: c, op: 'delete', id: id }).then(function () { S[c] = S[c].filter(function (x) { return x.id !== id; }); }); }
 
   /* ---------- start ---------- */
+  /* opening Ciel Admin clears the dot on its app icon */
+  function clearBadge() { try { if (navigator.clearAppBadge && document.visibilityState === 'visible') navigator.clearAppBadge().catch(function () { }); } catch (e) { } }
+  document.addEventListener('visibilitychange', clearBadge);
   function start() {
+    clearBadge();
     api('/api/hq?route=me').then(function (m) { S.setup = m.setup; if (!m.signedIn) return login(m.setup); boot(); }, function () { login({}); });
   }
   /* the logo: dark artwork on light screens, the white one on dark screens (never a colour-inverted copy) */
@@ -231,10 +235,48 @@
   function standalone() { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone; }
   function isIOS() { return /iphone|ipad|ipod/i.test(navigator.userAgent); }
   function b64u(s) { var p = '='.repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')), a = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; }
+  /* Needs attention: long-press (phone) or right-click (computer) an item to remove it; Undo puts it back */
+  function attnSet(k, off) {
+    S.attnOff = S.attnOff || {}; if (off) S.attnOff[k] = Date.now(); else delete S.attnOff[k];
+    if (S.view === 'overview') route(true);
+    return api('/api/hq?route=attn-set', { key: k, off: !!off }).then(function (r) { S.attnOff = r.off || S.attnOff; }, function (e) { toast(e.message || 'Couldn’t save that.', 'err'); if (off) delete S.attnOff[k]; else S.attnOff[k] = Date.now(); if (S.view === 'overview') route(true); });
+  }
+  function attnMenu(li, x, y) {
+    document.querySelectorAll('.attn-menu').forEach(function (m) { m.remove(); });
+    var k = li.getAttribute('data-k'), m = document.createElement('div'); m.className = 'attn-menu'; m.setAttribute('role', 'menu');
+    m.innerHTML = '<button type="button" role="menuitem" data-rm>Remove from Needs attention</button><button type="button" role="menuitem" data-cn>Cancel</button>';
+    document.body.appendChild(m);
+    var r = m.getBoundingClientRect(); m.style.left = Math.max(8, Math.min(x, innerWidth - r.width - 8)) + 'px'; m.style.top = Math.max(8, Math.min(y, innerHeight - r.height - 8)) + 'px';
+    li.classList.add('is-held');
+    var done = function () { m.remove(); li.classList.remove('is-held'); document.removeEventListener('pointerdown', away, true); };
+    var away = function (e) { if (!m.contains(e.target)) done(); };
+    setTimeout(function () { document.addEventListener('pointerdown', away, true); }, 0);
+    m.querySelector('[data-cn]').onclick = done;
+    m.querySelector('[data-rm]').onclick = function () {
+      done(); attnSet(k, true);
+      var n = window.CielNote ? CielNote('Removed from Needs attention', { kind: 'ok', ms: 6000 }) : null;
+      if (n && n.querySelector) { var u = document.createElement('button'); u.type = 'button'; u.className = 'cnote__undo'; u.textContent = 'Undo'; u.onclick = function () { attnSet(k, false); n.remove(); }; n.insertBefore(u, n.querySelector('.cnote__x')); } else toast('Removed from Needs attention');
+    };
+    m.querySelector('[data-rm]').focus();
+  }
+  function attnWire() {
+    var ul = document.getElementById('attn'); if (!ul) return;
+    var more = document.getElementById('attnMore'); if (more) more.onclick = function () { ul.querySelectorAll('.is-more').forEach(function (x) { x.hidden = false; }); more.parentNode.remove(); };
+    var t = null, sx = 0, sy = 0, fired = false;
+    ul.addEventListener('contextmenu', function (e) { var li = e.target.closest('li[data-k]'); if (!li) return; e.preventDefault(); attnMenu(li, e.clientX, e.clientY); });
+    ul.addEventListener('pointerdown', function (e) {
+      var li = e.target.closest('li[data-k]'); if (!li || e.pointerType === 'mouse') return;
+      fired = false; sx = e.clientX; sy = e.clientY; clearTimeout(t);
+      t = setTimeout(function () { fired = true; if (navigator.vibrate) navigator.vibrate(15); attnMenu(li, sx, sy); }, 550);
+    });
+    ul.addEventListener('pointermove', function (e) { if (t && (Math.abs(e.clientX - sx) > 10 || Math.abs(e.clientY - sy) > 10)) { clearTimeout(t); t = null; } });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { ul.addEventListener(ev, function () { clearTimeout(t); t = null; }); });
+    ul.addEventListener('click', function (e) { if (fired) { e.preventDefault(); e.stopPropagation(); fired = false; } }, true);
+  }
   /* on Overview: new website leads sit at the very top until opened or moved on in Leads */
   function leadStrip() {
     var host = document.getElementById('body'); if (!host) return;
-    var L = S.inbox.filter(function (m) { return m.kind !== 'whatsapp' && (m.stage || (m.status === 'new' ? 'new' : '')) === 'new'; }).sort(function (a, c) { return c.createdAt - a.createdAt; });
+    var L = S.inbox.filter(function (m) { return m.kind !== 'whatsapp' && (m.stage || (m.status === 'new' ? 'new' : '')) === 'new' && !(S.attnOff || {})['lead:' + m.id]; }).sort(function (a, c) { return c.createdAt - a.createdAt; });
     if (!L.length) return;
     var since = function (t) { var mn = Math.round((Date.now() - t) / 6e4); return mn < 60 ? Math.max(1, mn) + ' min' : mn < 1440 ? Math.round(mn / 60) + ' h' : Math.round(mn / 1440) + ' day' + (mn < 2880 ? '' : 's'); };
     var d = document.createElement('div'); d.className = 'ov-leads';
@@ -321,7 +363,7 @@
     else if (v === 'photobooks' && h[1] === 'prices' && window.HQSite) HQSite.renderCatalog('photobooks');
     else if (v === 'photobooks') photobooks();
     else ({ overview: overview, orders: orders, inbox: inbox, calendar: calendar, tasks: tasks, customers: customers, content: content, activity: activity, payments: payments, settings: settings })[v]();
-    if (v === 'overview') { leadStrip(); pushNudge(); }
+    if (v === 'overview') { attnWire(); leadStrip(); pushNudge(); }
     if (v === 'orders' && h[1]) { var o = S.orders.filter(function (x) { return x.ref === h[1]; })[0]; if (o) orderDrawer(o); }
     if (v === 'inbox' && h[1]) { S.itab = 'web'; inbox(); var m = S.inbox.filter(function (x) { return x.id === h[1]; })[0]; if (m) msgDrawer(m); }
     window.scrollTo(0, keep === true ? sy : 0);
@@ -369,16 +411,30 @@
       if (o.kind === 'shop' && o.status === 'paid') attention.push(['b', o.ref + ': new shop order', o.summary.slice(0, 80), '#orders/' + o.ref]);
       if (o.kind === 'domain' && o.status === 'pending_registration') attention.push(['b', o.ref + ': register ' + (o.raw.domain || ''), 'Paid, waiting for registration', '#orders/' + o.ref]);
     });
-    S.inbox.forEach(function (m) { if (m.followUp && m.followUp <= today() && !/completed|declined|archived/.test(m.stage || '')) attention.push(['y', 'Follow up: ' + (m.customer.name || m.customer.email || 'lead'), (m.subject || '').slice(0, 80), '#leads']); });
+    S.inbox.forEach(function (m) { if (m.followUp && m.followUp <= today() && !/completed|declined|archived/.test(m.stage || '')) attention.push(['y', 'Follow up: ' + (m.customer.name || m.customer.email || 'lead'), (m.subject || '').slice(0, 80), '#leads/' + m.id, 'fu:' + m.id + ':' + m.followUp]); });
     /* new website leads go to the top until they are opened or moved on in Leads */
     var since = function (t) { var mn = Math.round((Date.now() - t) / 6e4); return mn < 60 ? Math.max(1, mn) + ' min' : mn < 1440 ? Math.round(mn / 60) + ' h' : Math.round(mn / 1440) + ' day' + (mn < 2880 ? '' : 's'); };
     var lf = function (m) { return (m.fields || []).filter(function (f) { return /service|need|project|budget|message/i.test(f[0]); }).map(function (f) { return String(f[1]).replace(/\s+/g, ' '); }).join(' · ').slice(0, 80); };
-    var newLeads = S.inbox.filter(function (m) { return m.kind !== 'whatsapp' && (m.stage || (m.status === 'new' ? 'new' : '')) === 'new'; }).sort(function (a, c) { return c.createdAt - a.createdAt; });
-    newLeads.slice().reverse().forEach(function (m) { attention.unshift(['r', 'New lead · ' + (m.customer.name || m.customer.email || 'a visitor') + (m.kind === 'brief' ? ' · project brief' : ''), 'Waiting ' + since(m.createdAt) + (lf(m) ? ' · ' + lf(m) : ''), '#leads/' + m.id]); });
+    /* every open website enquiry and every active project stays here until it is closed, or removed with a long press / right-click */
+    var SL = { reviewing: 'Reviewing', awaiting: 'Awaiting response', discovery: 'Discovery', proposal_prep: 'Preparing proposal', proposal_sent: 'Proposal sent', negotiation: 'Negotiation', approved: 'Approved', in_progress: 'In progress' };
+    var lst = function (m) { return m.stage || (m.status === 'new' ? 'new' : m.status === 'done' ? 'archived' : 'reviewing'); };
+    var openLeads = S.inbox.filter(function (m) { return m.kind !== 'whatsapp' && !/^(completed|declined|archived)$/.test(lst(m)); }).sort(function (a, c) { return c.createdAt - a.createdAt; });
+    var leadAtt = openLeads.map(function (m) {
+      var st = lst(m), who = m.customer.name || m.customer.email || 'a visitor';
+      return st === 'new' ? ['r', 'New lead · ' + who + (m.kind === 'brief' ? ' · project brief' : ''), 'Waiting ' + since(m.createdAt) + (lf(m) ? ' · ' + lf(m) : ''), '#leads/' + m.id, 'lead:' + m.id]
+        : ['o', (m.kind === 'brief' ? 'Project brief · ' : 'Enquiry · ') + who, (SL[st] || 'Open') + ' · since ' + d2(m.createdAt) + (lf(m) ? ' · ' + lf(m) : ''), '#leads/' + m.id, 'lead:' + m.id];
+    });
+    var projAtt = (S.projects || []).filter(function (p) { return p.status !== 'completed'; }).map(function (p) {
+      var late = p.deadline && p.deadline < today(), PS = { planning: 'Planning', in_progress: 'In progress', review: 'Client review', on_hold: 'On hold' };
+      return [late ? 'r' : 'b', 'Project · ' + (p.name || 'Untitled'), (PS[p.status] || 'Planning') + (p.client ? ' · ' + p.client : '') + (p.deadline ? (late ? ' · was due ' : ' · due ') + d2(p.deadline + 'T12:00') : ''), '#projects/' + p.id, 'project:' + p.id];
+    });
+    attention = leadAtt.concat(attention, projAtt);
     overdue.forEach(function (t) { attention.push(['r', 'Overdue: ' + t.title, 'Was due ' + d2(t.due + 'T12:00'), '#tasks']); });
     /* domains to renew in the next 60 days (customers are emailed at 60, 30 and 7 days and on the day) */
     if (S.renewals == null) { S.renewals = []; api('/api/domains?route=admin/renewals').then(function (x) { S.renewals = (x.renewals || []).filter(function (r) { return r.days != null && r.days <= 60; }); if (S.renewals.length && (location.hash || '#overview') === '#overview') overview(); }, function () { }); }
     S.renewals.forEach(function (r) { attention.push([r.days <= 7 ? 'r' : 'o', 'Renew ' + r.domain + (r.days > 0 ? ' · ' + r.days + ' days left' : r.days === 0 ? ' · expires today' : ' · expired ' + (-r.days) + ' days ago'), 'Expires ' + r.expiresAt + (r.estimated ? ' (estimated)' : '') + ' · ' + ((r.customer && (r.customer.name || r.customer.email)) || ''), '#content']); });
+    attention.forEach(function (x) { if (!x[4]) x[4] = x[3] + '|' + String(x[1]).replace(/\d+/g, '#'); });
+    attention = attention.filter(function (x) { return !(S.attnOff || {})[x[4]]; });
     var hr = now.getHours(), greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening', urgent = attention.length;
     var b = body(
       '<section class="ovh"><span class="ovh__brk" aria-hidden="true">‹</span><div class="ovh__in"><p class="ovh__k"><b>‹</b> Ciel Admin · ' + now.toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long' }) + '</p>' +
@@ -393,7 +449,7 @@
       '<div class="card"><div class="card__h"><h2>Recent orders</h2><a class="b b--sm" href="#orders">All orders</a></div>' + orderTable(S.orders.slice(0, 6), true) +
       '<div class="card__h" style="border-top:1px solid var(--line)"><h2>Pending orders</h2><span class="muted" style="font-size:.8rem">WhatsApp and unpaid</span></div>' + orderTable(pending.slice(0, 6), true) + '</div>' +
       '</div><div class="ov__rail">' +
-      '<div class="card"><div class="card__h"><h2>Needs attention</h2><span class="chip' + (attention.length ? ' chip--o' : ' chip--g') + '">' + attention.length + '</span></div><ul class="list">' + (attention.length ? attention.slice(0, 7).map(function (a) { return '<li><span class="dot" style="background:var(--' + a[0] + ')"></span><div><b>' + esc(a[1]) + '</b><small>' + esc(a[2]) + '</small></div><a class="b b--sm" href="' + a[3] + '">Open</a></li>'; }).join('') : '<li class="empty">All clear. Nothing waiting on you.</li>') + '</ul></div>' +
+      '<div class="card"><div class="card__h"><h2>Needs attention</h2><span class="chip' + (attention.length ? ' chip--o' : ' chip--g') + '">' + attention.length + '</span></div><ul class="list" id="attn">' + (attention.length ? attention.map(function (a, i) { return '<li data-k="' + esc(a[4]) + '"' + (i >= 8 ? ' class="is-more" hidden' : '') + '><span class="dot" style="background:var(--' + a[0] + ')"></span><div><b>' + esc(a[1]) + '</b><small>' + esc(a[2]) + '</small></div><a class="b b--sm" href="' + a[3] + '">Open</a></li>'; }).join('') + (attention.length > 8 ? '<li class="attn-more"><button class="b b--sm" type="button" id="attnMore">Show all ' + attention.length + '</button></li>' : '') : '<li class="empty">All clear. Nothing waiting on you.</li>') + '</ul>' + (attention.length ? '<p class="attn-tip">Long-press or right-click an item to remove it.</p>' : '') + '</div>' +
       '<div class="card"><div class="card__h"><h2>Coming up</h2><a class="b b--sm" href="#calendar">Calendar</a></div><ul class="list">' + (up.length ? up.slice(0, 6).map(evRow).join('') : '<li class="empty">No upcoming events. <a href="#calendar">Plan one</a>.</li>') + '</ul>' +
       '<div class="card__h" style="border-top:1px solid var(--line)"><h2>Tasks due soon</h2><a class="b b--sm" href="#tasks">Board</a></div><ul class="list">' + (open.length ? open.slice().sort(function (a, c) { return (a.due || '9').localeCompare(c.due || '9'); }).slice(0, 5).map(function (t) { return '<li><span class="dot" style="background:' + ({ high: 'var(--r)', med: 'var(--o)', low: 'var(--g)' }[t.priority] || 'var(--faint)') + '"></span><div><b>' + esc(t.title) + '</b><small>' + (t.due ? 'Due ' + d2(t.due + 'T12:00') : 'No due date') + (t.status === 'doing' ? ' · in progress' : '') + '</small></div></li>'; }).join('') : '<li class="empty">No open tasks.</li>') + '</ul></div></div></div></div>'
     );
