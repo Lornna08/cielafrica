@@ -12,4 +12,4 @@
      PHOTOBOOKS_AI_MODEL          optional model override
    ============================================================ */
 const { createHandler } = require('../lib/photobooks/handler');
-module.exports = createHandler();
+module.exports = require('../lib/hq/team').gate(createHandler(), ['orders', 'photobooks', 'overview', 'reports', 'payments', 'customers'], ['orders', 'photobooks']);

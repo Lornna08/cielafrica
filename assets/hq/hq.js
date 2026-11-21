@@ -74,6 +74,9 @@
     receipt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></svg>',
     spark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>',
     eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>',
+    ucog: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="8" r="5"/><path d="M2 21a8 8 0 0 1 10.434-7.62"/><circle cx="18" cy="18" r="3"/><path d="m19.5 14.3-.4.9"/><path d="m16.9 20.8-.4.9"/><path d="m21.7 19.5-.9-.4"/><path d="m15.2 16.9-.9-.4"/><path d="m21.7 16.5-.9.4"/><path d="m15.2 19.1-.9.4"/><path d="m19.5 21.7-.4-.9"/><path d="m16.9 15.2-.4-.9"/></svg>',
+    out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>',
+    user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>',
     grid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="7" x="3" y="3" rx="1.5"/><rect width="7" height="7" x="14" y="3" rx="1.5"/><rect width="7" height="7" x="14" y="14" rx="1.5"/><rect width="7" height="7" x="3" y="14" rx="1.5"/></svg>',
     up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>',
     down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>',
@@ -85,7 +88,7 @@
     ['photobooks', 'Photo Books', I.book, 'Sell', 'orange'], ['payments', 'Payments', I.card, 0, 'green'], ['products', 'Products', I.box, 0, 'blue'], ['templates', 'Website templates', I.web, 0, 'violet'], ['campaigns', 'Email campaigns', I.send, 0, 'cyan'], ['reviews', 'Reviews', I.star, 0, 'amber'],
     ['website', 'Website editor', I.globe, 'Website', 'blue'], ['content', 'Content library', I.image, 0, 'pink'], ['policies', 'Policies', I.shield, 0, 'slate'],
     ['analytics', 'Analytics', I.chart, 'Insights', 'violet'], ['reports', 'Reports & exports', I.pie, 0, 'teal'],
-    ['activity', 'Activity log', I.act, 'System', 'slate'], ['settings', 'Setup', I.gear, 0, 'slate']];
+    ['team', 'Team & access', I.ucog, 'System', 'indigo'], ['activity', 'Activity log', I.act, 0, 'slate'], ['settings', 'Setup', I.gear, 0, 'slate']];
 
   /* ---------- order sources, normalised ---------- */
   var KIND = { photobook: ['Photo book', 'var(--k-pb)'], shop: ['Shop', 'var(--k-shop)'], domain: ['Domain', 'var(--k-dom)'], whatsapp: ['WhatsApp', 'var(--k-wa)'], invoice: ['Invoice', 'var(--k-inv)'] };
@@ -126,10 +129,27 @@
   document.addEventListener('visibilitychange', clearBadge);
   function start() {
     clearBadge();
-    api('/api/hq?route=me').then(function (m) { S.setup = m.setup; if (!m.signedIn) return login(m.setup); boot(); }, function () { login({}); });
+    var known = false; try { known = localStorage.getItem('pbk_admin') === '1'; S.me = JSON.parse(localStorage.getItem('ca_me') || 'null'); } catch (e) { }
+    if (known) boot();
+    api('/api/hq?route=me').then(function (m) {
+      S.setup = m.setup;
+      if (!m.signedIn) { forget(); return login(m.setup); }
+      var was = JSON.stringify(S.me || null); setMe(m.user);
+      if (!known) boot(); else if (was !== JSON.stringify(S.me)) { paintMe(); navs(); route(true); } else paintMe();
+    }, function () { if (!known) login({}); });
   }
+  /* the signed-in person (owner or team member): name, picture and what they may open */
+  function setMe(u) { S.me = u || null; try { localStorage.setItem('ca_me', JSON.stringify(S.me)); } catch (e) { } }
+  function can(id) { if (id === 'team') return !!(S.me && S.me.role === 'owner'); return !S.me || S.me.role === 'owner' || (S.me.perms || []).indexOf(id) >= 0; }
+  function firstName() { return ((S.me && S.me.name) || 'Lorna').split(/\s+/)[0]; }
+  function avatarHtml(u, cls) { u = u || {}; var n = (u.name || '?').trim(), ini = n.split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase(); return '<span class="av ' + (cls || '') + '">' + (u.avatar ? '<img src="' + esc(u.avatar) + '" alt="">' : '<b>' + esc(ini) + '</b>') + '</span>'; }
+  function paintMe() { var b = document.getElementById('meB'); if (b) { b.innerHTML = avatarHtml(S.me, 'av--sm'); b.title = (S.me && S.me.name) || 'Your profile'; } var t = document.querySelector('.hq-side__tag'); if (t) t.textContent = S.me && S.me.role === 'member' ? (S.me.title || 'Team') : 'Admin'; }
+  /* signing out (or a session that ended) leaves nothing of the last person behind on this device */
+  function forget() { try { ['pbk_admin', 'ca_me', 'ca_snap'].forEach(function (k) { localStorage.removeItem(k); }); } catch (e) { } }
   /* the logo: dark artwork on light screens, the white one on dark screens (never a colour-inverted copy) */
-  var LOGO = '<img class="lg lg--d" src="/assets/img/logo-dark.png?v=20261021i" alt="Ciel Africa"><img class="lg lg--l" src="/assets/img/logo-light.png?v=20261108" alt="" aria-hidden="true">';
+  /* the logo (the same artwork, small copies kept inside the app so it shows instantly, no download) */
+  var LOGO_D = 'data:image/webp;base64,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', LOGO_L = 'data:image/webp;base64,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';
+  var LOGO = '<img class="lg lg--d" src="' + LOGO_D + '" alt="Ciel Africa" width="80" height="40"><img class="lg lg--l" src="' + LOGO_L + '" alt="" aria-hidden="true" width="85" height="40">';
   function login(setup) {
     root.className = '';
     var eye = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
@@ -137,25 +157,30 @@
     root.innerHTML = '<div class="hq-login"><div class="hq-login__card"><div class="hq-login__logo">' + LOGO + '</div>' +
       '<h1 class="hq-login__h">Welcome back</h1><p class="hq-login__sub">Sign in to Ciel Admin to manage orders, Photo Books, messages and the website.</p>' +
       (setup && setup.adminPassword === false ? '<div class="hq-setup"><b>Set your admin password first.</b><br>In Vercel open the cielafrica project → Settings → Environment Variables → add <b>ADMIN_PASSWORD</b> with a strong password → Save → Deployments → Redeploy. Then sign in here with it.</div>' : '') +
-      '<form id="lf" class="hq-login__form" novalidate><label class="hq-login__lab" for="pw">Password</label><div class="hq-login__pw"><input type="password" id="pw" autocomplete="current-password" required autofocus><button type="button" id="pwv" aria-label="Show password" title="Show password">' + eye + '</button></div>' +
+      '<form id="lf" class="hq-login__form" novalidate><div class="hq-login__em" id="emW" hidden><label class="hq-login__lab" for="em">Email</label><input type="email" id="em" class="hq-login__in" autocomplete="username" placeholder="you@cielafrica.com"></div><label class="hq-login__lab" for="pw">Password</label><div class="hq-login__pw"><input type="password" id="pw" autocomplete="current-password" required autofocus><button type="button" id="pwv" aria-label="Show password" title="Show password">' + eye + '</button></div>' +
       '<button class="hq-login__go" id="lgo" type="submit">Sign in</button><p class="hq-err" id="le" role="alert"></p></form>' +
-      '<p class="hq-login__note">You’ll stay signed in on this device for 30 days.</p></div>' +
+      '<p class="hq-login__note">You’ll stay signed in on this device for 30 days.</p><button type="button" class="hq-login__sw" id="lsw">Team member? Sign in with your email</button></div>' +
       '<a class="hq-login__back" href="/">← Back to cielafrica.com</a></div>';
-    var pw = document.getElementById('pw'), pv = document.getElementById('pwv'), go = document.getElementById('lgo');
+    var pw = document.getElementById('pw'), pv = document.getElementById('pwv'), go = document.getElementById('lgo'), emW = document.getElementById('emW'), em = document.getElementById('em'), sw = document.getElementById('lsw');
+    var team = false; try { team = localStorage.getItem('ca_lmode') === 'team'; } catch (e) { }
+    var mode = function (t) { team = t; emW.hidden = !t; sw.textContent = t ? 'Main admin? Sign in with the admin password' : 'Team member? Sign in with your email'; try { localStorage.setItem('ca_lmode', t ? 'team' : 'owner'); } catch (e) { } (t && !em.value ? em : pw).focus(); };
+    sw.onclick = function () { mode(!team); }; if (team) mode(true);
     pv.onclick = function () { var show = pw.type === 'password'; pw.type = show ? 'text' : 'password'; pv.innerHTML = show ? eyeOff : eye; pv.setAttribute('aria-label', show ? 'Hide password' : 'Show password'); pw.focus(); };
     document.getElementById('lf').onsubmit = function (e) {
       e.preventDefault(); var le = document.getElementById('le'); le.textContent = '';
+      if (team && !em.value.trim()) { le.textContent = 'Enter your email.'; em.focus(); return; }
       if (!pw.value) { le.textContent = 'Enter your password.'; pw.focus(); return; }
       go.disabled = true; go.textContent = 'Signing in…';
-      api('/api/hq?route=login', { password: pw.value }).then(function () { try { localStorage.setItem('pbk_admin', '1'); } catch (er) { } boot(); }, function (er) { go.disabled = false; go.textContent = 'Sign in'; le.textContent = er.message; pw.select(); });
+      api('/api/hq?route=login', team ? { email: em.value.trim(), password: pw.value } : { password: pw.value }).then(function () { forget(); return api('/api/hq?route=me'); }).then(function (m) { setMe(m.user); S.setup = m.setup; try { localStorage.setItem('pbk_admin', '1'); } catch (er) { } boot(); }, function (er) { go.disabled = false; go.textContent = 'Sign in'; le.textContent = er.message; pw.select(); });
     };
   }
   function boot() {
     try { localStorage.setItem('pbk_admin', '1'); } catch (e) { }
     root.className = 'hq';
     root.innerHTML = '<aside class="hq-side"><div class="hq-side__brand">' + LOGO + '<span class="hq-side__tag">Admin</span></div><nav class="hq-nav" id="nav"></nav><div class="hq-side__foot"><a href="/" target="_blank" rel="noopener">cielafrica.com ↗</a><button id="lo">Sign out</button></div></aside>' +
-      '<div class="hq-main"><header class="hq-top"><button class="hq-burger" id="burger" aria-label="Open menu">' + I.menu + '</button><button class="hq-srch" id="sk" title="Search (Ctrl+K)">' + I.search + '<span>Search everything…</span><kbd>Ctrl K</kbd></button><span class="hq-live" id="lv" title="Live">Live</span><button class="b b--sm" id="inst" hidden>Install app</button><button class="b b--sm" id="thm" title="Light or dark"></button><button class="b b--sm hq-bell" id="nb" title="Notifications">' + I.bell + '<i id="nbc" hidden></i></button><button class="b b--sm" id="rf" title="Refresh">' + I.ref + '<span>Refresh</span></button></header><div class="hq-ph"><h1 id="ttl"></h1><div id="topx"></div></div><main class="hq-body" id="body"><p class="muted">Loading…</p></main></div><nav class="hq-mnav" id="mnav"></nav>';
-    document.getElementById('lo').onclick = function () { api('/api/hq?route=logout', {}).then(function () { try { localStorage.removeItem('pbk_admin'); } catch (e) { } login(S.setup || {}); }); };
+      '<div class="hq-main"><header class="hq-top"><button class="hq-burger" id="burger" aria-label="Open menu">' + I.menu + '</button><button class="hq-srch" id="sk" title="Search (Ctrl+K)">' + I.search + '<span>Search everything…</span><kbd>Ctrl K</kbd></button><span class="hq-live" id="lv" title="Live">Live</span><button class="b b--sm" id="inst" hidden>Install app</button><button class="b b--sm" id="thm" title="Light or dark"></button><button class="b b--sm hq-bell" id="nb" title="Notifications">' + I.bell + '<i id="nbc" hidden></i></button><button class="b b--sm" id="rf" title="Refresh">' + I.ref + '<span>Refresh</span></button><button class="hq-me" id="meB" type="button" aria-label="Your profile">' + avatarHtml(S.me, 'av--sm') + '</button></header><div class="hq-ph"><h1 id="ttl"></h1><div id="topx"></div></div><main class="hq-body" id="body">' + skel() + '</main></div><nav class="hq-mnav" id="mnav"></nav>';
+    document.getElementById('lo').onclick = signOut;
+    document.getElementById('meB').onclick = meMenu; paintMe();
     document.getElementById('rf').onclick = function () { if (window.HQGrow) HQGrow.refresh(); refresh(true); };
     /* phone & tablet: the sidebar slides in from the left */
     var side = root.querySelector('.hq-side'), scrim = document.createElement('div'); scrim.className = 'hq-scrim'; root.appendChild(scrim);
@@ -179,12 +204,18 @@
     nb.onclick = function () { if (window.HQTools) HQTools.notifs(nb); };
     document.getElementById('sk').onclick = function () { if (window.HQTools) HQTools.palette(); };
     window.addEventListener('hashchange', function () { S.hops = (S.hops || 0) + 1; route(); });
-    refresh(false);
+    /* open straight away with what this device saw last time, then bring it up to date */
+    if (snapLoad()) { route(); refresh(false, true); } else refresh(false);
     live();
   }
+  /* while the first numbers load: the page's shape, softly pulsing (never a blank page or a bare "Loading…") */
+  function skel() { return '<div class="sk4"><div class="sk sk4__h"></div><div class="sk4__k"><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div></div><div class="sk4__g"><div class="sk"></div><div class="sk"></div></div></div>'; }
+  var SNAP = ['base', 'inbox', 'tasks', 'events', 'notes', 'projects', 'invoices', 'expenses', 'attnOff'];
+  function snapSave() { try { var o = { at: Date.now(), who: S.me ? (S.me.id || S.me.role) : '' }; SNAP.forEach(function (k) { o[k] = S[k]; }); localStorage.setItem('ca_snap', JSON.stringify(o)); } catch (e) { try { localStorage.removeItem('ca_snap'); } catch (x) { } } }
+  function snapLoad() { try { var o = JSON.parse(localStorage.getItem('ca_snap') || 'null'); if (!o || Date.now() - o.at > 7 * 864e5 || o.who !== (S.me ? (S.me.id || S.me.role) : '')) return false; SNAP.forEach(function (k) { if (o[k]) S[k] = o[k]; }); mergeOrders(); S.loaded = true; return true; } catch (e) { return false; } }
   function refresh(note, quiet) {
     return Promise.all([loadOrders(), loadInbox(), loadLists()]).then(function () {
-      mergeOrders(); S.loaded = true;
+      mergeOrders(); S.loaded = true; snapSave();
       if (quiet && (document.querySelector('.drawer,.modal') || S.view === 'campaigns' || S.view === 'website' || /^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement || {}).tagName || ''))) navs(); else route(true);
       if (note) toast('Up to date');
       document.getElementById('lv').title = 'Live · updated ' + new Date().toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' });
@@ -196,7 +227,7 @@
      the phone's home-screen app) picks it up by itself, without closing and reopening it ---------- */
   var BUILD = null, hiddenAt = 0;
   /* the version stamps (?v=) of the files admin.html loads itself; scripts added later are ignored */
-  function build(doc) { return [].map.call(doc.querySelectorAll('script[src*="/assets/hq/"],script[src^="/data/"],script[src*="/assets/js/notes"],link[href*="/assets/hq/hq.css"]'), function (x) { return x.getAttribute('src') || x.getAttribute('href'); }).filter(function (u) { return /\?v=/.test(u); }).sort().join('|'); }
+  function build(doc) { return [].map.call(doc.querySelectorAll('script[src*="/assets/hq/"],script[src^="/data/"],script[src*="/assets/js/notes"],link[href*="/assets/hq/"]'), function (x) { return x.getAttribute('src') || x.getAttribute('href'); }).filter(function (u) { return /\?v=/.test(u); }).sort().join('|'); }
   function busy() { return !!document.querySelector('.drawer,.modal,.hq-frame,.cp,.np') || /^(campaigns|website)$/.test(S.view) || /^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement || {}).tagName || ''); }
   function checkUpdate() {
     if (BUILD === null) BUILD = build(document);
@@ -204,14 +235,17 @@
       if (!h) return; var nb = build(new DOMParser().parseFromString(h, 'text/html'));
       if (!nb || nb === BUILD) return;
       var last = 0; try { last = +sessionStorage.getItem('hq_upd_at') || 0; } catch (e) { }
-      if (!busy() && Date.now() - last > 120000) { try { sessionStorage.setItem('hq_updated', '1'); sessionStorage.setItem('hq_upd_at', String(Date.now())); } catch (e) { } location.reload(); return; }
+      /* hand the new version to the app's offline copy, so the reload opens it */
+      var put = (window.caches ? caches.open('hq-shell-v1').then(function (c) { return c.put('/admin', new Response(h, { headers: { 'Content-Type': 'text/html; charset=utf-8' } })); }) : Promise.resolve()).catch(function () { });
+      if (!busy() && Date.now() - last > 120000) { put.then(function () { try { sessionStorage.setItem('hq_updated', '1'); sessionStorage.setItem('hq_upd_at', String(Date.now())); } catch (e) { } location.reload(); }); return; }
       if (document.getElementById('hqUpd')) return;
-      var u = document.createElement('button'); u.id = 'hqUpd'; u.className = 'hq-upd'; u.innerHTML = I.ref + '<span>Ciel Admin was updated · tap to load it</span>'; u.onclick = function () { location.reload(); }; document.body.appendChild(u);
+      var u = document.createElement('button'); u.id = 'hqUpd'; u.className = 'hq-upd'; u.innerHTML = I.ref + '<span>Ciel Admin was updated · tap to load it</span>'; u.onclick = function () { put.then(function () { location.reload(); }); }; document.body.appendChild(u);
     }).catch(function () { });
   }
   function live() {
     BUILD = build(document);
     try { if (sessionStorage.getItem('hq_updated')) { sessionStorage.removeItem('hq_updated'); setTimeout(function () { toast('Ciel Admin is up to date', 'ok'); }, 800); } } catch (e) { }
+    setTimeout(checkUpdate, 4000);
     setInterval(function () { if (!document.hidden) checkUpdate(); }, 180000);
     document.addEventListener('visibilitychange', function () {
       if (document.hidden) { hiddenAt = Date.now(); return; }
@@ -294,9 +328,13 @@
     var L = S.inbox.filter(function (m) { return m.kind !== 'whatsapp' && (m.stage || (m.status === 'new' ? 'new' : '')) === 'new' && !(S.attnOff || {})['lead:' + m.id]; }).sort(function (a, c) { return c.createdAt - a.createdAt; });
     if (!L.length) return;
     var since = function (t) { var mn = Math.round((Date.now() - t) / 6e4); return mn < 60 ? Math.max(1, mn) + ' min' : mn < 1440 ? Math.round(mn / 60) + ' h' : Math.round(mn / 1440) + ' day' + (mn < 2880 ? '' : 's'); };
+    var seen = ''; try { seen = localStorage.getItem('ca_leadsX') || ''; } catch (e) { }
+    if (seen && L.every(function (m) { return seen.indexOf(m.id) >= 0; })) return;
     var d = document.createElement('div'); d.className = 'ov-leads';
     d.innerHTML = '<b class="ov-leads__h">' + (L.length === 1 ? 'New lead waiting' : L.length + ' new leads waiting') + '</b>' + L.slice(0, 3).map(function (m) { var c = m.customer || {}; return '<a class="ov-leads__i" href="#leads/' + esc(m.id) + '"><span><b>' + esc(c.name || c.email || 'Visitor') + '</b><small>' + (m.kind === 'brief' ? 'Project brief' : 'Enquiry') + ' · waiting ' + since(m.createdAt) + '</small></span><span class="b b--p b--sm">Open</span></a>'; }).join('') + (L.length > 3 ? '<a class="ov-leads__all" href="#leads">See all ' + L.length + '</a>' : '');
-    host.insertBefore(d, host.firstChild);
+    d.insertAdjacentHTML('afterbegin', '<button class="ov-x" type="button" aria-label="Hide" title="Hide until the next new lead">' + I.x + '</button>');
+    d.querySelector('.ov-x').onclick = function () { try { localStorage.setItem('ca_leadsX', L.map(function (m) { return m.id; }).join(',')); } catch (e) { } d.remove(); };
+    var hero = host.querySelector('.ov4h'); if (hero) hero.after(d); else host.insertBefore(d, host.firstChild);
   }
   /* on Overview: say plainly when this phone or computer won't get alerts for new leads and orders */
   /* after a theme change: the browser bar colour and anything drawn with theme colours (charts) */
@@ -310,13 +348,16 @@
   function pushNudge() {
     pushState().then(function (st) {
       if (st === 'on' || S.view !== 'overview' || document.getElementById('ovPush')) return;
+      try { var hid = JSON.parse(localStorage.getItem('ca_pushX') || 'null'); if (hid && hid.st === st && Date.now() - hid.at < 14 * 864e5) return; } catch (e) { }
       var host = document.getElementById('body'); if (!host) return;
       var msg = st === 'denied' ? 'Notifications are blocked for cielafrica.com on this device, so new leads and orders won’t alert you. Allow them in the browser or phone settings.' : st === 'ios' ? 'To get alerts for new leads on iPhone, add Ciel Admin to the Home Screen (Share → Add to Home Screen), then open it from there.' : st === 'none' ? 'This browser can’t show alerts. Open Ciel Admin in Chrome or the installed app to be alerted about new leads.' : 'Alerts for new leads and orders are off on this device.';
       var d = document.createElement('div'); d.className = 'ov-push'; d.id = 'ovPush';
       d.innerHTML = '<span>' + esc(msg) + '</span>' + (st === 'off' ? '<button class="b b--p b--sm">Turn on alerts</button>' : st === 'denied' ? '<button class="b b--p b--sm" data-help>Show me how</button>' : '');
-      host.insertBefore(d, host.firstChild);
+      d.insertAdjacentHTML('beforeend', '<button class="ov-x" type="button" aria-label="Hide" title="Hide for two weeks">' + I.x + '</button>');
+      d.querySelector('.ov-x').onclick = function () { try { localStorage.setItem('ca_pushX', JSON.stringify({ st: st, at: Date.now() })); } catch (e) { } d.remove(); };
+      var after = host.querySelector('.ov-leads') || host.querySelector('.ov4h'); if (after) after.after(d); else host.insertBefore(d, host.firstChild);
       var hb = d.querySelector('[data-help]'); if (hb) { hb.onclick = function () { pushHelp('denied'); }; }
-      var bt = d.querySelector('button:not([data-help])'); if (bt) bt.onclick = function () { enablePush().then(function () { pushState().then(function (x) { if (x === 'on') d.remove(); }); }); };
+      var bt = d.querySelector('button:not([data-help]):not(.ov-x)'); if (bt) bt.onclick = function () { enablePush().then(function () { pushState().then(function (x) { if (x === 'on') d.remove(); }); }); };
     }, function () { });
   }
   function pushState() {
@@ -393,9 +434,10 @@
     var sy = window.scrollY;
     var h = (location.hash || '#overview').slice(1).split('/'), v = h[0];
     if (!NAV.some(function (n) { return n[0] === v; })) v = 'overview';
+    if (!can(v)) { var first = NAV.filter(function (n) { return can(n[0]); })[0]; if (!first) { body('<div class="card noacc"><h2>No sections yet</h2><p class="muted">Your account is ready, but nothing has been turned on for you yet. Ask Lorna to give you access.</p></div>'); document.getElementById('ttl').innerHTML = '<span class="hq-ttl">Welcome</span>'; navs(); return; } v = first[0]; if (location.hash.slice(1).split('/')[0] !== v) { history.replaceState(null, '', '#' + v); } h = [v]; }
     document.querySelectorAll('.drawer,.modal').forEach(function (x) { x.remove(); });
     S.view = v; navs(); root.classList.toggle('is-ov', v === 'overview'); root.classList.toggle('is-ig', v === 'instagram');
-    var titles = { overview: 'Good ' + (new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening') + ', Lorna', orders: 'Orders', calendar: 'Calendar', tasks: 'Tasks', customers: 'Customers', website: 'Website', settings: 'Setup', inbox: 'Inbox', content: 'Content library', policies: 'Policies', activity: 'Activity log', payments: 'Payments', products: 'Products', templates: 'Website templates', photobooks: 'Photo Books', leads: 'Leads', projects: 'Projects', analytics: 'Analytics', reports: 'Reports & exports', campaigns: 'Email campaigns', invoices: 'Invoices & receipts', reviews: 'Reviews', instagram: 'Instagram' };
+    var titles = { overview: 'Good ' + (new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening') + ', ' + firstName(), orders: 'Orders', calendar: 'Calendar', tasks: 'Tasks', customers: 'Customers', website: 'Website', settings: 'Setup', inbox: 'Inbox', content: 'Content library', policies: 'Policies', activity: 'Activity log', payments: 'Payments', products: 'Products', templates: 'Website templates', photobooks: 'Photo Books', leads: 'Leads', projects: 'Projects', analytics: 'Analytics', reports: 'Reports & exports', campaigns: 'Email campaigns', invoices: 'Invoices & receipts', reviews: 'Reviews', instagram: 'Instagram', team: 'Team & access' };
     document.getElementById('ttl').innerHTML = (v === 'overview' ? '' : '<button class="hq-back" id="hqBack" type="button" aria-label="Back" title="Back">‹</button>') + '<span class="hq-ttl">' + esc(titles[v]) + '</span><small>' + new Date().toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + '</small>';
     document.getElementById('topx').innerHTML = v === 'calendar' ? '<button class="b b--p b--sm" data-newev>' + I.plus + '<span>Event</span></button>' : v === 'tasks' ? '<button class="b b--p b--sm" data-newtk>' + I.plus + '<span>Task</span></button>' : '';
     var bk = document.getElementById('hqBack'); if (bk) bk.onclick = goBack;
@@ -412,6 +454,7 @@
     else if (v === 'campaigns' && window.HQGrow) HQGrow.campaigns(h[1]);
     else if (v === 'reviews' && window.HQGrow) HQGrow.reviews();
     else if (v === 'instagram' && window.HQIg) HQIg.render(h[1], h.slice(2).join('/'));
+    else if (v === 'team') teamPage();
     else if (v === 'invoices' && window.HQMoney) { HQMoney.invoices(); if (h[1] === 'new') HQMoney.editInvoice(null, 'invoice'); }
     else if (v === 'photobooks' && h[1] === 'prices' && window.HQSite) HQSite.renderCatalog('photobooks');
     else if (v === 'photobooks') photobooks();
@@ -426,7 +469,8 @@
   }
   function navs() {
     var c = counts();
-    document.getElementById('nav').innerHTML = NAV.map(function (n) { return (n[3] ? '<div class="hq-nav__h">' + n[3] + '</div>' : '') + '<a href="#' + n[0] + '" class="nv--' + n[4] + (S.view === n[0] ? ' is-on' : '') + '"><b class="nv-i">' + n[2] + '</b><span>' + n[1] + '</span>' + (c[n[0]] ? '<i' + (n[0] === 'leads' ? ' class="is-hot"' : '') + '>' + c[n[0]] + '</i>' : '') + '</a>'; }).join('');
+    var lastH = null;
+    document.getElementById('nav').innerHTML = NAV.filter(function (n) { return can(n[0]); }).map(function (n) { var h = n[3] || null; if (!h) { for (var k = NAV.indexOf(n); k >= 0 && !h; k--) h = NAV[k][3] || null; } var show = h && h !== lastH; lastH = h; return (show ? '<div class="hq-nav__h">' + h + '</div>' : '') + '<a href="#' + n[0] + '" class="nv--' + n[4] + (S.view === n[0] ? ' is-on' : '') + '"><b class="nv-i">' + n[2] + '</b><span>' + n[1] + '</span>' + (c[n[0]] ? '<i' + (n[0] === 'leads' ? ' class="is-hot"' : '') + '>' + c[n[0]] + '</i>' : '') + '</a>'; }).join('');
     /* the number on the app icon: paid orders to handle + new messages */
     try { var nb = (c.orders || 0) + (c.inbox || 0); if (navigator.setAppBadge) { if (nb) navigator.setAppBadge(nb).catch(function () { }); else navigator.clearAppBadge().catch(function () { }); } } catch (e) { }
     document.getElementById('mnav').innerHTML = ['overview', 'leads', 'orders', 'inbox'].map(function (id) { var n = NAV.filter(function (x) { return x[0] === id; })[0]; return '<a href="#' + n[0] + '" class="' + (S.view === n[0] ? 'is-on' : '') + '">' + n[2] + '<span>' + (id === 'overview' ? 'Home' : n[1]) + '</span>' + (c[n[0]] ? '<i>' + c[n[0]] + '</i>' : '') + '</a>'; }).join('') +
@@ -518,10 +562,28 @@
     var projs = (S.projects || []).filter(function (p) { return p.status !== 'completed'; });
     var work = '<div class="wk4">' + ringChart(tAll ? tDone / tAll : 0, '<b>' + (tAll ? Math.round(tDone / tAll * 100) : 0) + '%</b><span>tasks done</span>') +
       '<ul class="wk4__l"><li><i style="background:var(--g)"></i>Done<b>' + tDone + '</b></li><li><i style="background:var(--o)"></i>In progress<b>' + tDoing + '</b></li><li><i style="background:var(--line)"></i>To do<b>' + (tAll - tDone - tDoing) + '</b></li>' + (overdue.length ? '<li class="is-r"><i style="background:var(--r)"></i>Overdue<b>' + overdue.length + '</b></li>' : '') + '<li><i style="background:var(--k-dom)"></i>Active projects<b>' + projs.length + '</b></li></ul></div>';
+    /* orders and enquiries per week (12 weeks, every order placed, paid or not) */
+    var wk0 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7)).getTime(), weeks = [];
+    for (var wi = 11; wi >= 0; wi--) weeks.push({ t: wk0 - wi * 7 * 864e5, o: 0, l: 0 });
+    var wkOf = function (t) { for (var k = weeks.length - 1; k >= 0; k--) if (t >= weeks[k].t) return t < weeks[k].t + 7 * 864e5 ? weeks[k] : null; return null; };
+    S.orders.forEach(function (o) { if (o.test || !o.at) return; var w = wkOf(o.at); if (w) w.o++; });
+    S.inbox.forEach(function (m) { if (!m.createdAt) return; var w = wkOf(m.createdAt); if (w) w.l++; });
+    var flow = lineChart([{ n: 'Enquiries', c: 'var(--p)', v: weeks.map(function (w) { return w.l; }) }, { n: 'Orders', c: 'var(--k-pb)', v: weeks.map(function (w) { return w.o; }) }], weeks.map(function (w, j) { return j % 3 === 2 || j === 11 ? d2(w.t) : ''; }), weeks.map(function (w) { return 'Week of ' + d2(w.t); }), function (n) { return String(n); });
+    /* orders by where they stand */
+    var ST = [['To handle', 'var(--o)', 0], ['Awaiting payment', 'var(--y)', 0], ['Completed', 'var(--g)', 0], ['Cancelled or failed', 'var(--r)', 0]];
+    S.orders.forEach(function (o) { if (o.test) return; var i = /cancel|refund|fail|unavail/.test(o.status) ? 3 : CLOSED.test(o.status) ? 2 : (o.paid || o.status === 'awaiting_confirmation' || o.status === 'whatsapp_request') ? 0 : 1; ST[i][2]++; });
+    var stT = ST.reduce(function (n, x) { return n + x[2]; }, 0);
+    var stDonut = donutChart(ST.filter(function (x) { return x[2]; }).map(function (x) { return { v: x[2], c: x[1] }; }), '<b>' + stT + '</b><span>orders</span>') + '<ul class="lg4">' + ST.map(function (x) { return '<li><i style="background:' + x[1] + '"></i><span>' + x[0] + '</span><b>' + x[2] + ' order' + (x[2] === 1 ? '' : 's') + '</b><em>' + (stT ? Math.round(x[2] / stT * 100) : 0) + '%</em></li>'; }).join('') + '</ul>';
+    /* what people ask for (the "Looking for" / service answers on enquiries) */
+    var ask = {}; S.inbox.forEach(function (m) { if (m.kind === 'whatsapp') return; (m.fields || []).forEach(function (f) { if (/looking|service|need|project type|interested/i.test(f[0])) String(f[1] || '').split(/\s*[,;·]\s*/).forEach(function (x) { x = x.trim(); if (x && x.length < 40) ask[x] = (ask[x] || 0) + 1; }); }); });
+    var PAL = ['var(--o)', 'var(--p)', 'var(--k-pb)', 'var(--g)', 'var(--k-inv)', 'var(--r)', 'var(--y)', 'var(--faint)'];
+    var ak = Object.keys(ask).sort(function (a, c) { return ask[c] - ask[a]; }), akT = ak.reduce(function (n, k) { return n + ask[k]; }, 0);
+    if (ak.length > 7) { var rest = ak.slice(6).reduce(function (n, k) { return n + ask[k]; }, 0); ak = ak.slice(0, 6); ask['Other'] = rest; ak.push('Other'); }
+    var askDonut = ak.length ? donutChart(ak.map(function (k, i) { return { v: ask[k], c: PAL[i % PAL.length] }; }), '<b>' + akT + '</b><span>requests</span>') + '<ul class="lg4">' + ak.map(function (k, i) { return '<li><i style="background:' + PAL[i % PAL.length] + '"></i><span>' + esc(k) + '</span><b>' + ask[k] + '</b><em>' + Math.round(ask[k] / akT * 100) + '%</em></li>'; }).join('') + '</ul>' : '<p class="muted" style="font-size:.82rem">The services people pick on the Start a project form show here.</p>';
     var spark = sparkLine(days.slice(-14).map(function (x) { return x.v; }));
     var b = body(
       '<section class="ov4h"><div class="ov4h__in"><div class="ov4h__l"><p class="ov4h__k">' + now.toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long' }) + '</p>' +
-      '<h1 class="ov4h__t">' + greet + ', Lorna.</h1>' +
+      '<h1 class="ov4h__t">' + greet + ', ' + esc(firstName()) + '.</h1>' +
       '<p class="ov4h__s">' + (urgent ? '<b>' + urgent + ' thing' + (urgent === 1 ? '' : 's') + '</b> need' + (urgent === 1 ? 's' : '') + ' you' : 'All clear. Nothing is waiting on you') + (rev ? ' · <b>' + money(rev) + '</b> in ' + mname : '') + '</p></div>' +
       '<div class="ov4h__st"><a href="#leads"><b>' + newLeads.length + '</b><span>new lead' + (newLeads.length === 1 ? '' : 's') + '</span></a><a href="#orders"><b>' + todo.length + '</b><span>order' + (todo.length === 1 ? '' : 's') + ' to handle</span></a><a href="#tasks"><b>' + dueSoon.length + '</b><span>task' + (dueSoon.length === 1 ? '' : 's') + ' due soon</span></a></div></div>' +
       '<div class="ov4h__go"><a class="ov4h__b ov4h__b--p" href="#leads">' + I.target + '<span>Leads' + (newLeads.length ? ' · ' + newLeads.length : '') + '</span></a><a class="ov4h__b" href="#orders">' + I.orders + '<span>Orders</span></a><a class="ov4h__b" href="#inbox">' + I.inbox + '<span>Inbox' + (newMsgs.length ? ' · ' + newMsgs.length : '') + '</span></a><a class="ov4h__b" href="#invoices/new">' + I.receipt + '<span>New invoice</span></a><a class="ov4h__b ovh__b--ig" href="#instagram">' + I.ig + '<span>Instagram</span></a><a class="ov4h__b" href="#reports">' + I.pie + '<span>Reports</span></a></div></section>' +
@@ -530,20 +592,150 @@
       '<a href="#leads" class="card kpi kp4--red"><span class="kp4__h"><i class="kpi__i">' + I.target + '</i><span>Open leads</span></span><b>' + openLeads.length + '</b><small>' + newLeads.length + ' new · ' + mLeads.length + ' this month</small></a>' +
       '<a href="#tasks" class="card kpi kp4--green"><span class="kp4__h"><i class="kpi__i">' + I.tasks + '</i><span>Open tasks</span></span><b>' + open.length + '</b><small>' + (overdue.length ? overdue.length + ' overdue · ' : '') + newMsgs.length + ' new message' + (newMsgs.length === 1 ? '' : 's') + '</small></a></div>' +
       '<div class="ov"><div class="ov__main">' +
+      '<div class="card ch4" id="ovWeb"><div class="card__h"><div><h2>Website visitors</h2><p class="ch4__v">… <span>last 30 days</span></p></div></div><div class="card__b"><div class="sk" style="height:200px"></div></div></div>' +
       '<div class="card ch4"><div class="card__h"><div><h2>Revenue</h2><p class="ch4__v" id="rvV">' + money(sum(days)) + ' <span>last 30 days</span></p></div><div class="tabs" id="rvT"><button type="button" class="is-on" data-rv="30">30 days</button><button type="button" data-rv="12">12 months</button></div></div><div class="card__b"><div id="rvC">' + rv30 + '</div></div></div>' +
-      '<div class="an4"><div class="card ch4"><div class="card__h"><h2>Where sales come from</h2></div><div class="card__b dn4">' + donut + srcLeg + '</div></div>' +
+      '<div class="an4"><div class="card ch4"><div class="card__h"><h2>Orders by status</h2><a class="b b--sm" href="#orders">Orders</a></div><div class="card__b dn4">' + stDonut + '</div></div>' +
+      '<div class="card ch4"><div class="card__h"><h2>Where sales come from</h2></div><div class="card__b dn4">' + donut + srcLeg + '</div></div></div>' +
+      '<div class="an4"><div class="card ch4"><div class="card__h"><div><h2>Enquiries & orders</h2><p class="ch4__s">per week, last 12 weeks</p></div><span class="lc4__lg"><span><i style="background:var(--p)"></i>Enquiries</span><span><i style="background:var(--k-pb)"></i>Orders</span></span></div><div class="card__b">' + flow + '</div></div>' +
       '<div class="card ch4"><div class="card__h"><h2>Lead pipeline</h2><a class="b b--sm" href="#leads">Open</a></div><div class="card__b">' + pipe + '</div></div></div>' +
+      '<div class="an4"><div class="card ch4" id="ovDev"><div class="card__h"><h2>Visitors by device</h2></div><div class="card__b"><div class="sk" style="height:140px"></div></div></div>' +
+      '<div class="card ch4"><div class="card__h"><h2>What people ask for</h2><a class="b b--sm" href="#leads">Leads</a></div><div class="card__b dn4 dn4--s">' + askDonut + '</div></div></div>' +
       '<div class="card"><div class="card__h"><h2>Recent orders</h2><a class="b b--sm" href="#orders">All orders</a></div>' + orderTable(S.orders.slice(0, 6), true) +
       '<div class="card__h" style="border-top:1px solid var(--line)"><h2>Pending orders</h2><span class="muted" style="font-size:.8rem">WhatsApp and unpaid</span></div>' + orderTable(pending.slice(0, 6), true) + '</div>' +
       '</div><div class="ov__rail">' +
       '<div class="card"><div class="card__h"><h2>Needs attention</h2><span class="chip' + (attention.length ? ' chip--r' : ' chip--g') + '">' + attention.length + '</span></div><ul class="list" id="attn">' + (attention.length ? attention.map(function (a, i) { return '<li data-k="' + esc(a[4]) + '"' + (i >= 8 ? ' class="is-more" hidden' : '') + '><span class="dot" style="background:var(--' + a[0] + ')"></span><div><b>' + esc(a[1]) + '</b><small>' + esc(a[2]) + '</small></div><a class="b b--sm" href="' + a[3] + '">Open</a></li>'; }).join('') + (attention.length > 8 ? '<li class="attn-more"><button class="b b--sm" type="button" id="attnMore">Show all ' + attention.length + '</button></li>' : '') : '<li class="empty">All clear. Nothing waiting on you.</li>') + '</ul>' + (attention.length ? '<p class="attn-tip">Long-press or right-click an item to remove it.</p>' : '') + '</div>' +
+      '<div class="card ch4" id="ovPg"><div class="card__h"><h2>Most visited pages</h2><a class="b b--sm" href="#analytics">Analytics</a></div><div class="card__b"><div class="sk" style="height:140px"></div></div></div>' +
       '<div class="card ch4"><div class="card__h"><h2>Work in progress</h2><a class="b b--sm" href="#projects">Projects</a></div><div class="card__b">' + work + '</div></div>' +
       '<div class="card"><div class="card__h"><h2>Coming up</h2><a class="b b--sm" href="#calendar">Calendar</a></div><ul class="list">' + (up.length ? up.slice(0, 6).map(evRow).join('') : '<li class="empty">No upcoming events. <a href="#calendar">Plan one</a>.</li>') + '</ul>' +
       '<div class="card__h" style="border-top:1px solid var(--line)"><h2>Tasks due soon</h2><a class="b b--sm" href="#tasks">Board</a></div><ul class="list">' + (open.length ? open.slice().sort(function (a, c) { return (a.due || '9').localeCompare(c.due || '9'); }).slice(0, 5).map(function (t) { return '<li><span class="dot" style="background:' + ({ high: 'var(--r)', med: 'var(--y)', low: 'var(--g)' }[t.priority] || 'var(--faint)') + '"></span><div><b>' + esc(t.title) + '</b><small>' + (t.due ? 'Due ' + d2(t.due + 'T12:00') : 'No due date') + (t.status === 'doing' ? ' · in progress' : '') + '</small></div></li>'; }).join('') : '<li class="empty">No open tasks.</li>') + '</ul></div></div></div>'
     );
     b.querySelectorAll('[data-rv]').forEach(function (x) { x.onclick = function () { var y = x.getAttribute('data-rv') === '12'; b.querySelectorAll('[data-rv]').forEach(function (z) { z.classList.toggle('is-on', z === x); }); document.getElementById('rvC').innerHTML = y ? rv12 : rv30; document.getElementById('rvV').innerHTML = money(y ? sum(months) : sum(days)) + ' <span>' + (y ? 'last 12 months' : 'last 30 days') + '</span>'; }; });
     bindOrderRows(b);
+    webPanels(b);
   }
+  /* website visitors (Vercel Web Analytics), kept for 10 minutes */
+  function webRows(j) { var l = (j && (j.data || j.rows || j.groups || j.items)) || (Array.isArray(j) ? j : []); return l.map(function (x) { var label = '', v = 0, vis = 0; Object.keys(x).forEach(function (k) { var val = x[k]; if (typeof val === 'string' && !label) label = val; if (typeof val === 'number') { if (/visitor/i.test(k)) vis = val; else if (/view|total|count|value/i.test(k) || !v) v = val; } }); return { label: label, views: v, visitors: vis }; }); }
+  function webPanels(b) {
+    var W = document.getElementById('ovWeb'), D = document.getElementById('ovDev'), P = document.getElementById('ovPg');
+    if (!can('analytics') && !can('overview')) { [W, D, P].forEach(function (x) { if (x) x.remove(); }); return; }
+    var draw = function (w) {
+      if (!W || !W.isConnected) return;
+      if (!w || !w.configured) { W.querySelector('.card__b').innerHTML = '<p class="muted" style="font-size:.84rem">Visitor numbers appear here once Vercel Web Analytics is on (see Analytics).</p>'; if (D) D.remove(); if (P) P.remove(); return; }
+      var day = webRows(w.day).filter(function (x) { return x.label; });
+      var map = {}; day.forEach(function (x) { map[x.label.slice(0, 10)] = x; });
+      var pts = []; for (var i = 29; i >= 0; i--) { var dd = new Date(Date.now() - i * 864e5), k = iso(dd), x = map[k] || { views: 0, visitors: 0 }; pts.push({ d: dd, v: x.views, u: x.visitors }); }
+      var tv = pts.reduce(function (n, x) { return n + x.v; }, 0), tu = pts.reduce(function (n, x) { return n + x.u; }, 0), hasU = tu > 0;
+      var ser = [{ n: 'Page views', c: 'var(--o)', v: pts.map(function (x) { return x.v; }) }]; if (hasU) ser.push({ n: 'Visitors', c: 'var(--g)', v: pts.map(function (x) { return x.u; }) });
+      W.innerHTML = '<div class="card__h"><div><h2>Website visitors</h2><p class="ch4__v">' + (hasU ? tu.toLocaleString('en-KE') + ' <span>visitors · ' + tv.toLocaleString('en-KE') + ' page views · last 30 days</span>' : tv.toLocaleString('en-KE') + ' <span>page views · last 30 days</span>') + '</p></div><span class="lc4__lg"><span><i style="background:var(--o)"></i>Page views</span>' + (hasU ? '<span><i style="background:var(--g)"></i>Visitors</span>' : '') + '</span></div><div class="card__b">' + lineChart(ser, pts.map(function (x, j) { return j % 7 === 1 ? d2(x.d) : j === 29 ? 'Today' : ''; }), pts.map(function (x) { return d2(x.d); }), function (n) { return n.toLocaleString('en-KE'); }) + '</div>';
+      var dev = webRows(w.devices).filter(function (x) { return x.label; }), dT = dev.reduce(function (n, x) { return n + x.views; }, 0), DC = ['var(--o)', 'var(--k-pb)', 'var(--p)', 'var(--g)'];
+      var nice = function (l) { l = String(l); return /mobile/i.test(l) ? 'Phones' : /desktop/i.test(l) ? 'Computers' : /tablet/i.test(l) ? 'Tablets' : l.charAt(0).toUpperCase() + l.slice(1); };
+      if (D) { var db = D.querySelector('.card__b'); db.className = 'card__b dn4 dn4--s'; db.innerHTML = dT ? donutChart(dev.map(function (x, i) { return { v: x.views, c: DC[i % 4] }; }), '<b>' + kshort(dT) + '</b><span>views</span>') + '<ul class="lg4">' + dev.map(function (x, i) { return '<li><i style="background:' + DC[i % 4] + '"></i><span>' + esc(nice(x.label)) + '</span><b>' + x.views.toLocaleString('en-KE') + ' views</b><em>' + Math.round(x.views / dT * 100) + '%</em></li>'; }).join('') + '</ul>' : '<p class="muted" style="font-size:.82rem">No visits recorded yet.</p>'; }
+      var pg = webRows(w.pages).filter(function (x) { return x.label; }).slice(0, 6), pm = Math.max.apply(null, pg.map(function (x) { return x.views; }).concat([1]));
+      if (P) P.querySelector('.card__b').innerHTML = pg.length ? '<div class="tp4">' + pg.map(function (x) { return '<div class="tp4__r"><span>' + esc(x.label === '/' ? 'Home' : x.label) + '</span><b>' + x.views.toLocaleString('en-KE') + '</b><i style="width:' + Math.max(3, x.views / pm * 100) + '%"></i></div>'; }).join('') + '</div>' : '<p class="muted" style="font-size:.82rem">No visits recorded yet.</p>';
+    };
+    if (S.web && Date.now() - S.web.at < 6e5) return draw(S.web.w);
+    if (S.web) draw(S.web.w);
+    api('/api/hq?route=web-analytics&days=30').then(function (w) { S.web = { at: Date.now(), w: w }; draw(w); }, function (e) { if (!W || !W.isConnected) return; W.querySelector('.card__b').innerHTML = '<p class="muted" style="font-size:.84rem">' + esc(e.message) + '</p>'; if (D) D.remove(); if (P) P.remove(); });
+  }
+  /* a line chart: one or more series over the same days or weeks, with a hover read-out */
+  function lineChart(series, xl, tips, fmt) {
+    var n = series[0].v.length, mx = 0; series.forEach(function (s) { s.v.forEach(function (x) { if (x > mx) mx = x; }); });
+    var top = niceMax(mx || 1), X = function (i) { return n === 1 ? 50 : i / (n - 1) * 100; }, Y = function (v) { return 100 - v / top * 100; };
+    var path = function (v) { var p = 'M' + X(0).toFixed(2) + ',' + Y(v[0]).toFixed(2); for (var i = 1; i < n; i++) { var x0 = X(i - 1), y0 = Y(v[i - 1]), x1 = X(i), y1 = Y(v[i]), cx = (x0 + x1) / 2; p += ' C' + cx.toFixed(2) + ',' + y0.toFixed(2) + ' ' + cx.toFixed(2) + ',' + y1.toFixed(2) + ' ' + x1.toFixed(2) + ',' + y1.toFixed(2); } return p; };
+    var id = 'lg' + Math.random().toString(36).slice(2, 7);
+    var svg = '<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><defs>' + series.map(function (s, k) { return '<linearGradient id="' + id + k + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:' + s.c + ';stop-opacity:.22"/><stop offset="1" style="stop-color:' + s.c + ';stop-opacity:0"/></linearGradient>'; }).join('') + '</defs>' +
+      series.map(function (s, k) { var d = path(s.v); return '<path d="' + d + ' L100,100 L0,100 Z" fill="url(#' + id + k + ')"/><path d="' + d + '" fill="none" style="stroke:' + s.c + '" stroke-width="2.4" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>'; }).join('') + '</svg>';
+    var hov = '<div class="lc4__h" style="--n:' + n + '">' + series[0].v.map(function (x, i) { return '<span data-v="' + esc(tips[i] + ' · ' + series.map(function (s) { return s.n + ' ' + fmt(s.v[i]); }).join(' · ')) + '">' + series.map(function (s) { return '<i style="top:' + Y(s.v[i]).toFixed(1) + '%;background:' + s.c + '"></i>'; }).join('') + '</span>'; }).join('') + '</div>';
+    return '<div class="bc4 lc4"><div class="bc4__y"><span>' + kshort(top) + '</span><span>' + kshort(top / 2) + '</span><span>0</span></div><div class="bc4__p"><div class="lc4__a">' + svg + hov + '</div><div class="bc4__x" style="--n:' + n + '">' + xl.map(function (l) { return '<span>' + esc(l || '') + '</span>'; }).join('') + '</div></div></div>';
+  }
+
+  /* ---------- you: the picture top right ---------- */
+  function signOut() { api('/api/hq?route=logout', {}).then(function () { forget(); S.me = null; location.hash = ''; login(S.setup || {}); }, function () { forget(); login({}); }); }
+  function meMenu(e) {
+    var old = document.getElementById('meM'); if (old) { old.remove(); return; }
+    var u = S.me || {}, m = document.createElement('div'); m.id = 'meM'; m.className = 'me-m';
+    m.innerHTML = '<div class="me-m__h">' + avatarHtml(u, 'av--lg') + '<div><b>' + esc(u.name || 'You') + '</b><small>' + esc(u.role === 'owner' ? 'Main admin' : (u.title || 'Team member')) + (u.email ? ' · ' + esc(u.email) : '') + '</small></div></div>' +
+      '<button type="button" data-a="profile">' + I.user + '<span>Profile & picture</span></button>' + (can('team') ? '<button type="button" data-a="team">' + I.ucog + '<span>Team & access</span></button>' : '') +
+      '<button type="button" data-a="theme">' + (document.documentElement.getAttribute('data-theme') === 'dark' ? I.sun + '<span>Light mode</span>' : I.moon + '<span>Dark mode</span>') + '</button><button type="button" data-a="out" class="is-out">' + I.out + '<span>Sign out</span></button>';
+    document.body.appendChild(m);
+    var close = function (ev) { if (!m.contains(ev.target) && ev.target.closest('#meB') == null) { m.remove(); document.removeEventListener('click', close, true); } };
+    setTimeout(function () { document.addEventListener('click', close, true); }, 0);
+    m.onclick = function (ev) { var b = ev.target.closest('[data-a]'); if (!b) return; var a = b.getAttribute('data-a'); m.remove(); document.removeEventListener('click', close, true);
+      if (a === 'profile') profileModal(); else if (a === 'team') location.hash = '#team'; else if (a === 'theme') document.getElementById('thm').click(); else if (a === 'out') signOut(); };
+  }
+  /* a picture from the phone or computer, made small and square (centre crop) */
+  function pickPic(cb) {
+    var f = document.createElement('input'); f.type = 'file'; f.accept = 'image/*';
+    f.onchange = function () { var file = f.files && f.files[0]; if (!file) return; var img = new Image(), url = URL.createObjectURL(file);
+      img.onload = function () { var n = 192, c = document.createElement('canvas'); c.width = c.height = n; var x = c.getContext('2d'), z = Math.min(img.width, img.height); x.drawImage(img, (img.width - z) / 2, (img.height - z) / 2, z, z, 0, 0, n, n); URL.revokeObjectURL(url); cb(c.toDataURL('image/jpeg', .86)); };
+      img.onerror = function () { toast('That file isn’t a picture we can use.', 'err'); }; img.src = url; };
+    f.click();
+  }
+  function profileModal() {
+    var u = Object.assign({}, S.me || {}), pic = u.avatar || '';
+    var m = modal('<div class="pf-m"><div class="row" style="justify-content:space-between"><h2>Your profile</h2><button class="b b--sm b--ghost" data-x>' + I.x + '</button></div>' +
+      '<div class="pf-pic"><span id="pfAv">' + avatarHtml({ name: u.name, avatar: pic }, 'av--xl') + '</span><div class="pf-pic__a"><button class="b b--sm" type="button" id="pfUp">' + I.image + '<span>Choose a picture</span></button><button class="b b--sm b--ghost" type="button" id="pfRm"' + (pic ? '' : ' hidden') + '>Remove</button><small class="muted">Shows top right, in the menu and on your team card.</small></div></div>' +
+      '<label class="field"><span>Your name</span><input class="hq-in" id="pfN" value="' + esc(u.name || '') + '" maxlength="80"></label>' +
+      (u.role === 'member' ? '<details class="pf-pw"><summary>Change your password</summary><div class="g2"><label class="field"><span>Current password</span><input class="hq-in" id="pfO" type="password" autocomplete="current-password"></label><label class="field"><span>New password (8+ characters)</span><input class="hq-in" id="pfP" type="password" autocomplete="new-password"></label></div></details>' : '<p class="muted" style="font-size:.8rem">Your admin password is set in Vercel (ADMIN_PASSWORD).</p>') +
+      '<div class="row"><button class="b b--p" id="pfS">Save profile</button></div></div>');
+    m.querySelector('.modal__p').classList.add('pf-modal');
+    var paint = function () { m.querySelector('#pfAv').innerHTML = avatarHtml({ name: m.querySelector('#pfN').value, avatar: pic }, 'av--xl'); m.querySelector('#pfRm').hidden = !pic; };
+    m.querySelector('#pfN').oninput = paint;
+    m.querySelector('#pfUp').onclick = function () { pickPic(function (d) { pic = d; paint(); }); };
+    m.querySelector('#pfRm').onclick = function () { pic = ''; paint(); };
+    m.querySelector('#pfS').onclick = function () {
+      var bt = this, b = { name: m.querySelector('#pfN').value.trim(), avatar: pic }, np = m.querySelector('#pfP');
+      if (!b.name) { toast('Add your name', 'err'); return; }
+      if (np && np.value) { b.newPassword = np.value; b.password = m.querySelector('#pfO').value; }
+      bt.disabled = true;
+      api('/api/hq?route=profile-save', b).then(function () { setMe(Object.assign({}, S.me, { name: b.name, avatar: pic })); paintMe(); m.remove(); toast('Profile saved', 'ok'); if (S.view === 'overview' || S.view === 'team') route(true); }, function (e) { bt.disabled = false; toast(e.message, 'err'); });
+    };
+  }
+
+  /* ---------- Team & access (main admin only) ---------- */
+  var SEC_GROUPS = [['Today', ['overview', 'leads', 'inbox', 'orders', 'invoices', 'instagram']], ['Work', ['projects', 'tasks', 'calendar', 'customers']], ['Sell', ['photobooks', 'payments', 'products', 'templates', 'campaigns', 'reviews']], ['Website', ['website', 'content', 'policies']], ['Insights', ['analytics', 'reports']], ['System', ['activity', 'settings']]];
+  function navName(id) { var n = NAV.filter(function (x) { return x[0] === id; })[0]; return n ? n[1] : id; }
+  function teamPage() {
+    var b = body('<div class="tm"><div class="tm-top"><p class="muted">Give people on your team their own sign-in. Tick what each person can see and use; everything else stays hidden from them, on screen and on the server.</p><button class="b b--p" id="tmAdd">' + I.plus + '<span>Add a team member</span></button></div><div id="tmL"><div class="sk" style="height:120px"></div></div></div>');
+    b.querySelector('#tmAdd').onclick = function () { memberModal(null); };
+    api('/api/hq?route=team').then(function (r) {
+      S.team = r;
+      var me = S.me || {}, L = r.members || [];
+      b.querySelector('#tmL').innerHTML = '<div class="tm-g"><div class="card tm-c tm-c--o">' + avatarHtml({ name: r.owner.name, avatar: r.owner.avatar }, 'av--lg') + '<div class="tm-c__m"><b>' + esc(r.owner.name) + '</b><small>Main admin · everything</small></div><span class="chip chip--b">Owner</span></div>' +
+        L.map(function (u) { var n = (u.perms || []).length; return '<button type="button" class="card tm-c' + (u.active ? '' : ' is-off') + '" data-id="' + esc(u.id) + '">' + avatarHtml(u, 'av--lg') + '<div class="tm-c__m"><b>' + esc(u.name) + '</b><small>' + esc(u.title || 'Team member') + ' · ' + esc(u.email) + '</small><span class="tm-c__p">' + (n ? (n === SEC_GROUPS.reduce(function (s, g) { return s + g[1].length; }, 0) ? 'Everything' : (u.perms || []).slice(0, 4).map(navName).join(', ') + (n > 4 ? ' +' + (n - 4) : '')) : 'No access yet') + '</span></div><span class="chip' + (u.active ? ' chip--g' : '') + '">' + (u.active ? 'Active' : 'Off') + '</span></button>'; }).join('') +
+        '</div>' + (L.length ? '' : '<div class="card tm-empty"><b>No team members yet</b><p class="muted">Add someone, give them a password, and tick what they can open. They sign in at cielafrica.com/admin with “Team member? Sign in with your email”.</p></div>');
+      b.querySelectorAll('.tm-c[data-id]').forEach(function (x) { x.onclick = function () { memberModal(L.filter(function (u) { return u.id === x.getAttribute('data-id'); })[0]); }; });
+    }, function (e) { b.querySelector('#tmL').innerHTML = '<p class="muted">' + esc(e.message) + '</p>'; });
+  }
+  function genPw() { var c = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789', a = new Uint32Array(12); crypto.getRandomValues(a); return [].map.call(a, function (x) { return c[x % c.length]; }).join(''); }
+  function memberModal(u) {
+    var isNew = !u; u = u || { perms: ['overview'], active: true }; var pic = u.avatar || '', P = {}; (u.perms || []).forEach(function (p) { P[p] = 1; });
+    var m = modal('<div class="tmm"><div class="row" style="justify-content:space-between"><h2>' + (isNew ? 'Add a team member' : esc(u.name)) + '</h2><button class="b b--sm b--ghost" data-x>' + I.x + '</button></div>' +
+      '<div class="pf-pic"><span id="tmAv">' + avatarHtml({ name: u.name, avatar: pic }, 'av--xl') + '</span><div class="pf-pic__a"><button class="b b--sm" type="button" id="tmUp">' + I.image + '<span>Picture</span></button><button class="b b--sm b--ghost" type="button" id="tmRm"' + (pic ? '' : ' hidden') + '>Remove</button></div></div>' +
+      '<div class="g2"><label class="field"><span>Name</span><input class="hq-in" id="tmN" value="' + esc(u.name || '') + '" maxlength="80"></label><label class="field"><span>Role (shown on their card)</span><input class="hq-in" id="tmT" value="' + esc(u.title || '') + '" maxlength="60" placeholder="e.g. Designer, Sales"></label>' +
+      '<label class="field"><span>Email (they sign in with it)</span><input class="hq-in" id="tmE" type="email" value="' + esc(u.email || '') + '" maxlength="160"></label><label class="field"><span>' + (isNew ? 'Password' : 'New password (leave empty to keep)') + '</span><span class="tmm-pw"><input class="hq-in" id="tmP" type="text" autocomplete="off" placeholder="' + (isNew ? '8+ characters' : '••••••••') + '"><button class="b b--sm" type="button" id="tmG">Make one</button></span></label></div>' +
+      '<div class="tmm-acc"><div class="tmm-acc__h"><b>What they can see and use</b><span><button class="b b--sm b--ghost" type="button" data-all="1">Everything</button><button class="b b--sm b--ghost" type="button" data-all="0">Nothing</button></span></div>' +
+      SEC_GROUPS.map(function (g, gi) { return '<div class="tmm-g"><div class="tmm-g__h"><b>' + g[0] + '</b><button type="button" class="tmm-g__t" data-g="' + gi + '">Tick all</button></div><div class="tmm-g__l">' + g[1].map(function (id) { var n = NAV.filter(function (x) { return x[0] === id; })[0]; return '<label class="tmm-o nv--' + n[4] + '"><input type="checkbox" data-p="' + id + '"' + (P[id] ? ' checked' : '') + '><b class="nv-i">' + n[2] + '</b><span>' + esc(n[1]) + '</span></label>'; }).join('') + '</div></div>'; }).join('') + '</div>' +
+      '<label class="check tmm-on"><input type="checkbox" id="tmA"' + (u.active !== false ? ' checked' : '') + '> Account is on (they can sign in)</label>' +
+      '<div class="row"><button class="b b--p" id="tmS">' + (isNew ? 'Create account' : 'Save changes') + '</button>' + (isNew ? '' : '<button class="b b--ghost tmm-del" id="tmD">Remove from team</button>') + '</div>' +
+      '<p class="muted tmm-note">Share the email and password with them yourself (WhatsApp or in person). They can change the password and add a picture from their profile.</p></div>');
+    m.querySelector('.modal__p').classList.add('tmm-modal');
+    var paint = function () { m.querySelector('#tmAv').innerHTML = avatarHtml({ name: m.querySelector('#tmN').value, avatar: pic }, 'av--xl'); m.querySelector('#tmRm').hidden = !pic; };
+    m.querySelector('#tmN').oninput = paint;
+    m.querySelector('#tmUp').onclick = function () { pickPic(function (d) { pic = d; paint(); }); };
+    m.querySelector('#tmRm').onclick = function () { pic = ''; paint(); };
+    m.querySelector('#tmG').onclick = function () { m.querySelector('#tmP').value = genPw(); };
+    m.querySelectorAll('[data-all]').forEach(function (x) { x.onclick = function () { var on = x.getAttribute('data-all') === '1'; m.querySelectorAll('[data-p]').forEach(function (c) { c.checked = on; }); }; });
+    m.querySelectorAll('[data-g]').forEach(function (x) { x.onclick = function () { var l = x.closest('.tmm-g').querySelectorAll('[data-p]'), all = [].every.call(l, function (c) { return c.checked; }); l.forEach(function (c) { c.checked = !all; }); }; });
+    m.querySelector('#tmS').onclick = function () {
+      var bt = this, b = { id: isNew ? undefined : u.id, name: m.querySelector('#tmN').value.trim(), title: m.querySelector('#tmT').value.trim(), email: m.querySelector('#tmE').value.trim(), active: m.querySelector('#tmA').checked, avatar: pic, perms: [].filter.call(m.querySelectorAll('[data-p]'), function (c) { return c.checked; }).map(function (c) { return c.getAttribute('data-p'); }) };
+      var pw = m.querySelector('#tmP').value; if (pw) b.password = pw;
+      bt.disabled = true;
+      api('/api/hq?route=team-save', b).then(function () { m.remove(); toast(isNew ? 'Account created for ' + b.name : 'Saved', 'ok'); teamPage(); }, function (e) { bt.disabled = false; toast(e.message, 'err'); });
+    };
+    var del = m.querySelector('#tmD'); if (del) del.onclick = function () { HQAsk.confirm('Remove ' + u.name + ' from the team? They won’t be able to sign in any more.').then(function (ok) { if (!ok) return; api('/api/hq?route=team-del', { id: u.id }).then(function () { m.remove(); toast('Removed', 'ok'); teamPage(); }, function (e) { toast(e.message, 'err'); }); }); };
+  }
+
   /* ---------- small charts, drawn in the theme's colours ---------- */
   function kshort(n) { n = Math.round(n || 0); var a = Math.abs(n); return a >= 1e6 ? +(n / 1e6).toFixed(a >= 1e7 ? 0 : 1) + 'M' : a >= 1e3 ? +(n / 1e3).toFixed(a >= 1e4 ? 0 : 1) + 'k' : String(n); }
   function niceMax(v) { if (v <= 0) return 1; var e = Math.pow(10, Math.floor(Math.log10(v))), f = v / e; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * e; }
@@ -863,7 +1055,7 @@
   }
   function activity() {
     var b = body('<div class="card"><div class="card__h"><h2>Activity log</h2><span class="muted" style="font-size:.8rem">Sign-ins and website publishing</span></div><div id="al"><p class="empty">Loading…</p></div></div>');
-    api('/api/hq?route=activity').then(function (r) { b.querySelector('#al').innerHTML = r.items.length ? '<table class="tbl"><thead><tr><th>When</th><th>What</th><th>Details</th></tr></thead><tbody>' + r.items.map(function (x) { return '<tr><td>' + dt(x.at) + '</td><td><b>' + esc(x.action) + '</b></td><td><small>' + esc(x.detail || '') + '</small></td></tr>'; }).join('') + '</tbody></table>' : '<p class="empty">Nothing recorded yet.</p>'; }, function (e) { b.querySelector('#al').innerHTML = '<p class="empty">' + esc(e.message) + '</p>'; });
+    api('/api/hq?route=activity').then(function (r) { b.querySelector('#al').innerHTML = r.items.length ? '<table class="tbl"><thead><tr><th>When</th><th>What</th><th>Details</th></tr></thead><tbody>' + r.items.map(function (x) { return '<tr><td>' + dt(x.at) + '</td><td><b>' + esc(x.action) + '</b>' + (x.by ? '<small>by ' + esc(x.by) + '</small>' : '') + '</td><td><small>' + esc(x.detail || '') + '</small></td></tr>'; }).join('') + '</tbody></table>' : '<p class="empty">Nothing recorded yet.</p>'; }, function (e) { b.querySelector('#al').innerHTML = '<p class="empty">' + esc(e.message) + '</p>'; });
   }
   /* ---------- Photo Books: orders, the customer side (editor, My books), prices ---------- */
   function photobooks() {
@@ -937,7 +1129,7 @@
     if (window.HQMoney) HQMoney.setupCards(b);
   }
 
-  window.HQ = { paintTheme: paintTheme, back: goBack, pushHelp: pushHelp, pushState: pushState, enablePush: enablePush, disablePush: disablePush, I: I, NAV: NAV, KIND: KIND, orderDrawer: orderDrawer, api: api, toast: toast, esc: esc, dt: dt, d2: d2, money: money, today: today, body: body, modal: modal, drawer: drawer, S: S, navs: navs, route: route, saveItem: saveItem, delItem: delItem, taskModal: taskModal, eventModal: eventModal };
+  window.HQ = { can: can, me: function () { return S.me; }, paintTheme: paintTheme, back: goBack, pushHelp: pushHelp, pushState: pushState, enablePush: enablePush, disablePush: disablePush, I: I, NAV: NAV, KIND: KIND, orderDrawer: orderDrawer, api: api, toast: toast, esc: esc, dt: dt, d2: d2, money: money, today: today, body: body, modal: modal, drawer: drawer, S: S, navs: navs, route: route, saveItem: saveItem, delItem: delItem, taskModal: taskModal, eventModal: eventModal };
   if (window.HQCrm) HQCrm.init(window.HQ);
   if (window.HQSite) HQSite.init(window.HQ);
   if (window.HQMail) HQMail.init(window.HQ);

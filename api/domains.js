@@ -10,4 +10,4 @@
      RESEND_API_KEY / MAIL_FROM / MAIL_TO  existing email settings (reused)
    ============================================================ */
 const { createHandler } = require('../lib/domains/handler');
-module.exports = createHandler();
+module.exports = require('../lib/hq/team').gate(createHandler(), ['orders', 'overview', 'reports', 'payments', 'customers'], ['orders']);

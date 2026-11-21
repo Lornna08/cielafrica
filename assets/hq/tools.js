@@ -57,7 +57,7 @@
   /* ---------- search / command palette ---------- */
   function idx() {
     var S = H.S, out = [];
-    H.NAV.forEach(function (n) { out.push({ g: 'Go to', t: n[1], s: '', ic: n[2], go: '#' + n[0] }); });
+    H.NAV.forEach(function (n) { if (H.can && !H.can(n[0])) return; out.push({ g: 'Go to', t: n[1], s: '', ic: n[2], go: '#' + n[0] }); });
     out.push({ g: 'Create', t: 'New task', s: '', go: function () { H.taskModal({ status: 'todo' }); } });
     out.push({ g: 'Create', t: 'New calendar event', s: '', go: function () { H.eventModal({ date: H.today() }); } });
     if (window.HQMail) out.push({ g: 'Create', t: 'New email', s: 'From lorna@ or hello@', go: function () { location.hash = '#inbox'; setTimeout(function () { HQMail.compose({}); }, 60); } });

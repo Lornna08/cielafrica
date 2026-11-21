@@ -1,11 +1,46 @@
-/* Ciel Admin service worker: makes /admin installable and shows order / message notifications.
-   It never caches order data: Ciel Admin always loads live from the server. */
+/* Ciel Admin service worker: makes /admin installable, opens it instantly and shows alerts.
+   The app itself (the page, its scripts, styles and fonts) is kept on the device so Ciel Admin opens
+   straight away, then quietly checks for a newer version in the background. Order, customer and
+   message data is never stored here: it always comes live from the server (/api is never cached). */
+var SHELL = 'hq-shell-v1', FILES = 'hq-files-v1';
 self.addEventListener('install', function () { self.skipWaiting(); });
-self.addEventListener('activate', function (e) { e.waitUntil(self.clients.claim()); });
+self.addEventListener('activate', function (e) {
+  e.waitUntil(caches.keys().then(function (ks) { return Promise.all(ks.filter(function (k) { return /^hq-/.test(k) && k !== SHELL && k !== FILES; }).map(function (k) { return caches.delete(k); })); }).then(function () { return self.clients.claim(); }));
+});
+var OFFLINE = '<!doctype html><meta name="viewport" content="width=device-width"><body style="font-family:sans-serif;background:#0F1729;color:#E8EBF3;display:grid;place-items:center;min-height:100vh;margin:0"><p>You’re offline. Ciel Admin will load when you’re back online.</p></body>';
+/* keep only the files the current page uses (old versions are dropped after an update) */
+function prune(html) {
+  return caches.open(FILES).then(function (c) { return c.keys().then(function (ks) { return Promise.all(ks.map(function (r) { var u = new URL(r.url); if (u.origin === location.origin && /^\/assets\/(hq|js|pbk)\//.test(u.pathname) && html.indexOf(u.pathname + u.search) < 0 && !/\/assets\/hq\/manifest/.test(u.pathname)) return c.delete(r); })); }); });
+}
+function freshShell() {
+  return fetch('/admin', { cache: 'no-store', credentials: 'same-origin' }).then(function (r) {
+    if (!r.ok) return r;
+    var copy = r.clone(); copy.text().then(function (h) { caches.open(SHELL).then(function (c) { c.put('/admin', new Response(h, { headers: { 'Content-Type': 'text/html; charset=utf-8' } })); }); prune(h); });
+    return r;
+  });
+}
 self.addEventListener('fetch', function (e) {
-  /* network only; if offline, show a small note for the app page itself */
-  if (e.request.mode !== 'navigate') return;
-  e.respondWith(fetch(e.request).catch(function () { return new Response('<!doctype html><meta name="viewport" content="width=device-width"><body style="font-family:sans-serif;background:#14110f;color:#f4ede4;display:grid;place-items:center;min-height:100vh;margin:0"><p>You’re offline. Ciel Admin will load when you’re back online.</p></body>', { headers: { 'Content-Type': 'text/html; charset=utf-8' } }); }));
+  var req = e.request, u = new URL(req.url);
+  if (req.method !== 'GET') return;
+  /* the app page: from the device at once, refreshed in the background */
+  if (req.mode === 'navigate') {
+    if (u.origin !== location.origin || !/^\/admin\/?$/.test(u.pathname)) return;
+    e.respondWith(caches.open(SHELL).then(function (c) { return c.match('/admin'); }).then(function (hit) {
+      var net = freshShell();
+      if (hit) { e.waitUntil(net.catch(function () { })); return hit; }
+      return net.catch(function () { return new Response(OFFLINE, { headers: { 'Content-Type': 'text/html; charset=utf-8' } }); });
+    }));
+    return;
+  }
+  /* versioned app files and fonts never change once published: device first */
+  var mine = u.origin === location.origin && !!u.search && /^\/assets\/(hq|vendor|js|pbk|img)\//.test(u.pathname) && !/manifest/.test(u.pathname);
+  var font = /^https:\/\/fonts\.(googleapis|gstatic)\.com$/.test(u.origin);
+  if (!mine && !font) return;
+  if (/^\/api\//.test(u.pathname)) return;
+  e.respondWith(caches.open(FILES).then(function (c) { return c.match(req).then(function (hit) {
+    if (hit) return hit;
+    return fetch(req).then(function (r) { if (r.ok || r.type === 'opaque') c.put(req, r.clone()); return r; });
+  }); }));
 });
 self.addEventListener('push', function (e) {
   var d = {}; try { d = e.data ? e.data.json() : {}; } catch (er) { d = { title: 'Ciel Admin', body: e.data ? e.data.text() : '' }; }
