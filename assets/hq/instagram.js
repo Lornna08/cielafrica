@@ -184,7 +184,7 @@
     /* the three things people do most, as big buttons; everything else under More */
     var main = (can ? (q ? '<button data-a="open" class="pl-a pl-a--p">' + IC.cal + '<span>' + (q.status === 'scheduled' ? 'Change schedule' : q.status === 'failed' ? 'See what went wrong' : 'Open draft') + '</span></button>'
         : (p.sticker ? '' : '<button data-a="now" class="pl-a pl-a--p">' + IC.send + '<span>Post now</span></button>') + '<button data-a="sched" class="pl-a">' + IC.cal + '<span>' + (p.sticker ? 'Open in editor' : 'Schedule') + '</span></button>') : '') +
-      (p.images && p.images.length ? '<button data-a="dl" class="pl-a">' + IC.down + '<span>' + (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && navigator.share ? 'Save to Photos' : 'Download') + '</span></button>' : '');
+      (p.images && p.images.length ? '<button data-a="dl" class="pl-a"' + (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && navigator.share ? ' title="Save to Photos" aria-label="Save to Photos">' + IC.down + '<span>Save</span>' : '>' + IC.down + '<span>Download</span>') + '</button>' : '');
     var more = (!posted && t ? '<button data-a="next">' + IC.up + '<span>Post this one next</span></button><button data-a="from">' + IC.play + '<span>Start auto-posting from here</span></button>' : '') +
       (!posted ? '<button data-a="pause">' + IC.clock + '<span>' + (p.paused ? 'Resume auto-posting it' : 'Pause (auto-post skips it)') + '</span></button>' : '') +
       (p.images && p.images.length ? '<button data-a="share">' + IC.ig + '<span>Share to the Instagram app' + (p.sticker ? ' (add the sticker)' : ' (add music)') + '</span></button><button data-a="big">' + IC.ext + '<span>See it full size</span></button>' : '') +
