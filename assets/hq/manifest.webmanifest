@@ -6,8 +6,8 @@
   "start_url": "/admin#overview",
   "scope": "/admin",
   "display": "standalone",
-  "background_color": "#0e0e10",
-  "theme_color": "#0e0e10",
+  "background_color": "#0f1729",
+  "theme_color": "#0f1729",
   "icons": [
     {
       "src": "/assets/img/icon-192.png?v=2",
@@ -30,9 +30,9 @@
   ],
   "shortcuts": [
     {
-      "name": "Orders",
-      "short_name": "Orders",
-      "url": "/admin#orders",
+      "name": "Leads",
+      "short_name": "Leads",
+      "url": "/admin#leads",
       "icons": [
         {
           "src": "/assets/img/icon-192.png?v=2",
@@ -42,9 +42,21 @@
       ]
     },
     {
-      "name": "Photo Books",
-      "short_name": "Photo Books",
-      "url": "/admin#photobooks",
+      "name": "New invoice",
+      "short_name": "New invoice",
+      "url": "/admin#invoices/new",
+      "icons": [
+        {
+          "src": "/assets/img/icon-192.png?v=2",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "short_name": "Orders",
+      "url": "/admin#orders",
       "icons": [
         {
           "src": "/assets/img/icon-192.png?v=2",
@@ -66,21 +78,9 @@
       ]
     },
     {
-      "name": "Email campaigns",
-      "short_name": "Campaigns",
-      "url": "/admin#campaigns",
-      "icons": [
-        {
-          "src": "/assets/img/icon-192.png?v=2",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
-    },
-    {
-      "name": "Reports & exports",
-      "short_name": "Reports",
-      "url": "/admin#reports",
+      "name": "Instagram planner",
+      "short_name": "Instagram",
+      "url": "/admin#instagram",
       "icons": [
         {
           "src": "/assets/img/icon-192.png?v=2",

@@ -316,7 +316,7 @@
     m.querySelectorAll('[data-a]').forEach(function (b) {
       b.onclick = function () {
         var a = b.getAttribute('data-a'); m.remove();
-        if (a === 'stats') igGo('stats'); if (a === 'theme') { ls('theme', dark() ? 'light' : 'dark'); applyTheme(); }
+        if (a === 'stats') igGo('stats'); if (a === 'theme') { setDark(!dark()); }
         if (a === 'hook') hookBox(); if (a === 'conn') connectionModal(); if (a === 'tour') tour();
       };
     });
@@ -329,7 +329,8 @@
   }
   /* dark (the default) or light, kept on this device */
   /* (only where the host app turns it on: Ciel Admin; ABC Club stays light) */
-  function dark() { return !!A.themes && ls('theme') !== 'light'; }
+  function dark() { if (!A.themes) return false; var t = null; try { t = localStorage.getItem('ca_theme'); } catch (e) { } return t ? t === 'dark' : (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches); }
+  function setDark(on) { try { localStorage.setItem('ca_theme', on ? 'dark' : 'light'); } catch (e) { } applyTheme(); if (window.HQ && HQ.paintTheme) HQ.paintTheme(); }
   function applyTheme() {
     document.body.classList.toggle('ig-dark', dark());
     if (A.onTheme) A.onTheme(dark());
@@ -356,7 +357,7 @@
       var bl = b.querySelector('[data-nb]'); if (bl) bl.onclick = function () { if (window.HQTools && HQTools.notifs) HQTools.notifs(bl); };
       bellSync();
       /* the light / dark switch, next to ⋯ (computer; on a phone it's in ⋯) */
-      if (A.themes) b.querySelectorAll('#igNav [data-more]').forEach(function (x) { var t = document.createElement('button'); t.className = x.className.replace(/\s*igx-nb--more/, ''); t.setAttribute('data-theme-sw', ''); x.parentNode.insertBefore(t, x); t.onclick = function () { ls('theme', dark() ? 'light' : 'dark'); applyTheme(); }; });
+      if (A.themes) b.querySelectorAll('#igNav [data-more]').forEach(function (x) { var t = document.createElement('button'); t.className = x.className.replace(/\s*igx-nb--more/, ''); t.setAttribute('data-theme-sw', ''); x.parentNode.insertBefore(t, x); t.onclick = function () { setDark(!dark()); }; });
       applyTheme();
       n.setAttribute('data-built', '1');
     }
@@ -2064,8 +2065,9 @@
   window.addEventListener('resize', function () { if (document.body.classList.contains('ig-on')) fitTop(); });
   /* Ciel Admin's header follows the Instagram page's light / dark choice while it's open, then goes back */
   var root = document.documentElement, before = null;
-  A.onTheme = function (on) { if (before === null) before = root.getAttribute('data-theme') || ''; root.setAttribute('data-theme', on ? 'dark' : 'light'); };
-  function restoreTheme() { if (before === null) return; if (before) root.setAttribute('data-theme', before); else root.removeAttribute('data-theme'); before = null; }
+  /* Instagram follows the Ciel Admin theme and switching it here switches it everywhere, menu included */
+  A.onTheme = function (on) { if (on) root.setAttribute('data-theme', 'dark'); else root.removeAttribute('data-theme'); };
+  function restoreTheme() { }
   function leave() { restoreTheme(); document.body.style.removeProperty('--top'); tourEnd(); document.body.classList.remove('ig-on', 'ig-dark'); stopPoll(); closeViewer(); closeReels(); closeList(); if (PV) PV.pause(); document.querySelectorAll('.igk-modal:not(.igq-tourm)').forEach(function (m) { m.remove(); }); }
   window.addEventListener('hashchange', function () { if (!/^#instagram(\/|$)/.test(location.hash)) leave(); });
   window.HQIg = {
