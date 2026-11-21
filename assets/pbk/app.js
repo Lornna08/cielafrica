@@ -5,6 +5,7 @@
    ============================================================ */
 (function () {
   'use strict';
+  var T0 = document.title, P0 = location.pathname.replace(/\/$/, '');   /* first page's search title (see setTitle) */
   var C = window.PBKCat, R = window.PBKR, CFG = (window.CIEL && CIEL.photobooks) || {}, BOOK = CFG.book || { pages: { min: 24, max: 100, step: 2, default: 24 }, price: {} };
   var main = document.getElementById('pbk');
   var PBK = window.PBK = window.PBK || {};
@@ -233,7 +234,7 @@
 
   /* ---------------- landing ---------------- */
   function landing() {
-    document.title = 'Photo Books — Ciel Africa';
+    setTitle('Photo Books — Ciel Africa');
     var flow = ['kenya/nairobi', 'travel/ibiza', 'kenya/mombasa', 'travel/paris', 'couple/our-story', 'kenya/serengeti', 'travel/zanzibar', 'baby/hello-baby', 'kenya/kenya', 'travel/tokyo', 'friends/besties', 'travel/lisbon'].filter(function (id) { return C.TPL[id]; });
     var rowA = ['travel/ibiza', 'kenya/serengeti', 'travel/lisbon', 'event/cheers', 'travel/madagascar', 'friends/besties', 'travel/new-york', 'baby/hello-baby', 'travel/senegal', 'kenya/kenya', 'travel/mexico', 'pets/good-boy'];
     var rowB = ['travel/greece', 'couple/amour', 'travel/south-africa', 'kenya/mombasa', 'travel/sicily', 'year/my-year', 'travel/london', 'family/home', 'travel/morocco', 'someone/for-mum', 'travel/bali', 'event/wedding'];
@@ -313,10 +314,12 @@
     main.querySelectorAll('[data-blank]').forEach(function (b) { b.addEventListener('click', function () { PBK.go(BASE + '/blank'); }); });
   }
 
+  /* the page Google sees first keeps its full search title; later in-app pages get short ones */
+  function setTitle(t) { var c = document.querySelector('link[rel=canonical]'); document.title = (location.pathname.replace(/\/$/, '') === P0 && c && c.href.replace(/^https?:\/\/[^/]+/, '') === P0) ? T0 : t; }
   /* ---------------- category page ---------------- */
   function category(catId) {
     var cat = C.cat(catId) || { id: 'blank', name: 'Blank', title: 'Blank cover photo book', blurb: 'Design your own cover: colours, words and stickers.', cta: 'Start my book' };
-    document.title = cat.title + ' — Ciel Africa';
+    setTitle(cat.title + ' — Ciel Africa');
     var list = catId === 'blank' ? [] : C.byCat(catId);
     var st = { t: list[0] ? list[0].id : 'blank', c: 0, pages: BOOK.pages.default, q: '', cu: {} };
     var params = new URLSearchParams(location.search);

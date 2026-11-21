@@ -51,8 +51,8 @@ window.CS = window.CS || {};
   function boot() {
     store.init();
     document.body.insertAdjacentHTML('afterbegin',
-      '<div class="demo-bar" role="region" aria-label="Template notice"><a class="demo-bar__back" href="../index.html" aria-label="Back to Ciel Africa"><b>‹</b><span> Ciel Africa</span></a><span class="dot"></span><span class="demo-bar__msg"><b><span class="txt-long">You’re exploring the </span>Ciel Shop template<span class="txt-long">.</span></b> <span class="txt-long">Changes here affect sample data only.</span></span>' +
-      '<span class="demo-bar__acts"><button type="button" data-reset>Reset template</button><a class="hide-sm" href="../ciel-shop.html#features">View features</a><a class="pri" href="../ciel-shop.html#pricing">Get Ciel Shop</a></span></div>' +
+      '<div class="demo-bar" role="region" aria-label="Template notice"><a class="demo-bar__back" href="/" aria-label="Back to Ciel Africa"><b>‹</b><span> Ciel Africa</span></a><span class="dot"></span><span class="demo-bar__msg"><b><span class="txt-long">You’re exploring the </span>Ciel Shop template<span class="txt-long">.</span></b> <span class="txt-long">Changes here affect sample data only.</span></span>' +
+      '<span class="demo-bar__acts"><button type="button" data-reset>Reset template</button><a class="hide-sm" href="/ciel-shop#features">View features</a><a class="pri" href="/ciel-shop#pricing">Get Ciel Shop</a></span></div>' +
       '<div class="shell' + (app.ui.collapsed ? ' is-collapsed' : '') + '" id="shell"><aside class="side" aria-label="Main navigation"><div class="side__brand"><span class="logo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg></span><span class="side__name">Ciel <span>Shop</span></span></div><nav class="side__nav" id="nav"></nav><div class="side__foot"><button class="collapse-btn" id="collapse" aria-label="Collapse sidebar">' + ui.icon('collapse', 18) + '<span>Collapse</span></button></div></aside><div class="scrim" id="scrim"></div>' +
       '<div class="main"><header class="top"><button class="burger" id="burger" aria-label="Open navigation">' + ui.icon('menu', 18) + '</button><div class="crumbs" id="crumbs"></div><div class="top__sp"></div><div class="top__ctx" id="ctx"></div>' +
       '<button class="gsearch" id="gsearch" aria-label="Search">' + ui.icon('search', 15) + '<span><span class="gs-long">Search products, orders, batches…</span><span class="gs-short">Search…</span></span><span class="kbd">⌘K</span></button>' +
@@ -197,7 +197,7 @@ window.CS = window.CS || {};
   function userMenu(anchor) {
     var S = store.state, items = [{ label: 'Act as (template)', header: true }];
     S.team.filter(function (u) { return !u.invited; }).forEach(function (u) { items.push({ label: u.name + ' · ' + u.role, icon: 'user', on: u.id === S.currentUserId, fn: function () { store.setUser(u.id); ui.toast('Now acting as ' + u.name + '. New activity is recorded under their name.'); } }); });
-    items.push('-', { label: 'Business settings', icon: 'settings', fn: function () { app.go('#/settings'); } }, { label: 'Template guide', icon: 'help', fn: guide }, '-', { label: 'Reset template data', icon: 'refresh', danger: true, fn: resetDemo }, { label: 'Back to Ciel Shop', icon: 'logout', fn: function () { location.href = '../ciel-shop.html'; } });
+    items.push('-', { label: 'Business settings', icon: 'settings', fn: function () { app.go('#/settings'); } }, { label: 'Template guide', icon: 'help', fn: guide }, '-', { label: 'Reset template data', icon: 'refresh', danger: true, fn: resetDemo }, { label: 'Back to Ciel Shop', icon: 'logout', fn: function () { location.href = '/ciel-shop'; } });
     ui.menu(anchor, items);
   }
 

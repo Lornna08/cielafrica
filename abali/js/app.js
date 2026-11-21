@@ -182,7 +182,7 @@
       '<nav aria-label="Departments"><h4>Departments</h4>' + D.departments.slice(0, 6).map(function (d) { return '<a href="#services" data-dept="' + d.id + '">' + esc(d.name) + '</a>'; }).join('') + '</nav>' +
       '<div><h4>Contact</h4>' + (C.contact.phone ? '<a href="tel:' + C.contact.phone.replace(/\s/g, '') + '">' + esc(C.contact.phone) + '</a>' : '') + '<a href="mailto:' + esc(C.contact.email) + '">' + esc(C.contact.email) + '</a>' +
       '<div class="soc">' + (socials.length ? socials.map(function (s) { return '<a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.label) + '</a>'; }).join('') : C.social.map(function (s) { return '<span title="Add the link in config">' + esc(s.label) + '</span>'; }).join('')) + '</div></div></div>' +
-      '<div class="ft-b"><span>© ' + new Date().getFullYear() + ' ' + esc(C.brand.name) + (sample ? ' · sample hospital, sample content' : '') + '</span><span><a href="credits.html">Photo credits</a> · Website by <a href="../index.html">Ciel Africa</a></span></div>' +
+      '<div class="ft-b"><span>© ' + new Date().getFullYear() + ' ' + esc(C.brand.name) + (sample ? ' · sample hospital, sample content' : '') + '</span><span><a href="credits.html">Photo credits</a> · Website by <a href="/">Ciel Africa</a></span></div>' +
       '<p class="ft-wm" aria-hidden="true">' + esc(C.brand.short) + '</p></div></footer>';
   }
 

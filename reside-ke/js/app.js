@@ -32,7 +32,7 @@
   /* ---------------- shell ---------------- */
   function shell() {
     document.body.innerHTML =
-      '<div class="demo-bar" role="region" aria-label="Template notice"><a class="db-back" href="../index.html" aria-label="Back to Ciel Africa"><b>‹</b> Ciel Africa</a><span class="dot" aria-hidden="true"></span><span class="demo-bar__t"><span class="db-long">You’re exploring the <b>Reside Ke template</b>. Changes affect sample data only.</span><span class="db-short"><b>Reside Ke template</b> · changes affect sample data only</span></span><span class="demo-bar__a"><button class="db-btn" data-act="reset">Reset template</button><a class="db-btn db-hide" href="./#features">View features</a><a class="db-btn db-btn--p" href="../quote.html?template=Reside%20Ke">Get Reside Ke</a></span></div>' +
+      '<div class="demo-bar" role="region" aria-label="Template notice"><a class="db-back" href="/" aria-label="Back to Ciel Africa"><b>‹</b> Ciel Africa</a><span class="dot" aria-hidden="true"></span><span class="demo-bar__t"><span class="db-long">You’re exploring the <b>Reside Ke template</b>. Changes affect sample data only.</span><span class="db-short"><b>Reside Ke template</b> · changes affect sample data only</span></span><span class="demo-bar__a"><button class="db-btn" data-act="reset">Reset template</button><a class="db-btn db-hide" href="./#features">View features</a><a class="db-btn db-btn--p" href="/quote?template=Reside%20Ke">Get Reside Ke</a></span></div>' +
       '<div class="app" id="app">' +
       '<div class="main">' +
       '<header class="top"><button class="ib top__menu" data-act="drawer" aria-label="Open navigation">' + I('menu', 20) + '</button>' +
@@ -122,7 +122,7 @@
     var p = ES.open('drawer', '<div class="dnav"><div class="dnav__h"><span class="brand"><span class="brand__m">' + I('logo', 18) + '</span><span class="brand__w">RESIDE<em>KE</em></span></span><button class="ib" data-close aria-label="Close">' + I('x', 18) + '</button></div>' +
       items.map(function (t) { var on = (TAB_OF[current.name] || current.name) === t.id, b = t.badge ? t.badge() : 0; return '<a href="#/' + t.id + '" class="dnav__a' + (on ? ' is-on' : '') + '">' + I(t.icon, 18) + '<span>' + t.label + '</span>' + (b ? '<i>' + b + '</i>' : '') + '</a>'; }).join('') +
       '<a href="#/chat" class="dnav__a">' + I('chat', 18) + '<span>Team chat</span>' + (st.unreadCount() ? '<i>' + st.unreadCount() + '</i>' : '') + '</a>' +
-      '<div class="dnav__sep"></div><a href="./" class="dnav__a">' + I('logo', 18) + '<span>Reside Ke product page</span></a><a href="../index.html" class="dnav__a dnav__home"><b>‹</b><span>Back to Ciel Africa</span></a></div>', { label: 'Navigation', cls: 'ovl--left' });
+      '<div class="dnav__sep"></div><a href="./" class="dnav__a">' + I('logo', 18) + '<span>Reside Ke product page</span></a><a href="/" class="dnav__a dnav__home"><b>‹</b><span>Back to Ciel Africa</span></a></div>', { label: 'Navigation', cls: 'ovl--left' });
     p.addEventListener('click', function (e) { if (e.target.closest('a')) ES.close(); });
   }
 

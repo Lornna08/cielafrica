@@ -12,7 +12,7 @@ window.PAY = {
   merchant: {
     name: 'Mokara Coffee',            // sample merchant, replace
     logo: '',                         // path to an SVG or PNG; empty = the name as a wordmark
-    backUrl: '../products.html',      // "Back to store"
+    backUrl: '/products',      // "Back to store"
     supportPhone: '',                 // shown on the help sheet, e.g. '+254 7XX XXX XXX'
     supportEmail: ''
   },

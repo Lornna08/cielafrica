@@ -6,7 +6,8 @@
 <script>/* the base above is for cielafrica.com/pay-kit; anywhere else (your own domain, another folder, or opened from disk) paths resolve from this page's folder */
 (function () { var b = document.querySelector("base"), p = location.pathname; if (location.protocol === "file:") b.href = "./"; else if (p.indexOf("/pay-kit") !== 0) b.href = p.replace(/[^\/]*$/, ""); })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Checkout | Pay Kit by Ciel Africa</title>
+<title>Pay Kit — M-Pesa STK Push & Card Checkout | Ciel Africa</title>
+<link rel="canonical" href="https://cielafrica.com/pay-kit">
 <meta name="description" content="A checkout page for M-PESA STK push and card payments: phone prompt with live status, card form with a live card preview, clear failures and receipts.">
 <meta name="theme-color" content="#0E1411">
 <meta property="og:type" content="website">
@@ -27,7 +28,7 @@
 .cstrip b{color:#E94B35;font-weight:700;font-size:15px;line-height:1}
 .cstrip span{flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:640px){.cstrip span{display:none}}@media print{.cstrip{display:none}}</style>
-<div class="cstrip" role="navigation" aria-label="Ciel Africa"><a href="../index.html"><b>‹</b>Back to Ciel Africa</a><span>Pay Kit: a digital product by Ciel Africa</span><a href="../products.html">All products<b>›</b></a></div>
+<div class="cstrip" role="navigation" aria-label="Ciel Africa"><a href="/"><b>‹</b>Back to Ciel Africa</a><span>Pay Kit: a digital product by Ciel Africa</span><a href="/products">All products<b>›</b></a></div>
 
 <main class="shell" id="app" aria-live="off"></main>
 <div class="sr" id="live" aria-live="polite"></div>

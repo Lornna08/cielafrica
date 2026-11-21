@@ -748,7 +748,7 @@
       '<div><h4>Explore</h4><ul>' + C.nav.map(function (n) { return '<li><a href="' + n.href + '">' + esc(n.label) + '</a></li>'; }).join('') + '<li><a href="#gallery">Gallery</a></li></ul></div>' +
       '<div><h4>Cakes</h4><ul>' + CATS.map(function (c) { return '<li><a href="#collection" data-jump="' + c.id + '">' + esc(c.label) + '</a></li>'; }).join('') + '</ul></div>' +
       '<div><h4>Visit</h4><ul>' + (C.contact.address ? '<li>' + esc(C.contact.address) + '</li>' : '') + (C.contact.email ? '<li><a href="mailto:' + esc(C.contact.email) + '">' + esc(C.contact.email) + '</a></li>' : '') + (hasPhone ? '<li><a href="' + phoneHref(C.contact.phone) + '">' + esc(C.contact.phone) + '</a></li>' : '') + soc.map(function (s) { return '<li><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.label) + '</a></li>'; }).join('') + '</ul></div></div>' +
-      '<div class="foot-base"><span>© ' + new Date().getFullYear() + ' ' + esc(C.brand.name) + '</span><span>CRÈME MOTION template by <a href="../index.html">Ciel Africa</a> · <a href="credits.html">Photo credits</a></span></div>' +
+      '<div class="foot-base"><span>© ' + new Date().getFullYear() + ' ' + esc(C.brand.name) + '</span><span>CRÈME MOTION template by <a href="/">Ciel Africa</a> · <a href="credits.html">Photo credits</a></span></div>' +
       '</div></footer>';
   }
   function mbarHTML() {

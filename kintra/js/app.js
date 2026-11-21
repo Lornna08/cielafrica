@@ -60,8 +60,8 @@ window.KT = window.KT || {};
       if (h.length > 1 && location.hash !== h) location.hash = h; else if (h.length > 1) render(true);
     });
     document.body.insertAdjacentHTML('afterbegin',
-      '<div class="demo-bar" role="region" aria-label="Template notice"><a class="demo-bar__back" href="../index.html" aria-label="Back to Ciel Africa"><b>‹</b><span> Ciel Africa</span></a><span class="dot"></span><span class="demo-bar__msg"><b>KINTRA template</b><span class="txt-long"> · Fictional demo company, saved in this browser only. No payments, messages or emails are sent.</span></span>' +
-      '<span class="demo-bar__acts"><button type="button" data-guide class="hide-sm">Guide</button><button type="button" data-reset>Reset</button><a class="pri" href="../quote.html?template=KINTRA">Get KINTRA</a></span></div>' +
+      '<div class="demo-bar" role="region" aria-label="Template notice"><a class="demo-bar__back" href="/" aria-label="Back to Ciel Africa"><b>‹</b><span> Ciel Africa</span></a><span class="dot"></span><span class="demo-bar__msg"><b>KINTRA template</b><span class="txt-long"> · Fictional demo company, saved in this browser only. No payments, messages or emails are sent.</span></span>' +
+      '<span class="demo-bar__acts"><button type="button" data-guide class="hide-sm">Guide</button><button type="button" data-reset>Reset</button><a class="pri" href="/quote?template=KINTRA">Get KINTRA</a></span></div>' +
       '<div class="shell' + (store.prefs.collapsed ? ' is-collapsed' : '') + '" id="shell"><aside class="side" aria-label="Main navigation"><div class="side__brand"><span class="mark">' + KT.logo(16) + '</span><span class="side__name">KINTRA</span></div>' +
       '<button class="org" id="orgbtn" type="button" aria-label="Organisation"></button><nav class="side__nav" id="nav"></nav>' +
       '<div class="side__foot"><a class="side__btn" href="#/careers">' + ui.icon('globe', 18) + '<span>Careers page</span></a><button class="side__btn" data-collapse type="button" aria-label="Collapse sidebar">' + ui.icon('collapse', 18) + '<span>Collapse</span></button></div></aside><div class="scrim" id="scrim"></div>' +

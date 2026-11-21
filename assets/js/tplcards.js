@@ -25,8 +25,8 @@ window.CIEL = window.CIEL || {};
         if(feat.duoVideo){var dv=feat.duoVideo;media=still(feat.duoPoster||feat.image)+'<video muted loop playsinline preload="none" aria-label="'+esc(feat.name)+' preview"><source src="'+esc(dv)+'" type="video/mp4"><source src="'+esc(dv.replace(/\.mp4(\?|$)/,'.webm$1'))+'" type="video/webm"></video>';}
         media='<div class="htpl__duo"><div class="htpl__dash">'+media+'</div>'+'<div class="ip17 htpl__phone ip17--blue" role="img" aria-label="@@LBL@@"><div class="ip17__body"><i class="ip17__k ip17__k--act"></i><i class="ip17__k ip17__k--vu"></i><i class="ip17__k ip17__k--vd"></i><i class="ip17__k ip17__k--pwr"></i><i class="ip17__k ip17__k--cam"></i><div class="ip17__bezel"><div class="ip17__scr"><div class="ip17__sb"><span>9:41</span><svg viewBox="0 0 68 13" aria-hidden="true"><rect x="0" y="8.5" width="3" height="4" rx="1" stroke="none"/><rect x="4.6" y="6.5" width="3" height="6" rx="1" stroke="none"/><rect x="9.2" y="4" width="3" height="8.5" rx="1" stroke="none"/><rect x="13.8" y="1.5" width="3" height="11" rx="1" stroke="none"/><path d="M31 12.4 28.5 9.7a3.5 3.5 0 0 1 5 0Z" stroke="none"/><path d="M26.1 7.3a6.9 6.9 0 0 1 9.8 0M23.7 4.8a10.3 10.3 0 0 1 14.6 0" fill="none" stroke-width="1.7" stroke-linecap="round"/><rect x="44.5" y="1.2" width="20" height="10.6" rx="3.2" fill="none" stroke-width="1.1" opacity=".45"/><rect x="46.3" y="3" width="14.6" height="7" rx="1.7" stroke="none"/><rect x="65.6" y="4.6" width="1.6" height="3.8" rx=".8" stroke="none" opacity=".45"/></svg></div><i class="ip17__di"></i>@@IMG@@<i class="ip17__hb"></i></div></div></div></div>'.replace('@@LBL@@',esc(feat.name)+' on an iPhone 17 Pro Max').replace('@@IMG@@','<img src="'+esc(feat.phone)+'" alt="" loading="lazy" width="880" height="1804">')+'</div>';
       }
-      var link=feat.link||('quote.html?template='+encodeURIComponent(feat.name));
-      var quote='quote.html?template='+encodeURIComponent(feat.name);
+      var link=feat.link||('/quote?template='+encodeURIComponent(feat.name));
+      var quote='/quote?template='+encodeURIComponent(feat.name);
       var same=feat.demo&&feat.link===feat.demo;
       var pts=k<2?(feat.points||[]).slice(0,3):[];
       return '<article class="htpl__feat'+(k%2?' htpl__feat--alt':'')+'" data-r>'+
@@ -40,7 +40,7 @@ window.CIEL = window.CIEL || {};
     }).join('');
     if(opts.more){
       var cats={};T.forEach(function(t){cats[t.category]=1;});
-      html+='<div class="htpl__more" data-r><p>'+T.length+' designs across '+Object.keys(cats).length+' industries — every one customised to your brand.</p><a class="ul" href="templates.html"><span class="brk">‹</span> Browse all templates</a></div>';
+      html+='<div class="htpl__more" data-r><p>'+T.length+' designs across '+Object.keys(cats).length+' industries — every one customised to your brand.</p><a class="ul" href="/templates"><span class="brk">‹</span> Browse all templates</a></div>';
     }
     return html;
   };

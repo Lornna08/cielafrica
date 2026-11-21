@@ -25,7 +25,7 @@
   function shell() {
     var me = st.me(), co = st.S.settings.company;
     document.body.innerHTML =
-      '<div class="demo-bar" role="region" aria-label="Template notice"><a class="db-back" href="../index.html"><b>‹</b><span> Ciel Africa</span></a><span class="db-msg"><i class="db-dot" aria-hidden="true"></i><span class="db-long">You’re exploring the <b>C-Ledger template</b>. Changes affect sample data only.</span><span class="db-short"><b>C-Ledger template</b> · sample data only</span></span><span class="db-a"><button class="db-btn" data-act="reset">Reset template</button><a class="db-btn db-hide" href="./#features">View features</a><a class="db-btn db-btn--p" href="../quote.html?template=C-Ledger">Get C-Ledger</a></span></div>' +
+      '<div class="demo-bar" role="region" aria-label="Template notice"><a class="db-back" href="/"><b>‹</b><span> Ciel Africa</span></a><span class="db-msg"><i class="db-dot" aria-hidden="true"></i><span class="db-long">You’re exploring the <b>C-Ledger template</b>. Changes affect sample data only.</span><span class="db-short"><b>C-Ledger template</b> · sample data only</span></span><span class="db-a"><button class="db-btn" data-act="reset">Reset template</button><a class="db-btn db-hide" href="./#features">View features</a><a class="db-btn db-btn--p" href="/quote?template=C-Ledger">Get C-Ledger</a></span></div>' +
       '<div class="app" id="app">' +
       '<aside class="side" id="side" aria-label="Main navigation"><div class="side__in">' +
         '<div class="side__brand"><a class="brand" href="#/overview" aria-label="C-Ledger overview"><span class="brand__m">' + I('leaf', 18) + '</span><span class="brand__w">C-Ledger</span></a><button class="ib side__col" data-act="collapse" aria-label="Collapse sidebar">' + I('panel', 17) + '</button></div>' +
@@ -81,7 +81,7 @@
   function drawer() {
     var p = CL.open('drawer', '<div class="dnav"><div class="dnav__h"><span class="brand"><span class="brand__m">' + I('leaf', 18) + '</span><span class="brand__w">C-Ledger</span></span><button class="ib" data-close aria-label="Close">' + I('x', 18) + '</button></div>' +
       NAV.map(function (g) { return '<span class="side__h">' + g[0] + '</span>' + g[1].map(function (n) { var on = (NAV_OF[current.name] || current.name) === n[0]; return '<a class="dnav__a' + (on ? ' is-on' : '') + '" href="#/' + n[0] + '">' + I(n[2], 18) + '<span>' + n[1] + '</span></a>'; }).join(''); }).join('') +
-      '<div class="dnav__sep"></div><a class="dnav__a" href="./">' + I('leaf', 18) + '<span>C-Ledger product page</span></a><a class="dnav__a dnav__home" href="../index.html"><b>‹</b><span>Back to Ciel Africa</span></a></div>', { label: 'Navigation', cls: 'ovl--left' });
+      '<div class="dnav__sep"></div><a class="dnav__a" href="./">' + I('leaf', 18) + '<span>C-Ledger product page</span></a><a class="dnav__a dnav__home" href="/"><b>‹</b><span>Back to Ciel Africa</span></a></div>', { label: 'Navigation', cls: 'ovl--left' });
     p.addEventListener('click', function (e) { if (e.target.closest('a')) CL.close(); });
   }
 

@@ -109,3 +109,9 @@ Notes for cPanel hosting:
 ---
 © Ciel Africa. Portfolio/template/product names in `data/` are neutral placeholders —
 replace them with real content before launch.
+
+## SEO upkeep
+- `node tools/build-seo.js`: after editing `photobooks/index.html`, the photo book categories (`assets/pbk/catalog.js`) or adding a public page. It regenerates the ten `photobooks/<category>.html` pages and `sitemap.xml`. Don't edit the generated category pages by hand.
+- `node tools/prerender.js`: after changing `data/templates.js`, `data/products.js`, `data/work.js` or `data/team.js`. It saves those lists into Templates, Products, Work, Insights and About so search engines see them without running scripts. The browser still redraws them, so a missed run never shows visitors old content.
+- Links and canonical addresses use clean URLs (`/services`, not `/services.html`).
+- Sample-business templates (Abali, Ember & Plate, Crème Motion, Mokara, Njia, Apex Motion, Muse) and `/wanja` are `noindex`.

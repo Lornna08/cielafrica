@@ -49,7 +49,7 @@
       '<div><span class="csub__k"><b>‹</b> ' + c.k + '</span><h2>' + c.h + '</h2><p class="csub__p">' + c.p + '</p><ul class="csub__perks">' + c.perks.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>' +
       '<div class="csub__box"><form class="csub__f" novalidate><input class="csub__nm" name="name" type="text" autocomplete="given-name" placeholder="First name (optional)" maxlength="80" aria-label="First name (optional)">' +
       '<div class="csub__row"><input name="email" type="email" inputmode="email" autocomplete="email" placeholder="Your email address" required aria-label="Email address"><button class="csub__go" type="submit">' + c.btn + ARROW + '</button></div>' +
-      '<p class="csub__ok">By subscribing you agree to get Ciel Africa emails. Unsubscribe in one click, any time. <a href="/privacy.html#emails">Privacy note</a>.</p>' +
+      '<p class="csub__ok">By subscribing you agree to get Ciel Africa emails. Unsubscribe in one click, any time. <a href="/privacy#emails">Privacy note</a>.</p>' +
       '<input class="csub__hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">' +
       '<p class="csub__err" role="alert"></p></form></div></div>';
     var f = el.querySelector('form'), box = el.querySelector('.csub__box'), er = el.querySelector('.csub__err'), go = el.querySelector('.csub__go');

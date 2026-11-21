@@ -35,7 +35,7 @@
       '<div class="ft__cols"><div><h4>Shop</h4><a href="' + M.href('shop') + '">All coffees</a>' + M.products.map(function (p) { return '<a href="' + M.href('coffee/' + p.id) + '">' + esc(p.title) + '</a>'; }).join('') + '</div>' +
       '<div><h4>Learn</h4><a href="' + M.href('origins') + '">Origins</a><a href="' + M.href('process') + '">Bean to cup</a><a href="' + M.href('brew') + '">Brew guides</a><a href="' + M.href('discover') + '">Find your coffee</a><a href="' + M.href('story') + '">Our story</a></div>' +
       '<div><h4>Help</h4>' + (c.email ? '<a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a>' : '') + (c.hours ? '<span>' + esc(c.hours) + '</span>' : '') + '<span>' + esc(C.roastDays) + '</span><a href="' + M.href('credits') + '">Photo credits</a></div></div></div>' +
-      '<div class="ft__b"><span>© 2026 MOKARA — a store template by <a href="../index.html">Ciel Africa</a>. Sample brand, products and prices.</span><span>Payments shown are simulated in template mode.</span></div></footer>';
+      '<div class="ft__b"><span>© 2026 MOKARA — a store template by <a href="/">Ciel Africa</a>. Sample brand, products and prices.</span><span>Payments shown are simulated in template mode.</span></div></footer>';
   }
 
   /* ---------- layers (drawer, menu) ---------- */

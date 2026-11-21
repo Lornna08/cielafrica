@@ -124,7 +124,7 @@
       field('users', 'Who logs in?', { select: ['Nobody, it’s public', 'Customers', 'Staff', 'Customers and staff', 'Not sure'], half: 1 }) + '</div>' +
       chips('features', FEATURES, true, { label: 'Features you’ll need' }) +
       chips('domain', ['I have a domain', 'I need a domain', 'Not sure'], false, { label: 'Domain name' }) +
-      (F.domain === 'I have a domain' ? '<div class="bf-grid">' + field('domainName', 'Which domain?', { ph: 'yourbrand.co.ke' }) + '</div>' : F.domain === 'I need a domain' ? '<p class="bf-note">' + I(IC.site, 16) + '<span>You can <a href="domains.html" target="_blank" rel="noopener">search for one now</a>, or we’ll help you choose.</span></p>' : '') +
+      (F.domain === 'I have a domain' ? '<div class="bf-grid">' + field('domainName', 'Which domain?', { ph: 'yourbrand.co.ke' }) + '</div>' : F.domain === 'I need a domain' ? '<p class="bf-note">' + I(IC.site, 16) + '<span>You can <a href="/domains" target="_blank" rel="noopener">search for one now</a>, or we’ll help you choose.</span></p>' : '') +
       chips('hosting', ['Ciel Africa hosts it', 'I already have hosting', 'Not sure'], false, { label: 'Hosting' }) +
       '<div class="bf-grid">' + field('likes', 'Sites or apps you like', { area: 1, rows: 3, ph: 'Paste links, and tell us what you like about each one' }) +
       field('files', 'Links to files', { ph: 'Google Drive, Dropbox or WeTransfer link to your logo, content or designs' }) + '</div>';
@@ -151,7 +151,7 @@
       var rows = g[1].filter(function (k) { return val(k); }).map(function (k) { return '<div class="bf-rv"><dt>' + LABELS[k] + '</dt><dd>' + esc(val(k)) + '</dd></div>'; }).join('');
       return '<section class="bf-rg"><div class="bf-rg__h"><h3>' + g[0] + '</h3><button type="button" class="bf-link" data-go="' + gi + '">' + I(IC.edit, 14) + 'Edit</button></div>' + (rows ? '<dl>' + rows + '</dl>' : '<p class="bf-empty">Nothing added yet.</p>') + '</section>';
     }).join('') + '</div>' +
-      '<label class="bf-consent"><input type="checkbox" id="b-consent"' + (F.consent ? ' checked' : '') + '><span class="bf-box">' + I(IC.check, 13) + '</span><span>Ciel Africa may contact me about this project. See our <a href="privacy.html" target="_blank" rel="noopener">privacy policy</a>.</span></label><p class="bf-err" id="e-consent" hidden></p>';
+      '<label class="bf-consent"><input type="checkbox" id="b-consent"' + (F.consent ? ' checked' : '') + '><span class="bf-box">' + I(IC.check, 13) + '</span><span>Ciel Africa may contact me about this project. See our <a href="/privacy" target="_blank" rel="noopener">privacy policy</a>.</span></label><p class="bf-err" id="e-consent" hidden></p>';
   }
 
   /* ---------- live summary (aside) ---------- */
@@ -248,7 +248,7 @@
     st.className = 'bf-status'; st.textContent = '';
     fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload()) })
       .then(function (r) { return r.json().catch(function () { return { ok: r.ok }; }); })
-      .then(function (res) { if (!res || !res.ok) throw new Error((res && res.error) || 'error'); try { localStorage.removeItem(KEY); } catch (e) {} try { if (window.CielPixel) CielPixel.after('Lead', { content_name: 'Project brief', content_category: 'Quote request' }); } catch (e) {} location.href = 'thanks.html'; })
+      .then(function (res) { if (!res || !res.ok) throw new Error((res && res.error) || 'error'); try { localStorage.removeItem(KEY); } catch (e) {} try { if (window.CielPixel) CielPixel.after('Lead', { content_name: 'Project brief', content_category: 'Quote request' }); } catch (e) {} location.href = '/thanks'; })
       .catch(function () { btn.disabled = false; render(false); st.className = 'bf-status bf-status--err'; st.innerHTML = 'Something went wrong sending your brief. Try again, send it on WhatsApp, or email <a href="mailto:hello@cielafrica.com">hello@cielafrica.com</a>.'; });
   }
   function waLink() {
@@ -263,7 +263,7 @@
     var img = ref && ref.image ? '<span class="bf-ctx__img"><img src="' + esc(ref.image) + '" alt=""></span>' : '';
     var price = ref && ref.price > 0 ? '<span class="bf-ctx__p">From KES ' + fmt(ref.price) + (kind === 'template' ? ' <small>one-time set-up</small>' : '') + '</span>' : '';
     var live = ref && ref.demo ? '<a class="bf-link" href="' + esc(ref.demo) + '" target="_blank" rel="noopener">View the live template' + I(IC.ext, 14) + '</a>' : '';
-    ctx.innerHTML = img + '<div><p class="bf-kicker">You’re ' + (kind === 'template' ? 'customising' : kind === 'product' ? 'asking about' : 'asking about') + '</p><h2>' + esc(refName) + '</h2>' + (ref && ref.idealFor ? '<p class="bf-ctx__d">' + esc(ref.category || '') + ' · ' + esc(ref.idealFor) + '</p>' : '') + '<div class="bf-ctx__row">' + price + live + '<a class="bf-link" href="' + (kind === 'product' ? 'products.html' : 'templates.html') + '">Change</a></div></div>';
+    ctx.innerHTML = img + '<div><p class="bf-kicker">You’re ' + (kind === 'template' ? 'customising' : kind === 'product' ? 'asking about' : 'asking about') + '</p><h2>' + esc(refName) + '</h2>' + (ref && ref.idealFor ? '<p class="bf-ctx__d">' + esc(ref.category || '') + ' · ' + esc(ref.idealFor) + '</p>' : '') + '<div class="bf-ctx__row">' + price + live + '<a class="bf-link" href="' + (kind === 'product' ? '/products' : '/templates') + '">Change</a></div></div>';
     ctx.hidden = false;
   }
 

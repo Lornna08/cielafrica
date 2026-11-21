@@ -351,7 +351,7 @@
       '<div><h5>Hours</h5><ul>' + groups.map(function (g) { return '<li><p>' + ab(g.from) + (g.to !== g.from ? '–' + ab(g.to) : '') + ': ' + g.t + '</p></li>'; }).join('') + '</ul></div>' +
       '<div><h5>Explore</h5><ul>' + C.nav.concat([{ label: 'Reserve', href: '#reserve' }, { label: 'FAQ', href: '#faq' }]).map(function (n) { return '<li><a href="' + n.href + '">' + esc(n.label) + '</a></li>'; }).join('') + '</ul></div></div>' +
       '<p class="foot-word" aria-hidden="true">' + esc(C.brand.name).replace(/ &amp; /, ' <i>&amp;</i> ') + '</p>' +
-      '<div class="foot-base"><span>© ' + new Date().getFullYear() + ' ' + esc(C.brand.name) + (demo ? ' · sample restaurant' : '') + '</span><span>EMBER &amp; PLATE template by <a href="../index.html">Ciel Africa</a> · <a href="credits.html">Photo credits</a></span></div>' +
+      '<div class="foot-base"><span>© ' + new Date().getFullYear() + ' ' + esc(C.brand.name) + (demo ? ' · sample restaurant' : '') + '</span><span>EMBER &amp; PLATE template by <a href="/">Ciel Africa</a> · <a href="credits.html">Photo credits</a></span></div>' +
       '</div></footer>';
   }
 

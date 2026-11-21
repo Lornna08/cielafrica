@@ -1,4 +1,11 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /admin-content
+Disallow: /domains-admin
+Disallow: /photobooks/admin
+Disallow: /photobooks/printer
+Disallow: /photobooks/orders
 
 Sitemap: https://cielafrica.com/sitemap.xml

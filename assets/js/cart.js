@@ -91,8 +91,8 @@ window.CIEL = window.CIEL || {};
         +'<form class="cart-find" action="/domains" method="get" role="search"><label class="sr-only" for="cartFindQ">Find a domain</label>'+ICO.globe+'<input id="cartFindQ" name="q" placeholder="Find your domain" autocomplete="off" maxlength="80"><button type="submit" aria-label="Search">'+ICO.srch+'</button></form>'
         +'<div class="cart-go">'
         +'<a href="/domains"><span class="cart-go__i" style="--c:#FF5A1F">'+ICO.globe+'</span><span><b>Domains</b><small>.co.ke from KES 1,700</small></span>'+ICO.arr+'</a>'
-        +'<a href="/templates.html"><span class="cart-go__i" style="--c:#1B2A4A">'+ICO.tpl+'</span><span><b>Templates</b><small>Live sites you can start from</small></span>'+ICO.arr+'</a>'
-        +'<a href="/products.html"><span class="cart-go__i" style="--c:#1F9D55">'+ICO.box+'</span><span><b>Products</b><small>Ready-made software</small></span>'+ICO.arr+'</a>'
+        +'<a href="/templates"><span class="cart-go__i" style="--c:#1B2A4A">'+ICO.tpl+'</span><span><b>Templates</b><small>Live sites you can start from</small></span>'+ICO.arr+'</a>'
+        +'<a href="/products"><span class="cart-go__i" style="--c:#1F9D55">'+ICO.box+'</span><span><b>Products</b><small>Ready-made software</small></span>'+ICO.arr+'</a>'
         +'</div></div>';
       foot.innerHTML='<a class="cart-help" href="https://wa.me/254117959105?text=Hi%20Ciel%20Africa%2C%20I%20need%20help%20choosing." target="_blank" rel="noopener">Not sure what you need? <b>Ask us on WhatsApp</b></a>';
       return;
@@ -109,10 +109,10 @@ window.CIEL = window.CIEL || {};
       +'<div class="cart-sum"><span>Subtotal</span><b>KES '+fmt(Cart.total())+'</b></div>'
       +(function(){ var pb=items.some(function(i){return i.pb;}), site=items.some(function(i){return !i.pb;});
           if(pb&&!site) return '<a class="btn btn--p btn--lg cart-checkout" href="/photobooks/checkout">Checkout '+ICO.arr+'</a>';
-          if(pb&&site) return '<a class="btn btn--p btn--lg cart-checkout" href="/photobooks/checkout">Check out photo books '+ICO.arr+'</a><a class="btn btn--ghost cart-checkout cart-checkout--2" href="/checkout.html">Check out other items '+ICO.arr+'</a>';
-          return '<a class="btn btn--p btn--lg cart-checkout" href="/checkout.html">Checkout '+ICO.arr+'</a>'; })()
+          if(pb&&site) return '<a class="btn btn--p btn--lg cart-checkout" href="/photobooks/checkout">Check out photo books '+ICO.arr+'</a><a class="btn btn--ghost cart-checkout cart-checkout--2" href="/checkout">Check out other items '+ICO.arr+'</a>';
+          return '<a class="btn btn--p btn--lg cart-checkout" href="/checkout">Checkout '+ICO.arr+'</a>'; })()
       +'<div class="cart-trust">'+ICO.lock+'Pay securely with M-Pesa</div>'
-      +'<div class="cart-more"><a href="/products.html">Continue shopping</a><button class="cart-clear" data-clear>Clear cart</button></div>';
+      +'<div class="cart-more"><a href="/products">Continue shopping</a><button class="cart-clear" data-clear>Clear cart</button></div>';
     body.querySelectorAll('[data-inc]').forEach(function(b){b.onclick=function(){var i=Cart.items().find(function(x){return x.id===b.dataset.inc;});Cart.setQty(b.dataset.inc,i.qty+1);paint();};});
     body.querySelectorAll('[data-dec]').forEach(function(b){b.onclick=function(){var i=Cart.items().find(function(x){return x.id===b.dataset.dec;});Cart.setQty(b.dataset.dec,i.qty-1);paint();};});
     body.querySelectorAll('[data-rm]').forEach(function(b){b.onclick=function(){Cart.remove(b.dataset.rm);paint();};});

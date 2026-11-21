@@ -41,8 +41,8 @@ CIEL.collectionTile = function(t, i){
   return `<article class="ctile" data-io data-cat="${CIEL.esc(t.category)}">
     <div class="ctile__media">${CIEL.tileMedia(t,i,true)}
       <div class="ctile__preview">
-        <a class="btn btn--sm" href="quote.html?template=${encodeURIComponent(t.name)}" style="background:#fff;color:#000;padding:0.6rem 1rem;border-radius:6px;font-size:0.82rem;font-weight:600">Customize this design</a>
-        <a class="btn btn--sm" href="quote.html?template=${encodeURIComponent(t.name)}" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.4);padding:0.6rem 1rem;border-radius:6px;font-size:0.82rem;font-weight:600">Request a quote</a>
+        <a class="btn btn--sm" href="/quote?template=${encodeURIComponent(t.name)}" style="background:#fff;color:#000;padding:0.6rem 1rem;border-radius:6px;font-size:0.82rem;font-weight:600">Customize this design</a>
+        <a class="btn btn--sm" href="/quote?template=${encodeURIComponent(t.name)}" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.4);padding:0.6rem 1rem;border-radius:6px;font-size:0.82rem;font-weight:600">Request a quote</a>
       </div>
     </div>
     <div class="ctile__meta"><div><span class="ctile__cat">${CIEL.esc(t.category)}</span><h4>${CIEL.esc(t.name)}</h4></div>
@@ -55,7 +55,7 @@ CIEL.galleryCard = function(t, i, kind){
   const badges = [];
   if(t.new) badges.push('<span class="gbadge gbadge--new">New</span>');
   if(t.popular || t.badge==='popular') badges.push('<span class="gbadge gbadge--pop">Popular</span>');
-  const link = kind==='product' ? `quote.html?product=${encodeURIComponent(t.name)}` : `quote.html?template=${encodeURIComponent(t.name)}`;
+  const link = kind==='product' ? `/quote?product=${encodeURIComponent(t.name)}` : `/quote?template=${encodeURIComponent(t.name)}`;
   const priceLabel = kind==='product' ? 'license' : 'starting';
   return `<article class="gcard" data-io data-cat="${CIEL.esc(t.category)}" data-name="${CIEL.esc(t.name.toLowerCase())}" data-price="${t.price}" data-new="${t.new?1:0}" data-pop="${(t.popular||t.badge==='popular')?1:0}">
     <div class="gcard__media">${CIEL.tileMedia(t,i,false)}<div class="gcard__badges">${badges.join('')}</div></div>
@@ -78,7 +78,7 @@ CIEL.workRow = function(w, i){
     : (w.image ? `<img src="${CIEL.esc(w.image)}" alt="${CIEL.esc(w.name)}" loading="lazy">` : CIEL.sitePreview(i+30,false));
   const n = String(i+1).padStart(2,'0');
   const tags = (w.technologies||[]).slice(0,3).map(t=>`<span class="wtag">${CIEL.esc(t)}</span>`).join('');
-  return `<a class="wrow" href="work.html#${w.id}" data-io>
+  return `<a class="wrow" href="/work#${w.id}" data-io>
     <span class="wrow__n">${n}</span>
     <div class="wrow__main"><h3>${CIEL.esc(w.name)}</h3>
       <p class="wrow__desc">${CIEL.esc(w.short||'')}</p>
@@ -89,7 +89,7 @@ CIEL.workRow = function(w, i){
 
 /* ---- Product index row ---- */
 CIEL.productRow = function(p){
-  return `<a class="prow" href="quote.html?product=${encodeURIComponent(p.name)}" data-io>
+  return `<a class="prow" href="/quote?product=${encodeURIComponent(p.name)}" data-io>
     <span class="prow__name">${CIEL.esc(p.name)}</span>
     <span class="prow__cat">${CIEL.esc(p.category)}</span>
     <span class="prow__price">KES ${CIEL.esc(CIEL.fmt(p.price))}<small>one-time</small></span>
@@ -115,7 +115,7 @@ CIEL.workCard = function(w, i){
     ? `<div class="wcard__ui"><span class="wcard__bar"><i></i><i></i><i></i></span><div class="wcard__canvas"><svg viewBox="0 0 800 525" preserveAspectRatio="xMidYMid slice">${CIEL.mockups[w.mockup]}</svg></div></div>`
     : (w.image ? `<img src="${CIEL.esc(w.image)}" alt="${CIEL.esc(w.name)}" loading="lazy">` : CIEL.sitePreview(i+30,false));
   const tags = (w.technologies||[]).slice(0,4).map(t=>`<span class="wtag">${CIEL.esc(t)}</span>`).join('');
-  return `<a class="wcard" href="work.html#${w.id}" data-io data-cat="${CIEL.esc(w.category)}" data-name="${CIEL.esc((w.name+' '+w.industry).toLowerCase())}">
+  return `<a class="wcard" href="/work#${w.id}" data-io data-cat="${CIEL.esc(w.category)}" data-name="${CIEL.esc((w.name+' '+w.industry).toLowerCase())}">
     <div class="wcard__media">${media}</div>
     <div class="wcard__body">
       <div class="wcard__meta"><span class="wcard__cat">${CIEL.esc(w.category)}</span><span class="wcard__ind">${CIEL.esc(w.industry)}</span></div>
@@ -163,7 +163,7 @@ CIEL.caseStudy = function(w, i){
     ${w.mockupAlt && CIEL.mockups[w.mockupAlt] ? `<div class="cs__shot cs__shot--alt" data-io>${CIEL.mockupFrame(w.mockupAlt,'app.ciel/'+w.id+'/reports')}</div>`:''}
     <div class="cs__cta" data-io>
       <p class="copy" style="margin:0">Want something like ${CIEL.esc(w.name)} for your business?</p>
-      <a href="quote.html?service=${encodeURIComponent(w.category)}" class="btn">Start a project like this</a>
+      <a href="/quote?service=${encodeURIComponent(w.category)}" class="btn">Start a project like this</a>
     </div>
   </article>`;
 };
