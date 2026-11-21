@@ -302,15 +302,16 @@
   }
   function drawCatalog(kind) {
     if (kind === 'photobooks' || (kind === 'products' && W.ctab === 'photobooks')) return drawPbTab();
+    if (kind === 'products' && (W.ctab === 'services' || W.ctab === 'domains')) return drawSellTab(W.ctab);
     W.tab = 'prices'; var q = (W.cq || '').toLowerCase(), cat = W.cc || '', list = allItems(kind), ch = W.items[kind] || {}, cats = kind === 'products' ? W.pcats : W.tcats;
     var shown = list.filter(function (p) { return (!cat || p.category === cat) && (!q || (p.name + ' ' + (p.desc || '')).toLowerCase().indexOf(q) >= 0); });
-    var b = H.body('<div class="ws"><div class="ws-top"><div class="tabs" id="catT"><button data-k="products"' + (kind === 'products' ? ' class="is-on"' : '') + '>Products <i>' + allItems('products').length + '</i></button><button data-k="templates"' + (kind === 'templates' ? ' class="is-on"' : '') + '>Website templates <i>' + allItems('templates').length + '</i></button><button data-k="photobooks"' + (kind === 'photobooks' ? ' class="is-on"' : '') + '>Photo Books</button></div><span id="wsSt" class="ws-st"></span><button class="b" id="catNew">+ New ' + (kind === 'products' ? 'product' : 'template') + '</button><button class="b b--p" id="wsPub"' + (W.status.github === false ? ' disabled title="Add GITHUB_TOKEN first"' : '') + '>Publish to cielafrica.com</button></div>' +
+    var b = H.body('<div class="ws"><div class="ws-top">' + catTabs(kind) + '<span id="wsSt" class="ws-st"></span><button class="b" id="catNew">+ New ' + (kind === 'products' ? 'product' : 'template') + '</button><button class="b b--p" id="wsPub"' + (W.status.github === false ? ' disabled title="Add GITHUB_TOKEN first"' : '') + '>Publish to cielafrica.com</button></div>' +
       '<div class="card"><div class="card__h" style="gap:.5rem;flex-wrap:wrap"><input class="hq-in" id="catQ" type="search" placeholder="Search" value="' + esc(W.cq || '') + '" style="max-width:260px"><select class="hq-in" id="catC" style="width:auto"><option value="">All categories</option>' + cats.map(function (c) { return '<option' + (c === cat ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') + '</select><span class="muted" style="font-size:.8rem;margin-left:auto">' + shown.length + ' shown</span></div>' +
       '<table class="tbl cat-tbl"><thead><tr><th></th><th>Name</th><th class="hide-m">Category</th><th>Price</th><th>Status</th></tr></thead><tbody>' + shown.map(function (p) {
         var c = ch[p.id], img = W.uploads[(p.image || '').split('?')[0]] ? 'data:image/webp;base64,' + W.uploads[p.image.split('?')[0]] : shot(kind, p);
         return '<tr data-id="' + esc(p.id) + '"><td style="width:72px">' + (img ? '<img class="cat-img" src="' + esc(img.charAt(0) === '/' || /^data:/.test(img) ? img : '/' + img) + '" alt="">' : '<span class="cat-img cat-img--x"></span>') + '</td><td><b>' + esc(p.name) + '</b><small>' + esc(p.id) + (c ? ' · <span style="color:var(--b)">' + (c.create ? 'new, not published' : 'edited, not published') + '</span>' : '') + '</small></td><td class="hide-m">' + esc(p.category || '') + '</td><td><b>KES ' + Math.round(+p.price || 0).toLocaleString('en-KE') + '</b>' + (p.was > p.price ? '<small><s>KES ' + Math.round(p.was).toLocaleString('en-KE') + '</s></small>' : '') + '</td><td>' + (p.hidden ? '<span class="chip">Hidden</span>' : '<span class="chip chip--g">Live</span>') + '</td></tr>';
       }).join('') + '</tbody></table></div><p class="faint" style="font-size:.78rem">Changes are saved as a draft and go live when you publish (together with any Website editor changes).</p></div>');
-    b.querySelectorAll('#catT [data-k]').forEach(function (x) { x.onclick = function () { W.cc = ''; var k = x.getAttribute('data-k'); W.ctab = k === 'photobooks' ? 'photobooks' : null; if (k === 'photobooks') { if (location.hash !== '#products') location.hash = '#products'; drawPbTab(); return; } location.hash = '#' + (k === 'products' ? 'products' : 'templates'); }; });
+    b.querySelectorAll('#catT [data-k]').forEach(function (x) { x.onclick = function () { W.cc = ''; var k = x.getAttribute('data-k'); if (k === 'services' || k === 'domains') { W.ctab = k; if (location.hash !== '#products') location.hash = '#products'; else drawCatalog('products'); return; } W.ctab = k === 'photobooks' ? 'photobooks' : null; if (k === 'photobooks') { if (location.hash !== '#products') location.hash = '#products'; drawPbTab(); return; } location.hash = '#' + (k === 'products' ? 'products' : 'templates'); }; });
     var qi = b.querySelector('#catQ'); qi.oninput = function () { W.cq = qi.value; var pos = qi.selectionStart; drawCatalog(kind); var n = document.getElementById('catQ'); n.focus(); n.setSelectionRange(pos, pos); };
     b.querySelector('#catC').onchange = function () { W.cc = this.value; drawCatalog(kind); };
     b.querySelector('#wsPub').onclick = publish;
@@ -318,12 +319,51 @@
     b.querySelectorAll('tr[data-id]').forEach(function (tr) { tr.onclick = function () { var p = allItems(kind).filter(function (x) { return x.id === tr.getAttribute('data-id'); })[0]; if (p) editItem(kind, p); }; });
     status();
   }
+  /* Products: one row of tabs for everything Ciel Africa sells */
+  function catTabs(on) {
+    var T = [['products', 'Digital products', allItems('products').length], ['services', 'Services', W.svc ? W.svc.length : null], ['templates', 'Website templates', allItems('templates').length], ['photobooks', 'Photo Books', null], ['domains', 'Domains', W.dom ? W.dom.tlds.length : null]];
+    return '<div class="tabs cat-tabs" id="catT">' + T.map(function (t) { return '<button data-k="' + t[0] + '"' + (t[0] === on ? ' class="is-on"' : '') + '>' + t[1] + (t[2] != null ? ' <i>' + t[2] + '</i>' : '') + '</button>'; }).join('') + '</div>';
+  }
+  /* Services come straight from the Services page (so the two always match); Domains from the live price list */
+  function loadSvc() {
+    if (W.svc) return Promise.resolve(W.svc);
+    return fetch('/services', { credentials: 'same-origin' }).then(function (r) { return r.text(); }).then(function (h) {
+      var d = new DOMParser().parseFromString(h, 'text/html');
+      W.svc = [].map.call(d.querySelectorAll('.svc'), function (x) { var n = x.querySelector('.svc__n'), dd = x.querySelector('.svc__d'), st = dd && dd.querySelector('strong'), pr = st ? st.textContent.trim() : ''; if (st) st.remove(); return { name: n ? n.textContent.trim() : '', desc: dd ? dd.textContent.trim() : '', price: pr }; }).filter(function (x) { return x.name; });
+      return W.svc;
+    });
+  }
+  function loadDom() { if (W.dom) return Promise.resolve(W.dom); return fetch('/api/domains/config', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) { W.dom = { tlds: j.tlds || [], cats: j.categories || [], cur: j.currency || 'KES', ordering: j.ordering }; return W.dom; }); }
+  function drawSellTab(k) {
+    W.tab = 'prices'; W.ctab = k;
+    var b = H.body('<div class="ws"><div class="ws-top">' + catTabs(k) + '</div><div id="sellW"><div class="card"><div class="card__b"><div class="sk" style="height:200px"></div></div></div></div></div>');
+    b.querySelectorAll('#catT [data-k]').forEach(function (x) { x.onclick = function () { var n = x.getAttribute('data-k'); if (n === k) return; if (n === 'services' || n === 'domains') return drawSellTab(n); W.ctab = n === 'photobooks' ? 'photobooks' : null; if (n === 'photobooks') return drawPbTab(); if (n === 'products') return drawCatalog('products'); location.hash = '#templates'; }; });
+    var el = b.querySelector('#sellW');
+    if (k === 'services') loadSvc().then(function (L) {
+      if (!document.body.contains(el)) return;
+      el.innerHTML = '<div class="sv-g">' + L.map(function (x) { return '<div class="card sv-c"><div class="sv-c__h"><b>' + esc(x.name) + '</b>' + (x.price ? '<span class="sv-c__p">' + esc(x.price) + '</span>' : '<span class="sv-c__p sv-c__p--q">Quoted</span>') + '</div><p>' + esc(x.desc) + '</p></div>'; }).join('') + '</div>' +
+        '<p class="faint" style="font-size:.78rem;margin-top:.8rem">' + L.length + ' services, exactly as they appear on cielafrica.com/services. Starting prices; every project is quoted to its real scope. <a href="/services" target="_blank" rel="noopener">Open the page ↗</a></p>';
+      var t = b.querySelector('#catT [data-k=services]'); if (t) t.innerHTML = 'Services <i>' + L.length + '</i>';
+    }, function (e) { el.innerHTML = '<p class="muted">' + esc(e.message) + '</p>'; });
+    else loadDom().then(function (D) {
+      if (!document.body.contains(el)) return;
+      var cur = D.cur || 'KES', fm = function (v) { return v == null ? 'On request' : cur + ' ' + Number(v).toLocaleString('en-KE'); };
+      var cats = {}; D.tlds.forEach(function (t) { var c = t.category || 'Other'; (cats[c] = cats[c] || []).push(t); });
+      var cname = function (c) { var f = (D.cats || []).filter(function (x) { return x && (x.id || x.key || x) === c; })[0]; return f ? (f.label || f.name || c) : c; };
+      el.innerHTML = '<div class="card"><div class="card__h"><h2>Domain names</h2><span class="chip' + (D.ordering ? ' chip--g' : '') + '">' + (D.ordering ? 'Online ordering on' : 'Requests only') + '</span><a class="b b--sm" href="#content" id="domEd" style="margin-left:auto">Edit prices</a></div>' +
+        '<table class="tbl dm-tbl"><thead><tr><th>Extension</th><th class="hide-m">Type</th><th>Register (1 yr)</th><th>Renew</th></tr></thead><tbody>' +
+        Object.keys(cats).map(function (c) { return cats[c].map(function (t) { return '<tr><td><b>' + esc(t.tld.charAt(0) === '.' ? t.tld : '.' + t.tld) + '</b>' + (t.verifyBeforePayment ? '<small>checked by hand before payment</small>' : '') + '</td><td class="hide-m"><small>' + esc(String(cname(c))) + '</small></td><td><b>' + fm(t.register) + '</b></td><td>' + fm(t.renew) + '</td></tr>'; }).join(''); }).join('') + '</tbody></table></div>' +
+        '<p class="faint" style="font-size:.78rem;margin-top:.8rem">' + D.tlds.length + ' extensions on sale at cielafrica.com/domains. Prices are changed in Content library → Domains → Pricing.</p>';
+      var t = b.querySelector('#catT [data-k=domains]'); if (t) t.innerHTML = 'Domains <i>' + D.tlds.length + '</i>';
+      var de = el.querySelector('#domEd'); if (de) de.onclick = function () { if (H.S) H.S.ctab = 1; };
+    }, function (e) { el.innerHTML = '<p class="muted">' + esc(e.message) + '</p>'; });
+  }
   /* Products → Photo Books: the same settings as Website → Prices, with Publish at the top */
   function drawPbTab() {
     W.tab = 'prices'; W.ctab = 'photobooks';
-    var b = H.body('<div class="ws"><div class="ws-top"><div class="tabs" id="catT"><button data-k="products">Products <i>' + allItems('products').length + '</i></button><button data-k="templates">Website templates <i>' + allItems('templates').length + '</i></button><button data-k="photobooks" class="is-on">Photo Books</button></div><span id="wsSt" class="ws-st"></span><button class="b b--p b--sm" id="wsPub">Publish to cielafrica.com</button></div>' +
+    var b = H.body('<div class="ws"><div class="ws-top">' + catTabs('photobooks') + '<span id="wsSt" class="ws-st"></span><button class="b b--p b--sm" id="wsPub">Publish to cielafrica.com</button></div>' +
       '<div id="pbWrap" style="display:grid;gap:1rem"></div><p class="faint" style="font-size:.78rem">Prices, delivery and the hardcover case go live when you publish. Coupons save straight away.</p></div>');
-    b.querySelectorAll('#catT [data-k]').forEach(function (x) { x.onclick = function () { var k = x.getAttribute('data-k'); if (k === 'photobooks') return; W.ctab = null; if (k === 'products' && location.hash === '#products') drawCatalog('products'); else location.hash = '#' + k; }; });
+    b.querySelectorAll('#catT [data-k]').forEach(function (x) { x.onclick = function () { var k = x.getAttribute('data-k'); if (k === 'photobooks') return; if (k === 'services' || k === 'domains') { W.ctab = k; if (location.hash !== '#products') location.hash = '#products'; else drawCatalog('products'); return; } W.ctab = null; if (k === 'products' && location.hash === '#products') drawCatalog('products'); else location.hash = '#' + k; }; });
     b.querySelector('#wsPub').onclick = publish;
     pbCards(b.querySelector('#pbWrap'));
     status();

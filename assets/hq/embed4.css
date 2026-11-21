@@ -1,0 +1,49 @@
+/* ============================================================
+   Pages shown inside Ciel Admin (Content library: Photo Book files, Domains,
+   site content). Same look as Ciel Admin, light and dark, and tidy on phones.
+   Only applies when the page is opened inside Ciel Admin (?embed=1).
+   ============================================================ */
+html.is-embed{--e-bg:#F1F3F8;--e-card:#fff;--e-ink:#0F1729;--e-soft:#4F5870;--e-faint:#8A93A8;--e-line:#E4E7EF;--e-line2:#EDF0F5;--e-o:#2F5BEA;--e-o2:#E8EEFF;--e-g:#1F9D6A;--e-g2:#E2F6EC;--e-y:#C46A0E;--e-y2:#FFF1DE;--e-r:#DC3B30;--e-r2:#FDE8E6}
+html.is-embed[data-theme="dark"]{color-scheme:dark;--e-bg:#0B0F19;--e-card:#121826;--e-ink:#E8EBF3;--e-soft:#A4ACBF;--e-faint:#6F788D;--e-line:#222A3B;--e-line2:#1A2131;--e-o:#6E8BFF;--e-o2:#1A2444;--e-g:#3CCB8E;--e-g2:#10291F;--e-y:#F2A74B;--e-y2:#2B200F;--e-r:#FF6B60;--e-r2:#2E1513}
+html.is-embed,html.is-embed body{background:var(--e-bg)!important;color:var(--e-ink)!important;font-family:Inter,system-ui,-apple-system,sans-serif!important}
+
+/* ---------- Photo Book files ---------- */
+.is-embed .ao{padding:1rem;max-width:none}
+.is-embed .ao h2{font:700 1.05rem Inter,sans-serif;letter-spacing:-.01em;color:var(--e-ink)}
+.is-embed .ao__card,.is-embed .ao__book,.is-embed .ao__pay{background:var(--e-card)!important;border:1px solid var(--e-line)!important;border-radius:18px!important;color:var(--e-ink)}
+.is-embed .ao__msg,.is-embed .ao__row small,.is-embed .ao__det dt,.is-embed .ao__hist{color:var(--e-faint)!important}
+.is-embed .ao__bar input,.is-embed .ao__bar select,.is-embed .ao select,.is-embed .ao textarea,.is-embed .ao input{background:var(--e-card)!important;color:var(--e-ink)!important;border:1px solid var(--e-line)!important;border-radius:12px!important;font:500 .9rem Inter,sans-serif}
+.is-embed .ao__bar input:focus,.is-embed .ao input:focus,.is-embed .ao select:focus{outline:none;border-color:var(--e-o)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--e-o) 18%,transparent)}
+/* order rows: tidy cards (never pills) */
+.is-embed .ao .ao__row{border-radius:16px!important;background:var(--e-card);border:1px solid var(--e-line);color:var(--e-ink);padding:.85rem 1rem;box-shadow:0 1px 2px rgba(15,23,41,.04);transition:border-color .15s}
+.is-embed .ao .ao__row:hover{border-color:color-mix(in srgb,var(--e-o) 45%,var(--e-line))}
+.is-embed .ao__b{border-radius:7px!important;font-weight:650;background:var(--e-line2);color:var(--e-soft)}
+.is-embed .ao__b--paid,.is-embed .ao__b--ready,.is-embed .ao__b--delivered,.is-embed .ao__b--collected{background:var(--e-g2)!important;color:var(--e-g)!important}
+.is-embed .ao__b--printing,.is-embed .ao__b--preparing,.is-embed .ao__b--dispatched,.is-embed .ao__b--ready_collection{background:var(--e-o2)!important;color:var(--e-o)!important}
+.is-embed .ao__b--awaiting_payment,.is-embed .ao__b--awaiting_confirmation{background:var(--e-y2)!important;color:var(--e-y)!important}
+.is-embed .ao__b--payment_failed,.is-embed .ao__b--cancelled,.is-embed .ao__b--refunded{background:var(--e-r2)!important;color:var(--e-r)!important}
+.is-embed .ao .btn{border-radius:11px!important;padding:.55rem .9rem;font:600 .84rem Inter,sans-serif;border:1px solid var(--e-line);background:var(--e-card);color:var(--e-ink)}
+.is-embed .ao .btn--p{background:var(--e-o)!important;border-color:var(--e-o)!important;color:#fff!important}
+.is-embed .ao .btn--ghost{background:var(--e-card)!important;color:var(--e-ink)!important}
+.is-embed .ao__lnk{color:var(--e-o)!important}
+.is-embed .ao__back{color:var(--e-soft);display:inline-flex;align-items:center;gap:.3rem;border:1px solid var(--e-line)!important;background:var(--e-card)!important;border-radius:11px!important;padding:.45rem .8rem}
+.is-embed .ao__pages button{background:var(--e-card);border-color:var(--e-line)}
+.is-embed .ao__pay blockquote{background:var(--e-bg);border-left-color:var(--e-o)}
+.is-embed .ao__test{background:var(--e-ink);color:var(--e-bg)}
+@media(max-width:700px){
+  .is-embed .ao{padding:.7rem}
+  .is-embed .ao__bar{display:grid;grid-template-columns:1fr;gap:.5rem}
+  .is-embed .ao__bar select{width:100%}
+  /* one order = one card: number and status on top, customer, books, total */
+  .is-embed .ao .ao__row{grid-template-columns:minmax(0,1fr) auto;gap:.45rem .8rem;padding:.85rem .9rem}
+  .is-embed .ao__row>span:nth-child(1){grid-column:1;grid-row:1}
+  .is-embed .ao__row>span:nth-child(5){grid-column:2;grid-row:1;justify-self:end;align-self:start}
+  .is-embed .ao__row>span:nth-child(2){grid-column:1/-1;grid-row:2;font-weight:600}
+  .is-embed .ao__row>span:nth-child(3){grid-column:1/-1;grid-row:3;font-size:.84rem;color:var(--e-soft);padding-top:.45rem;border-top:1px solid var(--e-line2)}
+  .is-embed .ao__row>span:nth-child(4){grid-column:1/-1;grid-row:4;font-size:1rem}
+  .is-embed .ao__det dl{grid-template-columns:1fr;gap:.1rem}
+  .is-embed .ao__det dd{margin-bottom:.45rem}
+}
+
+/* ---------- Domains admin and site content: colours follow Ciel Admin ---------- */
+.is-embed[data-theme="dark"] .card,.is-embed[data-theme="dark"] .da-card{background:var(--e-card)}

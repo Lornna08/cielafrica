@@ -394,21 +394,16 @@
     var built = buildFor(kind);
     if (!built) return Promise.resolve('skip');
 
-    if (!ENTERED_PASS) {
-      var pw = prompt('Enter your admin password to publish live (leave blank to just download the file):');
-      if (pw) ENTERED_PASS = pw;
-    }
-    if (!ENTERED_PASS) { download(built.file, built.text); return Promise.resolve('downloaded'); }
-
+    /* signed in to Ciel Admin: publishing uses that sign-in, no password needed */
     return fetch('/api/save', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'ciel' },
       body: JSON.stringify({ password: ENTERED_PASS, file: built.file, content: built.text })
     }).then(function (r) {
       return r.json().then(function (data) { return { status: r.status, data: data }; });
     }).then(function (res) {
       if (res.status === 200 && res.data && res.data.ok) return 'published';
-      if (res.status === 401) { ENTERED_PASS = ''; toast('Publish rejected — wrong password. Downloaded instead.', true); download(built.file, built.text); return 'downloaded'; }
+      if (res.status === 401) { toast('Your sign-in has ended. Open Ciel Admin, sign in again and publish. Downloaded the file for now.', true); download(built.file, built.text); return 'downloaded'; }
       // 500 = not configured yet, or other failure → graceful download
       download(built.file, built.text);
       return 'downloaded';

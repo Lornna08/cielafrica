@@ -41,8 +41,17 @@ module.exports = async function handler(req, res) {
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
   body = body || {};
 
-  // auth
-  if (body.password !== adminPass) {
+  // auth: signed in to Ciel Admin (the main admin, or a team member allowed to edit the website),
+  // or the admin password for older tools
+  let signedIn = false;
+  try {
+    const sec = require('../lib/domains/security');
+    if (sec.sameOrigin(req)) {
+      const w = await require('../lib/hq/team').who(req);
+      signedIn = !!(w && (w.owner || require('../lib/hq/team').has(w.member, ['content', 'website', 'products', 'templates', 'photobooks'])));
+    }
+  } catch (e) { signedIn = false; }
+  if (!signedIn && body.password !== adminPass) {
     res.status(401).json({ ok: false, error: 'Wrong password.' });
     return;
   }

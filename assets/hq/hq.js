@@ -77,6 +77,7 @@
     ucog: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="8" r="5"/><path d="M2 21a8 8 0 0 1 10.434-7.62"/><circle cx="18" cy="18" r="3"/><path d="m19.5 14.3-.4.9"/><path d="m16.9 20.8-.4.9"/><path d="m21.7 19.5-.9-.4"/><path d="m15.2 16.9-.9-.4"/><path d="m21.7 16.5-.9.4"/><path d="m15.2 19.1-.9.4"/><path d="m19.5 21.7-.4-.9"/><path d="m16.9 15.2-.4-.9"/></svg>',
     out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>',
     user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>',
+    monitor: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>',
     grid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="7" x="3" y="3" rx="1.5"/><rect width="7" height="7" x="14" y="3" rx="1.5"/><rect width="7" height="7" x="14" y="14" rx="1.5"/><rect width="7" height="7" x="3" y="14" rx="1.5"/></svg>',
     up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>',
     down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>',
@@ -177,7 +178,7 @@
   function boot() {
     try { localStorage.setItem('pbk_admin', '1'); } catch (e) { }
     root.className = 'hq';
-    root.innerHTML = '<aside class="hq-side"><div class="hq-side__brand">' + LOGO + '<span class="hq-side__tag">Admin</span></div><nav class="hq-nav" id="nav"></nav><div class="hq-side__foot"><a href="/" target="_blank" rel="noopener">cielafrica.com ↗</a><button id="lo">Sign out</button></div></aside>' +
+    root.innerHTML = '<aside class="hq-side"><div class="hq-side__brand">' + LOGO + '<span class="hq-side__tag">Admin</span></div>' + themeSwitch() + '<nav class="hq-nav" id="nav"></nav><div class="hq-side__foot"><a href="/" target="_blank" rel="noopener">cielafrica.com ↗</a><button id="lo">Sign out</button></div></aside>' +
       '<div class="hq-main"><header class="hq-top"><button class="hq-burger" id="burger" aria-label="Open menu">' + I.menu + '</button><button class="hq-srch" id="sk" title="Search (Ctrl+K)">' + I.search + '<span>Search everything…</span><kbd>Ctrl K</kbd></button><span class="hq-live" id="lv" title="Live">Live</span><button class="b b--sm" id="inst" hidden>Install app</button><button class="b b--sm" id="thm" title="Light or dark"></button><button class="b b--sm hq-bell" id="nb" title="Notifications">' + I.bell + '<i id="nbc" hidden></i></button><button class="b b--sm" id="rf" title="Refresh">' + I.ref + '<span>Refresh</span></button><button class="hq-me" id="meB" type="button" aria-label="Your profile">' + avatarHtml(S.me, 'av--sm') + '</button></header><div class="hq-ph"><h1 id="ttl"></h1><div id="topx"></div></div><main class="hq-body" id="body">' + skel() + '</main></div><nav class="hq-mnav" id="mnav"></nav>';
     document.getElementById('lo').onclick = signOut;
     document.getElementById('meB').onclick = meMenu; paintMe();
@@ -193,12 +194,13 @@
     var sx = null, sy = 0;
     document.addEventListener('touchstart', function (e) { var t = e.touches[0]; sx = (t.clientX < 24 || root.classList.contains('nav-open')) ? t.clientX : null; sy = t.clientY; }, { passive: true });
     document.addEventListener('touchend', function (e) { if (sx == null) return; var t = e.changedTouches[0], dx = t.clientX - sx; if (Math.abs(t.clientY - sy) < 60) { if (dx > 50) setNav(true); else if (dx < -50) setNav(false); } sx = null; }, { passive: true });
+    /* light (the default), dark, or follow the phone/computer's own setting */
     var th = document.getElementById('thm'), dark = function () { return document.documentElement.getAttribute('data-theme') === 'dark'; };
-    var paintTh = function () { th.innerHTML = dark() ? I.sun : I.moon; th.title = dark() ? 'Switch to light' : 'Switch to dark'; };
-    paintTh(); th.onclick = function () { var d = !dark(); if (d) document.documentElement.setAttribute('data-theme', 'dark'); else document.documentElement.removeAttribute('data-theme'); try { localStorage.setItem('ca_theme', d ? 'dark' : 'light'); } catch (e) { } paintTh(); themeChanged(); };
+    var paintTh = function () { th.innerHTML = dark() ? I.sun : I.moon; th.title = dark() ? 'Switch to light' : 'Switch to dark'; var m = themeMode(); document.querySelectorAll('[data-tm]').forEach(function (x) { var on = x.getAttribute('data-tm') === m; x.classList.toggle('is-on', on); x.setAttribute('aria-checked', on ? 'true' : 'false'); }); };
+    paintTh(); th.onclick = function () { setTheme(dark() ? 'light' : 'dark'); };
     window.__paintTh = paintTh;
-    /* follow the phone/computer's own light/dark setting until a choice is saved here */
-    try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) { var t = null; try { t = localStorage.getItem('ca_theme'); } catch (x) { } if (t) return; if (e.matches) document.documentElement.setAttribute('data-theme', 'dark'); else document.documentElement.removeAttribute('data-theme'); paintTh(); themeChanged(); }); } catch (e) { }
+    root.querySelectorAll('[data-tm]').forEach(function (x) { x.onclick = function () { setTheme(x.getAttribute('data-tm')); }; });
+    try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { if (themeMode() === 'system') setTheme('system'); }); } catch (e) { }
     document.getElementById('inst').onclick = install; if (installEv) document.getElementById('inst').hidden = false;
     var nb = document.getElementById('nb');
     nb.onclick = function () { if (window.HQTools) HQTools.notifs(nb); };
@@ -338,9 +340,18 @@
   }
   /* on Overview: say plainly when this phone or computer won't get alerts for new leads and orders */
   /* after a theme change: the browser bar colour and anything drawn with theme colours (charts) */
+  function themeMode() { var t = null; try { t = localStorage.getItem('ca_theme'); } catch (e) { } return t === 'dark' || t === 'system' ? t : 'light'; }
+  function setTheme(m) {
+    try { localStorage.setItem('ca_theme', m); } catch (e) { }
+    var d = m === 'dark' || (m === 'system' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+    if (d) document.documentElement.setAttribute('data-theme', 'dark'); else document.documentElement.removeAttribute('data-theme');
+    if (window.__paintTh) window.__paintTh(); themeChanged();
+  }
+  function themeSwitch() { return '<div class="tm3" role="radiogroup" aria-label="Theme">' + [['light', I.sun, 'Light'], ['dark', I.moon, 'Dark'], ['system', I.monitor, 'Device']].map(function (x) { return '<button type="button" role="radio" data-tm="' + x[0] + '" title="' + x[2] + (x[0] === 'system' ? ': match this phone or computer' : '') + '">' + x[1] + '<span>' + x[2] + '</span></button>'; }).join('') + '</div>'; }
   function themeChanged() {
     var dk = document.documentElement.getAttribute('data-theme') === 'dark', m = document.querySelector('meta[name=theme-color]');
     if (m) m.setAttribute('content', innerWidth <= 900 ? (dk ? '#0a0e18' : '#0f1729') : (dk ? '#0b0f19' : '#f1f3f8'));
+    document.querySelectorAll('iframe.hq-embed').forEach(function (f) { try { var r = f.contentDocument.documentElement; if (dk) r.setAttribute('data-theme', 'dark'); else r.removeAttribute('data-theme'); } catch (e) { } });
     if (window.HQ && S.view === 'overview') route(true);
     if (window.HQ && S.view === 'instagram') { var ig = document.querySelector('body'); ig.classList.toggle('ig-dark', dk); }
   }
@@ -626,7 +637,14 @@
       var pts = []; for (var i = 29; i >= 0; i--) { var dd = new Date(Date.now() - i * 864e5), k = iso(dd), x = map[k] || { views: 0, visitors: 0 }; pts.push({ d: dd, v: x.views, u: x.visitors }); }
       var tv = pts.reduce(function (n, x) { return n + x.v; }, 0), tu = pts.reduce(function (n, x) { return n + x.u; }, 0), hasU = tu > 0;
       var ser = [{ n: 'Page views', c: 'var(--o)', v: pts.map(function (x) { return x.v; }) }]; if (hasU) ser.push({ n: 'Visitors', c: 'var(--g)', v: pts.map(function (x) { return x.u; }) });
-      W.innerHTML = '<div class="card__h"><div><h2>Website visitors</h2><p class="ch4__v">' + (hasU ? tu.toLocaleString('en-KE') + ' <span>visitors · ' + tv.toLocaleString('en-KE') + ' page views · last 30 days</span>' : tv.toLocaleString('en-KE') + ' <span>page views · last 30 days</span>') + '</p></div><span class="lc4__lg"><span><i style="background:var(--o)"></i>Page views</span>' + (hasU ? '<span><i style="background:var(--g)"></i>Visitors</span>' : '') + '</span></div><div class="card__b">' + lineChart(ser, pts.map(function (x, j) { return j % 7 === 1 ? d2(x.d) : j === 29 ? 'Today' : ''; }), pts.map(function (x) { return d2(x.d); }), function (n) { return n.toLocaleString('en-KE'); }) + '</div>';
+      /* one clear picture: daily visitors as bars, with the headline numbers beside them */
+      var key = hasU ? 'u' : 'v', top4 = webRows(w.countries).filter(function (x) { return x.label; })[0];
+      var devs = webRows(w.devices).filter(function (x) { return x.label; }), dvT = devs.reduce(function (n, x) { return n + x.views; }, 0), ph = devs.filter(function (x) { return /mobile/i.test(x.label); })[0];
+      var best = pts.reduce(function (m, x) { return x[key] > m[key] ? x : m; }, pts[0]);
+      var stat = function (v, l, c) { return '<div class="wv4__s" style="--sc:' + c + '"><b>' + v + '</b><span>' + l + '</span></div>'; };
+      W.innerHTML = '<div class="card__h"><div><h2>Website visitors</h2><p class="ch4__s">cielafrica.com · last 30 days</p></div><a class="b b--sm" href="#analytics">Analytics</a></div><div class="card__b wv4">' +
+        '<div class="wv4__k">' + stat((hasU ? tu : tv).toLocaleString('en-KE'), hasU ? 'visitors' : 'page views', 'var(--o)') + (hasU ? stat(tv.toLocaleString('en-KE'), 'page views', 'var(--p)') : stat(Math.round(tv / 30).toLocaleString('en-KE'), 'a day on average', 'var(--p)')) + (hasU ? stat((tv / Math.max(1, tu)).toFixed(1), 'pages per visit', 'var(--k-inv)') : top4 ? stat(esc(top4.label), 'top country', 'var(--k-inv)') : '') + (ph && dvT ? stat(Math.round(ph.views / dvT * 100) + '%', 'on phones', 'var(--k-pb)') : '') + '</div>' +
+        '<div class="wv4__c">' + barChart(pts.map(function (x, j) { return { v: x[key], t: d2(x.d), l: j % 7 === 1 ? d2(x.d) : j === 29 ? 'Today' : '' }; }), function (n) { return n.toLocaleString('en-KE') + (hasU ? ' visitors' : ' views'); }) + (best[key] ? '<p class="wv4__f">Busiest day: <b>' + d2(best.d) + '</b> · ' + best[key].toLocaleString('en-KE') + (hasU ? ' visitors' : ' views') + '</p>' : '') + '</div></div>';
       var dev = webRows(w.devices).filter(function (x) { return x.label; }), dT = dev.reduce(function (n, x) { return n + x.views; }, 0), DC = ['var(--o)', 'var(--k-pb)', 'var(--p)', 'var(--g)'];
       var nice = function (l) { l = String(l); return /mobile/i.test(l) ? 'Phones' : /desktop/i.test(l) ? 'Computers' : /tablet/i.test(l) ? 'Tablets' : l.charAt(0).toUpperCase() + l.slice(1); };
       if (D) { var db = D.querySelector('.card__b'); db.className = 'card__b dn4 dn4--s'; db.innerHTML = dT ? donutChart(dev.map(function (x, i) { return { v: x.views, c: DC[i % 4] }; }), '<b>' + kshort(dT) + '</b><span>views</span>') + '<ul class="lg4">' + dev.map(function (x, i) { return '<li><i style="background:' + DC[i % 4] + '"></i><span>' + esc(nice(x.label)) + '</span><b>' + x.views.toLocaleString('en-KE') + ' views</b><em>' + Math.round(x.views / dT * 100) + '%</em></li>'; }).join('') + '</ul>' : '<p class="muted" style="font-size:.82rem">No visits recorded yet.</p>'; }
@@ -656,10 +674,11 @@
     var u = S.me || {}, m = document.createElement('div'); m.id = 'meM'; m.className = 'me-m';
     m.innerHTML = '<div class="me-m__h">' + avatarHtml(u, 'av--lg') + '<div><b>' + esc(u.name || 'You') + '</b><small>' + esc(u.role === 'owner' ? 'Main admin' : (u.title || 'Team member')) + (u.email ? ' · ' + esc(u.email) : '') + '</small></div></div>' +
       '<button type="button" data-a="profile">' + I.user + '<span>Profile & picture</span></button>' + (can('team') ? '<button type="button" data-a="team">' + I.ucog + '<span>Team & access</span></button>' : '') +
-      '<button type="button" data-a="theme">' + (document.documentElement.getAttribute('data-theme') === 'dark' ? I.sun + '<span>Light mode</span>' : I.moon + '<span>Dark mode</span>') + '</button><button type="button" data-a="out" class="is-out">' + I.out + '<span>Sign out</span></button>';
+      '<div class="me-m__t"><small>Theme</small>' + themeSwitch() + '</div><button type="button" data-a="out" class="is-out">' + I.out + '<span>Sign out</span></button>';
     document.body.appendChild(m);
     var close = function (ev) { if (!m.contains(ev.target) && ev.target.closest('#meB') == null) { m.remove(); document.removeEventListener('click', close, true); } };
     setTimeout(function () { document.addEventListener('click', close, true); }, 0);
+    m.querySelectorAll('[data-tm]').forEach(function (x) { x.onclick = function () { setTheme(x.getAttribute('data-tm')); }; }); if (window.__paintTh) window.__paintTh();
     m.onclick = function (ev) { var b = ev.target.closest('[data-a]'); if (!b) return; var a = b.getAttribute('data-a'); m.remove(); document.removeEventListener('click', close, true);
       if (a === 'profile') profileModal(); else if (a === 'team') location.hash = '#team'; else if (a === 'theme') document.getElementById('thm').click(); else if (a === 'out') signOut(); };
   }
@@ -739,10 +758,11 @@
   /* ---------- small charts, drawn in the theme's colours ---------- */
   function kshort(n) { n = Math.round(n || 0); var a = Math.abs(n); return a >= 1e6 ? +(n / 1e6).toFixed(a >= 1e7 ? 0 : 1) + 'M' : a >= 1e3 ? +(n / 1e3).toFixed(a >= 1e4 ? 0 : 1) + 'k' : String(n); }
   function niceMax(v) { if (v <= 0) return 1; var e = Math.pow(10, Math.floor(Math.log10(v))), f = v / e; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * e; }
-  function barChart(pts) {
+  function barChart(pts, fmt) {
+    fmt = fmt || money;
     var top = niceMax(Math.max.apply(null, pts.map(function (p) { return p.v; }).concat([0])));
     return '<div class="bc4"><div class="bc4__y"><span>' + kshort(top) + '</span><span>' + kshort(top / 2) + '</span><span>0</span></div><div class="bc4__p"><div class="bc4__b" style="--n:' + pts.length + '">' +
-      pts.map(function (p) { var h = p.v / top * 100; return '<span class="bc4__c' + (p.v ? '' : ' is-0') + '" data-v="' + esc(p.t + ' · ' + money(p.v)) + '"><i style="height:' + (p.v ? Math.max(2, h) : 0) + '%"></i></span>'; }).join('') +
+      pts.map(function (p) { var h = p.v / top * 100; return '<span class="bc4__c' + (p.v ? '' : ' is-0') + '" data-v="' + esc(p.t + ' · ' + fmt(p.v)) + '"><i style="height:' + (p.v ? Math.max(2, h) : 0) + '%"></i></span>'; }).join('') +
       '</div><div class="bc4__x" style="--n:' + pts.length + '">' + pts.map(function (p) { return '<span>' + esc(p.l || '') + '</span>'; }).join('') + '</div></div></div>';
   }
   function donutChart(parts, mid) {
@@ -1048,9 +1068,9 @@
     bindOrderRows(b);
   }
   function content() {
-    var tabs = [['/admin/content?embed=1', 'Products, templates, work & team'], ['/domains/admin?embed=1', 'Ciel Domains'], ['/photobooks/orders?embed=1', 'Photo Book files']];
+    var tabs = [['/admin/content?embed=1', 'Site content'], ['/domains/admin?embed=1', 'Domains'], ['/photobooks/orders?embed=1', 'Photo Book files']];
     var cur = S.ctab || 0;
-    var b = body('<div class="tabs" id="ct" style="margin-bottom:12px">' + tabs.map(function (t, i) { return '<button data-i="' + i + '"' + (i === cur ? ' class="is-on"' : '') + '>' + t[1] + '</button>'; }).join('') + '</div><iframe class="hq-embed" src="' + tabs[cur][0] + '" title="' + tabs[cur][1] + '"></iframe>');
+    var b = body('<div class="tabs ct-tabs" id="ct">' + tabs.map(function (t, i) { return '<button data-i="' + i + '"' + (i === cur ? ' class="is-on"' : '') + '>' + t[1] + '</button>'; }).join('') + '</div><iframe class="hq-embed" src="' + tabs[cur][0] + '" title="' + tabs[cur][1] + '"></iframe>');
     b.querySelectorAll('#ct [data-i]').forEach(function (x) { x.onclick = function () { S.ctab = +x.getAttribute('data-i'); content(); }; });
   }
   function activity() {
@@ -1129,7 +1149,7 @@
     if (window.HQMoney) HQMoney.setupCards(b);
   }
 
-  window.HQ = { can: can, me: function () { return S.me; }, paintTheme: paintTheme, back: goBack, pushHelp: pushHelp, pushState: pushState, enablePush: enablePush, disablePush: disablePush, I: I, NAV: NAV, KIND: KIND, orderDrawer: orderDrawer, api: api, toast: toast, esc: esc, dt: dt, d2: d2, money: money, today: today, body: body, modal: modal, drawer: drawer, S: S, navs: navs, route: route, saveItem: saveItem, delItem: delItem, taskModal: taskModal, eventModal: eventModal };
+  window.HQ = { setTheme: setTheme, themeMode: themeMode, can: can, me: function () { return S.me; }, paintTheme: paintTheme, back: goBack, pushHelp: pushHelp, pushState: pushState, enablePush: enablePush, disablePush: disablePush, I: I, NAV: NAV, KIND: KIND, orderDrawer: orderDrawer, api: api, toast: toast, esc: esc, dt: dt, d2: d2, money: money, today: today, body: body, modal: modal, drawer: drawer, S: S, navs: navs, route: route, saveItem: saveItem, delItem: delItem, taskModal: taskModal, eventModal: eventModal };
   if (window.HQCrm) HQCrm.init(window.HQ);
   if (window.HQSite) HQSite.init(window.HQ);
   if (window.HQMail) HQMail.init(window.HQ);

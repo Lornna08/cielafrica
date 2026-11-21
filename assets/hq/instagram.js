@@ -329,8 +329,8 @@
   }
   /* dark (the default) or light, kept on this device */
   /* (only where the host app turns it on: Ciel Admin; ABC Club stays light) */
-  function dark() { if (!A.themes) return false; var t = null; try { t = localStorage.getItem('ca_theme'); } catch (e) { } return t ? t === 'dark' : (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches); }
-  function setDark(on) { try { localStorage.setItem('ca_theme', on ? 'dark' : 'light'); } catch (e) { } applyTheme(); if (window.HQ && HQ.paintTheme) HQ.paintTheme(); }
+  function dark() { if (!A.themes) return false; var t = null; try { t = localStorage.getItem('ca_theme'); } catch (e) { } return t === 'dark' || (t === 'system' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches); }
+  function setDark(on) { if (window.HQ && HQ.setTheme) HQ.setTheme(on ? 'dark' : 'light'); else { try { localStorage.setItem('ca_theme', on ? 'dark' : 'light'); } catch (e) { } } applyTheme(); }
   function applyTheme() {
     document.body.classList.toggle('ig-dark', dark());
     if (A.onTheme) A.onTheme(dark());

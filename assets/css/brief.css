@@ -224,3 +224,22 @@
 .bf-chip--ic{display:inline-flex;align-items:center;gap:.45rem}
 .bf-fine{font-size:.8rem;color:var(--muted,#6b6661);margin:.4rem 0 0;line-height:1.5}.bf-fine a{text-decoration:underline}
 .bf-empty{font-size:.85rem;opacity:.65;margin:.3rem 0 0}
+
+/* ---------- v3: dropdowns, tick boxes ---------- */
+.bf-sel{position:relative}
+.bf-sel::after{content:"";position:absolute;right:1rem;top:50%;width:8px;height:8px;border-right:1.8px solid var(--ink-soft,#555);border-bottom:1.8px solid var(--ink-soft,#555);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+.bf-f select{padding-right:2.6rem;cursor:pointer;background-image:none;text-overflow:ellipsis}
+.bf-f select:invalid,.bf-f select option[value=""]{color:#8a8a84}
+.bf-lab{display:block;font-family:var(--disp);font-weight:600;font-size:.92rem;margin:0 0 .55rem}
+.bf-lab small{font-family:var(--text);font-weight:400;font-size:.78rem;color:var(--ink-faint);margin-left:.25rem}
+.bf-checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem}
+.bf-ck{position:relative;display:flex;align-items:center;gap:.6rem;min-height:46px;padding:.55rem .8rem;border:1px solid var(--line-strong);border-radius:12px;background:var(--paper);cursor:pointer;font-size:.92rem;line-height:1.25;transition:border-color .15s,background .15s}
+.bf-ck input{position:absolute;opacity:0;width:1px;height:1px}
+.bf-ck i{display:grid;place-items:center;flex:0 0 20px;width:20px;height:20px;border-radius:6px;border:1.5px solid var(--line-strong);background:var(--white);color:transparent;transition:background .15s,border-color .15s}
+.bf-ck:hover{border-color:var(--ink)}
+.bf-ck.is-on{border-color:var(--ink);background:var(--white)}
+.bf-ck.is-on i{background:var(--ink);border-color:var(--ink);color:var(--white)}
+.bf-ck input:focus-visible+i{outline:2px solid var(--ink);outline-offset:2px}
+.bf-steps b{font-family:var(--text)}
+@media(max-width:560px){.bf-checks{grid-template-columns:minmax(0,1fr)}}
+.bf-f .bf-ck{display:flex;margin:0;font-family:var(--text);font-weight:500;font-size:.92rem}

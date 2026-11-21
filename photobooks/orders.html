@@ -49,7 +49,7 @@ body{background:#f6f2ea;font-family:Inter,system-ui,sans-serif;color:#1b1714}
 .ao__back{background:none;border:0;color:#5c554e;font-weight:600;cursor:pointer;margin-bottom:.8rem}
 @media(max-width:860px){.ao__row{grid-template-columns:1fr 1fr}.ao__det{grid-template-columns:1fr}}
 </style>
-<script>if(/[?&]embed=1/.test(location.search))document.documentElement.classList.add("is-embed")</script>
+<script>if(/[?&]embed=1/.test(location.search)){document.documentElement.classList.add("is-embed");try{var t=localStorage.getItem("ca_theme");if(t==="dark"||(t==="system"&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.setAttribute("data-theme","dark")}catch(e){}}</script>
 <style>.is-embed .ao__top,.is-embed .ao__tip{display:none!important}</style>
 <style>
 /* phones (and the Ciel Admin app, which shows this page in a frame): nothing may be wider than the screen,
@@ -64,6 +64,7 @@ html,body{max-width:100%;overflow-x:hidden}
 .ao__b--awaiting_confirmation{background:#fff3e0;color:#8a5a00}
 @media(max-width:560px){.ao{padding:.8rem}.ao__book{flex-direction:column}.ao__book img{width:120px}.ao__acts .btn{flex:1 1 auto;justify-content:center}}
 </style>
+<link rel="stylesheet" href="/assets/hq/embed4.css?v=20261122a">
 </head>
 <body>
 <div class="ao" id="ao"><p class="ao__msg">Loading…</p></div>
