@@ -41,78 +41,171 @@
     return { type: paid ? 'receipt' : 'invoice', number: o.ref, ref: o.ref, date: ymd(o.at), paidAt: paid ? ymd(r.paidAt || o.at) : '', client: c.name || '', email: c.email || '', phone: c.phone ? '+' + String(c.phone).replace(/^\+/, '') : '', address: addr, items: items, delivery: delivery, discount: discount, total: o.total || 0, method: methodOf(o), code: (r.payment && r.payment.code) || r.mpesaReceipt || r.receiptNumber || '', notes: o.test ? 'TEST ORDER: no payment was taken.' : '' };
   }
   function methodOf(o) { var r = o.raw || {}; if (o.kind === 'invoice') return r.method || ''; if (o.kind === 'whatsapp') return 'Arranged on WhatsApp'; if (r.payment && r.payment.method === 'paybill') return 'M-Pesa Paybill ' + (r.payment.paybill || ''); return o.paid ? 'M-Pesa' : ''; }
-  function fromInvoice(v, asReceipt) { return { type: asReceipt ? 'receipt' : 'invoice', number: v.number, ref: v.number, date: v.date || ymd(v.createdAt), due: v.due, paidAt: v.paidAt || '', client: v.client, email: v.email, phone: v.phone, address: v.address, items: v.items || [], delivery: v.delivery || 0, discount: v.discount || 0, total: v.total || 0, method: v.method || '', code: v.code || '', notes: v.notes || '' }; }
+  function fromInvoice(v, asReceipt) { return { type: asReceipt ? 'receipt' : 'invoice', number: v.number, ref: v.number, date: v.date || ymd(v.createdAt), due: v.due, paidAt: v.paidAt || '', client: v.client, email: v.email, phone: v.phone, address: v.address, items: v.items || [], delivery: v.delivery || 0, discount: v.discount || 0, total: v.total || 0, method: v.method || '', code: v.code || '', notes: v.notes || '', projTitle: v.projTitle || '', projDomain: v.projDomain || '', projDesc: v.projDesc || '', schedule: asReceipt ? [] : v.schedule || [], recurring: asReceipt ? [] : v.recurring || [], eta: asReceipt ? '' : v.eta || '', etaNote: asReceipt ? '' : v.etaNote || '', assumptions: asReceipt ? '' : v.assumptions || '', preparedBy: v.preparedBy || '', preparedRole: v.preparedRole || '' }; }
 
   /* ---------- the PDF ---------- */
   var libP = null;
   function lib() { return libP || (libP = window.PDFLib ? Promise.resolve(window.PDFLib) : new Promise(function (ok, no) { var s = document.createElement('script'); s.src = '/assets/vendor/pdf-lib-1.17.1.min.js'; s.onload = function () { ok(window.PDFLib); }; s.onerror = function () { libP = null; no(new Error('Couldn’t load the PDF maker. Check your connection.')); }; document.head.appendChild(s); })); }
   var OK = '’‘“”–—…•€™‚„†‡‰‹›';
   function san(s) { return String(s == null ? '' : s).replace(/[→]/g, '->').replace(/[ ]/g, ' ').replace(/./g, function (ch) { var c = ch.charCodeAt(0); return (c >= 32 && c < 127) || (c >= 160 && c < 256) || OK.indexOf(ch) >= 0 ? ch : (c === 10 ? ch : '?'); }); }
+  /* Ciel Africa document layout (invoices, receipts and order documents all use it):
+     logo + big title, orange rule, From / Bill to, project, dark-headed items table, orange total band,
+     payment schedule + payment details; a second page for recurring services, delivery time,
+     assumptions and who prepared it; footer with page numbers on every page. */
   function makePdf(doc) {
     return Promise.all([lib(), biz(), fetch('/assets/img/logo-dark.png?v=20261021i').then(function (r) { return r.arrayBuffer(); }).catch(function () { return null; })]).then(function (x) {
       var L = x[0], B = x[1], logo = x[2];
       return L.PDFDocument.create().then(function (pdf) {
-        pdf.setTitle(san((doc.type === 'receipt' ? 'Receipt ' : 'Invoice ') + doc.number)); pdf.setAuthor(san(B.name)); pdf.setCreator('Ciel Admin');
+        var R = doc.type === 'receipt';
+        pdf.setTitle(san((R ? 'Receipt ' : 'Invoice ') + doc.number)); pdf.setAuthor(san(B.name)); pdf.setCreator('Ciel Admin');
         return Promise.all([pdf.embedFont(L.StandardFonts.Helvetica), pdf.embedFont(L.StandardFonts.HelveticaBold), logo ? pdf.embedPng(logo).catch(function () { return null; }) : null]).then(function (f) {
-          var F = f[0], FB = f[1], img = f[2], p = pdf.addPage([595.28, 841.89]), W = 595.28, M = 48, y = 842 - 54;
-          var ink = L.rgb(0.08, 0.07, 0.06), soft = L.rgb(0.42, 0.39, 0.36), faint = L.rgb(0.62, 0.59, 0.55), org = L.rgb(1, 0.353, 0.122), line = L.rgb(0.91, 0.89, 0.86), cream = L.rgb(0.976, 0.961, 0.94);
-          function t(s, x0, y0, o) { o = o || {}; var fn = o.b ? FB : F, sz = o.s || 10, str = san(s); if (o.r) x0 = x0 - fn.widthOfTextAtSize(str, sz); p.drawText(str, { x: x0, y: y0, size: sz, font: fn, color: o.c || ink }); }
-          function wrap(s, w, sz, fn) { var words = san(s).split(/\s+/), out = [], cur = ''; words.forEach(function (wd) { var tr = cur ? cur + ' ' + wd : wd; if (fn.widthOfTextAtSize(tr, sz) > w && cur) { out.push(cur); cur = wd; } else cur = tr; }); if (cur) out.push(cur); return out.length ? out : ['']; }
-          var R = doc.type === 'receipt';
-          /* header */
-          if (img) { var sc = 30 / img.height; p.drawImage(img, { x: M, y: y - 22, width: img.width * sc, height: 30 }); } else t(B.name, M, y, { b: true, s: 18 });
-          t(R ? 'RECEIPT' : 'INVOICE', W - M, y - 4, { b: true, s: 24, r: true });
-          t((R ? (/^RCT-/.test(doc.number) ? 'Receipt ' : 'Receipt for ') : 'Invoice ') + doc.number, W - M, y - 22, { s: 10, c: soft, r: true });
-          y -= 48; p.drawRectangle({ x: M, y: y, width: W - 2 * M, height: 3, color: org }); y -= 26;
-          /* from / to */
-          var colX = W / 2 + 10;
-          t('FROM', M, y, { b: true, s: 8, c: faint }); t(R ? 'RECEIVED FROM' : 'BILL TO', colX, y, { b: true, s: 8, c: faint }); y -= 15;
-          var from = [B.name, B.address, B.phone, B.email, B.web, B.taxId ? 'PIN ' + B.taxId : ''].filter(Boolean), to = [doc.client || '—', doc.address, doc.phone, doc.email].filter(Boolean), yy = y;
-          from.forEach(function (s, i) { t(s, M, yy, { b: i === 0, s: i === 0 ? 11 : 9.5, c: i === 0 ? ink : soft }); yy -= 14; });
-          var y2 = y; to.forEach(function (s, i) { wrap(s, W - M - colX, i === 0 ? 11 : 9.5, i === 0 ? FB : F).forEach(function (ln) { t(ln, colX, y2, { b: i === 0, s: i === 0 ? 11 : 9.5, c: i === 0 ? ink : soft }); y2 -= 14; }); });
-          y = Math.min(yy, y2) - 12;
-          /* dates */
-          var meta = [['Date', nice(doc.date)]];
-          if (R) meta.push(['Paid', nice(doc.paidAt || doc.date)]); else if (doc.due) meta.push(['Due', nice(doc.due)]);
-          if (doc.ref && doc.ref !== doc.number) meta.push(['Reference', doc.ref]);
-          p.drawRectangle({ x: M, y: y - 34, width: W - 2 * M, height: 40, color: cream });
-          meta.forEach(function (m, i) { var x0 = M + 14 + i * 150; t(m[0].toUpperCase(), x0, y - 8, { b: true, s: 7.5, c: faint }); t(m[1], x0, y - 23, { b: true, s: 10.5 }); });
-          y -= 62;
-          /* lines */
-          var cQ = W - M - 190, cP = W - M - 95, cA = W - M;
-          t('DESCRIPTION', M, y, { b: true, s: 8, c: faint }); t('QTY', cQ, y, { b: true, s: 8, c: faint, r: true }); t('PRICE', cP, y, { b: true, s: 8, c: faint, r: true }); t('AMOUNT', cA, y, { b: true, s: 8, c: faint, r: true });
-          y -= 8; p.drawLine({ start: { x: M, y: y }, end: { x: W - M, y: y }, thickness: 0.8, color: line }); y -= 16;
-          var sub = 0;
-          (doc.items || []).forEach(function (l) {
-            var amt = (l.qty || 0) * (l.price || 0); sub += amt;
-            var lines = wrap(l.desc || '', cQ - M - 60, 10, F);
-            lines.forEach(function (ln, i) { t(ln, M, y - i * 13, { s: 10 }); });
-            t(String(l.qty == null ? '' : l.qty), cQ, y, { s: 10, r: true }); t(kes(l.price), cP, y, { s: 10, r: true }); t(kes(amt), cA, y, { s: 10, b: true, r: true });
-            y -= 13 * lines.length + 9; p.drawLine({ start: { x: M, y: y + 4 }, end: { x: W - M, y: y + 4 }, thickness: 0.5, color: line }); y -= 8;
-            if (y < 220) { p = pdf.addPage([595.28, 841.89]); y = 790; }
+          var F = f[0], FB = f[1], img = f[2], W = 595.28, H0 = 841.89, M = 50, CW = W - 2 * M, BOT = 92, pages = [], p, y;
+          var rgb = function (r, g, b) { return L.rgb(r / 255, g / 255, b / 255); };
+          var ORG = rgb(241, 90, 36), DARK = rgb(32, 35, 40), INK = rgb(55, 57, 62), SOFT = rgb(110, 114, 122), FAINT = rgb(150, 154, 160), LINE = rgb(226, 228, 232), BOX = rgb(244, 245, 247), BOXL = rgb(210, 213, 218), PEACH = rgb(254, 241, 234), WHITE = rgb(255, 255, 255), GREEN = rgb(22, 128, 61);
+          var num = function (n) { return (Math.round((n || 0) * 100) / 100).toLocaleString('en-KE', { maximumFractionDigits: 2 }); };
+          var up = function (s) { return String(s || '').toUpperCase(); };
+          function page() { p = pdf.addPage([W, H0]); pages.push(p); y = H0 - 60; }
+          function t(s, x0, y0, o) { o = o || {}; var fn = o.b ? FB : F, sz = o.s || 9, str = san(s); var w = fn.widthOfTextAtSize(str, sz); if (o.r) x0 -= w; else if (o.c2) x0 -= w / 2; p.drawText(str, { x: x0, y: y0, size: sz, font: fn, color: o.c || INK }); return w; }
+          function wrap(s, w, sz, fn) { var out = []; String(san(s)).split('\n').forEach(function (para) { var words = para.split(/\s+/).filter(Boolean), cur = ''; words.forEach(function (wd) { var tr = cur ? cur + ' ' + wd : wd; if (fn.widthOfTextAtSize(tr, sz) > w && cur) { out.push(cur); cur = wd; } else cur = tr; }); out.push(cur); }); return out.length ? out : ['']; }
+          function rect(x0, y0, w, h, c, o) { p.drawRectangle(Object.assign({ x: x0, y: y0, width: w, height: h, color: c }, o || {})); }
+          function hline(x0, x1, y0, c, th) { p.drawLine({ start: { x: x0, y: y0 }, end: { x: x1, y: y0 }, thickness: th || 0.6, color: c || LINE }); }
+          function vline(x0, y0, y1, c) { p.drawLine({ start: { x: x0, y: y0 }, end: { x: x0, y: y1 }, thickness: 0.6, color: c || BOXL }); }
+          function label(s, x0) { t(up(s), x0 == null ? M : x0, y, { b: true, s: 9, c: ORG }); }
+          function need(h, again) { if (y - h < BOT) { page(); if (again) again(); } }
+
+          /* ---- page 1 header ---- */
+          page();
+          if (img) { var lh = 38, sc = lh / img.height; p.drawImage(img, { x: M, y: y - 30, width: img.width * sc, height: lh }); } else t(B.name, M, y - 14, { b: true, s: 18 });
+          t(R ? 'RECEIPT' : 'INVOICE', W - M, y - 18, { b: true, s: 30, c: DARK, r: true });
+          t(doc.number, W - M, y - 34, { b: true, s: 10.5, c: DARK, r: true });
+          var when = (R ? 'PAID · ' + up(nice(doc.paidAt || doc.date)) : 'ISSUED · ' + up(nice(doc.date))) + (!R && doc.due ? '   ·   DUE · ' + up(nice(doc.due)) : '');
+          t(when, W - M, y - 50, { b: true, s: 7.5, c: FAINT, r: true });
+          y -= 68; hline(M, W - M, y, ORG, 1.4); y -= 26;
+
+          /* ---- from / bill to ---- */
+          var colX = W / 2 + 12, top = y;
+          label('From'); label(R ? 'Received from' : 'Bill to', colX); y -= 15;
+          var from = [B.name, B.address, B.phone, B.email, B.web, B.taxId ? 'KRA PIN ' + B.taxId : ''].filter(Boolean);
+          var to = [doc.client || '—'].concat(doc.phone ? ['Phone: ' + doc.phone] : [], doc.email ? [doc.email] : [], doc.address ? wrap(doc.address, W - M - colX, 9, F) : []);
+          var ya = y; from.forEach(function (s2, i) { t(s2, M, ya, { b: i === 0, s: 9, c: INK }); ya -= 12.5; });
+          var yb = y; to.forEach(function (s2, i) { wrap(s2, W - M - colX, 9, i === 0 ? FB : F).forEach(function (ln) { t(ln, colX, yb, { b: i === 0, s: 9, c: INK }); yb -= 12.5; }); });
+          y = Math.min(ya, yb); vline(colX - 14, top + 10, y + 4); y -= 14;
+
+          /* ---- project ---- */
+          if (doc.projTitle || doc.projDomain || doc.projDesc) {
+            label('Project', M + 6); y -= 14;
+            if (doc.projTitle) { wrap(doc.projTitle, CW - 12, 9, FB).forEach(function (ln) { t(ln, M + 6, y, { b: true, s: 9 }); y -= 12; }); }
+            if (doc.projDomain) { var dw = t('Domain: ', M + 6, y, { s: 9, c: SOFT }); t(doc.projDomain, M + 6 + dw, y, { s: 9 }); y -= 12; }
+            if (doc.projDesc) wrap(doc.projDesc, CW - 12, 9, F).forEach(function (ln) { t(ln, M + 6, y, { s: 9 }); y -= 12; });
+            y -= 8;
+          }
+
+          /* ---- items ---- */
+          var cQ = W - M - 205, cP = W - M - 105, cA = W - M - 10;
+          function thead() { rect(M, y - 24, CW, 24, DARK); [['What it’s for', M + 10], ['Qty', cQ, 'c'], ['Price (KES)', cP, 'r'], ['Amount (KES)', cA, 'r']].forEach(function (h) { t(up(h[0]), h[1], y - 15.5, { b: true, s: 7.2, c: WHITE, r: h[2] === 'r', c2: h[2] === 'c' }); }); y -= 24; }
+          need(80); label(R ? 'Items paid' : 'Itemised charges / one-time invoice', M + 6); y -= 9; thead();
+          var sub = 0, rows = (doc.items || []).map(function (l) { var a = (l.qty || 0) * (l.price || 0); sub += a; return [l.desc || '', String(l.qty == null ? '' : num(l.qty)), num(l.price), num(a)]; });
+          if (doc.delivery) rows.push(['Delivery', '1', num(doc.delivery), num(doc.delivery)]);
+          if (doc.discount) rows.push(['Discount', '', '', '–' + num(doc.discount)]);
+          rows.forEach(function (r0) {
+            var ls = wrap(r0[0], cQ - M - 40, 9, F), h = Math.max(22, ls.length * 11.5 + 11);
+            need(h, thead);
+            ls.forEach(function (ln, i) { t(ln, M + 10, y - 14 - i * 11.5, { s: 9 }); });
+            t(r0[1], cQ, y - 14, { s: 9, c2: true }); t(r0[2], cP, y - 14, { s: 9, r: true }); t(r0[3], cA, y - 14, { s: 9, r: true });
+            y -= h; hline(M, W - M, y, LINE, 0.6);
           });
-          /* totals */
-          var tx = W - M - 200; y -= 2;
-          function row(a, b, o) { t(a, tx, y, { s: (o && o.s) || 10, c: (o && o.c) || soft, b: o && o.b }); t(b, cA, y, { s: (o && o.s) || 10, b: true, r: true, c: (o && o.bc) || ink }); y -= (o && o.gap) || 17; }
-          row('Subtotal', kes(sub));
-          if (doc.delivery) row('Delivery', kes(doc.delivery));
-          if (doc.discount) row('Discount', '- ' + kes(doc.discount));
-          var total = Math.max(0, sub + (doc.delivery || 0) - (doc.discount || 0));
-          if (doc.total && Math.abs(doc.total - total) < 1) total = doc.total;
-          y -= 16; p.drawRectangle({ x: tx - 12, y: y - 12, width: cA - tx + 12 + 0, height: 34, color: org });
-          t(R ? 'TOTAL PAID' : 'AMOUNT DUE', tx, y, { b: true, s: 10, c: L.rgb(1, 1, 1) }); t(kes(total), cA - 10, y, { b: true, s: 14, r: true, c: L.rgb(1, 1, 1) });
-          y -= 46;
-          /* payment */
-          var py = y; t(R ? 'PAYMENT' : 'HOW TO PAY', M, py, { b: true, s: 8, c: faint }); py -= 15;
-          if (R) { [doc.method ? 'Method: ' + doc.method : '', doc.code ? 'M-Pesa code: ' + doc.code : '', 'Received: ' + nice(doc.paidAt || doc.date)].filter(Boolean).forEach(function (s) { t(s, M, py, { s: 10 }); py -= 14; }); }
-          else { [B.paybill ? 'M-Pesa Paybill: ' + B.paybill : '', B.paybill ? 'Account: ' + (B.account || doc.number) : '', 'Reference: ' + doc.number, doc.due ? 'Please pay by ' + nice(doc.due) : ''].filter(Boolean).forEach(function (s) { t(s, M, py, { s: 10 }); py -= 14; }); }
-          if (R) { p.drawRectangle({ x: W - M - 110, y: py + 6, width: 110, height: 34, borderColor: L.rgb(0.09, 0.5, 0.24), borderWidth: 2, color: L.rgb(0.92, 0.97, 0.94), rotate: L.degrees(-6) }); t('PAID', W - M - 78, py + 17, { b: true, s: 16, c: L.rgb(0.09, 0.5, 0.24) }); }
-          if (doc.notes) { py -= 8; t('NOTES', M, py, { b: true, s: 8, c: faint }); py -= 15; wrap(doc.notes, W - 2 * M, 9.5, F).forEach(function (ln) { t(ln, M, py, { s: 9.5, c: soft }); py -= 13; }); }
-          /* footer */
-          p.drawLine({ start: { x: M, y: 70 }, end: { x: W - M, y: 70 }, thickness: 0.6, color: line });
-          t(B.invoiceNote || 'Thank you.', M, 52, { b: true, s: 10 });
-          t([B.web, B.email, B.phone].filter(Boolean).join('  ·  '), M, 38, { s: 8.5, c: faint });
-          t('‹', W - M, 40, { b: true, s: 26, c: org, r: true });
+          var total = Math.max(0, sub + (doc.delivery || 0) - (doc.discount || 0)); if (doc.total && Math.abs(doc.total - total) < 1) total = doc.total;
+          y -= 12; need(40);
+          rect(M, y - 36, CW, 36, ORG);
+          t((R ? 'Total paid' : 'Total invoice value').toUpperCase() + ' · KENYAN SHILLINGS', M + 12, y - 22, { b: true, s: 8, c: WHITE });
+          t(kes(total), W - M - 12, y - 25, { b: true, s: 17, c: WHITE, r: true });
+          y -= 48;
+
+          /* ---- payment schedule / payment details (invoice) or payment received (receipt) ---- */
+          var half = CW / 2, lx = M + 12, rx = M + half + 12, cw2 = half - 24;
+          var left = [], right = [];   /* [text, opts] lines; opts.gap = extra space after */
+          if (R) {
+            left.push(['Payment received', { lab: true }]);
+            if (doc.method) left.push(['Method', { b: true }], [doc.method, {}]);
+            if (doc.code) left.push(['M-Pesa code', { b: true }], [doc.code, {}]);
+            left.push(['Received on', { b: true }], [nice(doc.paidAt || doc.date), {}]);
+            right.push(['Status', { lab: true }], ['Paid in full', { b: true, s: 12, c: GREEN }], [kes(total) + ' received with thanks.', { c: SOFT }]);
+          } else {
+            var sch = (doc.schedule || []).filter(function (x0) { return x0.label || x0.pct; });
+            left.push([sch.length ? 'Payment schedule' : 'Payment due', { lab: true }]);
+            if (sch.length) sch.forEach(function (x0, i) { left.push([x0.label || (x0.pct + '%'), { b: true }], [kes(Math.round(total * (x0.pct || 0)) / 100), { b: true, s: 12, c: DARK }]); if (x0.note) left.push([x0.note, { c: SOFT, gap: i < sch.length - 1 ? 6 : 0 }]); else left[left.length - 1][1].gap = 6; });
+            else left.push([doc.due ? 'Please pay by ' + nice(doc.due) : 'Payable on receipt of this invoice.', {}]);
+            right.push(['Payment details', { lab: true }]);
+            if (B.paybill) right.push(['M-Pesa Paybill', { b: true }], [B.paybill, {}], ['Account number', { b: true }], [B.account || doc.number, {}]);
+            right.push(['Payment reference', { b: true }], [doc.number, {}]);
+          }
+          function hgt(list) { return list.reduce(function (n, l) { var o = l[1], sz = o.s || 8.5; return n + (o.lab ? 15 : wrap(l[0], cw2, sz, o.b ? FB : F).length * (sz + 2.5)) + (o.gap || 0); }, 0); }
+          var bh = Math.max(hgt(left), hgt(right)) + 22;
+          need(bh + 4);
+          rect(M, y - bh, CW, bh, BOX, { borderColor: BOXL, borderWidth: 0.6 }); vline(M + half, y - 8, y - bh + 8);
+          function col(list, x0) { var yy = y - 16; list.forEach(function (l) { var o = l[1], sz = o.s || 8.5; if (o.lab) { t(up(l[0]), x0, yy, { b: true, s: 9, c: ORG }); yy -= 15; } else { wrap(l[0], cw2, sz, o.b ? FB : F).forEach(function (ln) { t(ln, x0, yy, { b: o.b, s: sz, c: o.c || INK }); yy -= sz + 2.5; }); } yy -= o.gap || 0; }); }
+          col(left, lx); col(right, rx); y -= bh + 16;
+
+          if (doc.notes) { need(40); label('Notes', M + 6); y -= 13; wrap(doc.notes, CW - 12, 8.5, F).forEach(function (ln) { need(12); t(ln, M + 6, y, { s: 8.5, c: SOFT }); y -= 11.5; }); y -= 8; }
+
+          /* ---- page 2: service & delivery details ---- */
+          var rec = (doc.recurring || []).filter(function (r0) { return r0.service; }), asm = String(doc.assumptions || '').split('\n').map(function (a) { return a.replace(/^\s*(\d+[.)]|[-•*])\s*/, '').trim(); }).filter(Boolean);
+          if (rec.length || doc.eta || asm.length) {
+            page();
+            t('SERVICE & DELIVERY DETAILS', M, y - 16, { b: true, s: 20, c: DARK }); y -= 28;
+            t('Ongoing service rates and the conditions attached to this engagement', M, y, { s: 7.5, c: SOFT }); y -= 22;
+            if (rec.length) {
+              label('Recurring services / not included in the one-time total', M + 6); y -= 9;
+              var c1 = M + 10, c2 = M + 250, c3 = M + 330, c4 = M + 350;
+              rect(M, y - 24, CW, 24, DARK); [['Service', c1], ['Monthly', c2, 'r'], ['Annual', c3, 'r'], ['Billing details', c4]].forEach(function (h) { t(up(h[0]), h[1], y - 15.5, { b: true, s: 7.2, c: WHITE, r: h[2] === 'r' }); }); y -= 24;
+              rec.forEach(function (r0) {
+                var bl = wrap(r0.billing || '', W - M - 10 - c4, 8.5, F), sl = wrap(r0.service, c2 - c1 - 70, 8.5, FB), h = Math.max(28, Math.max(bl.length, sl.length) * 11 + 17);
+                need(h); rect(M, y - h, CW, h, BOX, { borderColor: BOXL, borderWidth: 0.5 });
+                sl.forEach(function (ln, i) { t(ln, c1, y - 17 - i * 11, { b: true, s: 8.5, c: DARK }); });
+                t(r0.monthly ? kes(r0.monthly) : '—', c2, y - 17, { s: 8.5, r: true, c: r0.monthly ? INK : FAINT }); t(r0.annual ? kes(r0.annual) : '—', c3, y - 17, { s: 8.5, r: true, c: r0.annual ? INK : FAINT });
+                bl.forEach(function (ln, i) { t(ln, c4, y - 17 - i * 11, { s: 8.5 }); }); y -= h;
+              });
+              y -= 10;
+              var ab = rec.filter(function (r0) { return r0.about; });
+              for (var i = 0; i < ab.length; i += 2) {
+                var pair = ab.slice(i, i + 2), hh = Math.max.apply(null, pair.map(function (r0) { return wrap(r0.about, half - 28, 8, F).length * 10.5 + 30; }));
+                need(hh + 4); rect(M, y - hh, CW, hh, PEACH);
+                pair.forEach(function (r0, k) { var x0 = M + 12 + k * half, yy = y - 15; if (k) p.drawLine({ start: { x: M + half, y: y }, end: { x: M + half, y: y - hh }, thickness: 1.2, color: ORG }); t(up(r0.service), x0, yy, { b: true, s: 8, c: DARK }); yy -= 12; wrap(r0.about, half - 28, 8, F).forEach(function (ln) { t(ln, x0, yy, { s: 8, c: INK }); yy -= 10.5; }); });
+                y -= hh + 8;
+              }
+              y -= 8;
+            }
+            if (doc.eta) {
+              var ex = M + 130, toks = (san(doc.eta) + '|' + san(doc.etaNote || '')).split('|'), lines = [], cur = [], cw = 0, maxw = W - M - 12 - ex;
+              [[toks[0], FB], [toks[1], F]].forEach(function (part) { part[0].split(/\s+/).filter(Boolean).forEach(function (wd) { var ww = part[1].widthOfTextAtSize(wd + ' ', 8.5); if (cw + ww > maxw && cur.length) { lines.push(cur); cur = []; cw = 0; } cur.push([wd + ' ', part[1]]); cw += ww; }); });
+              if (cur.length) lines.push(cur);
+              var eh = Math.max(36, lines.length * 11 + 22); need(eh + 4);
+              rect(M, y - eh, CW, eh, BOX); rect(M, y - eh, 3, eh, ORG);
+              t('ESTIMATED DELIVERY', M + 12, y - eh / 2 - 3, { b: true, s: 8, c: ORG });
+              lines.forEach(function (ln, k) { var xx = ex; ln.forEach(function (w0) { p.drawText(w0[0], { x: xx, y: y - 15 - k * 11, size: 8.5, font: w0[1], color: w0[1] === FB ? DARK : INK }); xx += w0[1].widthOfTextAtSize(w0[0], 8.5); }); });
+              y -= eh + 16;
+            }
+            if (asm.length) {
+              need(50); label('Project assumptions & notes', M + 6); y -= 14;
+              var hc = Math.ceil(asm.length / 2), aw = half - 40, ystart = y, ycol = [y, y];
+              asm.forEach(function (a, k) { var c0 = k < hc ? 0 : 1, x0 = M + 6 + c0 * half, ls = wrap(a, aw, 8, F); t((k < 9 ? '0' : '') + (k + 1), x0, ycol[c0], { b: true, s: 8, c: ORG }); ls.forEach(function (ln, j) { t(ln, x0 + 24, ycol[c0] - j * 10.5, { s: 8, c: INK }); }); ycol[c0] -= ls.length * 10.5 + 7; });
+              vline(M + half - 6, ystart + 6, Math.min(ycol[0], ycol[1]) + 4); y = Math.min(ycol[0], ycol[1]) - 14;
+            }
+          }
+
+          /* ---- prepared by ---- */
+          var pb = doc.preparedBy || B.preparer, pr = doc.preparedRole || B.preparerRole;
+          if (y - 84 < 68) page(); y -= 6; hline(M, W - M, y, LINE, 0.8); y -= 20;
+          var yt = y; label(R ? 'Issued by' : 'Prepared by'); y -= 14;
+          [[pb, true], [pr], [B.name]].filter(function (l) { return l[0]; }).forEach(function (l) { t(l[0], M, y, { b: l[1], s: 8.5, c: l[1] ? DARK : INK }); y -= 11.5; });
+          var y3 = yt; vline(colX - 14, yt + 8, y + 4); t(up(B.name), colX, y3, { b: true, s: 9.5, c: DARK }); y3 -= 12;
+          [B.address, B.phone, [B.email, B.web].filter(Boolean).join('  ·  ')].filter(Boolean).forEach(function (s2) { t(s2, colX, y3, { s: 8, c: SOFT }); y3 -= 10.5; });
+          y = Math.min(y, y3) - 10;
+          if (B.invoiceNote && y > 66) t(B.invoiceNote, M, y, { b: true, s: 8.5, c: DARK });
+
+          /* ---- footer on every page ---- */
+          var n = pages.length, two = function (k) { return (k < 10 ? '0' : '') + k; };
+          pages.forEach(function (pg, k) { p = pg; hline(M, W - M, 58, LINE, 0.6); t(up(B.name) + '  ·  ' + up(B.tagline || 'Software engineering & digital products'), M, 44, { s: 6.8, c: FAINT }); t(two(k + 1) + '  /  ' + two(n), W - M, 44, { s: 6.8, c: FAINT, r: true }); });
           return pdf.save();
         });
       });
@@ -273,6 +366,8 @@
       v = v ? JSON.parse(JSON.stringify(v)) : kind === 'receipt' ? { kind: 'receipt', date: H.today(), paidAt: H.today(), status: 'paid', method: 'M-Pesa', items: [{ desc: '', qty: 1, price: 0 }], delivery: 0, discount: 0 } : { kind: 'invoice', date: H.today(), due: ymd(due), status: 'unpaid', items: [{ desc: '', qty: 1, price: 0 }], delivery: 0, discount: 0 };
       var RC = v.kind === 'receipt';
       var people = window.HQCrm && HQCrm.people ? HQCrm.people() : [];
+      var copyFrom = v.id ? [] : (S.invoices || []).filter(function (x) { return x.kind !== 'receipt' && (x.projTitle || (x.schedule || []).length || (x.recurring || []).length || x.assumptions); }).slice(-12).reverse();
+      v.schedule = v.schedule || []; v.recurring = v.recurring || [];
       var m = H.modal('<div class="inv-m"><div class="row" style="justify-content:space-between"><h2>' + (v.number ? esc(v.number) : RC ? 'New receipt' : 'New invoice') + '</h2><button class="b b--sm b--ghost" data-x>' + H.I.x + '</button></div>' +
         '<datalist id="invP">' + people.map(function (x) { return '<option value="' + esc(x.name || x.email) + '">'; }).join('') + '</datalist>' +
         '<div class="g2"><label class="field"><span>' + (RC ? 'Received from' : 'Client') + '</span><input class="hq-in" id="iC" list="invP" value="' + esc(v.client || '') + '" placeholder="Name or company"></label><label class="field"><span>Email</span><input class="hq-in" id="iE" type="email" value="' + esc(v.email || '') + '"></label></div>' +
@@ -282,6 +377,15 @@
         '<div class="g2"><label class="field"><span>Delivery (KES)</span><input class="hq-in" id="iDel" type="number" min="0" value="' + (v.delivery || '') + '"></label><label class="field"><span>Discount (KES)</span><input class="hq-in" id="iDis" type="number" min="0" value="' + (v.discount || '') + '"></label></div>' +
         '<div class="inv-tot"><span>Total</span><b id="iT"></b></div>' +
         '<label class="field"><span>Notes on the ' + (RC ? 'receipt' : 'invoice') + ' (optional)</span><textarea class="hq-in" id="iN" rows="2" placeholder="e.g. 50% deposit to start, balance on launch">' + esc(v.notes || '') + '</textarea></label>' +
+        /* the parts of the Ciel Africa invoice layout: project, payment schedule, page two */
+        (RC ? '' : '<div class="inv-x">' +
+          (copyFrom.length ? '<label class="field inv-copy"><span>Start from an earlier invoice (copies project, schedule and page two)</span><select class="hq-in" id="iCp"><option value="">Choose…</option>' + copyFrom.map(function (x) { return '<option value="' + esc(x.id) + '">' + esc(x.number + ' · ' + x.client) + '</option>'; }).join('') + '</select></label>' : '') +
+          '<details class="inv-d"' + (v.projTitle || v.projDomain || v.projDesc ? ' open' : '') + '><summary><b>Project</b><small>shown under Bill to</small></summary><label class="field"><span>Project name</span><input class="hq-in" id="xPt" value="' + esc(v.projTitle || '') + '" placeholder="e.g. Tangawizi Music – Music Sales & Streaming Platform"></label><label class="field"><span>Domain (optional)</span><input class="hq-in" id="xPd" value="' + esc(v.projDomain || '') + '" placeholder="e.g. tangawizi.ke"></label><label class="field"><span>One-line description (optional)</span><textarea class="hq-in" id="xPx" rows="2">' + esc(v.projDesc || '') + '</textarea></label></details>' +
+          '<details class="inv-d"' + ((v.schedule || []).length ? ' open' : '') + '><summary><b>Payment schedule</b><small>deposit and balance</small></summary><div id="xSc"></div><div class="row"><button class="b b--sm" type="button" id="xS50">Split 50 / 50</button><button class="b b--sm" type="button" id="xSAdd">' + H.I.plus + '<span>Add a payment</span></button></div></details>' +
+          '<details class="inv-d"' + ((v.recurring || []).length ? ' open' : '') + '><summary><b>Recurring services</b><small>page two · not in the total</small></summary><div id="xRc"></div><div class="row"><button class="b b--sm" type="button" id="xRAdd">' + H.I.plus + '<span>Add a service</span></button><button class="b b--sm b--ghost" type="button" id="xRHost">+ Hosting &amp; domain renewal</button></div></details>' +
+          '<details class="inv-d"' + (v.eta || v.assumptions ? ' open' : '') + '><summary><b>Delivery time &amp; assumptions</b><small>page two</small></summary><div class="g2"><label class="field"><span>Estimated delivery</span><input class="hq-in" id="xEt" value="' + esc(v.eta || '') + '" placeholder="e.g. 1–2 weeks"></label><label class="field"><span>Counted from</span><input class="hq-in" id="xEn" value="' + esc(v.etaNote || '') + '" placeholder="from receipt of the deposit and content"></label></div><label class="field"><span>Assumptions &amp; notes, one per line (numbered for you)</span><textarea class="hq-in" id="xAs" rows="5" placeholder="The client supplies final content and images.">' + esc(v.assumptions || '') + '</textarea></label></details>' +
+          '<details class="inv-d"><summary><b>Prepared by</b><small>' + esc((v.preparedBy || B.preparer || '') + (v.preparedRole || B.preparerRole ? ' · ' + (v.preparedRole || B.preparerRole) : '')) + '</small></summary><div class="g2"><label class="field"><span>Name</span><input class="hq-in" id="xBy" value="' + esc(v.preparedBy || '') + '" placeholder="' + esc(B.preparer || '') + '"></label><label class="field"><span>Role</span><input class="hq-in" id="xBr" value="' + esc(v.preparedRole || '') + '" placeholder="' + esc(B.preparerRole || '') + '"></label></div><p class="faint" style="font-size:.76rem">Leave empty to use Setup → Business details.</p></details>' +
+        '</div>') +
         '<div class="card inv-pay"><label class="field"' + (RC ? ' hidden' : '') + '><span>Status</span><select class="hq-in" id="iS"><option value="unpaid"' + (v.status !== 'paid' && v.status !== 'cancelled' ? ' selected' : '') + '>Not paid yet</option><option value="paid"' + (v.status === 'paid' ? ' selected' : '') + '>Paid</option><option value="cancelled"' + (v.status === 'cancelled' ? ' selected' : '') + '>Cancelled</option></select></label>' +
         '<div class="g2" id="iPaid"><label class="field"><span>Paid on</span><input class="hq-in" id="iPd" type="date" value="' + esc(v.paidAt || H.today()) + '"></label><label class="field"><span>M-Pesa code (optional)</span><input class="hq-in" id="iCo" value="' + esc(v.code || '') + '" placeholder="e.g. SKL3XXXXXX"></label><label class="field"><span>Method</span><select class="hq-in" id="iMe">' + ['M-Pesa', 'Bank transfer', 'Cash', 'Card', 'Other'].map(function (x) { return '<option' + ((v.method || 'M-Pesa') === x ? ' selected' : '') + '>' + x + '</option>'; }).join('') + '</select></label></div></div>' +
         (v.sentAt ? '<p class="ox__n">Last sent by ' + (v.sentVia === 'whatsapp' ? 'WhatsApp' : 'email') + (v.sentTo ? ' to ' + esc(v.sentTo) : '') + ' · ' + H.dt(v.sentAt) + '</p>' : '') +
@@ -290,13 +394,37 @@
       var L = m.querySelector('#iL');
       function lines() { L.innerHTML = v.items.map(function (l, i) { return '<div class="inv-li"><input class="hq-in" data-f="desc" data-i="' + i + '" value="' + esc(l.desc) + '" placeholder="e.g. Website design, 5 pages"><input class="hq-in" data-f="qty" data-i="' + i + '" type="number" min="0" step="any" value="' + (l.qty == null ? 1 : l.qty) + '"><input class="hq-in" data-f="price" data-i="' + i + '" type="number" min="0" step="any" value="' + (l.price || '') + '"><button class="b b--sm b--ghost" data-rm="' + i + '" aria-label="Remove line">' + H.I.x + '</button></div>'; }).join(''); bind(); tot(); }
       function bind() { L.querySelectorAll('[data-f]').forEach(function (x) { x.oninput = function () { var l = v.items[+x.getAttribute('data-i')], f = x.getAttribute('data-f'); l[f] = f === 'desc' ? x.value : +x.value || 0; tot(); }; }); L.querySelectorAll('[data-rm]').forEach(function (x) { x.onclick = function () { v.items.splice(+x.getAttribute('data-rm'), 1); if (!v.items.length) v.items.push({ desc: '', qty: 1, price: 0 }); lines(); }; }); }
-      function grab() { v.client = m.querySelector('#iC').value.trim(); v.email = m.querySelector('#iE').value.trim(); v.phone = m.querySelector('#iP').value.trim(); v.address = m.querySelector('#iA').value.trim(); v.date = m.querySelector('#iD').value; v.due = m.querySelector('#iDu').value; v.delivery = +m.querySelector('#iDel').value || 0; v.discount = +m.querySelector('#iDis').value || 0; v.notes = m.querySelector('#iN').value; v.status = RC ? 'paid' : m.querySelector('#iS').value; if (v.status === 'paid') { v.paidAt = m.querySelector('#iPd').value || H.today(); v.code = m.querySelector('#iCo').value.trim(); v.method = m.querySelector('#iMe').value; } v.items = v.items.filter(function (l) { return l.desc || l.price; }); if (!v.items.length) v.items = [{ desc: '', qty: 1, price: 0 }]; v.total = Math.max(0, v.items.reduce(function (n, l) { return n + (l.qty || 0) * (l.price || 0); }, 0) + v.delivery - v.discount); return v; }
+      function grab() { v.client = m.querySelector('#iC').value.trim(); v.email = m.querySelector('#iE').value.trim(); v.phone = m.querySelector('#iP').value.trim(); v.address = m.querySelector('#iA').value.trim(); v.date = m.querySelector('#iD').value; v.due = m.querySelector('#iDu').value; v.delivery = +m.querySelector('#iDel').value || 0; v.discount = +m.querySelector('#iDis').value || 0; v.notes = m.querySelector('#iN').value; v.status = RC ? 'paid' : m.querySelector('#iS').value; if (v.status === 'paid') { v.paidAt = m.querySelector('#iPd').value || H.today(); v.code = m.querySelector('#iCo').value.trim(); v.method = m.querySelector('#iMe').value; } if (!RC) { v.projTitle = m.querySelector('#xPt').value.trim(); v.projDomain = m.querySelector('#xPd').value.trim(); v.projDesc = m.querySelector('#xPx').value.trim(); v.eta = m.querySelector('#xEt').value.trim(); v.etaNote = m.querySelector('#xEn').value.trim(); v.assumptions = m.querySelector('#xAs').value.trim(); v.preparedBy = m.querySelector('#xBy').value.trim(); v.preparedRole = m.querySelector('#xBr').value.trim(); v.schedule = v.schedule.filter(function (x) { return x.label || x.pct; }); v.recurring = v.recurring.filter(function (x) { return x.service; }); } v.items = v.items.filter(function (l) { return l.desc || l.price; }); if (!v.items.length) v.items = [{ desc: '', qty: 1, price: 0 }]; v.total = Math.max(0, v.items.reduce(function (n, l) { return n + (l.qty || 0) * (l.price || 0); }, 0) + v.delivery - v.discount); return v; }
       function tot() { var t = v.items.reduce(function (n, l) { return n + (l.qty || 0) * (l.price || 0); }, 0) + (+m.querySelector('#iDel').value || 0) - (+m.querySelector('#iDis').value || 0); m.querySelector('#iT').textContent = kes(Math.max(0, t)); }
       function paidVis() { var p = RC || m.querySelector('#iS').value === 'paid'; m.querySelector('#iPaid').style.display = p ? '' : 'none'; if (!RC) m.querySelector('#iRec').style.display = p ? '' : 'none'; }
       m.querySelector('#iS').onchange = paidVis; m.querySelector('#iDel').oninput = m.querySelector('#iDis').oninput = tot;
       m.querySelector('#iC').onchange = function () { var x = people.filter(function (p) { return (p.name || p.email) === m.querySelector('#iC').value; })[0]; if (x) { if (!m.querySelector('#iE').value) m.querySelector('#iE').value = x.email || ''; if (!m.querySelector('#iP').value) m.querySelector('#iP').value = x.phone ? '+' + String(x.phone).replace(/^\+/, '') : ''; } };
       m.querySelector('#iAdd').onclick = function () { v.items.push({ desc: '', qty: 1, price: 0 }); lines(); var ins = L.querySelectorAll('[data-f=desc]'); ins[ins.length - 1].focus(); };
       lines(); paidVis();
+      /* payment schedule and recurring services editors */
+      function cur() { return v.items.reduce(function (n, l) { return n + (l.qty || 0) * (l.price || 0); }, 0) + (+m.querySelector('#iDel').value || 0) - (+m.querySelector('#iDis').value || 0); }
+      function sched() {
+        var el = m.querySelector('#xSc'); if (!el) return; var sum = v.schedule.reduce(function (n, x) { return n + (x.pct || 0); }, 0);
+        el.innerHTML = v.schedule.map(function (x, i) { return '<div class="inv-sr"><input class="hq-in" data-s="label" data-i="' + i + '" value="' + esc(x.label) + '" placeholder="e.g. 50% commencement deposit"><label class="inv-pct"><input class="hq-in" data-s="pct" data-i="' + i + '" type="number" min="0" max="100" step="any" value="' + (x.pct || '') + '"><span>%</span></label><b class="inv-amt">' + kes(Math.round(cur() * (x.pct || 0)) / 100) + '</b><input class="hq-in inv-note" data-s="note" data-i="' + i + '" value="' + esc(x.note) + '" placeholder="e.g. Payable before development begins."><button class="b b--sm b--ghost" type="button" data-sx="' + i + '" aria-label="Remove">' + H.I.x + '</button></div>'; }).join('') + (v.schedule.length && Math.abs(sum - 100) > 0.01 ? '<p class="inv-warn">The payments add up to ' + sum + '% of the total, not 100%.</p>' : '') + (v.schedule.length ? '' : '<p class="faint" style="font-size:.8rem">No schedule: the invoice shows the due date instead.</p>');
+        el.querySelectorAll('[data-s]').forEach(function (x) { x.oninput = function () { var it = v.schedule[+x.getAttribute('data-i')], k = x.getAttribute('data-s'); it[k] = k === 'pct' ? +x.value || 0 : x.value; if (k === 'pct') { var a2 = x.closest('.inv-sr').querySelector('.inv-amt'); a2.textContent = kes(Math.round(cur() * it.pct) / 100); } }; x.onchange = function () { if (x.getAttribute('data-s') === 'pct') sched(); }; });
+        el.querySelectorAll('[data-sx]').forEach(function (x) { x.onclick = function () { v.schedule.splice(+x.getAttribute('data-sx'), 1); sched(); }; });
+      }
+      function recur() {
+        var el = m.querySelector('#xRc'); if (!el) return;
+        el.innerHTML = v.recurring.map(function (x, i) { return '<div class="inv-rr"><input class="hq-in" data-r="service" data-i="' + i + '" value="' + esc(x.service) + '" placeholder="Service, e.g. Website hosting"><label class="inv-k"><span>Monthly KES</span><input class="hq-in" data-r="monthly" data-i="' + i + '" type="number" min="0" value="' + (x.monthly || '') + '"></label><label class="inv-k"><span>Annual KES</span><input class="hq-in" data-r="annual" data-i="' + i + '" type="number" min="0" value="' + (x.annual || '') + '"></label><input class="hq-in" data-r="billing" data-i="' + i + '" value="' + esc(x.billing) + '" placeholder="Billing, e.g. Monthly or annual billing"><textarea class="hq-in" data-r="about" data-i="' + i + '" rows="2" placeholder="What it covers (shown in a box under the table)">' + esc(x.about) + '</textarea><button class="b b--sm b--ghost" type="button" data-rx="' + i + '" aria-label="Remove">' + H.I.x + '</button></div>'; }).join('');
+        el.querySelectorAll('[data-r]').forEach(function (x) { x.oninput = function () { var it = v.recurring[+x.getAttribute('data-i')], k = x.getAttribute('data-r'); it[k] = k === 'monthly' || k === 'annual' ? +x.value || 0 : x.value; }; });
+        el.querySelectorAll('[data-rx]').forEach(function (x) { x.onclick = function () { v.recurring.splice(+x.getAttribute('data-rx'), 1); recur(); }; });
+      }
+      if (!RC) {
+        sched(); recur();
+        m.querySelector('#xS50').onclick = function () { v.schedule = [{ label: '50% commencement deposit', pct: 50, note: 'Payable before work begins.' }, { label: '50% final balance', pct: 50, note: 'Payable before final handover and launch.' }]; sched(); };
+        m.querySelector('#xSAdd').onclick = function () { var left = 100 - v.schedule.reduce(function (n, x) { return n + (x.pct || 0); }, 0); v.schedule.push({ label: '', pct: Math.max(0, left), note: '' }); sched(); };
+        m.querySelector('#xRAdd').onclick = function () { v.recurring.push({ service: '', monthly: 0, annual: 0, billing: '', about: '' }); recur(); };
+        m.querySelector('#xRHost').onclick = function () { var d = (m.querySelector('#xPd').value || '').trim(); v.recurring.push({ service: 'Website hosting', monthly: 0, annual: 0, billing: 'Monthly or annual billing', about: 'Keeps the website online and accessible.' }, { service: 'Domain renewal' + (d ? ' – ' + d : ''), monthly: 0, annual: 0, billing: 'Annually, after the first year', about: 'Maintains ownership and continued use of ' + (d || 'the domain') + '. Billed annually after the first year.' }); recur(); H.toast('Added: fill in the prices'); };
+        var cp = m.querySelector('#iCp'); if (cp) cp.onchange = function () { var src = (S.invoices || []).filter(function (x) { return x.id === cp.value; })[0]; if (!src) return; var c = JSON.parse(JSON.stringify(src)); ['projTitle', 'projDomain', 'projDesc', 'eta', 'etaNote', 'assumptions'].forEach(function (k) { var el = { projTitle: '#xPt', projDomain: '#xPd', projDesc: '#xPx', eta: '#xEt', etaNote: '#xEn', assumptions: '#xAs' }[k]; m.querySelector(el).value = c[k] || ''; }); v.schedule = c.schedule || []; v.recurring = c.recurring || []; sched(); recur(); m.querySelectorAll('.inv-d').forEach(function (d) { d.open = true; }); H.toast('Copied from ' + c.number + ': change what differs'); };
+        ['#iDel', '#iDis'].forEach(function (q) { var el = m.querySelector(q), o = el.oninput; el.oninput = function () { if (o) o(); sched(); }; });
+        L.addEventListener('input', function () { clearTimeout(L._t); L._t = setTimeout(sched, 250); });
+      }
       function store() { grab(); if (!v.client) { H.toast(RC ? 'Add who paid.' : 'Add the client’s name.', 'err'); return Promise.reject(new Error('client')); } if (!v.items.some(function (l) { return l.desc && l.price; })) { H.toast('Add at least one line with a price.', 'err'); return Promise.reject(new Error('lines')); } return H.saveItem('invoices', v).then(function (it) { v = JSON.parse(JSON.stringify(it)); m.querySelector('h2').textContent = it.number; if (!m.querySelector('#iDelB')) { var d = document.createElement('button'); d.className = 'b b--ghost'; d.id = 'iDelB'; d.style.cssText = 'margin-left:auto;color:var(--r)'; d.textContent = 'Delete'; d.onclick = del; m.querySelector('.inv-acts').appendChild(d); } if (H.refreshOrders) H.refreshOrders(); return it; }); }
       function del() { HQAsk.confirm('Delete ' + (RC ? 'receipt ' : 'invoice ') + v.number + '? It also leaves Reports.').then(function (ok) { if (!ok) return; H.delItem('invoices', v.id).then(function () { m.remove(); if (H.refreshOrders) H.refreshOrders(); H.toast('Deleted'); if ((location.hash || '').indexOf('#invoices') === 0) invoices(); }); }); }
       m.querySelector('#iSave').onclick = function () { store().then(function () { H.toast('Saved ' + v.number, 'ok'); m.remove(); if ((location.hash || '').indexOf('#invoices') === 0) invoices(); }, function () { }); };
@@ -327,7 +455,7 @@
       '<div class="card"><div class="card__h"><h2>Backup</h2></div><div class="card__b"><p class="muted" style="font-size:.86rem;margin-bottom:.7rem">One file with everything Ciel Admin keeps: orders, customers, messages, subscribers, campaigns, invoices, costs, reviews, tasks, calendar and settings. No passwords, keys or photos. It contains customers’ personal details, so keep it somewhere private.</p><button class="b b--p" id="stBk">' + IC.dl + '<span>Download a full backup</span></button></div></div>';
     b.appendChild(wrap);
     biz().then(function (B) {
-      var F = [['name', 'Business name'], ['phone', 'Phone'], ['email', 'Email'], ['web', 'Website'], ['address', 'Address'], ['taxId', 'KRA PIN (optional)'], ['paybill', 'M-Pesa Paybill (on invoices)'], ['account', 'Paybill account number'], ['dueDays', 'Invoices due after (days)'], ['invoiceNote', 'Thank-you line at the bottom']];
+      var F = [['name', 'Business name'], ['phone', 'Phone'], ['email', 'Email'], ['web', 'Website'], ['address', 'Address'], ['taxId', 'KRA PIN (optional)'], ['paybill', 'M-Pesa Paybill (on invoices)'], ['account', 'Paybill account number'], ['dueDays', 'Invoices due after (days)'], ['invoiceNote', 'Thank-you line at the bottom'], ['preparer', 'Prepared by (name)'], ['preparerRole', 'Prepared by (role)'], ['tagline', 'Footer line after the business name']];
       var el = wrap.querySelector('#stBiz'); el.innerHTML = '<div class="g2">' + F.map(function (f) { return '<label class="field"><span>' + f[1] + '</span><input class="hq-in" data-bz="' + f[0] + '" value="' + esc(B[f[0]] == null ? '' : B[f[0]]) + '"' + (f[0] === 'dueDays' ? ' type="number" min="0" max="90"' : '') + '></label>'; }).join('') + '</div><button class="b b--p b--sm" id="bzS" style="margin-top:.8rem">Save details</button>';
       el.querySelector('#bzS').onclick = function () { var v = {}; el.querySelectorAll('[data-bz]').forEach(function (x) { v[x.getAttribute('data-bz')] = x.value; }); H.api('/api/hq?route=settings-save', { k: 'business', v: v }).then(function (r) { BIZ = r.value; H.toast('Business details saved', 'ok'); }, function (e) { H.toast(e.message, 'err'); }); };
     }, function () { });
@@ -358,5 +486,5 @@
     var t = window.__hqTop; if (t) { var li = document.createElement('li'); li.innerHTML = '<span class="st opt">i</span><div><b>Screen check</b><p>' + (t.app ? 'Home-screen app' : 'Browser') + ' · screen ' + esc(t.screen) + ' · window ' + esc(t.win) + ' · status bar ' + t.env + 'px reported, header leaves ' + t.used + 'px. If the top of Ciel Admin is ever hard to reach, send a screenshot of this line with your message.</p></div>'; var ul = b.querySelector('.list.setup'); if (ul) ul.appendChild(li); }
   }
 
-  window.HQMoney = { init: function (h) { H = h; }, invoices: invoices, editInvoice: edit, invToOrder: invToOrder, extras: extras, costModal: costModal, CATS: CATS, setupCards: setupCards, docPanel: docPanel, fromOrder: fromOrder };
+  window.HQMoney = { init: function (h) { H = h; }, makePdf: makePdf, fromInvoice: fromInvoice, invoices: invoices, editInvoice: edit, invToOrder: invToOrder, extras: extras, costModal: costModal, CATS: CATS, setupCards: setupCards, docPanel: docPanel, fromOrder: fromOrder };
 })();

@@ -177,16 +177,27 @@
   function planSheet(p) {
     var k = PK(), t = planType(p), q = planFor(p.id), posted = p.status === 'posted';
     var kind = k ? (k.KINDS.filter(function (x) { return x[0] === p.kind; })[0] || [0, 'Post'])[1] : 'Post';
-    var m = H.modal('<div class="igx-sheet"><div class="igx-shh">' + (p.images && p.images[0] ? '<img src="' + esc(planThumb(p.images[0], p)) + '" alt="">' : '') + '<div><b>' + esc(p.title || kind) + '</b><small>' + esc(kind) + (p.images && p.images.length > 1 ? ' · ' + p.images.length + ' pictures' : '') + (posted ? ' · Posted' : p.paused ? ' · Paused' : '') + '</small>' + (p.caption ? '<p>' + esc(p.caption.slice(0, 140)) + (p.caption.length > 140 ? '…' : '') + '</p>' : '') + '</div></div>' +
-      (p.note && !posted ? '<p class="igx-shn igx-shn--stk">' + IC.ig + '<span><b>Add in the Instagram app:</b> ' + esc(p.note) + '</span></p>' : '') +
-      '<div class="igx-menu">' +
-      (t && !posted && canPost() ? (q ? '<button data-a="open" class="is-b">' + (q.status === 'scheduled' ? 'Change the schedule' : q.status === 'paused' ? 'Open (paused)' : q.status === 'failed' ? 'See why it failed' : 'Open the draft') + '</button>' : (p.sticker ? '' : '<button data-a="now" class="is-b">Post now</button>') + '<button data-a="sched">' + (p.sticker ? 'Open in the post editor' : 'Edit and schedule…') + '</button>') : '') +
-      (!posted ? '<button data-a="pause">' + (p.paused ? 'Resume (back in the queue)' : 'Pause (skip it when auto-posting)') + '</button>' : '') +
-      (!posted && t ? '<button data-a="next">Post this one next</button><button data-a="from">Start auto-posting from this one</button>' : '') +
-      (p.images && p.images.length ? '<button data-a="share">Share to the Instagram app' + (p.sticker ? ' (add the sticker there)' : ' (add music there)') + '</button><button data-a="dl">Download' + (p.videoUrl ? ' video and cover' : p.images.length > 1 ? ' ' + p.images.length + ' pictures' : '') + '</button><button data-a="big">See it big</button>' : '') +
-      (p.caption ? '<button data-a="copy">Copy caption</button>' : '') + (k && k.canEdit() ? '<button data-a="edit">Edit design</button>' : '') +
-      (posted ? '<button data-a="unpost">Mark as not posted</button>' : '<button data-a="posted">Mark as posted</button>') + '<button data-x>Cancel</button></div></div>');
-    m.classList.add('igx-menum');
+    var tall = p.kind === 'story' || p.kind === 'reel', img = p.images && p.images[0] ? planThumb(p.images[0], p) : '';
+    var dates = p.status !== 'posted' ? autoDates(PL.items || [], tabOf(p)) : {}, auto = dates[p.id], a = AU.a || {};
+    var state = posted ? ['Posted', 'g'] : q ? [(STATUS[q.status] || STATUS.draft)[0] + (q.at && q.status !== 'failed' ? ' · ' + when(q.at) : ''), q.status === 'failed' ? 'r' : 'b'] : p.paused ? ['Paused: auto-post skips it', 'y'] : auto ? ['Auto-post · ' + dayLabel(auto) + ' · ' + t12(a[LANE[tabOf(p)][2]] || '19:00'), 'b'] : ['Ready to post', ''];
+    var can = t && !posted && canPost();
+    /* the three things people do most, as big buttons; everything else under More */
+    var main = (can ? (q ? '<button data-a="open" class="pl-a pl-a--p">' + IC.cal + '<span>' + (q.status === 'scheduled' ? 'Change schedule' : q.status === 'failed' ? 'See what went wrong' : 'Open draft') + '</span></button>'
+        : (p.sticker ? '' : '<button data-a="now" class="pl-a pl-a--p">' + IC.send + '<span>Post now</span></button>') + '<button data-a="sched" class="pl-a">' + IC.cal + '<span>' + (p.sticker ? 'Open in editor' : 'Schedule') + '</span></button>') : '') +
+      (p.images && p.images.length ? '<button data-a="dl" class="pl-a">' + IC.down + '<span>Download</span></button>' : '');
+    var more = (!posted && t ? '<button data-a="next">' + IC.up + '<span>Post this one next</span></button><button data-a="from">' + IC.play + '<span>Start auto-posting from here</span></button>' : '') +
+      (!posted ? '<button data-a="pause">' + IC.clock + '<span>' + (p.paused ? 'Resume auto-posting it' : 'Pause (auto-post skips it)') + '</span></button>' : '') +
+      (p.images && p.images.length ? '<button data-a="share">' + IC.ig + '<span>Share to the Instagram app' + (p.sticker ? ' (add the sticker)' : ' (add music)') + '</span></button><button data-a="big">' + IC.ext + '<span>See it full size</span></button>' : '') +
+      (p.caption ? '<button data-a="copy">' + IC.msg + '<span>Copy caption</span></button>' : '') + (k && k.canEdit() ? '<button data-a="edit">' + IC.alt + '<span>Edit design</span></button>' : '') +
+      (posted ? '<button data-a="unpost">' + IC.x + '<span>Mark as not posted</span></button>' : '<button data-a="posted">' + IC.check + '<span>Mark as posted</span></button>');
+    var m = H.modal('<div class="pl-sheet pl-ds"><div class="pl-sh"><div><h3>' + esc(p.title || kind) + '</h3><small>' + esc(kind) + (p.images && p.images.length > 1 ? ' · ' + p.images.length + ' pictures' : '') + '</small></div><button class="pl-x" data-x aria-label="Close">' + IC.x + '</button></div>' +
+      '<div class="pl-dsb"><div class="pl-dsp' + (tall ? ' is-tall' : '') + '">' + (img ? '<img src="' + esc(img) + '" alt="">' : '<span>' + IC.img + '</span>') + (p.kind === 'reel' && p.videoUrl ? '<em>' + IC.reels + '</em>' : p.images && p.images.length > 1 ? '<em>' + IC.layers + '</em>' : '') + '</div>' +
+      '<div class="pl-dsi"><span class="pl-st pl-st--' + state[1] + '">' + esc(state[0]) + '</span>' +
+      (p.note && !posted ? '<p class="pl-stk">' + IC.ig + '<span><b>Finish in the Instagram app:</b> ' + esc(p.note) + '</span></p>' : '') +
+      (p.caption ? '<p class="pl-cap">' + esc(p.caption) + '</p>' : '<p class="pl-cap pl-cap--e">No caption.</p>') +
+      '<div class="pl-acts">' + main + '</div>' +
+      '<details class="pl-more"><summary>' + IC.dots + '<span>More options</span></summary><div class="pl-ml">' + more + '</div></details></div></div></div>');
+    m.classList.add('pl-m');
     m.querySelectorAll('[data-a]').forEach(function (b) {
       b.onclick = function () {
         var a = b.getAttribute('data-a'); m.remove();
@@ -496,9 +507,9 @@
   function loadAuto(cb) { if (AU.a && Date.now() - (AU.at || 0) < 60000) return cb(); api('auto').then(function (r) { AU.a = r.auto; AU.at = Date.now(); cb(); }, function () { cb(); }); }
   /* Planner: auto-posting, what's scheduled, then every design by where it goes (Grid, Reels, Stories, Covers),
      arranged the way it will post. Hold and drag to reorder. */
-  var PT = { tab: 'grid', filter: 'all' };
+  var PT = { tab: 'grid', filter: 'open' };
   function t12(v) { var x = String(v || '').split(':'), h = +x[0], m = x[1] || '00'; return (h % 12 || 12) + ':' + m + (h < 12 ? ' am' : ' pm'); }
-  function autoPanel(box, items) {
+  function autoControls(box, items) {
     var a = AU.a || { on: false, time: '19:00', stories: false, storyTime: '12:00', reels: false, reelTime: '18:00', reelEvery: 3 };
     var next = function (which) {
       var dd = autoDates(items, which), ids = Object.keys(dd).sort(function (x, y) { return dd[x] < dd[y] ? -1 : 1; }), p = ids[0] && items.filter(function (x) { return x.id === ids[0]; })[0];
@@ -514,8 +525,17 @@
     var save = function () { api('auto-save', { on: v('#igAuOn').checked, time: v('#igAuT').value, reels: v('#igAuR').checked, reelTime: v('#igAuRT').value, reelEvery: +v('#igAuRE').value, stories: v('#igAuS').checked, storyTime: v('#igAuST').value }).then(function (r) { AU.a = r.auto; AU.at = Date.now(); H.toast(r.auto.on || r.auto.stories || r.auto.reels ? 'Auto-post is on' : 'Auto-post is off', 'ok'); kitChange(true); }, function (e) { H.toast(e.message, 'err'); }); };
     box.querySelectorAll('input, select').forEach(function (x) { x.onchange = save; });
   }
+  /* the auto-post line at the top of the Planner: what's on, then Change opens the switches */
+  function autoPanel(box, items) {
+    var a = AU.a || {}, on = [a.on ? 'grid daily ' + t12(a.time) : '', a.reels ? 'reels every ' + ((+a.reelEvery || 3) === 1 ? 'day' : (+a.reelEvery === 7 ? 'week' : (+a.reelEvery || 3) + ' days')) + ' ' + t12(a.reelTime || '18:00') : '', a.stories ? 'stories daily ' + t12(a.storyTime) : ''].filter(Boolean);
+    box.innerHTML = '<div class="pl-auto' + (on.length ? ' is-on' : '') + '"><span class="pl-auto__i">' + IC.clock + '</span><div><b>Auto-post ' + (on.length ? 'is on' : 'is off') + '</b><small>' + (on.length ? esc(on.join(' · ')) : 'Turn it on and designs go out by themselves, in the order below.') + '</small></div><button class="pl-btn" type="button" data-auto>' + (on.length ? 'Change' : 'Set up') + '</button></div>';
+    box.querySelector('[data-auto]').onclick = function () {
+      var m = H.modal('<div class="pl-sheet pl-sheet--auto"><div class="pl-sh"><h3>Auto-post</h3><button class="pl-x" data-x aria-label="Close">' + IC.x + '</button></div><div id="plAu"></div></div>'); m.classList.add('pl-m');
+      autoControls(m.querySelector('#plAu'), items);
+    };
+  }
   function planner(el) {
-    el.innerHTML = '<div class="igx-sec igx-planner"><div class="igx-sech"><h2>Planner</h2><button class="igx-btn" id="igSel">' + IC.check + '<span>Select</span></button><button class="igx-btn" id="igDlAll">' + IC.down + '<span>Download</span></button><button class="igx-btn igx-btn--b" id="igNew3">New post</button></div><div id="igAuto"></div><div id="igPq"></div><div id="igPd"><div class="igx-load"><i></i></div></div><div data-igpack></div></div>';
+    el.innerHTML = '<div class="igx-sec igx-planner pl"><div class="pl-h"><h2>Planner</h2><span class="pl-sp"></span><button class="pl-btn pl-btn--i" id="igSel" title="Select several">' + IC.check + '<span>Select</span></button><button class="pl-btn pl-btn--i" id="igDlAll" title="Download this tab">' + IC.down + '<span>Download</span></button><button class="pl-btn pl-btn--p" id="igNew3">' + IC.plus + '<span>New post</span></button></div><div id="igPq"></div><div id="igAuto"></div><div id="igPd"><div class="igx-load"><i></i></div></div><div data-igpack></div></div>';
     el.querySelector('#igNew3').onclick = function () { editor(PT.tab === 'story' ? { type: 'story', caption: '', media: [], at: null, status: 'draft' } : PT.tab === 'reel' ? { type: 'reel', caption: '', media: [], shareToFeed: false, at: null, status: 'draft' } : null); };
     var pq = el.querySelector('#igPq'), pd = el.querySelector('#igPd'), designs = null;
     var inTab = function (p) { return tabOf(p) === PT.tab && (PT.filter === 'all' || (PT.filter === 'posted' ? p.status === 'posted' : p.status !== 'posted')); };
@@ -523,8 +543,8 @@
     /* Select: tap designs to pick them, then save them all to Photos (phones), download, mark posted, pause or delete */
     var SEL = { on: false, ids: {}, prep: 0 }, bar = null;
     var picked = function () { return (designs || []).filter(function (p) { return SEL.ids[p.id]; }); };
-    var selOff = function () { SEL.on = false; SEL.ids = {}; if (bar) { bar.remove(); bar = null; } document.body.classList.remove('igx-selon'); el.querySelector('#igSel span').textContent = 'Select'; draw(true); };
-    el.querySelector('#igSel').onclick = function () { if (SEL.on) return selOff(); SEL.on = true; SEL.ids = {}; el.querySelector('#igSel span').textContent = 'Done'; document.body.classList.add('igx-selon'); draw(true); selBar(); };
+    var selOff = function () { SEL.on = false; SEL.ids = {}; if (bar) { bar.remove(); bar = null; } document.body.classList.remove('igx-selon'); el.querySelector('#igSel span').textContent = 'Select'; el.querySelector('#igSel').classList.remove('is-on'); draw(true); };
+    el.querySelector('#igSel').onclick = function () { if (SEL.on) return selOff(); SEL.on = true; SEL.ids = {}; el.querySelector('#igSel span').textContent = 'Done'; el.querySelector('#igSel').classList.add('is-on'); document.body.classList.add('igx-selon'); draw(true); selBar(); };
     var canShare = function () { return !!(navigator.share && navigator.canShare && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1 && navigator.share)); };
     var MAXS = 40;
     function selBar() {
@@ -589,11 +609,19 @@
     var marks = function () { pd.querySelectorAll('[data-d]').forEach(function (t) { t.classList.toggle('is-sel', !!SEL.ids[t.getAttribute('data-d')]); }); };
     var stopSel = function () { if (!document.body.contains(el) && bar) { bar.remove(); bar = null; document.body.classList.remove('igx-selon'); window.removeEventListener('hashchange', stopSel); } };
     window.addEventListener('hashchange', function () { setTimeout(stopSel, 50); });
+    /* Up next: everything going out, in date order: failed first, then scheduled posts and what auto-post sends,
+       then drafts without a date. Tap one to open it. */
     var queue = function () {
-      var up = upcoming();
-      var sig = JSON.stringify(up.map(function (p) { return [p.id, p.status, p.updatedAt]; })); if (pq.getAttribute('data-sig') === sig) return; pq.setAttribute('data-sig', sig);
-      pq.innerHTML = up.length ? '<h3 class="igx-gh">Scheduled and drafts</h3><div class="igx-g igx-g--plan">' + up.map(postTile).join('') + '</div>' : '';
-      bindPosts(pq);
+      var up = upcoming(), a = AU.a || {}, rows = [];
+      up.forEach(function (x) { var m0 = x.media && x.media[0], src = x.type === 'reel' && x.cover && x.cover.url ? x.cover.url : m0 ? m0.url : ''; rows.push({ k: 'p', id: x.id, t: x.status === 'failed' ? 0 : x.at || 9e15, when: x.status === 'failed' ? 'Failed' : x.at ? (x.status === 'paused' ? 'Paused · ' : '') + when(x.at) : 'Draft', img: src, vid: m0 && m0.kind === 'video' && !(x.cover && x.cover.url), lane: postLane(x), st: x.status }); });
+      if (designs) ['grid', 'reel', 'story'].forEach(function (ln) { var dd = autoDates(designs, ln), tm = a[LANE[ln][2]] || '19:00'; Object.keys(dd).forEach(function (id) { var d0 = designs.filter(function (x) { return x.id === id; })[0]; if (!d0) return; var tt = new Date(dd[id] + 'T' + tm + ':00+03:00').getTime(); rows.push({ k: 'd', id: id, t: tt, when: dayLabel(dd[id]) + ' · ' + t12(tm), img: d0.thumbs && d0.thumbs[0] || d0.images && d0.images[0], lane: ln, st: 'auto' }); }); });
+      rows.sort(function (x, y) { return x.t - y.t; }); rows = rows.slice(0, 16);
+      var sig = JSON.stringify(rows.map(function (r) { return [r.id, r.when, r.st]; })); if (pq.getAttribute('data-sig') === sig) return; pq.setAttribute('data-sig', sig);
+      var LN = { grid: 'Post', reel: 'Reel', story: 'Story' };
+      pq.innerHTML = '<div class="pl-next"><div class="pl-nh"><b>Up next</b><small>' + (rows.length ? 'scheduled, drafts and auto-post, by date' : '') + '</small></div>' + (rows.length ? '<div class="pl-nr">' + rows.map(function (r) {
+        return '<button class="pl-nc pl-nc--' + r.lane + (r.st === 'failed' ? ' is-fail' : '') + '" data-' + r.k + '="' + esc(r.id) + '"><span class="pl-ni">' + (r.img ? (r.vid ? '<video src="' + esc(r.img) + '#t=0.5" muted playsinline preload="metadata"></video>' : '<img src="' + esc(r.img) + '" alt="" loading="lazy" decoding="async">') : IC.img) + '<em>' + LN[r.lane] + '</em></span><b>' + esc(r.when) + '</b><small>' + (r.st === 'auto' ? 'Auto-post' : r.st === 'failed' ? 'Tap to see why' : STATUS[r.st] ? STATUS[r.st][0] : 'Draft') + '</small></button>';
+      }).join('') + '</div>' : '<p class="pl-empty">Nothing scheduled yet. Tap a design below to post it or schedule it, or turn on auto-post.</p>') + '</div>';
+      bindPosts(pq); bindDesigns(pq, designs || []);
     };
     var draw = function (force) {
       if (!document.body.contains(pd) || !designs) return;
@@ -608,12 +636,12 @@
       var ord = function (a, b) { return grid ? planOrder(b) - planOrder(a) : planOrder(a) - planOrder(b); };
       live.sort(ord); paused.sort(ord);
       var ratio = grid ? '3 / 4' : '9 / 16', canDrag = !SEL.on && PT.filter !== 'posted' && live.length > 1;
-      pd.innerHTML = '<div class="igx-ptabs">' + TABS.map(function (t) { return '<button data-t="' + t[0] + '" class="' + (PT.tab === t[0] ? 'is-on' : '') + '">' + t[2] + '<span>' + t[1] + '</span><i>' + designs.filter(function (p) { return tabOf(p) === t[0] && (PT.filter === 'all' || (PT.filter === 'posted' ? !open(p) : open(p))); }).length + '</i></button>'; }).join('') + '</div>' +
-        '<div class="igx-seg igx-pf">' + [['all', 'All'], ['open', 'To post'], ['posted', 'Posted']].map(function (f) { return '<button data-f="' + f[0] + '" class="' + (PT.filter === f[0] ? 'is-on' : '') + '">' + f[1] + '</button>'; }).join('') + '</div>' +
-        (canDrag ? '<p class="igx-note igx-drag-n">' + IC.move + '<span>' + (grid ? 'This is how the profile grid will look. Hold a design and drag it to where it should sit; the next to post is at the bottom right.' : 'Hold a design and drag it to change the posting order. The first one goes out first.') + '</span></p>' : '') +
-        (live.length ? '<div class="igx-g igx-g--d' + (grid ? '' : ' igx-g--tall') + '" id="igDg">' + live.map(function (p, i) { return planTile(p, ratio, i, dates); }).join('') + '</div>' : '<p class="igx-note">Nothing here.</p>') +
-        (paused.length ? '<h3 class="igx-gh">Paused · ' + paused.length + '</h3><p class="igx-note igx-note--l">Skipped by auto-post and kept off the planned ' + (grid ? 'grid' : 'order') + '. Tap one and choose Resume to put it back.</p><div class="igx-g igx-g--d' + (grid ? '' : ' igx-g--tall') + '">' + paused.map(function (p, i) { return planTile(p, ratio, i + 40, dates); }).join('') + '</div>' : '') +
-        '<p class="igx-note">' + ({ grid: 'Photos, carousels and reels that also show on the grid. Tiles show the grid crop (3:4). Tap one to post it now, schedule it, pause it, download it or share it to the Instagram app to add music.', reel: 'Reels that go to the Reels tab only (not the grid), so the Grid tab stays exactly as planned. To show one on the grid as well, open it, choose Edit and schedule, and switch on “Also share to feed and the profile grid” before posting.', story: 'Stories marked with the Instagram logo need a poll, quiz, question or link sticker: tap one, then “Share to the Instagram app” and add the sticker there.', cover: 'Highlight covers and spare reel covers: download them and set them in the Instagram app (Edit highlight → Edit cover).' })[PT.tab] + '</p>';
+      var nextId = (live.filter(open).slice().sort(function (a, b) { return planOrder(a) - planOrder(b); })[0] || {}).id;
+      pd.innerHTML = '<div class="pl-bar"><div class="pl-tabs" role="tablist">' + TABS.map(function (t) { return '<button role="tab" data-t="' + t[0] + '" class="' + (PT.tab === t[0] ? 'is-on' : '') + '">' + t[2] + '<span>' + t[1] + '</span><i>' + designs.filter(function (p) { return tabOf(p) === t[0] && (PT.filter === 'all' || (PT.filter === 'posted' ? !open(p) : open(p))); }).length + '</i></button>'; }).join('') + '</div>' +
+        '<div class="pl-seg">' + [['open', 'To post'], ['posted', 'Posted'], ['all', 'All']].map(function (f) { return '<button data-f="' + f[0] + '" class="' + (PT.filter === f[0] ? 'is-on' : '') + '">' + f[1] + '</button>'; }).join('') + '</div></div>' +
+        '<p class="pl-tip">' + (canDrag ? IC.move + '<span>' + (grid ? 'Laid out like your profile: the next post is at the bottom right. Drag to rearrange.' : 'In posting order: the first goes out first. Drag to rearrange.') + '</span>' : '<span>' + ({ grid: 'Photos, carousels and reels shown on the profile grid.', reel: 'Reels that go to the Reels tab only.', story: 'Stories go out one a day when auto-post is on.', cover: 'Highlight and reel covers: download them and set them in the Instagram app.' })[PT.tab] + '</span>') + '</p>' +
+        (live.length ? '<div class="igx-g igx-g--d pl-g' + (grid ? '' : ' igx-g--tall pl-g--tall') + '" id="igDg">' + live.map(function (p, i) { return planTile(p, ratio, i, dates, true).replace('class="igx-t igx-t--d', 'class="igx-t igx-t--d' + (p.id === nextId ? ' is-next' : '')); }).join('') + '</div>' : '<p class="pl-empty">' + (PT.filter === 'posted' ? 'Nothing posted from here yet.' : 'All done here. New designs appear as they are added.') + '</p>') +
+        (paused.length ? '<h3 class="pl-gh">Paused · ' + paused.length + '<small>skipped by auto-post · tap one to resume</small></h3><div class="igx-g igx-g--d pl-g' + (grid ? '' : ' igx-g--tall pl-g--tall') + '">' + paused.map(function (p, i) { return planTile(p, ratio, i + 40, dates, true); }).join('') + '</div>' : '');
       pd.querySelectorAll('[data-t]').forEach(function (b) { b.onclick = function () { PT.tab = b.getAttribute('data-t'); draw(true); }; });
       pd.querySelectorAll('[data-f]').forEach(function (b) { b.onclick = function () { PT.filter = b.getAttribute('data-f'); draw(true); }; });
       bindDesigns(pd, designs);
@@ -631,7 +659,7 @@
         api('design-order', { ids: ids2 }).then(function () { PL.at = 0; H.toast('Order saved', 'ok'); }, function (e) { H.toast(e.message, 'err'); });
       });
     };
-    var both = function () { if (designs) { draw(); var k = PK(); if (k && A.owner()) k.packPanel(designs); autoPanel(el.querySelector('#igAuto'), designs); } };
+    var both = function () { if (designs) { draw(); queue(); var k = PK(); if (k && A.owner()) k.packPanel(designs); autoPanel(el.querySelector('#igAuto'), designs); } };
     planItems(function (items) { designs = items; both(); });
     loadAuto(both);
     var go = function () { queue(); both(); };

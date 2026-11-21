@@ -290,9 +290,10 @@
       var host = document.getElementById('body'); if (!host) return;
       var msg = st === 'denied' ? 'Notifications are blocked for cielafrica.com on this device, so new leads and orders won’t alert you. Allow them in the browser or phone settings.' : st === 'ios' ? 'To get alerts for new leads on iPhone, add Ciel Admin to the Home Screen (Share → Add to Home Screen), then open it from there.' : st === 'none' ? 'This browser can’t show alerts. Open Ciel Admin in Chrome or the installed app to be alerted about new leads.' : 'Alerts for new leads and orders are off on this device.';
       var d = document.createElement('div'); d.className = 'ov-push'; d.id = 'ovPush';
-      d.innerHTML = '<span>' + esc(msg) + '</span>' + (st === 'off' ? '<button class="b b--p b--sm">Turn on alerts</button>' : '');
+      d.innerHTML = '<span>' + esc(msg) + '</span>' + (st === 'off' ? '<button class="b b--p b--sm">Turn on alerts</button>' : st === 'denied' ? '<button class="b b--p b--sm" data-help>Show me how</button>' : '');
       host.insertBefore(d, host.firstChild);
-      var bt = d.querySelector('button'); if (bt) bt.onclick = function () { enablePush().then(function () { pushState().then(function (x) { if (x === 'on') d.remove(); }); }); };
+      var hb = d.querySelector('[data-help]'); if (hb) { hb.onclick = function () { pushHelp('denied'); }; }
+      var bt = d.querySelector('button:not([data-help])'); if (bt) bt.onclick = function () { enablePush().then(function () { pushState().then(function (x) { if (x === 'on') d.remove(); }); }); };
     }, function () { });
   }
   function pushState() {
@@ -303,14 +304,43 @@
   function enablePush() {
     if (isIOS() && !standalone()) { toast('On iPhone: tap Share → Add to Home Screen, open Ciel Admin from there, then turn notifications on.'); return Promise.resolve(); }
     if (!('PushManager' in window)) { toast('This browser can’t receive notifications.'); return Promise.resolve(); }
+    S.wantPush = true;
+    if (Notification.permission === 'denied') { pushHelp('denied'); return Promise.resolve(); }
     return Notification.requestPermission().then(function (perm) {
-      if (perm !== 'granted') throw new Error('Notifications are blocked. Allow them in the browser settings for cielafrica.com.');
+      if (perm !== 'granted') { pushHelp(perm); var e0 = new Error(''); e0.quiet = true; throw e0; }
       return Promise.all([api('/api/hq?route=push-key'), navigator.serviceWorker.ready]);
     }).then(function (x) {
       return x[1].pushManager.getSubscription().then(function (old) { return old || x[1].pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(x[0].key) }); });
     }).then(function (sub) {
       return api('/api/hq?route=push-sub', { sub: sub.toJSON(), label: (isIOS() ? 'iPhone' : /android/i.test(navigator.userAgent) ? 'Android' : 'Computer') + ' · ' + new Date().toLocaleDateString('en-KE') });
-    }).then(function () { S.pushOn = true; return api('/api/hq?route=push-test', {}); }).then(function () { toast('Notifications are on. A test one is on its way.'); }, function (e) { toast(e.message); });
+    }).then(function () { S.pushOn = true; return api('/api/hq?route=push-test', {}); }).then(function () { S.wantPush = false; toast('Alerts are on. A test one is on its way.'); }, function (e) { if (!e.quiet) toast(e.message || 'Couldn’t turn alerts on.'); });
+  }
+  /* when the browser or the computer blocks alerts: the exact steps for this browser and system, and Ciel Admin
+     finishes turning them on by itself as soon as they are allowed */
+  function browserName() { var u = navigator.userAgent; return /Edg\//.test(u) ? 'Edge' : /OPR\//.test(u) ? 'Opera' : /Firefox\//.test(u) ? 'Firefox' : /Chrome\//.test(u) ? 'Chrome' : /Safari\//.test(u) ? 'Safari' : 'your browser'; }
+  function pushHelp(st) {
+    var br = browserName(), win = /Windows/.test(navigator.userAgent), mac = /Macintosh/.test(navigator.userAgent) && !isIOS(), and = /android/i.test(navigator.userAgent);
+    var site = br === 'Firefox' ? 'Click the icon just left of the address (cielafrica.com) → find <b>Send notifications</b> → remove the block (×), then press Turn on again.'
+      : br === 'Safari' ? 'Safari menu → <b>Settings → Websites → Notifications</b> → set cielafrica.com to <b>Allow</b>.'
+      : and ? 'Tap ⋮ → <b>Settings → Site settings → Notifications</b> → cielafrica.com → <b>Allow</b>. If you use the installed app: long-press its icon → App info → Notifications → on.'
+      : 'Click the icon just left of the address (cielafrica.com) → <b>Site settings</b> → <b>Notifications</b> → choose <b>Allow</b>. If you see a bell with a line through it in the address bar, click it and choose <b>Allow</b>.';
+    var sys = win ? 'Windows: Start → <b>Settings → System → Notifications</b> → turn on <b>' + (br === 'Edge' ? 'Microsoft Edge' : br === 'Firefox' ? 'Firefox' : 'Google Chrome') + '</b>. Click it and turn on <b>Show notification banners</b>, then set <b>Priority</b> to <b>Top</b>. Turn off <b>Do not disturb</b> (or Focus) while you work.'
+      : mac ? 'Mac: Apple menu → <b>System Settings → Notifications</b> → <b>' + (br === 'Safari' ? 'Safari' : br === 'Edge' ? 'Microsoft Edge' : br === 'Firefox' ? 'Firefox' : 'Google Chrome') + '</b> → allow notifications and choose <b>Alerts</b>, so they stay until you close them. Check that Focus is off.'
+      : and ? 'Android: long-press a Ciel Admin alert → Settings → set it to <b>Alerting</b> with <b>Pop on screen</b> on.' : '';
+    var m = modal('<div class="ph"><div class="row" style="justify-content:space-between"><h2>Allow alerts on this ' + (and || isIOS() ? 'phone' : 'computer') + '</h2><button class="b b--sm b--ghost" data-x>' + I.x + '</button></div>' +
+      '<p class="muted">' + (st === 'default' ? esc(br) + ' hid the permission request, so nothing was turned on.' : esc(br) + ' is set to block notifications from cielafrica.com. Only you can change that, in two places:') + '</p>' +
+      '<ol class="ph__s"><li><b>Allow cielafrica.com in ' + esc(br) + '.</b><span>' + site + '</span></li>' + (sys ? '<li><b>Let ' + esc(br) + ' show alerts on your ' + (and ? 'phone' : 'computer') + '.</b><span>' + sys + '</span></li>' : '') + '</ol>' +
+      '<p class="ph__w" id="phW">Waiting for you to allow it… this finishes by itself.</p><div class="row"><button class="b b--p" id="phT">Try again</button><button class="b b--ghost" data-x>Close</button></div></div>');
+    m.querySelector('#phT').onclick = function () { m.remove(); enablePush(); };
+    watchPerm(function () { if (document.body.contains(m)) { m.querySelector('#phW').textContent = 'Allowed. Finishing…'; setTimeout(function () { m.remove(); }, 600); } });
+    return m;
+  }
+  var permWatch = false;
+  function watchPerm(cb) {
+    try { navigator.permissions.query({ name: 'notifications' }).then(function (ps) { ps.onchange = function () { if (ps.state === 'granted') { if (cb) cb(); enablePush(); } }; }, function () { }); } catch (e) { }
+    if (permWatch) return; permWatch = true;
+    /* some browsers don't report the change: check again whenever Ciel Admin comes back to the front */
+    window.addEventListener('focus', function () { if ('Notification' in window && Notification.permission === 'granted' && !S.pushOn) pushState().then(function (x) { if (x === 'off' && S.wantPush) enablePush(); }); });
   }
   function disablePush() {
     return navigator.serviceWorker.ready.then(function (r) { return r.pushManager.getSubscription(); }).then(function (sub) { if (!sub) return; return api('/api/hq?route=push-sub', { op: 'remove', endpoint: sub.endpoint }).then(function () { return sub.unsubscribe(); }); }).then(function () { S.pushOn = false; toast('Notifications off on this device'); });
@@ -440,7 +470,7 @@
       '<section class="ovh"><span class="ovh__brk" aria-hidden="true">‹</span><div class="ovh__in"><p class="ovh__k"><b>‹</b> Ciel Admin · ' + now.toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long' }) + '</p>' +
       '<h1 class="ovh__t">' + greet + ',<br><em>Lorna.</em></h1>' +
       '<p class="ovh__s">' + (urgent ? '<b>' + urgent + ' thing' + (urgent === 1 ? '' : 's') + '</b> need' + (urgent === 1 ? 's' : '') + ' you today' : 'All clear. Nothing is waiting on you') + ' · <b>' + money(rev) + '</b> in ' + now.toLocaleDateString('en-KE', { month: 'long' }) + '</p>' +
-      '<div class="ovh__go"><a class="ovh__b ovh__b--p" href="#orders">' + I.orders + '<span>Orders' + (todo.length ? ' · ' + todo.length : '') + '</span></a><a class="ovh__b" href="#photobooks">' + I.book + '<span>Photo Books</span></a><a class="ovh__b" href="#inbox">' + I.inbox + '<span>Inbox' + (newMsgs.length ? ' · ' + newMsgs.length : '') + '</span></a><a class="ovh__b" href="#campaigns">' + I.send + '<span>Campaigns</span></a><a class="ovh__b" href="#reports">' + I.pie + '<span>Reports</span></a></div></div></section>' +
+      '<div class="ovh__go"><a class="ovh__b ovh__b--p" href="#orders">' + I.orders + '<span>Orders' + (todo.length ? ' · ' + todo.length : '') + '</span></a><a class="ovh__b" href="#photobooks">' + I.book + '<span>Photo Books</span></a><a class="ovh__b" href="#inbox">' + I.inbox + '<span>Inbox' + (newMsgs.length ? ' · ' + newMsgs.length : '') + '</span></a><a class="ovh__b ovh__b--ig" href="#instagram">' + I.ig + '<span>Instagram</span></a><a class="ovh__b" href="#campaigns">' + I.send + '<span>Campaigns</span></a><a class="ovh__b" href="#reports">' + I.pie + '<span>Reports</span></a></div></div></section>' +
       '<div class="kpis"><div class="card kpi kpi--o"><i class="kpi__i">' + I.card + '</i><span>Revenue this month</span><b>' + money(rev) + '</b><small>' + month.length + ' paid order' + (month.length === 1 ? '' : 's') + ' · tests not counted</small></div>' +
       '<div class="card kpi kpi--b"><i class="kpi__i">' + I.orders + '</i><span>Orders to handle</span><b>' + todo.length + '</b><small>' + todo.filter(function (o) { return o.kind === 'photobook'; }).length + ' photo books · ' + todo.filter(function (o) { return o.kind === 'shop'; }).length + ' shop · ' + todo.filter(function (o) { return o.kind === 'domain'; }).length + ' domains</small></div>' +
       '<div class="card kpi kpi--y"><i class="kpi__i">' + I.wa + '</i><span>Pending orders</span><b>' + pending.length + '</b><small>' + pending.filter(function (o) { return o.kind === 'whatsapp'; }).length + ' WhatsApp · ' + pending.filter(function (o) { return o.kind !== 'whatsapp'; }).length + ' not paid yet</small></div>' +
@@ -825,7 +855,7 @@
     if (window.HQMoney) HQMoney.setupCards(b);
   }
 
-  window.HQ = { back: goBack, pushState: pushState, enablePush: enablePush, disablePush: disablePush, I: I, NAV: NAV, KIND: KIND, orderDrawer: orderDrawer, api: api, toast: toast, esc: esc, dt: dt, d2: d2, money: money, today: today, body: body, modal: modal, drawer: drawer, S: S, navs: navs, route: route, saveItem: saveItem, delItem: delItem, taskModal: taskModal, eventModal: eventModal };
+  window.HQ = { back: goBack, pushHelp: pushHelp, pushState: pushState, enablePush: enablePush, disablePush: disablePush, I: I, NAV: NAV, KIND: KIND, orderDrawer: orderDrawer, api: api, toast: toast, esc: esc, dt: dt, d2: d2, money: money, today: today, body: body, modal: modal, drawer: drawer, S: S, navs: navs, route: route, saveItem: saveItem, delItem: delItem, taskModal: taskModal, eventModal: eventModal };
   if (window.HQCrm) HQCrm.init(window.HQ);
   if (window.HQSite) HQSite.init(window.HQ);
   if (window.HQMail) HQMail.init(window.HQ);
