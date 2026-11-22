@@ -818,3 +818,5 @@ html[data-theme="dark"] .tkd__pause{background:rgba(245,158,11,.14);color:#fbbf2
 .pg,.pg>*,.pg-ord>*{min-width:0}
 .pg-top>.tabs{max-width:100%;overflow-x:auto}
 @media(max-width:860px){.pg-ord__p{max-height:360px}}
+/* computer: pages use the whole width (and grow when the menu is shrunk to icons) */
+@media(min-width:901px){#hq .hq-body,#hq .hq-ph{max-width:none!important;width:100%}}

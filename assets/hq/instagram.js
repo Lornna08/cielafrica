@@ -538,7 +538,7 @@
   }
   function planner(el) {
     el.innerHTML = '<div class="igx-sec igx-planner pl"><div class="pl-h"><h2>Planner</h2><span class="pl-sp"></span><button class="pl-btn pl-btn--i" id="igSel" title="Select several">' + IC.check + '<span>Select</span></button><button class="pl-btn pl-btn--i" id="igDlAll" title="Download this tab">' + IC.down + '<span>Download</span></button><button class="pl-btn pl-btn--p" id="igNew3">' + IC.plus + '<span>New post</span></button></div><div id="igPq"></div><div id="igAuto"></div><div id="igPd"><div class="igx-load"><i></i></div></div><div data-igpack></div></div>';
-    el.querySelector('#igNew3').onclick = function () { editor(PT.tab === 'story' ? { type: 'story', caption: '', media: [], at: null, status: 'draft' } : PT.tab === 'reel' ? { type: 'reel', caption: '', media: [], shareToFeed: false, at: null, status: 'draft' } : null); };
+    el.querySelector('#igNew3').onclick = function () { editor(PT.tab === 'story' ? { type: 'story', caption: '', media: [], at: null, status: 'draft' } : PT.tab === 'reel' ? { type: 'reel', caption: '', media: [], shareToFeed: true, at: null, status: 'draft' } : null); };
     var pq = el.querySelector('#igPq'), pd = el.querySelector('#igPd'), designs = null;
     var inTab = function (p) { return tabOf(p) === PT.tab && (PT.filter === 'all' || (PT.filter === 'posted' ? p.status === 'posted' : p.status !== 'posted')); };
     el.querySelector('#igDlAll').onclick = function () { var k = PK(), l = (designs || []).filter(inTab); if (k && l.length) k.downloadMany(l); };

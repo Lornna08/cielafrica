@@ -1,5 +1,5 @@
 {
- "v": 15,
+ "v": 16,
  "note": "Ready-made Ciel Africa designs. They appear in Ciel Admin → Instagram → Planner; edits there are saved separately and win over this file.",
  "items": [
   {
@@ -80,7 +80,7 @@
     "/assets/ig/t/r-mokara-v3-cover.jpg"
    ],
    "seq": 17,
-   "shareToFeed": false
+   "shareToFeed": true
   },
   {
    "id": "b-r-njia-v2",
@@ -95,7 +95,7 @@
     "/assets/ig/t/r-njia-v2-cover.jpg"
    ],
    "seq": 18,
-   "shareToFeed": false
+   "shareToFeed": true
   },
   {
    "id": "b-r-muse-v1",
@@ -110,7 +110,7 @@
     "/assets/ig/t/r-muse-v1-cover.jpg"
    ],
    "seq": 19,
-   "shareToFeed": false
+   "shareToFeed": true
   },
   {
    "id": "b-r-apex-v2",
@@ -125,7 +125,7 @@
     "/assets/ig/t/r-apex-v2-cover.jpg"
    ],
    "seq": 20,
-   "shareToFeed": false
+   "shareToFeed": true
   },
   {
    "id": "b-s-t01",
@@ -739,7 +739,7 @@
     "/assets/ig/t/r-photobook-v2-cover.jpg"
    ],
    "seq": 1,
-   "shareToFeed": false
+   "shareToFeed": true
   },
   {
    "id": "b-r-njia",
@@ -754,7 +754,7 @@
     "/assets/ig/t/r-njia-cover.jpg"
    ],
    "seq": 2,
-   "shareToFeed": false
+   "shareToFeed": true
   },
   {
    "id": "b-r-pb-zanzibar",
@@ -769,7 +769,7 @@
     "/assets/ig/t/r-pb-zanzibar-cover.jpg"
    ],
    "seq": 3,
-   "shareToFeed": false
+   "shareToFeed": true
   },
   {
    "id": "b-r-cielshop",
@@ -784,7 +784,7 @@
     "/assets/ig/t/r-cielshop-cover.jpg"
    ],
    "seq": 4,
-   "shareToFeed": false
+   "shareToFeed": true
   },
   {
    "id": "b-r-mokara",
@@ -799,7 +799,7 @@
     "/assets/ig/t/r-mokara-cover.jpg"
    ],
    "seq": 5,
-   "shareToFeed": false
+   "shareToFeed": true
   },
   {
    "id": "b-r-orbit",
@@ -814,7 +814,7 @@
     "/assets/ig/t/r-orbit-cover.jpg"
    ],
    "seq": 6,
-   "shareToFeed": false
+   "shareToFeed": true
   },
   {
    "id": "b-r-apex",
@@ -829,7 +829,7 @@
     "/assets/ig/t/r-apex-cover.jpg"
    ],
    "seq": 7,
-   "shareToFeed": false
+   "shareToFeed": true
   },
   {
    "id": "b-r-cledger",
@@ -844,7 +844,7 @@
     "/assets/ig/t/r-cledger-cover.jpg"
    ],
    "seq": 8,
-   "shareToFeed": false
+   "shareToFeed": true
   },
   {
    "id": "b-r-reside",
@@ -859,7 +859,7 @@
     "/assets/ig/t/r-reside-cover.jpg"
    ],
    "seq": 9,
-   "shareToFeed": false
+   "shareToFeed": true
   },
   {
    "id": "b-r-pb-start",
@@ -874,7 +874,7 @@
     "/assets/ig/t/r-pb-start-cover.jpg"
    ],
    "seq": 10,
-   "shareToFeed": false
+   "shareToFeed": true
   },
   {
    "id": "b-r-ember",
@@ -889,7 +889,7 @@
     "/assets/ig/t/r-ember-cover.jpg"
    ],
    "seq": 11,
-   "shareToFeed": false
+   "shareToFeed": true
   },
   {
    "id": "b-r-paykit",
@@ -904,7 +904,7 @@
     "/assets/ig/t/r-paykit-cover.jpg"
    ],
    "seq": 12,
-   "shareToFeed": false
+   "shareToFeed": true
   },
   {
    "id": "b-r-abali",
@@ -919,7 +919,7 @@
     "/assets/ig/t/r-abali-v2-cover.jpg"
    ],
    "seq": 13,
-   "shareToFeed": false
+   "shareToFeed": true
   },
   {
    "id": "b-r-domains",
@@ -933,7 +933,7 @@
    "thumb": [
     "/assets/ig/t/r-domains-tut-cover.jpg"
    ],
-   "shareToFeed": false,
+   "shareToFeed": true,
    "seq": 14
   },
   {
@@ -948,7 +948,7 @@
    "thumb": [
     "/assets/ig/t/r-wanja-v3-cover.jpg"
    ],
-   "shareToFeed": false,
+   "shareToFeed": true,
    "seq": 15
   },
   {
@@ -963,7 +963,7 @@
    "thumb": [
     "/assets/ig/t/r-creme-v2-cover.jpg"
    ],
-   "shareToFeed": false,
+   "shareToFeed": true,
    "seq": 16
   },
   {
@@ -2615,6 +2615,214 @@
     "/assets/ig/t/h-contact.jpg"
    ],
    "seq": 5
+  },
+  {
+   "id": "b-p-sc-coffee-app",
+   "kind": "post",
+   "title": "Social · Coffee ordering app (Amber Bean concept)",
+   "caption": "Mornings taste better when the cup is already waiting. ☕️\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#AppDesign #UIDesign #CoffeeApp #MobileApp #CielAfrica",
+   "src": [
+    "/assets/ig/p/sc-coffee-app.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-sc-coffee-app.jpg"
+   ],
+   "seq": 129
+  },
+  {
+   "id": "b-p-sc-home-app",
+   "kind": "post",
+   "title": "Social · Real estate app (Casavia concept)",
+   "caption": "Every front door is the start of a new chapter. 🏡\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#RealEstate #PropTech #AppDesign #UIDesign #CielAfrica",
+   "src": [
+    "/assets/ig/p/sc-home-app.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-sc-home-app.jpg"
+   ],
+   "seq": 130
+  },
+  {
+   "id": "b-p-sc-game-site",
+   "kind": "post",
+   "title": "Social · Gaming landing page (Novarena concept)",
+   "caption": "Press start on a website that plays as hard as your players do. 🎮\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#WebDesign #GamingWebsite #LandingPage #UIDesign #CielAfrica",
+   "src": [
+    "/assets/ig/p/sc-game-site.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-sc-game-site.jpg"
+   ],
+   "seq": 131
+  },
+  {
+   "id": "b-p-sc-ux-ab",
+   "kind": "post",
+   "title": "Social · Which has the better UX? (security alert A/B)",
+   "caption": "Same alert, two designs. Which one would you trust? Tell us A or B in the comments. 👇\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#UXDesign #UIDesign #ProductDesign #FintechUX #CielAfrica",
+   "src": [
+    "/assets/ig/p/sc-ux-ab.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-sc-ux-ab.jpg"
+   ],
+   "seq": 132
+  },
+  {
+   "id": "b-p-sc-pet-app",
+   "kind": "post",
+   "title": "Social · Pet store app (Pawnest concept)",
+   "caption": "Happy tails, full bowls and one tap to restock. 🐾\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#AppDesign #PetStore #Ecommerce #UIDesign #CielAfrica",
+   "src": [
+    "/assets/ig/p/sc-pet-app.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-sc-pet-app.jpg"
+   ],
+   "seq": 133
+  },
+  {
+   "id": "b-p-sc-cold-coffee-site",
+   "kind": "post",
+   "title": "Social · Premium cold coffee landing page (Coldcraft concept)",
+   "caption": "Slow mornings, cold glasses and a website that tastes as good as it looks. 🧊\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#WebDesign #CoffeeBrand #LandingPage #BrandDesign #CielAfrica",
+   "src": [
+    "/assets/ig/p/sc-cold-coffee-site.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-sc-cold-coffee-site.jpg"
+   ],
+   "seq": 134
+  },
+  {
+   "id": "b-p-sc-interior-site",
+   "kind": "post",
+   "title": "Social · Interior design studio landing page (Maison Clay concept)",
+   "caption": "Warm rooms, soft light and a website that feels just as lived in. 🛋️\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#InteriorDesign #WebDesign #LandingPage #StudioWebsite #CielAfrica",
+   "src": [
+    "/assets/ig/p/sc-interior-site.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-sc-interior-site.jpg"
+   ],
+   "seq": 135
+  },
+  {
+   "id": "b-p-sc-ev-app",
+   "kind": "post",
+   "title": "Social · Electric car rental app (Voltra concept)",
+   "caption": "Quiet engines, open roads and a ride that is ready when you are. ⚡️\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#AppDesign #MobilityApp #ElectricVehicles #UIDesign #CielAfrica",
+   "src": [
+    "/assets/ig/p/sc-ev-app.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-sc-ev-app.jpg"
+   ],
+   "seq": 136
+  },
+  {
+   "id": "b-s-sc-coffee-app",
+   "kind": "story",
+   "title": "Social story · Coffee ordering app (Amber Bean concept)",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/sc-coffee-app.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-sc-coffee-app.jpg"
+   ],
+   "seq": 137
+  },
+  {
+   "id": "b-s-sc-home-app",
+   "kind": "story",
+   "title": "Social story · Real estate app (Casavia concept)",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/sc-home-app.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-sc-home-app.jpg"
+   ],
+   "seq": 138
+  },
+  {
+   "id": "b-s-sc-game-site",
+   "kind": "story",
+   "title": "Social story · Gaming landing page (Novarena concept)",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/sc-game-site.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-sc-game-site.jpg"
+   ],
+   "seq": 139
+  },
+  {
+   "id": "b-s-sc-ux-ab",
+   "kind": "story",
+   "title": "Social story · Which has the better UX? (security alert A/B)",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/sc-ux-ab.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-sc-ux-ab.jpg"
+   ],
+   "seq": 140
+  },
+  {
+   "id": "b-s-sc-pet-app",
+   "kind": "story",
+   "title": "Social story · Pet store app (Pawnest concept)",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/sc-pet-app.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-sc-pet-app.jpg"
+   ],
+   "seq": 141
+  },
+  {
+   "id": "b-s-sc-cold-coffee-site",
+   "kind": "story",
+   "title": "Social story · Premium cold coffee landing page (Coldcraft concept)",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/sc-cold-coffee-site.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-sc-cold-coffee-site.jpg"
+   ],
+   "seq": 142
+  },
+  {
+   "id": "b-s-sc-interior-site",
+   "kind": "story",
+   "title": "Social story · Interior design studio landing page (Maison Clay concept)",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/sc-interior-site.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-sc-interior-site.jpg"
+   ],
+   "seq": 143
+  },
+  {
+   "id": "b-s-sc-ev-app",
+   "kind": "story",
+   "title": "Social story · Electric car rental app (Voltra concept)",
+   "caption": "",
+   "src": [
+    "/assets/ig/s/sc-ev-app.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/s-sc-ev-app.jpg"
+   ],
+   "seq": 144
   }
  ]
 }
