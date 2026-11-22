@@ -177,5 +177,27 @@
     js.replace(/\{ id: '([a-z]+)', name: '([^']*)', price: (\d+)/g, function (_, id, name, pr) { d[id] = { name: name, price: +pr }; });
     return { tiers: tiers || {}, extraPage: extra, cover: cover, delivery: d };
   }
-  return { extract: extract, apply: apply, setItems: setItems, setPhotoBooks: setPhotoBooks, readPhotoBooks: readPhotoBooks, splitMain: splitMain, esc: esc };
+  /** put the objects of window.CIEL.<arrayName> in the given id order (ids not listed keep their place at the end) */
+  function setOrder(js, arrayName, ids) {
+    var at = js.indexOf('window.CIEL.' + arrayName + ' = ['); if (at < 0 || !Array.isArray(ids)) return js;
+    var open = js.indexOf('[', at), close = js.indexOf('\n];', at); if (close < 0) return js;
+    var body = js.slice(open + 1, close), objs = [], depth = 0, st = -1;
+    for (var k = 0; k < body.length; k++) { var ch = body[k]; if (ch === '"') { k = body.indexOf('"', k + 1); if (k < 0) return js; continue; } if (ch === '{') { if (!depth) st = k; depth++; } else if (ch === '}') { depth--; if (!depth) objs.push(body.slice(st, k + 1)); } }
+    var rest = body; objs.forEach(function (o) { rest = rest.replace(o, ''); }); if (/[^\s,]/.test(rest)) return js; /* comments or something unexpected: leave the order alone */
+    var idOf = function (o) { return (/id:"([^"]+)"/.exec(o) || [])[1]; }, map = {}, out = [];
+    objs.forEach(function (o) { map[idOf(o)] = o; });
+    ids.forEach(function (id) { if (map[id]) { out.push(map[id]); delete map[id]; } });
+    objs.forEach(function (o) { if (map[idOf(o)]) out.push(o); });
+    return js.slice(0, open + 1) + '\n  ' + out.join(',\n  ') + '\n' + js.slice(close);
+  }
+  /** services.html: the service cards, in this order, with these words and prices */
+  function setServices(page, list) {
+    if (!Array.isArray(list) || !list.length) return page;
+    var cards = list.slice(0, 40).map(function (x) {
+      var price = String(x.price || '').trim().slice(0, 60);
+      return '<div class="svc" data-r><span class="svc__i">‹</span><span class="svc__n">' + esc(String(x.name || '').slice(0, 80)) + '</span><span class="svc__d">' + esc(String(x.desc || '').slice(0, 400)) + (price ? '<br><strong style="color:var(--ink)">' + esc(price) + '</strong>' : '') + '</span></div>';
+    }).join('');
+    return page.replace(/(<div class="svcs">)[\s\S]*?(<\/div><\/section>)/, function (_, a, b) { return a + cards + '</div>' + b.replace(/^<\/div>/, ''); });
+  }
+  return { setOrder: setOrder, setServices: setServices, extract: extract, apply: apply, setItems: setItems, setPhotoBooks: setPhotoBooks, readPhotoBooks: readPhotoBooks, splitMain: splitMain, esc: esc };
 });

@@ -1026,3 +1026,16 @@ body.ig-dark .pl-m{--igbtn:#222A3B;--igbtn2:#2A3346}
 .igc-row>.igq-sw,.igq-sw{flex:0 0 auto!important;width:40px!important;height:24px}
 .igq-sw input:checked+i{background:var(--igb,#0095f6)}
 .igq-sw i{background:var(--igbtn2,#d4d7de)}
+/* composer: advanced settings */
+.igc-adv{border-bottom:1px solid var(--line)}
+.igc-adv>summary{list-style:none;border-bottom:0}.igc-adv>summary::-webkit-details-marker{display:none}
+.igc-adv>summary em{transition:transform .2s}.igc-adv[open]>summary em{transform:rotate(90deg)}
+.igc-adv>summary small{margin-left:auto;color:var(--soft,#737373);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%}
+.igc-adv>summary small:empty{display:none}
+.igc-adv>summary small+em{margin-left:6px}
+.igc-adv .igc-row{padding-left:22px;align-items:center}
+.igc-adv .igc-row>span:first-child{flex:1;min-width:0}
+.igc-adv .igc-row small{display:block;max-width:none;white-space:normal;font-size:12.5px;line-height:1.35;color:var(--soft,#737373);margin-top:2px}
+.igc-adv .igc-row:last-child{border-bottom:0}
+.igc-sel{cursor:default}.igc-sel select{flex:none;width:auto;max-width:52%;font-size:13px;padding:6px 8px;border-radius:8px}
+.igc-na{cursor:default;opacity:.85}

@@ -29,6 +29,7 @@
         var d = r[5] && r[5].draft;
         W.model = d && d.model ? d.model : clone(W.base);
         W.items = d && d.items ? d.items : { products: {}, templates: {} };
+        W.order = d && d.order ? d.order : {}; W.svcDraft = d && d.services ? d.services : null;
         W.pb = d && d.photobooks && d.photobooks.tiers ? d.photobooks : clone(W.pbBase); /* drafts from before per-size prices are ignored */
         W.uploads = d && d.uploads ? d.uploads : {};
         W.draftAt = d && d.at; W.loaded = true;
@@ -37,7 +38,7 @@
   function changed() { W.dirty = true; status(); clearTimeout(W.t); W.t = setTimeout(saveDraft, 1800); if (W.tab !== 'prices') preview(); }
   function saveDraft() {
     W.saving = true; status();
-    return H.api('/api/hq?route=site-draft-save', { model: W.model, items: W.items, photobooks: W.pb, uploads: W.uploads }).then(function (r) { W.draftAt = r.at; W.dirty = false; W.saving = false; status(); }, function (e) { W.saving = false; status(e.message); });
+    return H.api('/api/hq?route=site-draft-save', { model: W.model, items: W.items, photobooks: W.pb, uploads: W.uploads, order: W.order, services: W.svcDraft }).then(function (r) { W.draftAt = r.at; W.dirty = false; W.saving = false; status(); }, function (e) { W.saving = false; status(e.message); });
   }
   function status(err) {
     var el = document.getElementById('wsSt'); if (!el) return;
@@ -267,13 +268,13 @@
   function publish() {
     var n = Object.keys(W.items.products || {}).length + Object.keys(W.items.templates || {}).length;
     var pbCh = JSON.stringify(W.pb) !== JSON.stringify(W.pbBase);
-    var m = H.modal('<h2>Publish to cielafrica.com?</h2><p class="muted">Your draft goes live on the public website in about a minute.</p><ul class="hist" style="margin:.6rem 0"><li>Homepage, menus, footer and announcement as shown in the preview</li>' + (n ? '<li>' + n + ' price or visibility change' + (n === 1 ? '' : 's') + '</li>' : '') + (pbCh ? '<li>Photo Books prices</li>' : '') + '</ul><label class="field"><span>Note (optional)</span><input class="hq-in" id="pubNote" placeholder="e.g. Christmas announcement"></label><div class="row" style="margin-top:12px;justify-content:flex-end"><button class="b" data-x>Cancel</button><button class="b b--p" id="pubGo">Publish now</button></div><p class="muted" id="pubMsg" style="margin-top:8px"></p>');
+    var m = H.modal('<h2>Publish to cielafrica.com?</h2><p class="muted">Your draft goes live on the public website in about a minute.</p><ul class="hist" style="margin:.6rem 0"><li>Homepage, menus, footer and announcement as shown in the preview</li>' + (n ? '<li>' + n + ' price or visibility change' + (n === 1 ? '' : 's') + '</li>' : '') + (pbCh ? '<li>Photo Books prices</li>' : '') + (W.order && (W.order.products || W.order.templates) ? '<li>A new order for ' + [W.order.products ? 'products' : '', W.order.templates ? 'templates' : ''].filter(Boolean).join(' and ') + '</li>' : '') + (W.svcDraft ? '<li>Services: words, prices and order</li>' : '') + '</ul><label class="field"><span>Note (optional)</span><input class="hq-in" id="pubNote" placeholder="e.g. Christmas announcement"></label><div class="row" style="margin-top:12px;justify-content:flex-end"><button class="b" data-x>Cancel</button><button class="b b--p" id="pubGo">Publish now</button></div><p class="muted" id="pubMsg" style="margin-top:8px"></p>');
     m.querySelector('#pubGo').onclick = function () {
       var go = this; go.disabled = true; var msg = m.querySelector('#pubMsg'); msg.textContent = 'Saving the files…';
-      H.api('/api/hq?route=site-publish', { model: W.model, items: W.items, photobooks: pbCh ? W.pb : null, uploads: W.uploads, note: m.querySelector('#pubNote').value }).then(function (r) {
+      H.api('/api/hq?route=site-publish', { model: W.model, items: W.items, photobooks: pbCh ? W.pb : null, uploads: W.uploads, order: W.order, services: W.svcDraft, note: m.querySelector('#pubNote').value }).then(function (r) {
         if (!r.sha) { msg.textContent = r.message || 'Nothing changed.'; go.disabled = false; return; }
         msg.innerHTML = 'Saved (' + esc(r.files.length) + ' files). Deploying to cielafrica.com… <span class="ws-spin"></span>';
-        W.draftAt = null; W.dirty = false; if (pbCh) { W.pbBase = clone(W.pb); W.pbPublished = clone(W.pb); } status();
+        W.draftAt = null; W.dirty = false; if (W.svcDraft) { W.svc = W.svcDraft.slice(); W.svcDraft = null; } W.order = {}; if (pbCh) { W.pbBase = clone(W.pb); W.pbPublished = clone(W.pb); } status();
         var tries = 0; (function poll() {
           tries++;
           txt('/data/site.json').then(JSON.parse).then(function (j) {
@@ -291,6 +292,7 @@
     var base = kind === 'products' ? W.products : W.templates, ch = W.items[kind] || {};
     var list = base.map(function (p) { return cur(kind, p); }).filter(function (p) { return !p.delete; });
     Object.keys(ch).forEach(function (id) { if (ch[id].create && !ch[id].delete) list.push(Object.assign({ id: id }, ch[id])); });
+    var ord = W.order && W.order[kind]; if (ord && ord.length) { var pos = {}; ord.forEach(function (id, i) { pos[id] = i; }); list = list.map(function (p, i) { return [p, pos[p.id] != null ? pos[p.id] : 1e4 + i]; }).sort(function (a, b) { return a[1] - b[1]; }).map(function (x) { return x[0]; }); }
     return list;
   }
   function nextId(kind) { var pre = kind === 'products' ? 'prd-' : 'tpl-', n = 0; allItems(kind).concat(kind === 'products' ? W.products : W.templates).forEach(function (p) { var m = new RegExp('^' + pre + '(\\d+)$').exec(p.id); if (m) n = Math.max(n, +m[1]); }); Object.keys(W.items[kind] || {}).forEach(function (id) { var m = new RegExp('^' + pre + '(\\d+)$').exec(id); if (m) n = Math.max(n, +m[1]); }); return pre + String(n + 1).padStart(2, '0'); }
@@ -307,18 +309,30 @@
     var shown = list.filter(function (p) { return (!cat || p.category === cat) && (!q || (p.name + ' ' + (p.desc || '')).toLowerCase().indexOf(q) >= 0); });
     var b = H.body('<div class="ws"><div class="ws-top">' + catTabs(kind) + '<span id="wsSt" class="ws-st"></span><button class="b" id="catNew">+ New ' + (kind === 'products' ? 'product' : 'template') + '</button><button class="b b--p" id="wsPub"' + (W.status.github === false ? ' disabled title="Add GITHUB_TOKEN first"' : '') + '>Publish to cielafrica.com</button></div>' +
       '<div class="card"><div class="card__h" style="gap:.5rem;flex-wrap:wrap"><input class="hq-in" id="catQ" type="search" placeholder="Search" value="' + esc(W.cq || '') + '" style="max-width:260px"><select class="hq-in" id="catC" style="width:auto"><option value="">All categories</option>' + cats.map(function (c) { return '<option' + (c === cat ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') + '</select><span class="muted" style="font-size:.8rem;margin-left:auto">' + shown.length + ' shown</span></div>' +
-      '<table class="tbl cat-tbl"><thead><tr><th></th><th>Name</th><th class="hide-m">Category</th><th>Price</th><th>Status</th></tr></thead><tbody>' + shown.map(function (p) {
+      '<table class="tbl cat-tbl"><thead><tr><th class="cat-mvh" title="Order on the website">Order</th><th></th><th>Name</th><th class="hide-m">Category</th><th>Price</th><th>Status</th></tr></thead><tbody>' + shown.map(function (p) {
         var c = ch[p.id], img = W.uploads[(p.image || '').split('?')[0]] ? 'data:image/webp;base64,' + W.uploads[p.image.split('?')[0]] : shot(kind, p);
-        return '<tr data-id="' + esc(p.id) + '"><td style="width:72px">' + (img ? '<img class="cat-img" src="' + esc(img.charAt(0) === '/' || /^data:/.test(img) ? img : '/' + img) + '" alt="">' : '<span class="cat-img cat-img--x"></span>') + '</td><td><b>' + esc(p.name) + '</b><small>' + esc(p.id) + (c ? ' · <span style="color:var(--b)">' + (c.create ? 'new, not published' : 'edited, not published') + '</span>' : '') + '</small></td><td class="hide-m">' + esc(p.category || '') + '</td><td><b>KES ' + Math.round(+p.price || 0).toLocaleString('en-KE') + '</b>' + (p.was > p.price ? '<small><s>KES ' + Math.round(p.was).toLocaleString('en-KE') + '</s></small>' : '') + '</td><td>' + (p.hidden ? '<span class="chip">Hidden</span>' : '<span class="chip chip--g">Live</span>') + '</td></tr>';
+        var ix = shown.indexOf(p);
+        return '<tr data-id="' + esc(p.id) + '"><td class="cat-mv" data-stop><button type="button" data-mv="-1" title="Move up"' + (ix ? '' : ' disabled') + '>' + H.I.up + '</button><button type="button" data-mv="1" title="Move down"' + (ix < shown.length - 1 ? '' : ' disabled') + '>' + H.I.down + '</button></td><td style="width:72px">' + (img ? '<img class="cat-img" src="' + esc(img.charAt(0) === '/' || /^data:/.test(img) ? img : '/' + img) + '" alt="">' : '<span class="cat-img cat-img--x"></span>') + '</td><td><b>' + esc(p.name) + '</b><small>' + esc(p.id) + (c ? ' · <span style="color:var(--b)">' + (c.create ? 'new, not published' : 'edited, not published') + '</span>' : '') + '</small></td><td class="hide-m">' + esc(p.category || '') + '</td><td>' + (+p.price > 0 ? '<b>KES ' + Math.round(+p.price).toLocaleString('en-KE') + '</b>' : '<b class="cat-or">On request</b>') + (p.was > p.price ? '<small><s>KES ' + Math.round(p.was).toLocaleString('en-KE') + '</s></small>' : '') + '</td><td>' + (p.hidden ? '<span class="chip">Hidden</span>' : '<span class="chip chip--g">Live</span>') + '</td></tr>';
       }).join('') + '</tbody></table></div><p class="faint" style="font-size:.78rem">Changes are saved as a draft and go live when you publish (together with any Website editor changes).</p></div>');
     b.querySelectorAll('#catT [data-k]').forEach(function (x) { x.onclick = function () { W.cc = ''; var k = x.getAttribute('data-k'); if (k === 'services' || k === 'domains') { W.ctab = k; if (location.hash !== '#products') location.hash = '#products'; else drawCatalog('products'); return; } W.ctab = k === 'photobooks' ? 'photobooks' : null; if (k === 'photobooks') { if (location.hash !== '#products') location.hash = '#products'; drawPbTab(); return; } location.hash = '#' + (k === 'products' ? 'products' : 'templates'); }; });
     var qi = b.querySelector('#catQ'); qi.oninput = function () { W.cq = qi.value; var pos = qi.selectionStart; drawCatalog(kind); var n = document.getElementById('catQ'); n.focus(); n.setSelectionRange(pos, pos); };
     b.querySelector('#catC').onchange = function () { W.cc = this.value; drawCatalog(kind); };
     b.querySelector('#wsPub').onclick = publish;
     b.querySelector('#catNew').onclick = function () { var id = nextId(kind); editItem(kind, Object.assign({ id: id, create: true, name: '', category: cats[0] || '', desc: '', price: 0 }, kind === 'products' ? { art: 'admin', meta: '' } : { idealFor: '' }), true); };
-    b.querySelectorAll('tr[data-id]').forEach(function (tr) { tr.onclick = function () { var p = allItems(kind).filter(function (x) { return x.id === tr.getAttribute('data-id'); })[0]; if (p) editItem(kind, p); }; });
+    b.querySelectorAll('tr[data-id]').forEach(function (tr) { tr.onclick = function (e) { if (e.target.closest('[data-stop]')) return; var p = allItems(kind).filter(function (x) { return x.id === tr.getAttribute('data-id'); })[0]; if (p) editItem(kind, p); }; });
+    /* order on the website: move a row up or down (saved in the draft, live when published) */
+    b.querySelectorAll('[data-mv]').forEach(function (x) { x.onclick = function (e) {
+      e.stopPropagation(); var id = x.closest('tr').getAttribute('data-id'), d = +x.getAttribute('data-mv'), ids = allItems(kind).map(function (p) { return p.id; });
+      var sIx = shown.map(function (p) { return p.id; }), j = sIx.indexOf(id), other = sIx[j + d]; if (!other) return;
+      var a = ids.indexOf(id), c = ids.indexOf(other); ids[a] = other; ids[c] = id;
+      W.order = W.order || {}; W.order[kind] = ids; changed(); var y = scrollY; drawCatalog(kind); scrollTo(0, y);
+      var row = document.querySelector('tr[data-id="' + id + '"]'); if (row) { row.classList.add('is-moved'); setTimeout(function () { row.classList.remove('is-moved'); }, 700); }
+    }; });
+    keepTabs();
     status();
   }
+  /* the row of tabs keeps its scroll position when the page redraws (no jumping back) */
+  function keepTabs() { var t = document.getElementById('catT'); if (!t) return; if (W.tabX) t.scrollLeft = W.tabX; t.addEventListener('scroll', function () { W.tabX = t.scrollLeft; }); var on = t.querySelector('.is-on'); if (on && (on.offsetLeft < t.scrollLeft || on.offsetLeft + on.offsetWidth > t.scrollLeft + t.clientWidth)) t.scrollLeft = on.offsetLeft - 12; }
   /* Products: one row of tabs for everything Ciel Africa sells */
   function catTabs(on) {
     var T = [['products', 'Digital products', allItems('products').length], ['services', 'Services', W.svc ? W.svc.length : null], ['templates', 'Website templates', allItems('templates').length], ['photobooks', 'Photo Books', null], ['domains', 'Domains', W.dom ? W.dom.tlds.length : null]];
@@ -333,29 +347,68 @@
       return W.svc;
     });
   }
-  function loadDom() { if (W.dom) return Promise.resolve(W.dom); return fetch('/api/domains/config', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) { W.dom = { tlds: j.tlds || [], cats: j.categories || [], cur: j.currency || 'KES', ordering: j.ordering }; return W.dom; }); }
+  function loadDom() {
+    if (W.dom) return Promise.resolve(W.dom);
+    /* the full list (every extension, on or off) from the Domains admin; the public list if that isn't allowed */
+    return fetch('/api/domains/admin/config', { credentials: 'same-origin', headers: { 'X-Requested-With': 'ciel' } }).then(function (r) { return r.json(); }).then(function (j) {
+      if (!j.ok || !j.config) throw new Error('public');
+      W.dom = { tlds: j.config.tlds || [], cats: j.config.categories || {}, cur: 'KES', ordering: j.config.settings && j.config.settings.orderingEnabled, admin: true }; return W.dom;
+    }).catch(function () { return fetch('/api/domains/config').then(function (r) { return r.json(); }).then(function (j) { W.dom = { tlds: (j.tlds || []).map(function (t) { t.enabled = true; return t; }), cats: j.categories || {}, cur: j.currency || 'KES', ordering: j.ordering, admin: false }; return W.dom; }); });
+  }
+  function svcList() { return W.svcDraft || W.svc || []; }
   function drawSellTab(k) {
     W.tab = 'prices'; W.ctab = k;
-    var b = H.body('<div class="ws"><div class="ws-top">' + catTabs(k) + '</div><div id="sellW"><div class="card"><div class="card__b"><div class="sk" style="height:200px"></div></div></div></div></div>');
+    var b = H.body('<div class="ws"><div class="ws-top">' + catTabs(k) + '<span id="wsSt" class="ws-st"></span>' + (k === 'services' ? '<button class="b" id="svAdd">+ New service</button><button class="b b--p" id="wsPub"' + (W.status.github === false ? ' disabled title="Add GITHUB_TOKEN first"' : '') + '>Publish to cielafrica.com</button>' : '<button class="b b--p" id="dmSave" disabled>Save prices</button>') + '</div><div id="sellW"><div class="card"><div class="card__b"><div class="sk" style="height:200px"></div></div></div></div></div>');
     b.querySelectorAll('#catT [data-k]').forEach(function (x) { x.onclick = function () { var n = x.getAttribute('data-k'); if (n === k) return; if (n === 'services' || n === 'domains') return drawSellTab(n); W.ctab = n === 'photobooks' ? 'photobooks' : null; if (n === 'photobooks') return drawPbTab(); if (n === 'products') return drawCatalog('products'); location.hash = '#templates'; }; });
+    keepTabs(); status();
     var el = b.querySelector('#sellW');
-    if (k === 'services') loadSvc().then(function (L) {
+    if (k === 'services') {
+      b.querySelector('#wsPub').onclick = publish;
+      var edit = function () { if (!W.svcDraft) W.svcDraft = JSON.parse(JSON.stringify(W.svc || [])); return W.svcDraft; };
+      var draw = function () {
+        var L = svcList();
+        el.innerHTML = '<div class="sv-l">' + L.map(function (x, i) {
+          return '<div class="card sv-e" data-i="' + i + '"><div class="sv-e__mv"><button type="button" data-mv="-1" title="Move up"' + (i ? '' : ' disabled') + '>' + H.I.up + '</button><span>' + (i + 1) + '</span><button type="button" data-mv="1" title="Move down"' + (i < L.length - 1 ? '' : ' disabled') + '>' + H.I.down + '</button></div>' +
+            '<div class="sv-e__f"><input class="hq-in sv-e__n" data-f="name" value="' + esc(x.name) + '" maxlength="80" placeholder="Service name"><textarea class="hq-in" data-f="desc" rows="2" maxlength="400" placeholder="One or two lines about it">' + esc(x.desc) + '</textarea>' +
+            '<div class="sv-e__p"><label><span>Price shown</span><input class="hq-in" data-f="price" value="' + esc(x.price) + '" maxlength="60" placeholder="e.g. from KES 25,000 or On request"></label><div class="sv-e__q">' + ['from KES ', 'On request', 'Free quote'].map(function (q) { return '<button type="button" data-q="' + esc(q) + '">' + esc(q.trim()) + '</button>'; }).join('') + '</div></div></div>' +
+            '<button type="button" class="b b--sm b--ghost sv-e__x" data-rm title="Remove">' + H.I.x + '</button></div>';
+        }).join('') + '</div><p class="faint" style="font-size:.78rem;margin-top:.8rem">These are the cards on cielafrica.com/services, top to bottom. Edit the words or price, change the order, then publish. <a href="/services" target="_blank" rel="noopener">Open the page ↗</a></p>';
+        el.querySelectorAll('.sv-e').forEach(function (c) {
+          var i = +c.getAttribute('data-i');
+          c.querySelectorAll('[data-f]').forEach(function (f) { f.oninput = function () { edit()[i][f.getAttribute('data-f')] = f.value; changed(); }; });
+          c.querySelectorAll('[data-q]').forEach(function (q) { q.onclick = function () { var v = q.getAttribute('data-q'), f = c.querySelector('[data-f=price]'); f.value = v; edit()[i].price = v; changed(); f.focus(); if (/KES $/.test(v)) f.setSelectionRange(v.length, v.length); }; });
+          c.querySelectorAll('[data-mv]').forEach(function (m) { m.onclick = function () { var L2 = edit(), j = i + +m.getAttribute('data-mv'); if (j < 0 || j >= L2.length) return; var t = L2[i]; L2[i] = L2[j]; L2[j] = t; changed(); draw(); var e2 = el.querySelector('.sv-e[data-i="' + j + '"]'); if (e2) { e2.classList.add('is-moved'); e2.scrollIntoView({ block: 'nearest' }); setTimeout(function () { e2.classList.remove('is-moved'); }, 700); } }; });
+          c.querySelector('[data-rm]').onclick = function () { HQAsk.confirm('Remove “' + (svcList()[i].name || 'this service') + '” from the Services page? (It goes when you publish.)').then(function (ok) { if (!ok) return; edit().splice(i, 1); changed(); draw(); }); };
+        });
+        var t = b.querySelector('#catT [data-k=services]'); if (t) t.innerHTML = 'Services <i>' + L.length + '</i>';
+      };
+      b.querySelector('#svAdd').onclick = function () { edit().push({ name: '', desc: '', price: 'On request' }); changed(); draw(); var all = el.querySelectorAll('.sv-e__n'); if (all.length) { all[all.length - 1].focus(); all[all.length - 1].scrollIntoView({ block: 'center' }); } };
+      loadSvc().then(draw, function (e) { el.innerHTML = '<p class="muted">' + esc(e.message) + '</p>'; });
+      return;
+    }
+    /* Domains: every extension with its register and renew price; empty = "On request" */
+    loadDom().then(function (D) {
       if (!document.body.contains(el)) return;
-      el.innerHTML = '<div class="sv-g">' + L.map(function (x) { return '<div class="card sv-c"><div class="sv-c__h"><b>' + esc(x.name) + '</b>' + (x.price ? '<span class="sv-c__p">' + esc(x.price) + '</span>' : '<span class="sv-c__p sv-c__p--q">Quoted</span>') + '</div><p>' + esc(x.desc) + '</p></div>'; }).join('') + '</div>' +
-        '<p class="faint" style="font-size:.78rem;margin-top:.8rem">' + L.length + ' services, exactly as they appear on cielafrica.com/services. Starting prices; every project is quoted to its real scope. <a href="/services" target="_blank" rel="noopener">Open the page ↗</a></p>';
-      var t = b.querySelector('#catT [data-k=services]'); if (t) t.innerHTML = 'Services <i>' + L.length + '</i>';
-    }, function (e) { el.innerHTML = '<p class="muted">' + esc(e.message) + '</p>'; });
-    else loadDom().then(function (D) {
-      if (!document.body.contains(el)) return;
-      var cur = D.cur || 'KES', fm = function (v) { return v == null ? 'On request' : cur + ' ' + Number(v).toLocaleString('en-KE'); };
-      var cats = {}; D.tlds.forEach(function (t) { var c = t.category || 'Other'; (cats[c] = cats[c] || []).push(t); });
-      var cname = function (c) { var f = (D.cats || []).filter(function (x) { return x && (x.id || x.key || x) === c; })[0]; return f ? (f.label || f.name || c) : c; };
-      el.innerHTML = '<div class="card"><div class="card__h"><h2>Domain names</h2><span class="chip' + (D.ordering ? ' chip--g' : '') + '">' + (D.ordering ? 'Online ordering on' : 'Requests only') + '</span><a class="b b--sm" href="#content" id="domEd" style="margin-left:auto">Edit prices</a></div>' +
-        '<table class="tbl dm-tbl"><thead><tr><th>Extension</th><th class="hide-m">Type</th><th>Register (1 yr)</th><th>Renew</th></tr></thead><tbody>' +
-        Object.keys(cats).map(function (c) { return cats[c].map(function (t) { return '<tr><td><b>' + esc(t.tld.charAt(0) === '.' ? t.tld : '.' + t.tld) + '</b>' + (t.verifyBeforePayment ? '<small>checked by hand before payment</small>' : '') + '</td><td class="hide-m"><small>' + esc(String(cname(c))) + '</small></td><td><b>' + fm(t.register) + '</b></td><td>' + fm(t.renew) + '</td></tr>'; }).join(''); }).join('') + '</tbody></table></div>' +
-        '<p class="faint" style="font-size:.78rem;margin-top:.8rem">' + D.tlds.length + ' extensions on sale at cielafrica.com/domains. Prices are changed in Content library → Domains → Pricing.</p>';
+      var cats = D.cats || {}, cname = function (c) { return (cats && !Array.isArray(cats) && cats[c]) || c || ''; }, edits = {};
+      var save = b.querySelector('#dmSave');
+      el.innerHTML = '<div class="card"><div class="card__h"><h2>Domain names</h2><span class="chip' + (D.ordering ? ' chip--g' : '') + '">' + (D.ordering ? 'Online ordering on' : 'Requests only') + '</span></div>' +
+        '<table class="tbl dm-tbl"><thead><tr><th>On</th><th>Extension</th><th>Register · 1 yr (KES)</th><th>Renew (KES)</th></tr></thead><tbody>' +
+        D.tlds.map(function (t) { var x = String(t.tld).replace(/^\./, ''); return '<tr data-t="' + esc(x) + '"' + (t.enabled === false ? ' class="is-off"' : '') + '><td><label class="dm-on"><input type="checkbox" data-k="enabled"' + (t.enabled !== false ? ' checked' : '') + (D.admin ? '' : ' disabled') + '></label></td><td><b>.' + esc(x) + '</b><small>' + esc(cname(t.category)) + (t.minYears > 1 ? ' · min ' + t.minYears + ' yrs' : '') + '</small></td>' +
+          '<td><input class="hq-in dm-in" type="number" min="0" step="50" inputmode="numeric" data-k="register" value="' + (t.register == null ? '' : t.register) + '" placeholder="On request"' + (D.admin ? '' : ' disabled') + '></td><td><input class="hq-in dm-in" type="number" min="0" step="50" inputmode="numeric" data-k="renew" value="' + (t.renew == null ? '' : t.renew) + '" placeholder="On request"' + (D.admin ? '' : ' disabled') + '></td></tr>'; }).join('') + '</tbody></table></div>' +
+        '<p class="faint" style="font-size:.78rem;margin-top:.8rem">Leave a price empty to show “On request” on cielafrica.com/domains. Switch an extension off to hide it. Saved prices go live within a minute.' + (D.admin ? '' : ' Your account can see these prices but not change them.') + '</p>';
+      el.querySelectorAll('tr[data-t] [data-k]').forEach(function (inp) {
+        var on = function () { var t = inp.closest('tr').getAttribute('data-t'), k = inp.getAttribute('data-k'); edits[t] = edits[t] || {}; edits[t][k] = inp.type === 'checkbox' ? inp.checked : (inp.value === '' ? null : Number(inp.value)); if (k === 'enabled') inp.closest('tr').classList.toggle('is-off', !inp.checked); save.disabled = false; save.textContent = 'Save prices'; };
+        inp.addEventListener('input', on); inp.addEventListener('change', on);
+      });
+      save.onclick = function () {
+        save.disabled = true; save.textContent = 'Saving…';
+        fetch('/api/domains/admin/config', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'ciel' }, body: JSON.stringify({ patch: { tlds: edits } }) }).then(function (r) { return r.json(); }).then(function (j) {
+          if (!j.ok) throw new Error(j.error || 'Couldn’t save.');
+          Object.keys(edits).forEach(function (t) { var row = D.tlds.filter(function (x) { return String(x.tld).replace(/^\./, '') === t; })[0]; if (row) Object.assign(row, edits[t]); }); edits = {};
+          save.textContent = 'Saved'; H.toast('Domain prices saved. cielafrica.com/domains updates within a minute.', 'ok');
+        }).catch(function (e) { save.disabled = false; save.textContent = 'Save prices'; H.toast(e.message, 'err'); });
+      };
       var t = b.querySelector('#catT [data-k=domains]'); if (t) t.innerHTML = 'Domains <i>' + D.tlds.length + '</i>';
-      var de = el.querySelector('#domEd'); if (de) de.onclick = function () { if (H.S) H.S.ctab = 1; };
     }, function (e) { el.innerHTML = '<p class="muted">' + esc(e.message) + '</p>'; });
   }
   /* Products → Photo Books: the same settings as Website → Prices, with Publish at the top */

@@ -56,7 +56,7 @@
     gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
     plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>',
     x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
-    ref: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M8 16H3v5"/></svg>',
+    ref: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>',
     l: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>',
     r: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>',
     book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>',
@@ -178,9 +178,13 @@
   function boot() {
     try { localStorage.setItem('pbk_admin', '1'); } catch (e) { }
     root.className = 'hq';
-    root.innerHTML = '<aside class="hq-side"><div class="hq-side__brand">' + LOGO + '<span class="hq-side__tag">Admin</span></div>' + themeSwitch() + '<nav class="hq-nav" id="nav"></nav><div class="hq-side__foot"><a href="/" target="_blank" rel="noopener">cielafrica.com ↗</a><button id="lo">Sign out</button></div></aside>' +
+    root.innerHTML = '<aside class="hq-side"><div class="hq-side__brand">' + LOGO + '<span class="hq-side__tag">Admin</span><button type="button" class="hq-col" id="colB" title="Collapse menu" aria-label="Collapse menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/></svg></button></div>' + themeSwitch() + '<nav class="hq-nav" id="nav"></nav><div class="hq-side__foot"><a href="/" target="_blank" rel="noopener">cielafrica.com ↗</a><button id="lo">Sign out</button></div></aside>' +
       '<div class="hq-main"><header class="hq-top"><button class="hq-burger" id="burger" aria-label="Open menu">' + I.menu + '</button><button class="hq-srch" id="sk" title="Search (Ctrl+K)">' + I.search + '<span>Search everything…</span><kbd>Ctrl K</kbd></button><span class="hq-live" id="lv" title="Live">Live</span><button class="b b--sm" id="inst" hidden>Install app</button><button class="b b--sm" id="thm" title="Light or dark"></button><button class="b b--sm hq-bell" id="nb" title="Notifications">' + I.bell + '<i id="nbc" hidden></i></button><button class="b b--sm" id="rf" title="Refresh">' + I.ref + '<span>Refresh</span></button><button class="hq-me" id="meB" type="button" aria-label="Your profile">' + avatarHtml(S.me, 'av--sm') + '</button></header><div class="hq-ph"><h1 id="ttl"></h1><div id="topx"></div></div><main class="hq-body" id="body">' + skel() + '</main></div><nav class="hq-mnav" id="mnav"></nav>';
     document.getElementById('lo').onclick = signOut;
+    /* computer: shrink the menu to icons, remembered on this device */
+    var mini = function (on) { root.classList.toggle('is-mini', on); var cb = document.getElementById('colB'); cb.title = on ? 'Expand menu' : 'Collapse menu'; cb.setAttribute('aria-label', cb.title); try { localStorage.setItem('ca_mini', on ? '1' : ''); } catch (e) { } };
+    try { if (localStorage.getItem('ca_mini') === '1') mini(true); } catch (e) { }
+    document.getElementById('colB').onclick = function () { mini(!root.classList.contains('is-mini')); };
     document.getElementById('meB').onclick = meMenu; paintMe();
     document.getElementById('rf').onclick = function () { if (window.HQGrow) HQGrow.refresh(); refresh(true); };
     /* phone & tablet: the sidebar slides in from the left */
@@ -261,11 +265,11 @@
       api('/api/hq?route=pulse').then(function (p) {
         var lv = document.getElementById('lv'); if (lv) lv.classList.remove('is-off');
         S.pitems = p.items || []; if (window.HQTools) HQTools.bell();
-        if (S.pulse === null) { S.pulse = p.v; return; }
+        if (S.pulse === null) { S.pulse = p.v; popAway(p.items || []); return; }
         if (p.v !== S.pulse) {
           var fresh = (p.items || []).slice(0, Math.min(5, p.v - S.pulse));
           S.pulse = p.v;
-          refresh(false, true).then(function () { if (fresh[0]) { toast(fresh[0].title + (fresh[0].body ? ' · ' + fresh[0].body : '')); ping(); } });
+          refresh(false, true).then(function () { if (fresh.length && popMany(fresh)) ping(); });
           if (document.hasFocus && !document.hasFocus() && 'Notification' in window && Notification.permission === 'granted' && !S.pushOn) fresh.forEach(function (x) { try { new Notification(x.title, { body: x.body, icon: '/assets/img/icon-192.png' }); } catch (e) { } });
         }
       }, function (e) { var lv = document.getElementById('lv'); if (lv) lv.classList.add('is-off'); if (e.status === 401) login(S.setup || {}); });
@@ -276,6 +280,35 @@
     document.addEventListener('visibilitychange', function () { if (!document.hidden) tick(); });
     if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', function (e) { if (e.data && e.data.type === 'hq-push') tick(); });
   }
+  /* ---------- pop-ups: a small card with an X for new orders, briefs and messages ---------- */
+  var POP_TYPES = [['order', 'New orders and payments', 'Photo books, shop, domains, WhatsApp and Paybill', 1], ['brief', 'Project briefs', 'Someone sent the Start a project form', 1], ['message', 'Website messages', 'The contact form and other enquiries', 1], ['pages', 'Photo book pages received', 'A customer sent or changed their pages', 1], ['review', 'New reviews', 'A customer left a review', 1], ['renewal', 'Domain renewals', 'A domain is due or renewed', 1], ['subscriber', 'New email subscribers', '', 0], ['instagram', 'Instagram activity', 'Comments, messages and posts', 0], ['printer', 'Printer updates', '', 0]];
+  function popPrefs() { var d = { on: true, t: {} }; try { d = Object.assign(d, JSON.parse(localStorage.getItem('ca_pops')) || {}); } catch (e) { } POP_TYPES.forEach(function (x) { if (typeof d.t[x[0]] !== 'boolean') d.t[x[0]] = !!x[3]; }); return d; }
+  function popSave(d) { try { localStorage.setItem('ca_pops', JSON.stringify(d)); } catch (e) { } }
+  function popType(x) { var k = x.kind; if (k === 'whatsapp') return 'order'; if (k === 'lead') return /^project brief/i.test(x.body || '') ? 'brief' : 'message'; return k; }
+  var POP_LOOK = { order: ['New order', I.orders, 'o'], brief: ['Project brief', I.target, 'v'], message: ['New message', I.inbox, 'b'], pages: ['Pages received', I.box, 't'], review: ['New review', I.star || I.target, 'y'], renewal: ['Domain', I.web, 'b'], subscriber: ['Subscriber', I.people, 'g'], instagram: ['Instagram', I.inbox, 'p'], printer: ['Printer', I.box, 's'] };
+  function popMany(list) { var pr = popPrefs(); if (!pr.on) return 0; var ok = list.filter(function (x) { return pr.t[popType(x)] !== false && (!x.kind || can(popSection(x))); }); ok.slice(0, 3).reverse().forEach(pop); if (ok.length > 3) popMore(ok.length - 3); try { localStorage.setItem('ca_pop_at', String(Date.now())); } catch (e) { } return ok.length; }
+  function popSection(x) { var t = popType(x); return t === 'order' ? 'orders' : t === 'brief' || t === 'message' ? 'leads' : t === 'pages' ? 'photobooks' : t === 'review' ? 'reviews' : t === 'instagram' ? 'instagram' : 'overview'; }
+  /* opening the app: what arrived while it was closed (last 24 hours, newest three) */
+  function popAway(items) { var last = 0; try { last = +localStorage.getItem('ca_pop_at') || 0; } catch (e) { } if (!last) { try { localStorage.setItem('ca_pop_at', String(Date.now())); } catch (e) { } return; } var since = Math.max(last, Date.now() - 864e5), list = items.filter(function (x) { return x.at > since; }); if (list.length) setTimeout(function () { popMany(list); }, 900); else try { localStorage.setItem('ca_pop_at', String(Date.now())); } catch (e) { } }
+  function popBox() { var b = document.querySelector('.pop4-box'); if (!b) { b = document.createElement('div'); b.className = 'pop4-box'; b.setAttribute('aria-live', 'polite'); document.body.appendChild(b); } return b; }
+  function popClose(n) { if (!n || n._gone) return; n._gone = 1; n.classList.remove('is-on'); setTimeout(function () { n.remove(); }, 220); }
+  function pop(x) {
+    var t = popType(x), L = POP_LOOK[t] || POP_LOOK.message, b = popBox(), n = document.createElement('div');
+    var url = x.url && x.url.indexOf('/admin') === 0 ? x.url.slice(6) || '#overview' : '#overview';
+    var title = String(x.title || '');
+    n.className = 'pop4 pop4--' + L[2]; n.setAttribute('role', 'status');
+    n.innerHTML = '<span class="pop4__i">' + L[1] + '</span><div class="pop4__t"><small>' + esc(L[0]) + ' · ' + new Date(x.at || Date.now()).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' }) + '</small><b></b><p></p><a class="pop4__go" href="' + esc(url) + '">Open</a></div><button type="button" class="pop4__x" aria-label="Close">' + I.x + '</button>';
+    n.querySelector('b').textContent = title; n.querySelector('p').textContent = x.body || ''; if (!x.body) n.querySelector('p').remove();
+    n.querySelector('.pop4__x').onclick = function () { popClose(n); };
+    n.querySelector('.pop4__go').onclick = function () { popClose(n); };
+    b.insertBefore(n, b.firstChild);
+    while (b.querySelectorAll('.pop4:not(.pop4--more)').length > (innerWidth < 700 ? 2 : 3)) popClose([].slice.call(b.querySelectorAll('.pop4:not(.pop4--more)')).pop());
+    requestAnimationFrame(function () { n.classList.add('is-on'); });
+    /* stays until closed; tidies itself away after a few minutes */
+    setTimeout(function () { popClose(n); }, 300000);
+  }
+  function popMore(k) { var b = popBox(), n = document.createElement('button'); n.type = 'button'; n.className = 'pop4 pop4--more is-on'; n.textContent = '+' + k + ' more in notifications'; n.onclick = function () { popClose(n); var bl = document.getElementById('nb'); if (bl) bl.click(); }; b.appendChild(n); setTimeout(function () { popClose(n); }, 60000); }
+
   function ping() { try { var a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = 880; g.gain.setValueAtTime(0.08, a.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + 0.35); o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime + 0.36); } catch (e) { } }
 
   /* ---------- app install + phone notifications ---------- */
@@ -347,7 +380,7 @@
     if (d) document.documentElement.setAttribute('data-theme', 'dark'); else document.documentElement.removeAttribute('data-theme');
     if (window.__paintTh) window.__paintTh(); themeChanged();
   }
-  function themeSwitch() { return '<div class="tm3" role="radiogroup" aria-label="Theme">' + [['light', I.sun, 'Light'], ['dark', I.moon, 'Dark'], ['system', I.monitor, 'Device']].map(function (x) { return '<button type="button" role="radio" data-tm="' + x[0] + '" title="' + x[2] + (x[0] === 'system' ? ': match this phone or computer' : '') + '">' + x[1] + '<span>' + x[2] + '</span></button>'; }).join('') + '</div>'; }
+  function themeSwitch() { return '<div class="tm3" role="radiogroup" aria-label="Theme">' + [['light', I.sun, 'Light'], ['dark', I.moon, 'Dark'], ['system', I.monitor, 'Device']].map(function (x) { return '<button type="button" role="radio" data-tm="' + x[0] + '" title="' + x[2] + (x[0] === 'system' ? ': match this phone or computer' : '') + '" aria-label="' + x[2] + '">' + x[1] + '</button>'; }).join('') + '</div>'; }
   function themeChanged() {
     var dk = document.documentElement.getAttribute('data-theme') === 'dark', m = document.querySelector('meta[name=theme-color]');
     if (m) m.setAttribute('content', innerWidth <= 900 ? (dk ? '#0a0e18' : '#0f1729') : (dk ? '#0b0f19' : '#f1f3f8'));
@@ -481,7 +514,7 @@
   function navs() {
     var c = counts();
     var lastH = null;
-    document.getElementById('nav').innerHTML = NAV.filter(function (n) { return can(n[0]); }).map(function (n) { var h = n[3] || null; if (!h) { for (var k = NAV.indexOf(n); k >= 0 && !h; k--) h = NAV[k][3] || null; } var show = h && h !== lastH; lastH = h; return (show ? '<div class="hq-nav__h">' + h + '</div>' : '') + '<a href="#' + n[0] + '" class="nv--' + n[4] + (S.view === n[0] ? ' is-on' : '') + '"><b class="nv-i">' + n[2] + '</b><span>' + n[1] + '</span>' + (c[n[0]] ? '<i' + (n[0] === 'leads' ? ' class="is-hot"' : '') + '>' + c[n[0]] + '</i>' : '') + '</a>'; }).join('');
+    document.getElementById('nav').innerHTML = NAV.filter(function (n) { return can(n[0]); }).map(function (n) { var h = n[3] || null; if (!h) { for (var k = NAV.indexOf(n); k >= 0 && !h; k--) h = NAV[k][3] || null; } var show = h && h !== lastH; lastH = h; return (show ? '<div class="hq-nav__h">' + h + '</div>' : '') + '<a href="#' + n[0] + '" class="nv--' + n[4] + (S.view === n[0] ? ' is-on' : '') + '" title="' + n[1] + '"><b class="nv-i">' + n[2] + '</b><span>' + n[1] + '</span>' + (c[n[0]] ? '<i' + (n[0] === 'leads' ? ' class="is-hot"' : '') + '>' + c[n[0]] + '</i>' : '') + '</a>'; }).join('');
     /* the number on the app icon: paid orders to handle + new messages */
     try { var nb = (c.orders || 0) + (c.inbox || 0); if (navigator.setAppBadge) { if (nb) navigator.setAppBadge(nb).catch(function () { }); else navigator.clearAppBadge().catch(function () { }); } } catch (e) { }
     document.getElementById('mnav').innerHTML = ['overview', 'leads', 'orders', 'inbox'].map(function (id) { var n = NAV.filter(function (x) { return x[0] === id; })[0]; return '<a href="#' + n[0] + '" class="' + (S.view === n[0] ? 'is-on' : '') + '">' + n[2] + '<span>' + (id === 'overview' ? 'Home' : n[1]) + '</span>' + (c[n[0]] ? '<i>' + c[n[0]] + '</i>' : '') + '</a>'; }).join('') +
@@ -1141,12 +1174,27 @@
     ];
     var b = body('<div class="card"><div class="card__h"><h2>This device</h2></div><ul class="list setup"><li><span class="st" id="sp">…</span><div><b>Phone notifications</b><p id="spt">New orders, WhatsApp orders, pages received and website messages, even when Ciel Admin is closed.</p></div><button class="b b--sm b--p" id="spb">Turn on</button></li>' +
       '<li><span class="st' + (standalone() ? '' : ' no') + '">' + (standalone() ? '✓' : '') + '</span><div><b>Ciel Admin app</b><p>' + (standalone() ? 'Installed and running as an app.' : isIOS() ? 'On iPhone: open cielafrica.com/admin in Safari → Share → Add to Home Screen. Notifications on iPhone work only from the installed app.' : 'Install it on this phone or computer: it opens like an app and stays signed in.') + '</p></div>' + (standalone() ? '' : '<button class="b b--sm" id="spi">Install</button>') + '</li></ul></div>' +
+      '<div class="card" id="popC"></div>' +
       '<div class="card"><div class="card__h"><h2>Setup checklist</h2></div><ul class="list setup">' + rows.map(function (r) { return '<li><span class="st' + (r[0] === 'opt' ? ' opt' : r[0] ? '' : ' no') + '">' + (r[0] === true ? '✓' : r[0] === 'opt' ? '–' : '') + '</span><div><b>' + r[1] + '</b><p>' + r[2] + '</p></div></li>'; }).join('') + '</ul></div><p class="faint" style="font-size:.82rem">Change any of these in Vercel → cielafrica → Settings → Environment Variables, then redeploy.</p>');
     function upd() { pushState().then(function (st) { var on = st === 'on'; b.querySelector('#sp').className = 'st' + (on ? '' : ' no'); b.querySelector('#sp').textContent = on ? '✓' : ''; var bt = b.querySelector('#spb'); bt.textContent = on ? 'Turn off' : 'Turn on'; bt.className = 'b b--sm' + (on ? '' : ' b--p'); if (st === 'denied') b.querySelector('#spt').textContent = 'Blocked in this browser’s settings. Allow notifications for cielafrica.com, then try again.'; if (st === 'ios') b.querySelector('#spt').textContent = 'On iPhone, install Ciel Admin first (Share → Add to Home Screen), then turn notifications on from the app.'; }); }
     upd();
     b.querySelector('#spb').onclick = function () { pushState().then(function (st) { return st === 'on' ? disablePush() : enablePush(); }).then(upd); };
     var si = b.querySelector('#spi'); if (si) si.onclick = install;
+    popCard(b.querySelector('#popC'));
     if (window.HQMoney) HQMoney.setupCards(b);
+  }
+  function popCard(c) {
+    var d = popPrefs();
+    c.innerHTML = '<div class="card__h"><h2>Pop-ups</h2><label class="sw4" title="Show pop-ups"><input type="checkbox" id="popOn"' + (d.on ? ' checked' : '') + '><i></i><span>' + (d.on ? 'On' : 'Off') + '</span></label></div>' +
+      '<p class="pop4-set__d">A small card in the corner when something new comes in, with an X to close it. Choose what pops up on this device.</p>' +
+      '<div class="pop4-set' + (d.on ? '' : ' is-off') + '">' + POP_TYPES.map(function (x) { return '<label class="pop4-set__r"><input type="checkbox" data-pt="' + x[0] + '"' + (d.t[x[0]] ? ' checked' : '') + (d.on ? '' : ' disabled') + '><span><b>' + x[1] + '</b>' + (x[2] ? '<small>' + x[2] + '</small>' : '') + '</span></label>'; }).join('') + '</div>' +
+      '<div class="pop4-set__f"><button type="button" class="b b--sm" id="popT"' + (d.on ? '' : ' disabled') + '>Show a sample</button><span class="faint">Phone notifications are chosen separately, under the bell.</span></div>';
+    c.onchange = function (e) {
+      var t = e.target;
+      if (t.id === 'popOn') { d.on = t.checked; popSave(d); popCard(c); toast(d.on ? 'Pop-ups on' : 'Pop-ups off', 'ok'); return; }
+      var k = t.getAttribute('data-pt'); if (k) { d.t[k] = t.checked; popSave(d); toast('Saved', 'ok'); }
+    };
+    c.querySelector('#popT').onclick = function () { pop({ kind: 'order', title: 'Sample · New order', body: 'This is how a new order looks. Nothing was ordered.', url: '/admin#orders', at: Date.now() }); };
   }
 
   window.HQ = { setTheme: setTheme, themeMode: themeMode, can: can, me: function () { return S.me; }, paintTheme: paintTheme, back: goBack, pushHelp: pushHelp, pushState: pushState, enablePush: enablePush, disablePush: disablePush, I: I, NAV: NAV, KIND: KIND, orderDrawer: orderDrawer, api: api, toast: toast, esc: esc, dt: dt, d2: d2, money: money, today: today, body: body, modal: modal, drawer: drawer, S: S, navs: navs, route: route, saveItem: saveItem, delItem: delItem, taskModal: taskModal, eventModal: eventModal };

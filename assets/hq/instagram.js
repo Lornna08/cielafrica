@@ -1452,6 +1452,13 @@
       '<div id="igReelF"><div class="igc-row igc-cover">' + IC.img + '<span>Cover</span><span class="igc-cv" id="igcCv"></span><button class="igk-b igk-b--sm" id="igcCvB" type="button">Change</button></div>' +
       '<label class="igc-row">' + IC.music + '<span>Audio name</span><input id="igAud" maxlength="60" placeholder="Original audio"></label>' +
       '<label class="igc-row igc-tg" id="igFeedF"><span>Also share to feed and the profile grid</span><span class="igq-sw"><input type="checkbox" id="igFeed"><i></i></span></label></div>' +
+      '<details class="igc-adv" id="igAdv"><summary class="igc-row"><span>Advanced settings</span><small id="igAdvV"></small><em>' + IC.r + '</em></summary>' +
+        '<label class="igc-row igc-tg" id="igNoCmF"><span>Turn off commenting<small>No one can comment. You can turn it back on from the post.</small></span><span class="igq-sw"><input type="checkbox" id="igNoCm"><i></i></span></label>' +
+        '<label class="igc-row igc-tg" id="igAiF"><span>Add AI info label<small>Shows “AI info” when the photo or video was made or edited with AI.</small></span><span class="igq-sw"><input type="checkbox" id="igAi"><i></i></span></label>' +
+        '<label class="igc-row igc-tg" id="igPaidF"><span>Add paid partnership label<small>For posts you were paid to make.</small></span><span class="igq-sw"><input type="checkbox" id="igPaid"><i></i></span></label>' +
+        '<div class="igc-row igc-sel" id="igTrialF"><span>Trial reel<small>Shown first to people who don’t follow you.</small></span><select id="igTrial" class="igk-hq-in"><option value="">Off</option><option value="MANUAL">On · I’ll share it to followers myself</option><option value="SS_PERFORMANCE">On · share it if it does well</option></select></div>' +
+        '<div class="igc-row igc-na"><span>Hide like and view counts<small>Instagram doesn’t let apps set this. After it’s posted, open it in the Instagram app → ••• → Hide like count.</small></span></div>' +
+      '</details>' +
       '<label class="igc-row igc-tg">' + IC.clock + '<span>Schedule</span><span class="igq-sw"><input type="checkbox" id="igcS"><i></i></span></label>' +
       '<div class="igc-when" id="igcWhen" hidden><input class="igk-hq-in" type="datetime-local" id="igAt"><div class="igq-quick" id="igBest"></div><p class="igk-faint igq-bn" id="igBestN"></p><p class="igk-faint igq-bn is-warn" id="igPace" hidden></p></div>' +
       '<p class="igq-msg" id="igMsg"></p>' +
@@ -1461,6 +1468,10 @@
     var $ = function (s) { return m.querySelector(s); };
     if (d.altText && d.media[0] && !d.media[0].altText) d.media[0].altText = d.altText;
     $('#igCap').value = d.caption || ''; $('#igFc').value = d.firstComment || ''; $('#igCol').value = (d.collaborators || []).map(function (c) { return '@' + c; }).join(', '); $('#igFeed').checked = d.shareToFeed !== false; $('#igAud').value = d.audioName || '';
+    $('#igNoCm').checked = !!d.noComments; $('#igAi').checked = !!d.aiLabel; $('#igPaid').checked = !!d.paidPartnership; $('#igTrial').value = d.trial || '';
+    var advV = function () { var on = [$('#igNoCm').checked && !$('#igNoCmF').hidden ? 'Comments off' : '', $('#igAi').checked && !$('#igAiF').hidden ? 'AI label' : '', $('#igPaid').checked && !$('#igPaidF').hidden ? 'Paid partnership' : '', $('#igTrial').value && !$('#igTrialF').hidden ? 'Trial reel' : ''].filter(Boolean); $('#igAdvV').textContent = on.join(' · '); };
+    $('#igAdv').onchange = advV;
+    if (d.noComments || d.aiLabel || d.paidPartnership || d.trial) $('#igAdv').open = true;
     if (d.at) $('#igAt').value = localInput(d.at);
     $('#igAt').min = localInput(Date.now());
     $('#igcS').checked = !!d.at && d.status !== 'draft';
@@ -1476,6 +1487,7 @@
       $('#igcT').textContent = (isNew ? 'New ' : 'Edit ') + ({ photo: 'post', carousel: 'post', story: 'story', reel: 'reel' })[t];
       $('#igCapF').hidden = t === 'story'; $('#igColF').hidden = t === 'story'; $('#igReelF').hidden = t !== 'reel';
       $('#igTagR').hidden = t === 'story'; $('#igLocR').hidden = t === 'story'; $('#igFcF').hidden = t === 'story'; $('#igAltR').hidden = t !== 'photo' && t !== 'carousel';
+      $('#igNoCmF').hidden = t === 'story'; $('#igAiF').hidden = t === 'story'; $('#igPaidF').hidden = t === 'story'; $('#igTrialF').hidden = t !== 'reel'; if (typeof advV === 'function') advV();
       $('#igTrimR').hidden = !(d.media[0] && d.media[0].kind === 'video' && (t === 'reel' || t === 'story'));
       $('#igMHint').textContent = { photo: 'Photos: 4:5 portrait (1080 × 1350) fills the feed. Add up to 10 for a carousel.', carousel: '2 to 10 photos or videos. They all show in the first one’s shape.', reel: 'One video, upright 9:16 (1080 × 1920), MP4 or MOV, up to 15 minutes.', story: 'One photo or video, upright 9:16 (1080 × 1920). Videos up to 60 seconds.' }[t];
       draw(); count(); cover(); sched(); rows();
@@ -1539,6 +1551,7 @@
       var at = $('#igcS').checked && $('#igAt').value ? new Date($('#igAt').value).getTime() : null;
       var story = d.type === 'story', m0 = d.media[0] || {};
       return { id: d.id, type: d.type, caption: story ? '' : $('#igCap').value, altText: d.type === 'photo' ? (m0.altText || '') : '', collaborators: $('#igCol').value, shareToFeed: $('#igFeed').checked, audioName: d.type === 'reel' ? $('#igAud').value : '', at: at, status: status,
+        noComments: !story && $('#igNoCm').checked, aiLabel: !story && $('#igAi').checked, paidPartnership: !story && $('#igPaid').checked, trial: d.type === 'reel' ? $('#igTrial').value : '',
         firstComment: story ? '' : $('#igFc').value, location: story ? '' : (d.location || ''), locationName: story ? '' : (d.locationName || ''), thumbOffset: d.type === 'reel' && !d.cover ? (d.thumbOffset || 0) : 0,
         planId: d.media.some(function (x) { return x.plan; }) ? (d.planId || '') : '',
         cover: d.type === 'reel' && d.cover ? mediaBody(d.cover) : null,
