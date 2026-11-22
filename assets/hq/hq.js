@@ -265,10 +265,18 @@
       if (hiddenAt && Date.now() - hiddenAt > 60000) refresh(false, true);
     });
     window.addEventListener('pageshow', function (e) { if (e.persisted) { checkUpdate(); refresh(false, true); } });
+    /* keeps going when the window is in the background (a slower check, once a minute) and catches up by itself
+       after the computer sleeps or the browser pauses the page overnight */
+    var lastOk = Date.now(), lastTry = 0;
     function tick() {
-      if (document.hidden) return;
+      var now = Date.now();
+      if (document.hidden && now - lastTry < 55000) return;
+      lastTry = now;
+      var stale = now - lastOk > 90000;
       api('/api/hq?route=pulse').then(function (p) {
         var lv = document.getElementById('lv'); if (lv) lv.classList.remove('is-off');
+        lastOk = Date.now();
+        if (stale && S.pulse !== null && p.v === S.pulse) refresh(false, true);
         S.pitems = p.items || []; if (window.HQTools) HQTools.bell();
         if (S.pulse === null) { S.pulse = p.v; popAway(p.items || []); return; }
         if (p.v !== S.pulse) {
@@ -283,6 +291,8 @@
     var mailOn = S.setup && S.setup.mail && S.setup.mail.some(function (a) { return a.configured; });
     if (mailOn && window.HQMail) { var mp = function () { if (!document.hidden) HQMail.poll(function () { navs(); }); }; mp(); setInterval(mp, 120000); }
     document.addEventListener('visibilitychange', function () { if (!document.hidden) tick(); });
+    ['focus', 'online', 'pageshow'].forEach(function (ev) { window.addEventListener(ev, function () { lastTry = 0; tick(); }); });
+    document.addEventListener('resume', function () { lastTry = 0; tick(); });
     if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', function (e) { if (e.data && e.data.type === 'hq-push') tick(); });
   }
   /* ---------- pop-ups: a small card with an X for new orders, briefs and messages ---------- */
@@ -520,10 +530,11 @@
   function navs() {
     var c = counts();
     var lastH = null;
-    document.getElementById('nav').innerHTML = NAV.filter(function (n) { return can(n[0]); }).map(function (n) { var h = n[3] || null; if (!h) { for (var k = NAV.indexOf(n); k >= 0 && !h; k--) h = NAV[k][3] || null; } var show = h && h !== lastH; lastH = h; return (show ? '<div class="hq-nav__h">' + h + '</div>' : '') + '<a href="#' + n[0] + '" class="nv--' + n[4] + (S.view === n[0] ? ' is-on' : '') + '" title="' + n[1] + '"><b class="nv-i">' + n[2] + '</b><span>' + n[1] + '</span>' + (c[n[0]] ? '<i' + (n[0] === 'leads' ? ' class="is-hot"' : '') + '>' + c[n[0]] + '</i>' : '') + '</a>'; }).join('');
-    /* the number on the app icon: paid orders to handle + new messages */
-    try { var nb = (c.orders || 0) + (c.inbox || 0); if (navigator.setAppBadge) { if (nb) navigator.setAppBadge(nb).catch(function () { }); else navigator.clearAppBadge().catch(function () { }); } } catch (e) { }
-    document.getElementById('mnav').innerHTML = ['overview', 'leads', 'orders', 'inbox'].map(function (id) { var n = NAV.filter(function (x) { return x[0] === id; })[0]; return '<a href="#' + n[0] + '" class="' + (S.view === n[0] ? 'is-on' : '') + '">' + n[2] + '<span>' + (id === 'overview' ? 'Home' : n[1]) + '</span>' + (c[n[0]] ? '<i>' + c[n[0]] + '</i>' : '') + '</a>'; }).join('') +
+    document.getElementById('nav').innerHTML = NAV.filter(function (n) { return can(n[0]); }).map(function (n) { var h = n[3] || null; if (!h) { for (var k = NAV.indexOf(n); k >= 0 && !h; k--) h = NAV[k][3] || null; } var show = h && h !== lastH; lastH = h; return (show ? '<div class="hq-nav__h">' + h + '</div>' : '') + '<a href="#' + n[0] + '" class="nv--' + n[4] + (S.view === n[0] ? ' is-on' : '') + '" title="' + n[1] + '"><b class="nv-i">' + n[2] + '</b><span>' + n[1] + '</span>' + (c[n[0]] ? '<i' + (n[0] === 'leads' ? ' class="is-hot"' : '') + '>' + (c[n[0]] > 99 ? '99+' : c[n[0]]) + '</i>' : '') + '</a>'; }).join('');
+    /* the number on the app icon: new leads + paid orders to handle + new website messages (not the email inbox, whose
+       old unread emails made it run into the thousands) */
+    try { var nb = (c.leads || 0) + (c.orders || 0) + S.inbox.filter(function (m) { return m.kind !== 'whatsapp' && m.kind !== 'brief' && m.status === 'new'; }).length; nb = Math.min(nb, 99); if (navigator.setAppBadge) { if (nb) navigator.setAppBadge(nb).catch(function () { }); else navigator.clearAppBadge().catch(function () { }); } } catch (e) { }
+    document.getElementById('mnav').innerHTML = ['overview', 'leads', 'orders', 'inbox'].map(function (id) { var n = NAV.filter(function (x) { return x[0] === id; })[0]; return '<a href="#' + n[0] + '" class="' + (S.view === n[0] ? 'is-on' : '') + '">' + n[2] + '<span>' + (id === 'overview' ? 'Home' : n[1]) + '</span>' + (c[n[0]] ? '<i>' + (c[n[0]] > 99 ? '99+' : c[n[0]]) + '</i>' : '') + '</a>'; }).join('') +
       '<button type="button" class="' + (['overview', 'leads', 'orders', 'inbox'].indexOf(S.view) < 0 ? 'is-on' : '') + '" id="mnMore">' + I.grid + '<span>Menu</span></button>';
     var mm = document.getElementById('mnMore'); if (mm) mm.onclick = function () { root.classList.add('nav-open'); document.body.style.overflow = 'hidden'; };
   }

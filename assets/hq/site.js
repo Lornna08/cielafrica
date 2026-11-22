@@ -7,7 +7,7 @@
    ============================================================ */
 (function () {
   var H, C = window.SiteCMS;
-  var W = { loaded: false, tab: 'home', dev: 'desktop', dirty: false, saving: false };
+  var W = { loaded: false, tab: 'pages', dev: 'desktop', dirty: false, saving: false };
   function esc(s) { return H.esc(s); }
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
   function txt(url) { return fetch(url + (url.indexOf('?') < 0 ? '?' : '&') + 'hq=' + Date.now(), { cache: 'no-store', credentials: 'same-origin' }).then(function (r) { if (!r.ok) throw new Error(url + ' ' + r.status); return r.text(); }); }
@@ -32,13 +32,15 @@
         W.order = d && d.order ? d.order : {}; W.svcDraft = d && d.services ? d.services : null;
         W.pb = d && d.photobooks && d.photobooks.tiers ? d.photobooks : clone(W.pbBase); /* drafts from before per-size prices are ignored */
         W.uploads = d && d.uploads ? d.uploads : {};
+        W.pages = d && d.pages ? d.pages : {}; W.team = d && d.team ? d.team : null; W.src = {};
+        if (window.HQPages) HQPages.init(ctx());
         W.draftAt = d && d.at; W.loaded = true;
       });
   }
   function changed() { W.dirty = true; status(); clearTimeout(W.t); W.t = setTimeout(saveDraft, 1800); if (W.tab !== 'prices') preview(); }
   function saveDraft() {
     W.saving = true; status();
-    return H.api('/api/hq?route=site-draft-save', { model: W.model, items: W.items, photobooks: W.pb, uploads: W.uploads, order: W.order, services: W.svcDraft }).then(function (r) { W.draftAt = r.at; W.dirty = false; W.saving = false; status(); }, function (e) { W.saving = false; status(e.message); });
+    return H.api('/api/hq?route=site-draft-save', { model: W.model, items: W.items, photobooks: W.pb, uploads: W.uploads, order: W.order, services: W.svcDraft, pages: W.pages, team: W.team }).then(function (r) { W.draftAt = r.at; W.dirty = false; W.saving = false; status(); }, function (e) { W.saving = false; status(e.message); });
   }
   function status(err) {
     var el = document.getElementById('wsSt'); if (!el) return;
@@ -58,9 +60,24 @@
   }
 
   /* ---------- shell ---------- */
-  var TABS = [['home', 'Homepage'], ['menus', 'Menus & footer'], ['prices', 'Prices & visibility'], ['history', 'Publish history']];
+  var TABS = [['pages', 'Pages'], ['order', 'What shows first'], ['menus', 'Menus & footer'], ['prices', 'Prices & visibility'], ['history', 'Publish history']];
+  var WIDE = /^(prices|history|pages|order)$/;
+  /* what the page-by-page editor (pages.js) needs from here */
+  function ctx() { return { W: W, C: C, H: H, txt: txt, changed: changed, inp: inp, setPath: setPath, heroForm: heroForm, bindHero: bindHero, allItems: allItems, shot: shot, svcList: svcList, loadSvc: loadSvc }; }
+  function heroForm() {
+    var h = W.model.hero;
+    return '<div class="pg-f ws-grid">' + inp('Small heading above the title', h.eyebrow, 'data-k="hero.eyebrow"') + inp('Title, first line', h.before, 'data-k="hero.before"') + inp('Rotating words (one per line)', (h.words || []).join('\n'), 'data-k="hero.words"', 4) + inp('Title, last line', h.after, 'data-k="hero.after"') + inp('Description', h.sub, 'data-k="hero.sub"', 3) +
+      '<div class="ws-2">' + (h.ctas || []).map(function (c, i) { return '<div class="ws-box"><b>' + (i ? 'Second' : 'Main') + ' button</b>' + inp('Label', c.label, 'data-k="hero.ctas.' + i + '.label"') + inp('Link', c.href, 'data-k="hero.ctas.' + i + '.href" placeholder="/quote or https://…"') + '</div>'; }).join('') + '</div></div>';
+  }
+  function bindHero(el, after) {
+    bindInputs(el, function (k, v) {
+      if (k === 'hero.words') v = v.split('\n').map(function (x) { return x.trim(); }).filter(Boolean);
+      if (/^hero\.(before|after|words)/.test(k)) W.model.hero.label = '';
+      setPath(W.model, k, v); if (after) after();
+    });
+  }
   function render(tab) {
-    W.tab = tab || W.tab;
+    W.tab = tab === 'home' ? 'pages' : (tab || W.tab);
     var b = H.body('<div class="ws"><p class="muted">Loading the live website…</p></div>');
     (W.loaded ? Promise.resolve() : load()).then(function () { draw(); }, function (e) { b.innerHTML = '<div class="card card__b"><b>Couldn’t load the website</b><p class="muted">' + esc(e.message) + '</p></div>'; });
   }
@@ -70,18 +87,19 @@
       (gh === false ? '<div class="ws-warn"><b>Publishing is switched off.</b> You can edit and save drafts now. To publish, add <code>GITHUB_TOKEN</code> in Vercel (see <a href="#settings">Setup</a>).</div>' : '') +
       '<div class="ws-top"><div class="tabs" id="wsTabs">' + TABS.map(function (t) { return '<button data-t="' + t[0] + '"' + (W.tab === t[0] ? ' class="is-on"' : '') + '>' + t[1] + '</button>'; }).join('') + '</div><span id="wsSt" class="ws-st"></span>' +
       '<button class="b b--sm" id="wsDiscard">Discard draft</button><button class="b b--p" id="wsPub"' + (gh === false ? ' disabled title="Add GITHUB_TOKEN first"' : '') + '>Publish to cielafrica.com</button></div>' +
-      (W.tab === 'prices' || W.tab === 'history' ? '' : '<div class="tabs ws-mode" id="wsMode"><button data-m="e"' + (W.pvOn ? '' : ' class="is-on"') + '>' + H.I.pen + '<span>Edit</span></button><button data-m="p"' + (W.pvOn ? ' class="is-on"' : '') + '>' + H.I.eye + '<span>Preview</span></button></div>') +
-      '<div class="ws-main' + (W.tab === 'prices' || W.tab === 'history' ? ' is-wide' : '') + (W.pvOn ? ' is-pv' : '') + '"><div class="ws-form" id="wsForm"></div>' +
-      (W.tab === 'prices' || W.tab === 'history' ? '' : '<div class="ws-pv"><div class="ws-pvbar"><div class="tabs" id="wsDev">' + [['desktop', 'Desktop'], ['tablet', 'Tablet'], ['mobile', 'Phone']].map(function (d) { return '<button data-d="' + d[0] + '"' + (W.dev === d[0] ? ' class="is-on"' : '') + '>' + d[1] + '</button>'; }).join('') + '</div><span class="muted" style="font-size:.78rem">Preview of your draft</span></div><div class="ws-frame ws-frame--' + W.dev + '"><iframe id="wsPrev" title="Website preview"></iframe></div></div>') +
+      (WIDE.test(W.tab) ? '' : '<div class="tabs ws-mode" id="wsMode"><button data-m="e"' + (W.pvOn ? '' : ' class="is-on"') + '>' + H.I.pen + '<span>Edit</span></button><button data-m="p"' + (W.pvOn ? ' class="is-on"' : '') + '>' + H.I.eye + '<span>Preview</span></button></div>') +
+      '<div class="ws-main' + (WIDE.test(W.tab) ? ' is-wide' : '') + (W.pvOn ? ' is-pv' : '') + '"><div class="ws-form" id="wsForm"></div>' +
+      (WIDE.test(W.tab) ? '' : '<div class="ws-pv"><div class="ws-pvbar"><div class="tabs" id="wsDev">' + [['desktop', 'Desktop'], ['tablet', 'Tablet'], ['mobile', 'Phone']].map(function (d) { return '<button data-d="' + d[0] + '"' + (W.dev === d[0] ? ' class="is-on"' : '') + '>' + d[1] + '</button>'; }).join('') + '</div><span class="muted" style="font-size:.78rem">Preview of your draft</span></div><div class="ws-frame ws-frame--' + W.dev + '"><iframe id="wsPrev" title="Website preview"></iframe></div></div>') +
       '</div></div>');
     b.querySelectorAll('#wsTabs [data-t]').forEach(function (x) { x.onclick = function () { location.hash = '#website/' + x.getAttribute('data-t'); }; });
     /* phones and tablets: switch between the form and a full-size preview */
     b.querySelectorAll('#wsMode [data-m]').forEach(function (x) { x.onclick = function () { W.pvOn = x.getAttribute('data-m') === 'p'; if (W.pvOn && innerWidth < 700 && !W.devSet) { W.dev = 'mobile'; W.devSet = true; draw(); window.scrollTo(0, 0); return; } b.querySelectorAll('#wsMode [data-m]').forEach(function (y) { y.classList.toggle('is-on', y === x); }); b.querySelector('.ws-main').classList.toggle('is-pv', W.pvOn); if (W.pvOn) { preview(); setTimeout(fit, 30); } window.scrollTo(0, 0); }; });
     b.querySelectorAll('#wsDev [data-d]').forEach(function (x) { x.onclick = function () { W.dev = x.getAttribute('data-d'); W.devSet = true; draw(); }; });
     b.querySelector('#wsPub').onclick = publish;
-    b.querySelector('#wsDiscard').onclick = function () { HQAsk.confirm('Discard all unpublished changes and go back to what is live?').then(function (ok) { if (!ok) return; H.api('/api/hq?route=site-draft-save', { clear: true }).then(function () { W.model = clone(W.base); W.items = { products: {}, templates: {} }; W.pb = clone(W.pbBase); W.uploads = {}; W.draftAt = null; W.dirty = false; draw(); H.toast('Draft discarded'); }); }); };
+    b.querySelector('#wsDiscard').onclick = function () { HQAsk.confirm('Discard all unpublished changes and go back to what is live?').then(function (ok) { if (!ok) return; H.api('/api/hq?route=site-draft-save', { clear: true }).then(function () { W.model = clone(W.base); W.items = { products: {}, templates: {} }; W.pb = clone(W.pbBase); W.uploads = {}; W.pages = {}; W.team = null; W.src = {}; W.order = {}; W.svcDraft = null; W.draftAt = null; W.dirty = false; draw(); H.toast('Draft discarded'); }); }); };
     var f = b.querySelector('#wsForm');
-    ({ home: formHome, menus: formMenus, prices: formPrices, history: formHistory })[W.tab](f);
+    if (window.HQPages) HQPages.init(ctx());
+    ({ pages: function (el) { HQPages.pages(el); }, order: function (el) { HQPages.order(el); }, menus: formMenus, prices: formPrices, history: formHistory })[W.tab](f);
     status(); preview(); fit();
   }
   function fit() {
@@ -148,8 +166,10 @@
     var m = W.model;
     f.innerHTML = '<section class="card"><div class="card__h"><h2>Top menu</h2><button class="b b--sm" id="mAdd">+ Add link</button></div><ul class="ws-list" id="mNav"></ul><div class="card__b ws-2" style="border-top:1px solid var(--line)">' + inp('Header button label', m.cta.label, 'data-k="cta.label"') + inp('Header button link', m.cta.href, 'data-k="cta.href"') + '</div></section>' +
       '<section class="card"><div class="card__h"><h2>Footer</h2><button class="b b--sm" id="fAdd">+ Add column</button></div><div class="card__b" id="mFoot" style="display:grid;gap:12px"></div></section>' +
-      '<p class="faint" style="font-size:.8rem">The same menu and footer are used on every page of cielafrica.com (Photo Books and the live templates keep their own).</p>';
+      '<section class="card"><div class="card__h"><h2>Announcement bar</h2><label class="check"><input type="checkbox" data-k="announce.on"' + (W.model.announce.on ? ' checked' : '') + '> Show on every page</label></div><div class="card__b ws-grid">' + inp('Message', W.model.announce.text, 'data-k="announce.text" placeholder="e.g. Photo Books: order by 15 Dec for Christmas"') + inp('Link (optional)', W.model.announce.href, 'data-k="announce.href" placeholder="/photobooks"') + '</div></section>' +
+      '<p class="faint" style="font-size:.8rem">The same menu, footer and announcement are used on every page of cielafrica.com (Photo Books and the live templates keep their own).</p>';
     bindInputs(f.querySelector('.card__b'), function (k, v) { setPath(W.model, k, v); });
+    f.querySelectorAll('[data-k^="announce."]').forEach(function (x) { var up = function () { setPath(W.model, x.getAttribute('data-k'), x.type === 'checkbox' ? x.checked : x.value); changed(); }; x.addEventListener('input', up); x.addEventListener('change', up); });
     function nav() {
       var ul = document.getElementById('mNav');
       ul.innerHTML = m.nav.map(function (n, i) { return '<li data-i="' + i + '" draggable="true" class="' + (n.visible === false ? 'is-off' : '') + '"><div class="ws-row">' + GRIP + '<input class="hq-in ws-in" data-k="nav.' + i + '.label" value="' + esc(n.label) + '" placeholder="Label"><input class="hq-in ws-in" data-k="nav.' + i + '.href" value="' + esc(n.href) + '" placeholder="Link">' + MV + '<label class="check" title="Show in the menu"><input type="checkbox" data-k="nav.' + i + '.visible"' + (n.visible === false ? '' : ' checked') + '></label><button type="button" class="b b--sm b--ghost" data-del title="Remove">✕</button></div></li>'; }).join('');
@@ -268,13 +288,16 @@
   function publish() {
     var n = Object.keys(W.items.products || {}).length + Object.keys(W.items.templates || {}).length;
     var pbCh = JSON.stringify(W.pb) !== JSON.stringify(W.pbBase);
-    var m = H.modal('<h2>Publish to cielafrica.com?</h2><p class="muted">Your draft goes live on the public website in about a minute.</p><ul class="hist" style="margin:.6rem 0"><li>Homepage, menus, footer and announcement as shown in the preview</li>' + (n ? '<li>' + n + ' price or visibility change' + (n === 1 ? '' : 's') + '</li>' : '') + (pbCh ? '<li>Photo Books prices</li>' : '') + (W.order && (W.order.products || W.order.templates) ? '<li>A new order for ' + [W.order.products ? 'products' : '', W.order.templates ? 'templates' : ''].filter(Boolean).join(' and ') + '</li>' : '') + (W.svcDraft ? '<li>Services: words, prices and order</li>' : '') + '</ul><label class="field"><span>Note (optional)</span><input class="hq-in" id="pubNote" placeholder="e.g. Christmas announcement"></label><div class="row" style="margin-top:12px;justify-content:flex-end"><button class="b" data-x>Cancel</button><button class="b b--p" id="pubGo">Publish now</button></div><p class="muted" id="pubMsg" style="margin-top:8px"></p>');
+    var m = H.modal('<h2>Publish to cielafrica.com?</h2><p class="muted">Your draft goes live on the public website in about a minute.</p><ul class="hist" style="margin:.6rem 0"><li>Homepage, menus, footer and announcement as shown in the preview</li>' + (window.HQPages ? HQPages.summary() : '') + (n ? '<li>' + n + ' price or visibility change' + (n === 1 ? '' : 's') + '</li>' : '') + (pbCh ? '<li>Photo Books prices</li>' : '') + (W.order && (W.order.products || W.order.templates) ? '<li>A new order for ' + [W.order.products ? 'products' : '', W.order.templates ? 'templates' : ''].filter(Boolean).join(' and ') + '</li>' : '') + (W.svcDraft ? '<li>Services: words, prices and order</li>' : '') + '</ul><label class="field"><span>Note (optional)</span><input class="hq-in" id="pubNote" placeholder="e.g. Christmas announcement"></label><div class="row" style="margin-top:12px;justify-content:flex-end"><button class="b" data-x>Cancel</button><button class="b b--p" id="pubGo">Publish now</button></div><p class="muted" id="pubMsg" style="margin-top:8px"></p>');
     m.querySelector('#pubGo').onclick = function () {
       var go = this; go.disabled = true; var msg = m.querySelector('#pubMsg'); msg.textContent = 'Saving the files…';
-      H.api('/api/hq?route=site-publish', { model: W.model, items: W.items, photobooks: pbCh ? W.pb : null, uploads: W.uploads, order: W.order, services: W.svcDraft, note: m.querySelector('#pubNote').value }).then(function (r) {
+      (window.HQPages ? HQPages.publishPages() : Promise.resolve({})).then(function (pageHtml) {
+        msg.textContent = 'Publishing…';
+        return H.api('/api/hq?route=site-publish', { model: W.model, items: W.items, photobooks: pbCh ? W.pb : null, uploads: W.uploads, order: W.order, services: W.svcDraft, pageHtml: pageHtml, team: W.team, note: m.querySelector('#pubNote').value });
+      }).then(function (r) {
         if (!r.sha) { msg.textContent = r.message || 'Nothing changed.'; go.disabled = false; return; }
         msg.innerHTML = 'Saved (' + esc(r.files.length) + ' files). Deploying to cielafrica.com… <span class="ws-spin"></span>';
-        W.draftAt = null; W.dirty = false; if (W.svcDraft) { W.svc = W.svcDraft.slice(); W.svcDraft = null; } W.order = {}; if (pbCh) { W.pbBase = clone(W.pb); W.pbPublished = clone(W.pb); } status();
+        W.draftAt = null; W.dirty = false; if (W.svcDraft) { W.svc = W.svcDraft.slice(); W.svcDraft = null; } W.order = {}; W.pages = {}; W.team = null; W.src = {}; W.teamBase = null; W.workBase = null; if (pbCh) { W.pbBase = clone(W.pb); W.pbPublished = clone(W.pb); } status();
         var tries = 0; (function poll() {
           tries++;
           txt('/data/site.json').then(JSON.parse).then(function (j) {

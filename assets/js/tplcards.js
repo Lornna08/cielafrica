@@ -71,9 +71,8 @@ window.CIEL = window.CIEL || {};
     if(!H.length) H=T.filter(function(t){return t.featured;}).slice(0,4);
     return H.length?H:T.slice(0,1);
   };
-  /* every template we've actually built (has a live demo): homepage ones first, then the rest */
+  /* every template we've actually built (has a live demo), in the order set in Ciel Admin (Website → What shows first) */
   CIEL.builtTemplates=function(){
-    var T=CIEL.templates||[],H=CIEL.homeTemplates().filter(function(t){return t.demo;});
-    return H.concat(T.filter(function(t){return t.demo&&H.indexOf(t)<0;})).filter(function(t){return !t.hidden;});
+    return (CIEL.templates||[]).filter(function(t){return t.demo&&!t.hidden;});
   };
 })();
