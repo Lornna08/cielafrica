@@ -34,7 +34,7 @@
     if(reduce || !('IntersectionObserver' in window)){ els.forEach(function(e){e.classList.add('in');}); return; }
     var obs = new IntersectionObserver(function(ents){
       ents.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); obs.unobserve(e.target); } });
-    }, {threshold:0.12, rootMargin:'0px 0px -5% 0px'});
+    }, {threshold:0, rootMargin:'0px 0px 6% 0px'});
     els.forEach(function(e){ obs.observe(e); });
   };
   CIEL.io(document);

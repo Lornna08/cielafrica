@@ -13,95 +13,16 @@
    ============================================================ */
 (function () {
   var root = document.getElementById('brief'); if (!root) return;
-  var C = window.CIEL || {}, KEY = 'ciel:brief:v4';
+  var C = window.CIEL || {}, KEY = 'ciel:brief:v5';
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var $ = function (s, r) { return (r || root).querySelector(s); };
   var I = function (p, s) { return '<svg width="' + (s || 20) + '" height="' + (s || 20) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>'; };
   var IC = { check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>', arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>', ext: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>', search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>', x: '<path d="M6 6l12 12M18 6 6 18"/>' };
   var money = function (n) { return n == null ? '' : 'KES ' + String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); };
 
-  /* ---------- what people can ask us to build ---------- */
-  var TYPES = [
-    { id: 'web', name: 'A website', cats: ['Business or company website', 'Online store (e-commerce)', 'Start from one of your website templates', 'Portfolio', 'Personal brand or CV website', 'Landing page for a product or campaign', 'Blog or magazine', 'News or media website', 'Restaurant, café or food business', 'Hotel, lodge, guest house or Airbnb', 'Travel or tour company', 'Real estate and property listings', 'School, college or training centre', 'Church or faith organisation', 'NGO, foundation or non-profit', 'Wedding or event website', 'Photography or creative studio', 'Salon, spa or beauty business', 'Clinic, hospital or health practice', 'Law firm or professional services', 'Construction, engineering or architecture', 'Car dealer or automotive', 'Fashion or clothing brand', 'Fitness, gym or sports club', 'Music, artist or entertainment', 'Agriculture or agribusiness', 'Logistics, transport or courier', 'Directory or listings website', 'Marketplace with many sellers', 'Membership or community website', 'Online courses (e-learning)', 'Booking and appointments website', 'Job board or recruitment', 'Donations or fundraising', 'Government, county or institution', 'Something else'] },
-    { id: 'dash', name: 'A web app or work dashboard', cats: ['Admin or operations dashboard', 'CRM: clients, leads and follow-ups', 'Inventory and stock management', 'Point of sale (POS)', 'HR, staff and payroll', 'Tasks, projects and team work', 'Booking and scheduling system', 'Fleet, delivery or dispatch tracking', 'School management system', 'Hospital or clinic management', 'SACCO, microfinance or loans', 'Property and rent management', 'Church or members management', 'Event ticketing and check-in', 'Customer or client portal', 'Reports and analytics (BI)', 'Internal tool for my team', 'Something else'] },
-    { id: 'saas', name: 'A SaaS platform', cats: ['B2B software for other businesses', 'Subscription platform', 'Marketplace platform', 'Fintech or payments platform', 'EdTech or learning platform', 'HealthTech platform', 'PropTech or property platform', 'AgriTech platform', 'Logistics or delivery platform', 'HR or recruitment platform', 'Booking platform', 'AI-powered SaaS', 'Something else'] },
-    { id: 'app', name: 'A mobile app (Android and iPhone)', cats: ['Company or business app', 'Shopping app', 'Delivery or ride app', 'Booking app', 'Wallet, savings or fintech app', 'Social or community app', 'Education or learning app', 'Health and fitness app', 'App for my existing website or system', 'Staff or field-team app', 'Event app', 'Something else'] },
-    { id: 'soft', name: 'Business software or a system', cats: ['ERP for my whole business', 'Accounting and invoicing', 'Manufacturing or production', 'Government or institutional system', 'Desktop software (Windows or Mac)', 'Works-offline system', 'Hardware, IoT or devices', 'Replace spreadsheets with a proper system', 'Something else'] },
-    { id: 'digital', name: 'A digital product', cats: ['One of your shop products', 'Website template', 'Dashboard or admin template', 'UI kit or design system', 'Mobile app template', 'Notion or spreadsheet template', 'eBook or guide', 'Online course', 'Printables or planners', 'Graphics, icons or brand kit', 'Code script or starter kit', 'Something else'] },
-    { id: 'plugin', name: 'A plugin or extension', cats: ['WordPress plugin', 'WooCommerce extension', 'Shopify app', 'Payment plugin (M-Pesa or cards)', 'Chrome or browser extension', 'Figma plugin', 'VS Code extension', 'Something else'] },
-    { id: 'api', name: 'An integration or API', cats: ['M-Pesa (Daraja) integration', 'Card payments integration', 'SMS or WhatsApp messaging', 'Email automation', 'Connect two systems I already use', 'An API for my own product', 'Accounting sync (QuickBooks, Odoo, Sage…)', 'Google Workspace or Microsoft 365', 'Something else'] },
-    { id: 'ai', name: 'AI or automation', cats: ['AI chatbot or assistant', 'WhatsApp bot', 'Automate a workflow', 'Read and sort documents (OCR)', 'AI content or writing tool', 'Recommendations', 'Data analysis and forecasting', 'Something else'] },
-    { id: 'trade', name: 'A trading system', cats: ['Expert Advisor (MT4 or MT5)', 'Custom indicator', 'Trading bot (forex or crypto)', 'Copy-trading system', 'Trading journal or dashboard', 'Signals platform', 'Something else'] },
-    { id: 'design', name: 'Design and branding', cats: ['Logo and brand identity', 'UI/UX design for a website or app', 'Redesign of something I have (design only)', 'Pitch deck', 'Social media kit', 'Packaging or print', 'Something else'] },
-    { id: 'care', name: 'Hosting, fixes and support', cats: ['Ongoing maintenance', 'Fix bugs or errors', 'Make my site faster', 'Move my site to new hosting', 'Security, SSL and backups', 'Business email setup', 'Cloud or DevOps setup', 'Something else'] },
-    { id: 'other', name: 'Something else', cats: [] }
-  ];
+  var SC = window.CielScopes, TYPES = SC.TYPES, G = SC.G, groupsFor = SC.groupsFor;
   var TYPE = {}; TYPES.forEach(function (t) { TYPE[t.name] = t; });
   var DOMAIN_TYPES = { web: 1, saas: 1 };
-
-  /* ---------- must-haves, grouped; each category picks the groups that fit ---------- */
-  var MPESA = 'M-Pesa STK push (customer pays from their phone)', CARD = 'Card payment gateway (Visa and Mastercard)';
-  var G = {
-    store: ['Online store', [MPESA, CARD, 'Cash on delivery', 'Products with options (size, colour…)', 'Stock tracking', 'Delivery areas and shipping fees', 'Order tracking for customers', 'Discount codes and coupons', 'Customer accounts and order history', 'Wishlist', 'Product reviews and ratings', 'Order on WhatsApp button', 'Abandoned cart reminders', 'Email or SMS receipts', 'Several currencies', 'Sell digital downloads', 'Import products from Excel', 'Connect to my shop counter (POS)']],
-    booking: ['Bookings', ['Online booking calendar', 'Pay a deposit with M-Pesa', CARD, 'SMS or WhatsApp reminders', 'Staff, rooms or slots availability', 'Google Calendar sync', 'Cancel and reschedule online', 'Customer accounts']],
-    food: ['Restaurant', ['Online menu', 'Food ordering and delivery', 'Table reservations', MPESA, CARD]],
-    hotel: ['Stays', ['Room booking with availability', MPESA, CARD, 'Rates by season', 'Booking.com or Airbnb calendar sync', 'Photo galleries per room']],
-    travel: ['Tours', ['Tour packages and itineraries', 'Booking requests or instant booking', MPESA, CARD, 'Prices in several currencies']],
-    property: ['Property', ['Listings with search and filters', 'Map search', 'Enquiry button per listing', 'Agent profiles', 'Video or virtual tours', 'Mortgage calculator', 'Agents can post listings']],
-    school: ['School', ['Online admissions and applications', 'Pay fees with M-Pesa', 'Student and parent portal', 'Results and report cards', 'Timetables and calendar', 'Course materials and e-learning']],
-    ngo: ['Giving', ['Online donations (M-Pesa)', 'Online donations (card)', 'Monthly giving', 'Volunteer sign-up', 'Projects and impact stories', 'Reports and downloads']],
-    church: ['Church', ['Online giving (M-Pesa)', 'Sermons (audio and video)', 'Live stream', 'Events calendar', 'Prayer requests', 'Members area']],
-    events: ['Events', ['RSVP or registration', 'Ticket sales (M-Pesa and card)', 'QR tickets and check-in', 'Schedule and speakers', 'Countdown', 'Photo gallery after the event']],
-    market: ['Marketplace', ['Sellers sign up and manage their shop', 'Commission and payouts to sellers', 'Ratings and reviews', 'Search and filters', 'Hold payment until delivery (escrow)', 'Approve listings before they go live', MPESA, CARD]],
-    member: ['Members', ['Sign up and login', 'Paid memberships (M-Pesa and card)', 'Members-only content', 'Member directory', 'Forum or community']],
-    course: ['Courses', ['Video lessons and modules', 'Quizzes and certificates', 'Paid courses (M-Pesa and card)', 'Student progress', 'Live classes (Zoom or Meet)']],
-    jobs: ['Jobs', ['Employers post jobs', 'CV upload and applications', 'Paid job posts', 'Job alerts by email']],
-    gallery: ['Showcase', ['Portfolio or gallery', 'Case studies', 'Video showreel', 'Client proofing or downloads', 'Instagram feed']],
-    health: ['Health', ['Book appointments', 'Doctor or service profiles', 'Patient forms online', 'Telemedicine (video calls)', 'Insurance partners list']],
-    site: ['Website essentials', ['Contact form', 'WhatsApp chat button', 'Google Maps and directions', 'Blog or news', 'Newsletter sign-up', 'Testimonials', 'FAQ', 'Several languages', 'Search engine setup (SEO)', 'Google Analytics and Meta Pixel', 'Downloadable brochure (PDF)', 'Social media links and feeds', 'I can edit it myself']],
-    dash: ['System', ['User roles and permissions', 'Staff logins', 'Reports and charts', 'Export to Excel and PDF', 'Activity log (who did what)', 'M-Pesa payments and reconciliation', 'SMS, WhatsApp or email alerts', 'Works offline', 'Works well on phones', 'Import data from Excel', 'Connects to systems I already use', 'Several branches or locations', 'Approvals', 'Document uploads', 'Invoices and receipts', 'Customer portal']],
-    saas: ['Platform', ['Sign-up and free trial', 'Subscription billing (M-Pesa and card)', 'Teams and roles', 'Each customer’s data kept separate', 'Super-admin dashboard', 'Plans and usage limits', 'API for customers', 'Onboarding emails', 'Usage analytics', 'Custom domains for customers']],
-    app: ['App', ['Android app', 'iPhone app', 'Push notifications', 'Login with phone, Google or Apple', 'In-app payments (M-Pesa and card)', 'Maps and location', 'Chat or messaging', 'Works offline', 'Camera and photo upload', 'Admin dashboard to manage the app', 'Publish to Play Store and App Store']],
-    delivery: ['Delivery', ['Live tracking on a map', 'Driver or rider app', 'Dispatch dashboard', 'Proof of delivery (photo or signature)', 'Route planning']],
-    fin: ['Money', ['M-Pesa C2B (collect payments)', 'M-Pesa B2C (send payouts)', 'Wallets and balances', 'Loan applications and scoring', 'ID verification (KYC)', 'Statements', 'Two-step login security']],
-    soft: ['Software', ['Accounting and invoicing', 'Stock and purchasing', 'HR and payroll', 'Reports and charts', 'User roles and permissions', 'Works offline', 'Backups', 'Several branches or locations', 'Move my old data in']],
-    digital: ['Product', ['Instant download after payment', 'Licence keys', 'Documentation', 'Live preview page', 'Sell it on my own website', 'Free updates for buyers', 'Figma or source files']],
-    plugin: ['Plugin', ['Settings page', 'Licence and auto-updates', 'Works with the latest WordPress and WooCommerce', MPESA, CARD, 'Documentation', 'Listed on a marketplace']],
-    api: ['Integration', ['Test in a sandbox first', 'Callbacks and webhooks', 'Logs and automatic retries', 'Reconciliation reports', 'Security review']],
-    ai: ['AI', ['Learns from my documents', 'Works on WhatsApp', 'Chat on my website', 'Hands over to a person', 'English and Swahili', 'Conversation reports']],
-    trade: ['Trading', ['MetaTrader 4', 'MetaTrader 5', 'Backtest report', 'Risk settings (lot size, SL and TP)', 'Telegram alerts', 'Prop-firm rules', 'Source code included']],
-    design: ['Design', ['Logo variations', 'Brand guidelines', 'Figma files', 'Social media templates', 'Print-ready files']],
-    care: ['Support', ['Monthly maintenance', 'Speed improvements', 'Security and SSL', 'Daily backups', 'Uptime monitoring', 'Business email']]
-  };
-  function groupsFor(type, cat) {
-    var c = String(cat || '').toLowerCase(), g = [];
-    var has = function (re) { return re.test(c); };
-    if (type === 'web') {
-      if (has(/online store|fashion|template/)) g.push('store');
-      if (has(/restaurant/)) g.push('food');
-      if (has(/hotel/)) g.push('hotel');
-      if (has(/travel/)) g.push('travel');
-      if (has(/real estate/)) g.push('property');
-      if (has(/school/)) g.push('school');
-      if (has(/ngo|donation/)) g.push('ngo');
-      if (has(/church/)) g.push('church');
-      if (has(/wedding|event|music/)) g.push('events');
-      if (has(/marketplace/)) g.push('market', 'store');
-      if (has(/membership|fitness/)) g.push('member');
-      if (has(/courses/)) g.push('course');
-      if (has(/job board/)) g.push('jobs');
-      if (has(/portfolio|photography|personal brand|construction|car dealer/)) g.push('gallery');
-      if (has(/clinic/)) g.push('health');
-      if (has(/booking|salon|fitness|clinic/)) g.push('booking');
-      if (has(/logistics/)) g.push('delivery');
-      g.push('site');
-    }
-    else if (type === 'dash') { if (has(/fleet|delivery/)) g.push('delivery'); if (has(/sacco|loan/)) g.push('fin'); if (has(/booking/)) g.push('booking'); if (has(/event/)) g.push('events'); if (has(/school/)) g.push('school'); g.push('dash'); }
-    else if (type === 'saas') { g.push('saas'); if (has(/fintech/)) g.push('fin'); if (has(/marketplace/)) g.push('market'); if (has(/logistics/)) g.push('delivery'); if (has(/booking/)) g.push('booking'); if (has(/edtech/)) g.push('course'); }
-    else if (type === 'app') { g.push('app'); if (has(/shopping/)) g.push('store'); if (has(/delivery/)) g.push('delivery'); if (has(/wallet/)) g.push('fin'); if (has(/booking/)) g.push('booking'); }
-    else if (G[type]) g.push(type);
-    return g.filter(function (x, i) { return g.indexOf(x) === i; });
-  }
 
   var STAGE = ['A new build from scratch', 'A redesign or rebuild of something I have', 'New features for something I have', 'Fixes or improvements to something I have'];
   var INDUSTRY = ['Retail and e-commerce', 'Food, hospitality and travel', 'Health and wellness', 'Education and training', 'Finance, SACCO and microfinance', 'Real estate and property', 'Logistics and transport', 'Manufacturing and agriculture', 'NGO and non-profit', 'Faith organisation', 'Government and public sector', 'Media, creative and events', 'Professional services', 'Technology and startups', 'Personal brand', 'Other'];
@@ -111,7 +32,8 @@
     site: ['How many pages do you picture?', ['One page', '2 – 5 pages', '6 – 10 pages', 'More than 10', 'Not sure, advise me']]
   };
   var HAVE = ['Yes, I already have one', 'No, help me find one', 'Not sure yet'];
-  var BUDGET = ['Under KES 25,000', 'KES 25,000 – 50,000', 'KES 50,000 – 100,000', 'KES 100,000 – 250,000', 'KES 250,000 – 500,000', 'Over KES 500,000', 'I’d like your advice on this'];
+  /* no price ranges: every project is different, so they either ask us or tell us their figure */
+  var BUDGET = ['I’d like your advice', 'I have a budget in mind'];
   var WHEN = ['As soon as possible', 'Within a month', 'In 1 – 3 months', 'In 3 – 6 months', 'Flexible, no fixed date'];
   var CONTENT = ['Yes, text and images are ready', 'Some of it', 'Not yet, I’d like help with it', 'Not needed for this project'];
   var HEARD = ['Google search', 'Instagram', 'Facebook', 'TikTok', 'LinkedIn', 'A friend or colleague', 'Saw a site you built', 'Other'];
@@ -214,13 +136,17 @@
         area('musts', 'Anything else it must do?', { rows: 3, ph: 'Features, tools it must work with, who uses it…', max: 1500 }) + '</div>';
     }
     return '<div class="bf-grid">' +
-      select('budget', 'Budget', BUDGET, { half: 1, ph: 'Choose a range' }) +
+      select('budget', 'Budget', BUDGET, { half: 1, ph: 'Choose one' }) +
+      '<div class="bf-f bf-f--h bf-f--wrap" id="bf-amtw">' + amtField() + '</div>' +
       select('when', 'When would you like to launch?', WHEN, { half: 1 }) +
       select('content', 'Is your content ready?', CONTENT, { half: 1, ph: 'Text, photos, logo…' }) +
       select('heard', 'How did you hear about us?', HEARD, { half: 1 }) +
       area('note', 'Anything else we should know?', { rows: 3, ph: 'Deadlines, questions for us…', max: 1500 }) + '</div>' +
       '<p class="bf-fine">By sending, you’re happy for Ciel Africa to contact you about this project. We never share your details. <a href="/privacy" target="_blank" rel="noopener">Privacy</a></p>';
   }
+
+  function amtField() { return F.budget === BUDGET[1] ? '<div class="bf-grid bf-grid--in">' + input('amt', 'Your budget', { ph: 'e.g. KES 120,000', im: 'decimal', max: 40 }) + '</div>' : ''; }
+  function budgetLine() { if (F.budget === BUDGET[1]) { var a = String(F.amt || '').trim(); return a ? (/^[\d,. ]+$/.test(a) ? 'KES ' + a : a) : 'Has a budget in mind'; } return F.budget || ''; }
 
   /* ---------- domain: have one, or search for one ---------- */
   function domainField() {
@@ -270,7 +196,7 @@
 
   /* ---------- the side card ---------- */
   function summary() {
-    var it = [['Name', F.name], ['Building', F.ref && kind ? F.ref : (F.cat || F.type)], ['Domain', F.have === HAVE[0] || F.have === HAVE[1] ? F.domain : ''], ['Budget', F.budget], ['Launch', F.when]].filter(function (x) { return x[1]; });
+    var it = [['Name', F.name], ['Building', F.ref && kind ? F.ref : (F.cat || F.type)], ['Domain', F.have === HAVE[0] || F.have === HAVE[1] ? F.domain : ''], ['Budget', budgetLine()], ['Launch', F.when]].filter(function (x) { return x[1]; });
     var el = $('#bf-sum'); if (!el) return;
     el.innerHTML = it.length ? '<ul class="bf-sumlist">' + it.map(function (x) { return '<li class="is-set"><span>' + x[0] + '</span><b>' + esc(x[1]) + '</b></li>'; }).join('') + '</ul>' : '<p class="bf-empty">Your answers show up here.</p>';
   }
@@ -341,8 +267,9 @@
         bar();
       }
       if (k === 'cat' && e.type === 'change') { F.features = []; F.size = ''; }
+      if (k === 'budget' && e.type === 'change') { var aw = document.getElementById('bf-amtw'); if (aw) aw.innerHTML = amtField(); }
       if (k === 'have' && e.type === 'change') { F.domain = ''; F.dprice = ''; var dw = document.getElementById('bf-domw'); if (dw) dw.innerHTML = domainField(); }
-      if (/^(name|type|cat|budget|when|domain|have)$/.test(k)) summary();
+      if (/^(name|type|cat|budget|amt|when|domain|have)$/.test(k)) summary();
       return;
     }
     if (t.id === 'bf-dq') { err('dq', ''); return; }
@@ -387,7 +314,7 @@
     var sk = sizeKey();
     return [['Looking for', looking], [kind === 'product' ? 'Product' : kind === 'service' ? 'Service' : kind === 'template' ? 'Template' : 'About', F.ref], ['Project stage', F.stage], ['Industry', F.industry], ['Project description', F.about], ['Domain', domainLine()],
       ['Must-haves', feats.join(', ')], [sk ? SIZE[sk][0].replace(/\?$/, '') : 'Size', sk ? F.size : ''], ['Also must', F.musts], ['Current website', F.site], ['Sites they admire', F.inspo],
-      ['Budget', F.budget], ['Launch', F.when], ['Content ready', F.content], ['Heard about us', F.heard], ['Anything else', F.note], ['Company', F.company], ['Role', F.role], ['Reach me by', F.reach]].filter(function (x) { return x[1]; });
+      ['Budget', budgetLine()], ['Launch', F.when], ['Content ready', F.content], ['Heard about us', F.heard], ['Anything else', F.note], ['Company', F.company], ['Role', F.role], ['Reach me by', F.reach]].filter(function (x) { return x[1]; });
   }
   function payload() {
     var hp = document.getElementById('bf-honey');

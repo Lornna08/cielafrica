@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/base.css?v=20261026a">
+<link rel="stylesheet" href="assets/css/base.css?v=20261122a">
 <link rel="stylesheet" href="assets/css/components.css?v=20261101p">
 <link rel="stylesheet" href="assets/css/ciel-shop.css?v=20261024e">
 <script src="/assets/js/meta-pixel.js?v=20261118b"></script>
@@ -34,7 +34,7 @@
 </head>
 <body>
 <noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=1368811611869665&amp;ev=PageView&amp;noscript=1"></noscript>
-<script src="/assets/js/autoplay.js?v=20261026a"></script>
+<script src="/assets/js/autoplay.js?v=20261122a"></script>
 <a href="#main" class="sr-only">Skip to content</a>
 <!--cms:announce--><!--/cms:announce-->
 <header class="nav" id="nav">
@@ -84,7 +84,7 @@
 <script src="data/mockups.js?v=20261021i"></script>
 <script src="data/team.js?v=20261021i"></script>
 <script src="assets/js/render.js?v=20261101b"></script>
-<script src="assets/js/site.js?v=20261103d"></script>
+<script src="assets/js/site.js?v=20261122a"></script>
 <script src="assets/js/cart.js?v=20261118a"></script>
 <script>(function(){
       var tpls=(window.CIEL&&CIEL.templates)||[];var cats=(window.CIEL&&CIEL.templateCategories)||["All"];
@@ -106,9 +106,12 @@
         if(window.CIEL&&CIEL.io)CIEL.io(document);
         // play preview reels only while visible, and never for reduced-motion users
         var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+        /* start downloading a preview well before it scrolls into view, so it is already moving when it arrives */
+        var near=('IntersectionObserver' in window)&&!reduce?new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var v=e.target;if(v.preload==='none'){v.preload='auto';try{v.load();}catch(x){}}near.unobserve(v);}});},{rootMargin:'600px 0px'}):null;
         grid.querySelectorAll('video').forEach(function(v){
           if(reduce||!('IntersectionObserver' in window)){v.setAttribute('preload','metadata');return;}
-          new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var p=v.play();if(p&&p.catch)p.catch(function(){});}else v.pause();});},{threshold:.25}).observe(v);
+          near.observe(v);
+          new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var p=v.play();if(p&&p.catch)p.catch(function(){});}else v.pause();});},{threshold:.08}).observe(v);
         });
       }
       ff.addEventListener('click',function(e){var b=e.target.closest('[data-c]');if(!b)return;state.cat=b.getAttribute('data-c');ff.querySelectorAll('.gfilter').forEach(function(x){x.classList.toggle('on',x===b);});render();});

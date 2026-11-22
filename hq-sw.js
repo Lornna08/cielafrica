@@ -50,11 +50,14 @@ self.addEventListener('push', function (e) {
   var android = /Android/i.test((self.navigator && self.navigator.userAgent) || '');
   var opts = { body: d.body || '', icon: android ? undefined : '/assets/img/icon-192.png', badge: '/assets/img/hq-badge.png?v=2', tag: d.tag || undefined, renotify: !!d.tag, timestamp: Date.now(), data: { url: d.url || '/admin' } };
   if (d.urgent) { opts.requireInteraction = true; opts.silent = false; opts.vibrate = [300, 120, 300, 120, 500]; opts.actions = [{ action: 'open', title: 'Open' }]; }
-  e.waitUntil(self.registration.showNotification(d.title || 'Ciel Admin', opts).then(function () {
+  var got = Date.now();
+  /* tell Ciel Admin when it arrived (shown in the bell), without holding up the alert */
+  var ack = d.id ? fetch('/api/hq?route=push-ack', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'hq' }, body: JSON.stringify({ id: d.id, at: got, device: /iPhone|iPad/.test((self.navigator || {}).userAgent || '') ? 'iPhone' : android ? 'Android' : 'computer' }) }).catch(function () { }) : null;
+  e.waitUntil(Promise.all([ack, self.registration.showNotification(d.title || 'Ciel Admin', opts).then(function () {
     /* a dot on the app icon until Ciel Admin is opened */
     if (d.urgent && self.navigator && self.navigator.setAppBadge) self.navigator.setAppBadge().catch(function () { });
     return self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (cs) { cs.forEach(function (c) { c.postMessage({ type: 'hq-push' }); }); });
-  }));
+  })]));
 });
 self.addEventListener('notificationclick', function (e) {
   e.notification.close();

@@ -81,19 +81,32 @@ module.exports = async function handler(req, res){
   if (!isWanja) {
     const kind = isBrief || data.Details ? 'brief' : 'message';
     const pick = re => { const k = Object.keys(data).find(x => re.test(x) && String(data[x]).trim()); return k ? String(data[k]).replace(/\s+/g, ' ').trim() : ''; };
-    let id = '';
+    let id = '', saving = null, pid = '';
     try {
       const BS = require('../lib/photobooks/blobstore');
       if (BS.on()) {
         const at = Date.now(); id = at.toString(36) + require('crypto').randomBytes(4).toString('hex');
         const fields = Object.keys(data).filter(k => !k.startsWith('## ') && String(data[k]).trim() !== '').slice(0, 40).map(k => [String(k).slice(0, 60), String(data[k]).slice(0, 3000)]);
-        await BS.putJSON('hq/inbox/' + id + '.json', { id, kind, status: 'new', stage: 'new', priority: 'high', createdAt: at, subject, ref,
-          customer: { name: String(name).slice(0, 80), email: String(email).slice(0, 190), phone: pick(/phone|whatsapp/i).slice(0, 30) }, fields });
+        /* a project brief also starts a project (status: New lead), with the scope they ticked */
+        if (kind === 'brief') {
+          pid = 'p' + id.slice(0, 15);
+          const looking = String(data['Looking for'] || ref || 'New project'), type = looking.split(' — ')[0], cat = looking.split(' — ').slice(1).join(' — ');
+          const scope = String(data['Must-haves'] || '').split(/,\s*(?=[A-Z0-9])/).map(x => x.trim()).filter(Boolean).map(x => '[ ] ' + x).join('\n');
+          const proj = { id: pid, name: ((data.Company || name || 'New client') + ' · ' + (cat || type)).slice(0, 120), client: String(name).slice(0, 120), company: String(data.Company || '').slice(0, 120), email: String(email).slice(0, 190), phone: phoneIn.slice(0, 30),
+            type: type.slice(0, 60), category: cat.slice(0, 120), desc: [data['Project description'], data['Also must'] ? 'Also: ' + data['Also must'] : '', data['Anything else'] ? 'Note: ' + data['Anything else'] : ''].filter(Boolean).join('\n\n').slice(0, 4000),
+            scope: scope.slice(0, 4000), budget: String(data.Budget || '').slice(0, 40), status: 'lead', priority: 'high', lead: id, milestones: '', createdAt: at, updatedAt: at };
+          saving = BS.getJSON('hq/projects.json').catch(() => null).then(d => { d = d || { items: [], v: 0 }; d.items.push(proj); d.v = (d.v || 0) + 1; return BS.putJSON('hq/projects.json', d); });
+        }
+        const savingLead = BS.putJSON('hq/inbox/' + id + '.json', { id, kind, status: 'new', stage: 'new', priority: 'high', createdAt: at, subject, ref,
+          customer: { name: String(name).slice(0, 80), email: String(email).slice(0, 190), phone: pick(/phone|whatsapp/i).slice(0, 30) }, fields, project: pid || undefined });
+        saving = Promise.all([savingLead, saving]);
       }
     } catch (e) { console.error('contact inbox error', e && e.message); }
     // the alert goes out even if saving failed, so a lead is never silent
     const what = kind === 'brief' ? ['Project brief', pick(/^(service|product|template|looking for)$/i), pick(/budget/i)].filter(Boolean).join(' · ') : 'Enquiry · ' + (pick(/message|details/i) || subject);
-    await require('../lib/hq/notify').event({ kind: 'lead', title: 'New lead · ' + (name || email), body: what.slice(0, 140), url: id ? '/admin#leads/' + id : '/admin#leads', tag: 'lead-' + (id || Date.now()), urgent: true });
+    /* the phone alert goes out while the lead is being saved, not after */
+    await Promise.all([saving && saving.catch(e => console.error('contact inbox error', e && e.message)), require('../lib/hq/notify').event({ kind: 'lead', title: 'New lead · ' + (name || email), body: what.slice(0, 140), url: id ? '/admin#leads/' + id : '/admin#leads', tag: 'lead-' + (id || Date.now()), urgent: true,
+      task: { contact: [name, phoneIn, email].filter(Boolean).join(' · ').slice(0, 160), phone: phoneIn.slice(0, 30), email: String(email).slice(0, 190), ref: pid || '', notes: [what, pick(/^project description$|message|details/i)].filter(Boolean).join('\n\n').slice(0, 2000) } })]);
   }
 
   // If email isn't configured yet, don't fail the user — accept and log.

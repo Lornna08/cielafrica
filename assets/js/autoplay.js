@@ -23,11 +23,29 @@
   var V = '20261026a';
   // Animated copies that exist in /assets/img/anim/ (folder--name.webp).
   var ANIM = ['apex-motion--reel', 'ciel-shop--reel', 'njia--reel', 'orbit--reel', 'home--cledger-full', 'home--cledger-live', 'home--hero-mobile', 'home--meridian-live', 'home--reside-full', 'home--reside-live', 'home--transit-live', 'home--transit-phone-live'];
-  var nativePlay = proto.play, waiting = [], armed = false;
+  var nativePlay = proto.play, nativeLoad = proto.load, waiting = [], armed = false;
+  /* phones get the lighter copy of each mockup (reel-m.mp4: same clip, about a third of the size),
+     so the motion starts in a moment instead of after a long download */
+  var SMALL = window.matchMedia && matchMedia('(max-width: 820px)').matches;
+  var LIGHT = ['abali/reel','apex-motion/reel','ciel-shop/reel','creme-motion/reel','ember-plate/reel','home/cledger-full','home/cledger-live','home/hero-mobile','home/hero-reel','home/meridian-live','home/reside-full','home/reside-live','home/transit-live','home/transit-phone-live','mokara/reel','njia/reel','orbit/reel'];   /* clips that have a -m copy */
+  function lighter(v) {
+    if (!SMALL || v.__cielLight) return;
+    v.__cielLight = true;
+    var changed = false;
+    [].slice.call(v.querySelectorAll('source')).forEach(function (s) {
+      var src = s.getAttribute('src') || '';
+      var m = src.match(/(?:^|\/)assets\/img\/([^?]+)\.(mp4|webm)(\?|$)/);
+      if (!m || LIGHT.indexOf(m[1]) < 0) return;
+      if (/\.webm(\?|$)/.test(src)) { s.parentNode.removeChild(s); changed = true; return; }
+      s.setAttribute('src', src.replace(/\.mp4(\?|$)/, '-m.mp4$1')); changed = true;
+    });
+    if (changed && v.networkState !== 0) { try { nativeLoad.call(v); } catch (e) { } }
+  }
 
   function prep(v) {
     if (v.__cielPrepped || v.tagName !== 'VIDEO') return;
     v.__cielPrepped = true;
+    lighter(v);
     v.muted = true; v.defaultMuted = true; v.playsInline = true;
     v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', '');
     v.removeAttribute('controls'); v.controls = false;
@@ -70,6 +88,10 @@
     arm();
   }
 
+  /* videos already on the page get the lighter copy before they start downloading */
+  var early = function () { [].forEach.call(document.querySelectorAll('video'), prep); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', early); else early();
+  proto.load = function () { if (this.tagName === 'VIDEO') prep(this); return nativeLoad.apply(this, arguments); };
   proto.play = function () {
     if (this.tagName !== 'VIDEO') return nativePlay.apply(this, arguments);
     prep(this);

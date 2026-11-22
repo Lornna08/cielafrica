@@ -60,6 +60,8 @@
     l: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>',
     r: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>',
     book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>',
+    phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>',
+    clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
     pen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg>',
     mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>',
     bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>',
@@ -164,7 +166,7 @@
       '<a class="hq-login__back" href="/">← Back to cielafrica.com</a></div>';
     var pw = document.getElementById('pw'), pv = document.getElementById('pwv'), go = document.getElementById('lgo'), emW = document.getElementById('emW'), em = document.getElementById('em'), sw = document.getElementById('lsw');
     var team = false; try { team = localStorage.getItem('ca_lmode') === 'team'; } catch (e) { }
-    var mode = function (t) { team = t; emW.hidden = !t; sw.textContent = t ? 'Main admin? Sign in with the admin password' : 'Team member? Sign in with your email'; try { localStorage.setItem('ca_lmode', t ? 'team' : 'owner'); } catch (e) { } (t && !em.value ? em : pw).focus(); };
+    var mode = function (t) { team = t; emW.hidden = !t; sw.textContent = t ? 'Admin? Sign in with the admin password' : 'Team member? Sign in with your email'; try { localStorage.setItem('ca_lmode', t ? 'team' : 'owner'); } catch (e) { } (t && !em.value ? em : pw).focus(); };
     sw.onclick = function () { mode(!team); }; if (team) mode(true);
     pv.onclick = function () { var show = pw.type === 'password'; pw.type = show ? 'text' : 'password'; pv.innerHTML = show ? eyeOff : eye; pv.setAttribute('aria-label', show ? 'Hide password' : 'Show password'); pw.focus(); };
     document.getElementById('lf').onsubmit = function (e) {
@@ -219,9 +221,12 @@
   var SNAP = ['base', 'inbox', 'tasks', 'events', 'notes', 'projects', 'invoices', 'expenses', 'attnOff'];
   function snapSave() { try { var o = { at: Date.now(), who: S.me ? (S.me.id || S.me.role) : '' }; SNAP.forEach(function (k) { o[k] = S[k]; }); localStorage.setItem('ca_snap', JSON.stringify(o)); } catch (e) { try { localStorage.removeItem('ca_snap'); } catch (x) { } } }
   function snapLoad() { try { var o = JSON.parse(localStorage.getItem('ca_snap') || 'null'); if (!o || Date.now() - o.at > 7 * 864e5 || o.who !== (S.me ? (S.me.id || S.me.role) : '')) return false; SNAP.forEach(function (k) { if (o[k]) S[k] = o[k]; }); mergeOrders(); S.loaded = true; return true; } catch (e) { return false; } }
+  function dataSig() { var t = JSON.stringify([S.orders.map(function (o) { return [o.ref, o.status, o.paid, o.total]; }), S.inbox.map(function (m) { return [m.id, m.stage, m.status, m.priority, m.project, (m.notes || []).length]; }), ['tasks', 'events', 'projects', 'invoices', 'expenses'].map(function (c) { return (S[c] || []).map(function (x) { return [x.id, x.updatedAt]; }); })]), h = 0; for (var i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0; return t.length + ':' + h; }
   function refresh(note, quiet) {
     return Promise.all([loadOrders(), loadInbox(), loadLists()]).then(function () {
       mergeOrders(); S.loaded = true; snapSave();
+      /* a background check that found nothing new leaves the page alone (no redraw under your finger) */
+      var sig = dataSig(); if (quiet && sig === S.sig && S.view !== 'overview') { S.sig = sig; navs(); return; } S.sig = sig;
       if (quiet && (document.querySelector('.drawer,.modal') || S.view === 'campaigns' || S.view === 'website' || /^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement || {}).tagName || ''))) navs(); else route(true);
       if (note) toast('Up to date');
       document.getElementById('lv').title = 'Live · updated ' + new Date().toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' });
@@ -274,20 +279,20 @@
         }
       }, function (e) { var lv = document.getElementById('lv'); if (lv) lv.classList.add('is-off'); if (e.status === 401) login(S.setup || {}); });
     }
-    tick(); setInterval(tick, 30000);
+    tick(); setInterval(tick, 15000);   /* the open app checks every 15 s; a phone alert makes it check at once */
     var mailOn = S.setup && S.setup.mail && S.setup.mail.some(function (a) { return a.configured; });
     if (mailOn && window.HQMail) { var mp = function () { if (!document.hidden) HQMail.poll(function () { navs(); }); }; mp(); setInterval(mp, 120000); }
     document.addEventListener('visibilitychange', function () { if (!document.hidden) tick(); });
     if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', function (e) { if (e.data && e.data.type === 'hq-push') tick(); });
   }
   /* ---------- pop-ups: a small card with an X for new orders, briefs and messages ---------- */
-  var POP_TYPES = [['order', 'New orders and payments', 'Photo books, shop, domains, WhatsApp and Paybill', 1], ['brief', 'Project briefs', 'Someone sent the Start a project form', 1], ['message', 'Website messages', 'The contact form and other enquiries', 1], ['pages', 'Photo book pages received', 'A customer sent or changed their pages', 1], ['review', 'New reviews', 'A customer left a review', 1], ['renewal', 'Domain renewals', 'A domain is due or renewed', 1], ['subscriber', 'New email subscribers', '', 0], ['instagram', 'Instagram activity', 'Comments, messages and posts', 0], ['printer', 'Printer updates', '', 0]];
+  var POP_TYPES = [['order', 'New orders and payments', 'Photo books, shop, domains, WhatsApp and Paybill', 1], ['brief', 'Project briefs', 'Someone sent the Start a project form', 1], ['message', 'Website messages', 'The contact form and other enquiries', 1], ['task', 'Task reminders', 'A lead, order or task has waited too long', 1], ['pages', 'Photo book pages received', 'A customer sent or changed their pages', 1], ['review', 'New reviews', 'A customer left a review', 1], ['renewal', 'Domain renewals', 'A domain is due or renewed', 1], ['subscriber', 'New email subscribers', '', 0], ['instagram', 'Instagram activity', 'Comments, messages and posts', 0], ['printer', 'Printer updates', '', 0]];
   function popPrefs() { var d = { on: true, t: {} }; try { d = Object.assign(d, JSON.parse(localStorage.getItem('ca_pops')) || {}); } catch (e) { } POP_TYPES.forEach(function (x) { if (typeof d.t[x[0]] !== 'boolean') d.t[x[0]] = !!x[3]; }); return d; }
   function popSave(d) { try { localStorage.setItem('ca_pops', JSON.stringify(d)); } catch (e) { } }
   function popType(x) { var k = x.kind; if (k === 'whatsapp') return 'order'; if (k === 'lead') return /^project brief/i.test(x.body || '') ? 'brief' : 'message'; return k; }
-  var POP_LOOK = { order: ['New order', I.orders, 'o'], brief: ['Project brief', I.target, 'v'], message: ['New message', I.inbox, 'b'], pages: ['Pages received', I.box, 't'], review: ['New review', I.star || I.target, 'y'], renewal: ['Domain', I.web, 'b'], subscriber: ['Subscriber', I.people, 'g'], instagram: ['Instagram', I.inbox, 'p'], printer: ['Printer', I.box, 's'] };
+  var POP_LOOK = { order: ['New order', I.orders, 'o'], brief: ['Project brief', I.target, 'v'], message: ['New message', I.inbox, 'b'], pages: ['Pages received', I.box, 't'], review: ['New review', I.star || I.target, 'y'], renewal: ['Domain', I.web, 'b'], subscriber: ['Subscriber', I.people, 'g'], instagram: ['Instagram', I.inbox, 'p'], printer: ['Printer', I.box, 's'], task: ['Reminder', I.tasks, 'y'] };
   function popMany(list) { var pr = popPrefs(); if (!pr.on) return 0; var ok = list.filter(function (x) { return pr.t[popType(x)] !== false && (!x.kind || can(popSection(x))); }); ok.slice(0, 3).reverse().forEach(pop); if (ok.length > 3) popMore(ok.length - 3); try { localStorage.setItem('ca_pop_at', String(Date.now())); } catch (e) { } return ok.length; }
-  function popSection(x) { var t = popType(x); return t === 'order' ? 'orders' : t === 'brief' || t === 'message' ? 'leads' : t === 'pages' ? 'photobooks' : t === 'review' ? 'reviews' : t === 'instagram' ? 'instagram' : 'overview'; }
+  function popSection(x) { var t = popType(x); return t === 'order' ? 'orders' : t === 'brief' || t === 'message' ? 'leads' : t === 'pages' ? 'photobooks' : t === 'review' ? 'reviews' : t === 'instagram' ? 'instagram' : t === 'task' ? 'tasks' : 'overview'; }
   /* opening the app: what arrived while it was closed (last 24 hours, newest three) */
   function popAway(items) { var last = 0; try { last = +localStorage.getItem('ca_pop_at') || 0; } catch (e) { } if (!last) { try { localStorage.setItem('ca_pop_at', String(Date.now())); } catch (e) { } return; } var since = Math.max(last, Date.now() - 864e5), list = items.filter(function (x) { return x.at > since; }); if (list.length) setTimeout(function () { popMany(list); }, 900); else try { localStorage.setItem('ca_pop_at', String(Date.now())); } catch (e) { } }
   function popBox() { var b = document.querySelector('.pop4-box'); if (!b) { b = document.createElement('div'); b.className = 'pop4-box'; b.setAttribute('aria-live', 'polite'); document.body.appendChild(b); } return b; }
@@ -499,6 +504,7 @@
     else if (v === 'reviews' && window.HQGrow) HQGrow.reviews();
     else if (v === 'instagram' && window.HQIg) HQIg.render(h[1], h.slice(2).join('/'));
     else if (v === 'team') teamPage();
+    else if (v === 'tasks') tasks(h[1]);
     else if (v === 'invoices' && window.HQMoney) { HQMoney.invoices(); if (h[1] === 'new') HQMoney.editInvoice(null, 'invoice'); }
     else if (v === 'photobooks' && h[1] === 'prices' && window.HQSite) HQSite.renderCatalog('photobooks');
     else if (v === 'photobooks') photobooks();
@@ -705,7 +711,7 @@
   function meMenu(e) {
     var old = document.getElementById('meM'); if (old) { old.remove(); return; }
     var u = S.me || {}, m = document.createElement('div'); m.id = 'meM'; m.className = 'me-m';
-    m.innerHTML = '<div class="me-m__h">' + avatarHtml(u, 'av--lg') + '<div><b>' + esc(u.name || 'You') + '</b><small>' + esc(u.role === 'owner' ? 'Main admin' : (u.title || 'Team member')) + (u.email ? ' · ' + esc(u.email) : '') + '</small></div></div>' +
+    m.innerHTML = '<div class="me-m__h">' + avatarHtml(u, 'av--lg') + '<div><b>' + esc(u.name || 'You') + '</b><small>' + esc(u.role === 'owner' ? (u.title || 'Lead Developer & Creative Director') : (u.title || 'Team member')) + (u.email ? ' · ' + esc(u.email) : '') + '</small></div></div>' +
       '<button type="button" data-a="profile">' + I.user + '<span>Profile & picture</span></button>' + (can('team') ? '<button type="button" data-a="team">' + I.ucog + '<span>Team & access</span></button>' : '') +
       '<div class="me-m__t"><small>Theme</small>' + themeSwitch() + '</div><button type="button" data-a="out" class="is-out">' + I.out + '<span>Sign out</span></button>';
     document.body.appendChild(m);
@@ -728,6 +734,7 @@
     var m = modal('<div class="pf-m"><div class="row" style="justify-content:space-between"><h2>Your profile</h2><button class="b b--sm b--ghost" data-x>' + I.x + '</button></div>' +
       '<div class="pf-pic"><span id="pfAv">' + avatarHtml({ name: u.name, avatar: pic }, 'av--xl') + '</span><div class="pf-pic__a"><button class="b b--sm" type="button" id="pfUp">' + I.image + '<span>Choose a picture</span></button><button class="b b--sm b--ghost" type="button" id="pfRm"' + (pic ? '' : ' hidden') + '>Remove</button><small class="muted">Shows top right, in the menu and on your team card.</small></div></div>' +
       '<label class="field"><span>Your name</span><input class="hq-in" id="pfN" value="' + esc(u.name || '') + '" maxlength="80"></label>' +
+      (u.role === 'owner' ? '<label class="field"><span>Your title</span><input class="hq-in" id="pfT" value="' + esc(u.title || 'Lead Developer & Creative Director') + '" maxlength="80"></label>' : '') +
       (u.role === 'member' ? '<details class="pf-pw"><summary>Change your password</summary><div class="g2"><label class="field"><span>Current password</span><input class="hq-in" id="pfO" type="password" autocomplete="current-password"></label><label class="field"><span>New password (8+ characters)</span><input class="hq-in" id="pfP" type="password" autocomplete="new-password"></label></div></details>' : '<p class="muted" style="font-size:.8rem">Your admin password is set in Vercel (ADMIN_PASSWORD).</p>') +
       '<div class="row"><button class="b b--p" id="pfS">Save profile</button></div></div>');
     m.querySelector('.modal__p').classList.add('pf-modal');
@@ -736,11 +743,11 @@
     m.querySelector('#pfUp').onclick = function () { pickPic(function (d) { pic = d; paint(); }); };
     m.querySelector('#pfRm').onclick = function () { pic = ''; paint(); };
     m.querySelector('#pfS').onclick = function () {
-      var bt = this, b = { name: m.querySelector('#pfN').value.trim(), avatar: pic }, np = m.querySelector('#pfP');
+      var bt = this, b = { name: m.querySelector('#pfN').value.trim(), avatar: pic }, np = m.querySelector('#pfP'), pt = m.querySelector('#pfT'); if (pt) b.title = pt.value.trim();
       if (!b.name) { toast('Add your name', 'err'); return; }
       if (np && np.value) { b.newPassword = np.value; b.password = m.querySelector('#pfO').value; }
       bt.disabled = true;
-      api('/api/hq?route=profile-save', b).then(function () { setMe(Object.assign({}, S.me, { name: b.name, avatar: pic })); paintMe(); m.remove(); toast('Profile saved', 'ok'); if (S.view === 'overview' || S.view === 'team') route(true); }, function (e) { bt.disabled = false; toast(e.message, 'err'); });
+      api('/api/hq?route=profile-save', b).then(function () { setMe(Object.assign({}, S.me, { name: b.name, avatar: pic }, b.title !== undefined ? { title: b.title } : {})); paintMe(); m.remove(); toast('Profile saved', 'ok'); if (S.view === 'overview' || S.view === 'team') route(true); }, function (e) { bt.disabled = false; toast(e.message, 'err'); });
     };
   }
 
@@ -753,7 +760,7 @@
     api('/api/hq?route=team').then(function (r) {
       S.team = r;
       var me = S.me || {}, L = r.members || [];
-      b.querySelector('#tmL').innerHTML = '<div class="tm-g"><div class="card tm-c tm-c--o">' + avatarHtml({ name: r.owner.name, avatar: r.owner.avatar }, 'av--lg') + '<div class="tm-c__m"><b>' + esc(r.owner.name) + '</b><small>Main admin · everything</small></div><span class="chip chip--b">Owner</span></div>' +
+      b.querySelector('#tmL').innerHTML = '<div class="tm-g"><div class="card tm-c tm-c--o">' + avatarHtml({ name: r.owner.name, avatar: r.owner.avatar }, 'av--lg') + '<div class="tm-c__m"><b>' + esc(r.owner.name) + '</b><small>' + esc(r.owner.title || 'Lead Developer & Creative Director') + ' · everything</small></div><span class="chip chip--b">Owner</span></div>' +
         L.map(function (u) { var n = (u.perms || []).length; return '<button type="button" class="card tm-c' + (u.active ? '' : ' is-off') + '" data-id="' + esc(u.id) + '">' + avatarHtml(u, 'av--lg') + '<div class="tm-c__m"><b>' + esc(u.name) + '</b><small>' + esc(u.title || 'Team member') + ' · ' + esc(u.email) + '</small><span class="tm-c__p">' + (n ? (n === SEC_GROUPS.reduce(function (s, g) { return s + g[1].length; }, 0) ? 'Everything' : (u.perms || []).slice(0, 4).map(navName).join(', ') + (n > 4 ? ' +' + (n - 4) : '')) : 'No access yet') + '</span></div><span class="chip' + (u.active ? ' chip--g' : '') + '">' + (u.active ? 'Active' : 'Off') + '</span></button>'; }).join('') +
         '</div>' + (L.length ? '' : '<div class="card tm-empty"><b>No team members yet</b><p class="muted">Add someone, give them a password, and tick what they can open. They sign in at cielafrica.com/admin with “Team member? Sign in with your email”.</p></div>');
       b.querySelectorAll('.tm-c[data-id]').forEach(function (x) { x.onclick = function () { memberModal(L.filter(function (u) { return u.id === x.getAttribute('data-id'); })[0]); }; });
@@ -973,21 +980,63 @@
     setTimeout(function () { m.querySelector('#et').focus(); }, 50);
   }
 
-  /* ---------- tasks ---------- */
-  var COLS = [['todo', 'To do'], ['doing', 'In progress'], ['done', 'Done']];
-  function tasks() {
-    var b = body('<div class="board">' + COLS.map(function (c, ci) {
-      var l = S.tasks.filter(function (t) { return (t.status || 'todo') === c[0]; }).sort(function (a, z) { return (a.due || '9').localeCompare(z.due || '9') || ({ high: 0, med: 1, low: 2 }[a.priority] || 1) - ({ high: 0, med: 1, low: 2 }[z.priority] || 1); });
-      return '<div class="col" data-col="' + c[0] + '"><div class="col__h"><span>' + c[1] + '</span><i>' + l.length + '</i></div>' + l.map(function (t) {
-        var over = t.due && t.due < today() && t.status !== 'done';
-        return '<div class="tk" draggable="true" data-tk="' + t.id + '"><b>' + esc(t.title) + '</b><div class="tk__m">' + (t.priority ? '<span class="chip chip--' + ({ high: 'r', med: 'o', low: 'g' }[t.priority]) + '">' + ({ high: 'High', med: 'Medium', low: 'Low' }[t.priority]) + '</span>' : '') + (t.due ? '<span class="chip' + (over ? ' chip--r' : '') + '">' + (over ? 'Overdue · ' : 'Due ') + d2(t.due + 'T12:00') + '</span>' : '') + (t.tag ? '<span class="chip chip--b">' + esc(t.tag) + '</span>' : '') + (t.ref ? '<span class="chip chip--p">' + esc(t.ref) + '</span>' : '') + (t.assignee ? '<span>· ' + esc(t.assignee) + '</span>' : '') + '</div>' +
-          '<div class="tk__mv">' + (ci > 0 ? '<button class="b b--sm" data-mv="' + COLS[ci - 1][0] + '">' + I.l + COLS[ci - 1][1] + '</button>' : '') + (ci < 2 ? '<button class="b b--sm" data-mv="' + COLS[ci + 1][0] + '">' + COLS[ci + 1][1] + I.r + '</button>' : '') + '</div></div>';
-      }).join('') + (c[0] === 'todo' ? '<form class="addtask" data-add><input class="hq-in" placeholder="Add a task…" maxlength="120"><button class="b b--p b--sm">' + I.plus + '</button></form>' : '') + '</div>';
-    }).join('') + '</div>');
+  /* ---------- tasks: every lead, order and message lands here, plus your own ---------- */
+  var COLS = [['todo', 'To do'], ['doing', 'In progress'], ['waiting', 'Waiting on client'], ['done', 'Done']];
+  var TSRC = { lead: ['Lead', 'r'], message: ['Message', 'b'], order: ['Order', 'o'], whatsapp: ['WhatsApp order', 'g'], pages: ['Photo Books', 'p'] };
+  var TPRI = [['high', 'High'], ['med', 'Medium'], ['low', 'Low']];
+  var TREM = [['', 'No reminders'], ['1h', 'After 1 hour'], ['3h', 'After 3 hours'], ['1d', 'After a day']];
+  function since(t) { var m = Math.max(0, Math.floor((Date.now() - (t || Date.now())) / 60000)); return m < 60 ? m + ' min' : m < 1440 ? Math.floor(m / 60) + ' h' : Math.floor(m / 1440) + ' d'; }
+  function stepsOf(t) { return String(t.steps || '').split('\n').map(function (x) { return x.trim(); }).filter(Boolean).map(function (x) { return { done: /^\[x\]/i.test(x), text: x.replace(/^\[[ x]\]\s*/i, '') }; }); }
+  function stepsStr(a) { return a.filter(function (x) { return x.text; }).map(function (x) { return (x.done ? '[x] ' : '[ ] ') + x.text; }).join('\n'); }
+  function tkWait(t) { if (t.status === 'done' || t.status === 'waiting' || !t.src) return ''; var g = { '1h': 36e5, '3h': 108e5, '1d': 864e5 }[t.remind] || 36e5, age = Date.now() - (t.resumedAt || t.createdAt || Date.now()); return age > g ? 'late' : 'ok'; }
+  function tkProj(t) { return t.ref ? (S.projects || []).filter(function (p) { return p.id === t.ref; })[0] : null; }
+  function tkCard(t, ci) {
+    var src = TSRC[t.src], st = stepsOf(t), sd = st.filter(function (x) { return x.done; }).length, over = t.due && t.due < today() && t.status !== 'done', w = tkWait(t), pj = tkProj(t);
+    return '<div class="tk tk2' + (t.status === 'done' ? ' is-done' : '') + '" draggable="true" data-tk="' + t.id + '"><div class="tk2__top">' + (src ? '<span class="tk2__src tk2__src--' + src[1] + '">' + src[0] + '</span>' : '<span class="tk2__src">' + esc(t.tag || 'Task') + '</span>') + '<i class="tk2__p tk2__p--' + (t.priority || 'med') + '" title="' + ({ high: 'High', med: 'Medium', low: 'Low' }[t.priority || 'med']) + ' priority"></i></div>' +
+      '<b class="tk2__t">' + esc(t.title) + '</b>' + (t.contact ? '<span class="tk2__c">' + esc(t.contact) + '</span>' : '') +
+      '<div class="tk__m">' + (w ? '<span class="chip' + (w === 'late' ? ' chip--r' : '') + '">' + (w === 'late' ? 'Waiting ' : '') + since(t.resumedAt || t.createdAt) + (w === 'late' ? '' : ' ago') + '</span>' : '') + (t.status === 'waiting' ? '<span class="chip chip--y">Paused · no reminders</span>' : '') + (t.due && t.status !== 'done' ? '<span class="chip' + (over ? ' chip--r' : '') + '">' + (over ? 'Overdue · ' : 'Due ') + d2(t.due + 'T12:00') + '</span>' : '') + (st.length ? '<span class="tk2__st"><i style="width:' + Math.round(sd / st.length * 100) + '%"></i></span><span>' + sd + '/' + st.length + '</span>' : '') + (pj ? '<span class="chip chip--p">' + esc(pj.name.slice(0, 28)) + '</span>' : (t.ref ? '<span class="chip chip--p">' + esc(t.ref) + '</span>' : '')) + (t.assignee ? '<span>· ' + esc(t.assignee) + '</span>' : '') + '</div>' +
+      '<div class="tk__mv">' + (ci > 0 ? '<button class="b b--sm" data-mv="' + COLS[ci - 1][0] + '">' + I.l + COLS[ci - 1][1] + '</button>' : '') + (ci < COLS.length - 1 ? '<button class="b b--sm" data-mv="' + COLS[ci + 1][0] + '">' + COLS[ci + 1][1] + I.r + '</button>' : '') + '</div></div>';
+  }
+  /* leads and orders from before tasks were automatic: offer to put them on the board (once each) */
+  function tkMissing() {
+    var have = {}; S.tasks.forEach(function (t) { if (t.key) have[t.key] = 1; if (t.link) have[t.link] = 1; });
+    var out = [];
+    S.inbox.forEach(function (m) {
+      if (m.kind === 'whatsapp' || /^(completed|declined|archived)$/.test(m.stage || '') || m.status === 'done') return;
+      var link = '/admin#leads/' + m.id; if (have[link] || have['lead:lead-' + m.id]) return;
+      var c = m.customer || {}, brief = m.kind === 'brief';
+      out.push({ title: (brief ? 'Respond to ' : 'Reply to ') + (c.name || c.email || c.phone || 'a lead') + (brief ? ' · project brief' : ' · message'), src: brief ? 'lead' : 'message', tag: brief ? 'Lead' : 'Message', link: link, key: 'lead:lead-' + m.id, contact: [c.name, c.phone, c.email].filter(Boolean).join(' · '), phone: c.phone || '', email: c.email || '', ref: m.project || '', notes: m.subject || '', steps: brief ? '[ ] Read the brief\n[ ] Reply (WhatsApp, call or email)\n[ ] Book a discovery call\n[ ] Send a proposal' : '[ ] Read the message\n[ ] Reply', status: 'todo', priority: 'high', remind: '1h' });
+    });
+    S.orders.forEach(function (o) {
+      if (o.test || !o.paid || CLOSED.test(o.status || '')) return;
+      var link = '/admin#orders/' + o.ref; if (have[link] || have['order:' + o.ref]) return;
+      var c = o.customer || {};
+      out.push({ title: 'Fulfil ' + (KIND[o.kind] ? KIND[o.kind][0].toLowerCase() : 'order') + ' · ' + o.ref, src: 'order', tag: 'Order', link: link, key: 'order:' + o.ref, contact: [c.name, c.phone, c.email].filter(Boolean).join(' · '), phone: c.phone || '', email: c.email || '', notes: o.summary || '', steps: '[ ] Check the payment\n[ ] Prepare the order\n[ ] Deliver and let the customer know', status: 'todo', priority: 'high', remind: '3h' });
+    });
+    return out;
+  }
+  function tasks(openId) {
+    var f = S.tkf || 'all', miss = tkMissing();
+    var keep = function (t) { return f === 'all' || (f === 'mine' ? !t.src : f === 'order' ? /order|whatsapp|pages/.test(t.src || '') : t.src === f); };
+    var L = S.tasks.filter(keep), open = S.tasks.filter(function (t) { return t.status !== 'done'; });
+    var late = open.filter(function (t) { return tkWait(t) === 'late' || (t.due && t.due < today()); }).length;
+    var b = body('<div class="tk2-bar"><div class="tabs" id="tkF">' + [['all', 'All'], ['lead', 'Leads'], ['order', 'Orders'], ['message', 'Messages'], ['mine', 'My tasks']].map(function (x) { var n = x[0] === 'all' ? open.length : open.filter(function (t) { return x[0] === 'mine' ? !t.src : x[0] === 'order' ? /order|whatsapp|pages/.test(t.src || '') : t.src === x[0]; }).length; return '<button data-f="' + x[0] + '"' + (f === x[0] ? ' class="is-on"' : '') + '>' + x[1] + (n ? ' <i>' + n + '</i>' : '') + '</button>'; }).join('') + '</div>' + (late ? '<span class="chip chip--r">' + late + ' waiting too long</span>' : '<span class="faint" style="font-size:.8rem">Every lead, order and message lands here. Move one to “Waiting on client” to pause its reminders.</span>') + '</div>' +
+      (miss.length ? '<div class="tk2-miss"><span>' + miss.length + ' open lead' + (miss.length === 1 ? '' : 's') + ' and order' + (miss.length === 1 ? '' : 's') + ' from before aren’t on the board yet.</span><button class="b b--p b--sm" id="tkMiss">Add them as tasks</button></div>' : '') +
+      '<div class="board board--4">' + COLS.map(function (c, ci) {
+        var l = L.filter(function (t) { return (t.status || 'todo') === c[0]; });
+        if (c[0] === 'done') l.sort(function (a, z) { return (z.doneAt || z.updatedAt || 0) - (a.doneAt || a.updatedAt || 0); });
+        else l.sort(function (a, z) { return ({ high: 0, med: 1, low: 2 }[a.priority] || 1) - ({ high: 0, med: 1, low: 2 }[z.priority] || 1) || (a.due || '9').localeCompare(z.due || '9') || (a.createdAt || 0) - (z.createdAt || 0); });
+        var more = c[0] === 'done' && l.length > 12 && !S.tkAll;
+        return '<div class="col" data-col="' + c[0] + '"><div class="col__h"><span>' + c[1] + '</span><i>' + l.length + '</i></div>' + (more ? l.slice(0, 12) : l).map(function (t) { return tkCard(t, ci); }).join('') + (more ? '<button class="b b--sm b--ghost" data-allone style="width:100%">Show all ' + l.length + '</button>' : '') +
+          (c[0] === 'todo' ? '<form class="addtask" data-add><input class="hq-in" placeholder="Add a task…" maxlength="120"><button class="b b--p b--sm" aria-label="Add">' + I.plus + '</button></form>' : '') + '</div>';
+      }).join('') + '</div>');
+    b.querySelectorAll('#tkF [data-f]').forEach(function (x) { x.onclick = function () { S.tkf = x.getAttribute('data-f'); tasks(); }; });
+    var mb = b.querySelector('#tkMiss'); if (mb) mb.onclick = function () { mb.disabled = true; mb.textContent = 'Adding…'; var q = miss.slice(); (function next() { var t = q.shift(); if (!t) { toast(miss.length + ' tasks added', 'ok'); tasks(); navs(); return; } saveItem('tasks', t).then(next, function (er) { toast(er.message); tasks(); }); })(); };
+    var al = b.querySelector('[data-allone]'); if (al) al.onclick = function () { S.tkAll = 1; tasks(); };
     b.querySelector('[data-add]').onsubmit = function (e) { e.preventDefault(); var v = this.querySelector('input').value.trim(); if (!v) return; saveItem('tasks', { title: v, status: 'todo', priority: 'med' }).then(function () { tasks(); navs(); }, function (er) { toast(er.message); }); };
     b.addEventListener('click', function (e) {
       var mv = e.target.closest('[data-mv]'); if (mv) { e.stopPropagation(); var t = S.tasks.filter(function (x) { return x.id === mv.closest('[data-tk]').getAttribute('data-tk'); })[0]; t.status = mv.getAttribute('data-mv'); saveItem('tasks', t).then(function () { tasks(); navs(); }); return; }
-      var tk = e.target.closest('[data-tk]'); if (tk) taskModal(S.tasks.filter(function (x) { return x.id === tk.getAttribute('data-tk'); })[0]);
+      var tk = e.target.closest('[data-tk]'); if (tk) taskDrawer(S.tasks.filter(function (x) { return x.id === tk.getAttribute('data-tk'); })[0]);
     });
     var drag = null;
     b.querySelectorAll('[data-tk]').forEach(function (el) { el.addEventListener('dragstart', function (e) { drag = el.getAttribute('data-tk'); el.classList.add('is-dragging'); e.dataTransfer.setData('text/plain', drag); }); el.addEventListener('dragend', function () { el.classList.remove('is-dragging'); }); });
@@ -996,22 +1045,68 @@
       col.addEventListener('dragleave', function () { col.classList.remove('is-drop'); });
       col.addEventListener('drop', function (e) { e.preventDefault(); col.classList.remove('is-drop'); var t = S.tasks.filter(function (x) { return x.id === drag; })[0]; if (!t || t.status === col.getAttribute('data-col')) return; t.status = col.getAttribute('data-col'); tasks(); saveItem('tasks', t).then(navs, function (er) { toast(er.message); }); });
     });
+    if (openId) { var ot = S.tasks.filter(function (x) { return x.id === openId; })[0]; if (ot) taskDrawer(ot); }
+  }
+  /* the task, read and act on it: contact buttons, checklist, status, reminders */
+  function taskDrawer(t) {
+    if (!t) return;
+    var src = TSRC[t.src], st = stepsOf(t), pj = tkProj(t), ph = String(t.phone || '').replace(/\D/g, '').replace(/^0/, '254');
+    var link = t.link && t.link.indexOf('/admin') === 0 ? t.link.slice(6) : '';
+    var h = '<div class="tkd">' +
+      '<div class="tkd__chips">' + (src ? '<span class="tk2__src tk2__src--' + src[1] + '">' + src[0] + '</span>' : '<span class="tk2__src">' + esc(t.tag || 'Task') + '</span>') + '<span class="chip">' + ({ high: 'High', med: 'Medium', low: 'Low' }[t.priority || 'med']) + ' priority</span><span class="faint">Added ' + since(t.createdAt) + ' ago</span></div>' +
+      '<div class="seg4" id="tdS">' + COLS.map(function (c) { return '<button type="button" data-s="' + c[0] + '"' + ((t.status || 'todo') === c[0] ? ' class="is-on"' : '') + '>' + c[1] + '</button>'; }).join('') + '</div>' +
+      (t.status === 'waiting' ? '<p class="tkd__pause">' + I.clock + '<span>Paused while you wait for the client. No reminders until you move it on.</span></p>' : '') +
+      (t.contact || ph || t.email ? '<div class="tkd__who"><div><b>' + esc((t.contact || '').split(' · ')[0] || 'Contact') + '</b><small>' + esc([t.phone, t.email].filter(Boolean).join(' · ')) + '</small></div><div class="row">' + (ph ? '<a class="b b--sm" href="tel:+' + esc(ph) + '">' + I.phone + '<span>Call</span></a><a class="b b--sm" target="_blank" rel="noopener" href="https://wa.me/' + esc(ph) + '">' + I.wa + '<span>WhatsApp</span></a>' : '') + (t.email ? '<button class="b b--sm" type="button" id="tdM">' + I.mail + '<span>Email</span></button>' : '') + '</div></div>' : '') +
+      '<div class="tkd__sec"><div class="row" style="justify-content:space-between"><b>Checklist</b><span class="faint" id="tdC">' + st.filter(function (x) { return x.done; }).length + ' of ' + st.length + '</span></div><ul class="tkd__steps" id="tdL">' + st.map(function (x, i) { return '<li><label><input type="checkbox" data-i="' + i + '"' + (x.done ? ' checked' : '') + '><span>' + esc(x.text) + '</span></label></li>'; }).join('') + '</ul><form class="addtask" id="tdA"><input class="hq-in" placeholder="Add a step…" maxlength="120"><button class="b b--sm" aria-label="Add step">' + I.plus + '</button></form></div>' +
+      (t.notes ? '<div class="tkd__sec"><b>Details</b><p class="tkd__notes">' + esc(t.notes) + '</p></div>' : '') +
+      '<dl class="dl"><dt>Due</dt><dd>' + (t.due ? d2(t.due + 'T12:00') : '—') + '</dd><dt>Reminders</dt><dd><select class="hq-in" id="tdR">' + TREM.map(function (r) { return '<option value="' + r[0] + '"' + ((t.remind || '') === r[0] ? ' selected' : '') + '>' + r[1] + '</option>'; }).join('') + '</select></dd>' + (t.assignee ? '<dt>Who</dt><dd>' + esc(t.assignee) + '</dd>' : '') + (pj ? '<dt>Project</dt><dd><a href="#projects/' + esc(pj.id) + '">' + esc(pj.name) + '</a></dd>' : '') + (t.doneAt ? '<dt>Done</dt><dd>' + dt(t.doneAt) + '</dd>' : '') + '</dl>' +
+      '<div class="row" style="border-top:1px solid var(--line);padding-top:12px">' + (link ? '<a class="b b--d" href="' + esc(link) + '">Open ' + (src ? src[0].toLowerCase() : 'it') + '</a>' : '') + '<button class="b" id="tdE">' + I.pen + '<span>Edit</span></button><button class="b b--ghost" id="tdX" style="margin-left:auto;color:var(--r)">Delete</button></div></div>';
+    var d = drawer(esc(t.title), h, function () { if (location.hash.indexOf('#tasks/') === 0) history.replaceState(null, '', '#tasks'); });
+    var put = function (patch, msg) { Object.assign(t, patch); return saveItem('tasks', t).then(function (n) { t = n; if (msg) toast(msg, 'ok'); if (S.view === 'tasks') tasks(); navs(); }, function (er) { toast(er.message); }); };
+    d.querySelectorAll('#tdS [data-s]').forEach(function (x) { x.onclick = function () { var v = x.getAttribute('data-s'); put({ status: v }, v === 'waiting' ? 'Paused until the client answers' : v === 'done' ? 'Done' : 'Moved').then(function () { d.remove(); taskDrawer(t); }); }; });
+    d.querySelector('#tdL').onchange = function (e) { var i = +e.target.getAttribute('data-i'); st[i].done = e.target.checked; d.querySelector('#tdC').textContent = st.filter(function (x) { return x.done; }).length + ' of ' + st.length; put({ steps: stepsStr(st) }); };
+    d.querySelector('#tdA').onsubmit = function (e) { e.preventDefault(); var v = this.querySelector('input').value.trim(); if (!v) return; st.push({ done: false, text: v }); put({ steps: stepsStr(st) }).then(function () { d.remove(); taskDrawer(t); }); };
+    d.querySelector('#tdR').onchange = function () { put({ remind: this.value }, 'Reminders updated'); };
+    d.querySelector('#tdE').onclick = function () { d.remove(); taskModal(t); };
+    d.querySelector('#tdX').onclick = function () { HQAsk.confirm('Delete this task?').then(function (ok) { if (!ok) return; delItem('tasks', t.id).then(function () { d.remove(); if (S.view === 'tasks') tasks(); navs(); }); }); };
+    var tm = d.querySelector('#tdM'); if (tm) tm.onclick = function () { if (window.HQMail) HQMail.compose({ to: t.email, subject: 'Your enquiry to Ciel Africa' }); else location.href = 'mailto:' + t.email; };
   }
   function taskModal(t) {
     t = t || {};
-    var m = modal('<h2>' + (t.id ? 'Task' : 'New task') + '</h2><label class="field"><span>Task</span><input class="hq-in" id="tt" value="' + esc(t.title || '') + '" maxlength="120"></label>' +
-      '<div class="g2"><label class="field"><span>Status</span><select class="hq-in" id="ts">' + COLS.map(function (c) { return '<option value="' + c[0] + '"' + ((t.status || 'todo') === c[0] ? ' selected' : '') + '>' + c[1] + '</option>'; }).join('') + '</select></label><label class="field"><span>Priority</span><select class="hq-in" id="tp">' + [['high', 'High'], ['med', 'Medium'], ['low', 'Low']].map(function (p) { return '<option value="' + p[0] + '"' + ((t.priority || 'med') === p[0] ? ' selected' : '') + '>' + p[1] + '</option>'; }).join('') + '</select></label></div>' +
-      '<div class="g2"><label class="field"><span>Due date</span><input class="hq-in" type="date" id="td" value="' + esc(t.due || '') + '"></label><label class="field"><span>Label</span><input class="hq-in" id="tg" value="' + esc(t.tag || '') + '" placeholder="e.g. Photo Books, Client" maxlength="40"></label></div>' +
-      '<div class="g2"><label class="field"><span>Who</span><input class="hq-in" id="ta" value="' + esc(t.assignee || '') + '" maxlength="60"></label><label class="field"><span>Order</span><input class="hq-in" id="tr" value="' + esc(t.ref || '') + '" placeholder="PB-…" maxlength="40"></label></div>' +
-      '<label class="field"><span>Notes</span><textarea class="hq-in" id="tn" rows="4">' + esc(t.notes || '') + '</textarea></label>' +
-      '<div class="row" style="justify-content:flex-end">' + (t.id ? '<button class="b" data-del style="margin-right:auto;color:var(--r)">Delete</button>' : '') + '<button class="b" data-x>Cancel</button><button class="b b--p" data-save>Save</button></div>');
+    var st = stepsOf(t), when = function (n) { var x = new Date(Date.now() + 3 * 36e5 + n * 864e5); return x.toISOString().slice(0, 10); };
+    var seg = function (id, list, cur) { return '<div class="seg4" id="' + id + '">' + list.map(function (c) { return '<button type="button" data-v="' + c[0] + '"' + (cur === c[0] ? ' class="is-on"' : '') + '>' + c[1] + '</button>'; }).join('') + '</div>'; };
+    var P = (S.projects || []).filter(function (p) { return p.status !== 'completed' || p.id === t.ref; });
+    var team = ((S.team && S.team.members) || []).filter(function (u) { return u.active !== false; }).map(function (u) { return u.name; });
+    var m = modal('<div class="tkf"><h2>' + (t.id ? 'Edit task' : 'New task') + '</h2>' +
+      '<input class="hq-in tkf__t" id="tt" value="' + esc(t.title || '') + '" maxlength="120" placeholder="What needs doing?">' +
+      '<label class="field"><span>Details</span><textarea class="hq-in" id="tn" rows="3" placeholder="Context, what the client asked, links…">' + esc(t.notes || '') + '</textarea></label>' +
+      '<div class="field"><span>Status</span>' + seg('ts', COLS, t.status || 'todo') + '</div>' +
+      '<div class="g2"><div class="field"><span>Priority</span>' + seg('tp', TPRI, t.priority || 'med') + '</div><label class="field"><span>Remind me</span><select class="hq-in" id="tr">' + TREM.map(function (r) { return '<option value="' + r[0] + '"' + ((t.remind || '') === r[0] ? ' selected' : '') + '>' + r[1] + '</option>'; }).join('') + '</select></label></div>' +
+      '<div class="field"><span>Due</span><div class="tkf__due"><input class="hq-in" type="date" id="td" value="' + esc(t.due || '') + '"><button type="button" class="b b--sm" data-d="0">Today</button><button type="button" class="b b--sm" data-d="1">Tomorrow</button><button type="button" class="b b--sm" data-d="7">Next week</button></div></div>' +
+      '<div class="g2"><label class="field"><span>Project</span><select class="hq-in" id="tj"><option value="">None</option>' + P.map(function (p) { return '<option value="' + esc(p.id) + '"' + (t.ref === p.id ? ' selected' : '') + '>' + esc(p.name) + '</option>'; }).join('') + (t.ref && !P.some(function (p) { return p.id === t.ref; }) ? '<option value="' + esc(t.ref) + '" selected>' + esc(t.ref) + '</option>' : '') + '</select></label>' +
+      '<label class="field"><span>Who</span><input class="hq-in" id="ta" value="' + esc(t.assignee || '') + '" maxlength="60" list="tkTeam" placeholder="Me"><datalist id="tkTeam">' + team.map(function (n) { return '<option value="' + esc(n) + '">'; }).join('') + '</datalist></label></div>' +
+      '<div class="g2"><label class="field"><span>Contact</span><input class="hq-in" id="tc" value="' + esc(t.contact || '') + '" maxlength="160" placeholder="Name"></label><label class="field"><span>Phone</span><input class="hq-in" id="tph" value="' + esc(t.phone || '') + '" maxlength="30" inputmode="tel"></label></div>' +
+      '<label class="field"><span>Label</span><input class="hq-in" id="tg" value="' + esc(t.tag || '') + '" placeholder="e.g. Client, Photo Books" maxlength="40"></label>' +
+      '<div class="field"><span>Checklist</span><ul class="tkd__steps tkf__steps" id="tkS"></ul><div class="addtask"><input class="hq-in" id="tkSi" placeholder="Add a step…" maxlength="120"><button type="button" class="b b--sm" id="tkSa" aria-label="Add step">' + I.plus + '</button></div></div>' +
+      '<div class="row tkf__acts">' + (t.id ? '<button class="b" data-del style="margin-right:auto;color:var(--r)">Delete</button>' : '') + '<button class="b" data-x>Cancel</button><button class="b b--p" data-save>Save task</button></div></div>');
+    m.classList.add('modal--wide');
+    var drawSteps = function () { m.querySelector('#tkS').innerHTML = st.map(function (x, i) { return '<li><label><input type="checkbox" data-i="' + i + '"' + (x.done ? ' checked' : '') + '><span>' + esc(x.text) + '</span></label><button type="button" class="tkf__rm" data-rm="' + i + '" aria-label="Remove">' + I.x + '</button></li>'; }).join(''); };
+    drawSteps();
+    m.querySelector('#tkS').onchange = function (e) { var i = e.target.getAttribute('data-i'); if (i != null) st[+i].done = e.target.checked; };
+    m.querySelector('#tkS').onclick = function (e) { var r = e.target.closest('[data-rm]'); if (r) { st.splice(+r.getAttribute('data-rm'), 1); drawSteps(); } };
+    var addStep = function () { var i = m.querySelector('#tkSi'), v = i.value.trim(); if (!v) return; st.push({ done: false, text: v }); i.value = ''; drawSteps(); i.focus(); };
+    m.querySelector('#tkSa').onclick = addStep; m.querySelector('#tkSi').onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); addStep(); } };
+    m.querySelectorAll('.seg4').forEach(function (g) { g.onclick = function (e) { var x = e.target.closest('[data-v]'); if (!x) return; g.querySelectorAll('[data-v]').forEach(function (y) { y.classList.toggle('is-on', y === x); }); }; });
+    m.querySelectorAll('[data-d]').forEach(function (x) { x.onclick = function () { m.querySelector('#td').value = when(+x.getAttribute('data-d')); }; });
+    var segv = function (id) { var o = m.querySelector('#' + id + ' .is-on'); return o ? o.getAttribute('data-v') : ''; };
     m.querySelector('[data-save]').onclick = function () {
-      var it = { id: t.id, title: m.querySelector('#tt').value, status: m.querySelector('#ts').value, priority: m.querySelector('#tp').value, due: m.querySelector('#td').value, tag: m.querySelector('#tg').value, assignee: m.querySelector('#ta').value, ref: m.querySelector('#tr').value, notes: m.querySelector('#tn').value };
-      saveItem('tasks', it).then(function () { m.remove(); toast('Task saved'); if (S.view === 'tasks') tasks(); else route(); navs(); }, function (er) { toast(er.message); });
+      var it = Object.assign({}, t, { title: m.querySelector('#tt').value, status: segv('ts') || 'todo', priority: segv('tp') || 'med', due: m.querySelector('#td').value, remind: m.querySelector('#tr').value, tag: m.querySelector('#tg').value, assignee: m.querySelector('#ta').value, ref: m.querySelector('#tj').value, notes: m.querySelector('#tn').value, contact: m.querySelector('#tc').value, phone: m.querySelector('#tph').value, steps: stepsStr(st) });
+      saveItem('tasks', it).then(function () { m.remove(); toast('Task saved', 'ok'); if (S.view === 'tasks') tasks(); else route(); navs(); }, function (er) { toast(er.message); });
     };
     var del = m.querySelector('[data-del]'); if (del) del.onclick = function () { HQAsk.confirm('Delete this task?').then(function (ok) { if (!ok) return; delItem('tasks', t.id).then(function () { m.remove(); route(); }); }); };
-    setTimeout(function () { m.querySelector('#tt').focus(); }, 50);
+    setTimeout(function () { if (!t.id) m.querySelector('#tt').focus(); }, 50);
   }
+
 
   /* ---------- customers (built from every order) ---------- */
   function customers() {
@@ -1101,8 +1196,9 @@
     bindOrderRows(b);
   }
   function content() {
-    var tabs = [['/admin/content?embed=1', 'Site content'], ['/domains/admin?embed=1', 'Domains'], ['/photobooks/orders?embed=1', 'Photo Book files']];
-    var cur = S.ctab || 0;
+    /* the old Site content tool is retired: products, templates and services are edited under Products, pages under Website editor */
+    var tabs = [['/photobooks/orders?embed=1', 'Photo Book files'], ['/domains/admin?embed=1', 'Domains']];
+    var cur = Math.min(S.ctab || 0, 1);
     var b = body('<div class="tabs ct-tabs" id="ct">' + tabs.map(function (t, i) { return '<button data-i="' + i + '"' + (i === cur ? ' class="is-on"' : '') + '>' + t[1] + '</button>'; }).join('') + '</div><iframe class="hq-embed" src="' + tabs[cur][0] + '" title="' + tabs[cur][1] + '"></iframe>');
     b.querySelectorAll('#ct [data-i]').forEach(function (x) { x.onclick = function () { S.ctab = +x.getAttribute('data-i'); content(); }; });
   }
@@ -1151,7 +1247,7 @@
   }
   function website() {
     var tiles = [
-      [I.pen, 'Website content', 'Edit products, templates, work and team on cielafrica.com.', '/admin/content'],
+      [I.pen, 'Products & prices', 'Products, templates, services and domain prices on cielafrica.com.', '/admin#products'],
       [I.book, 'Photo Books orders', 'Every page at print size, the book preview and the print PDF for each photo book order.', '/photobooks/orders'],
       [I.globe, 'Ciel Domains', 'Domain orders: check, register, refund.', '/domains/admin'],
       [I.orders, 'Shop', 'The products customers buy on cielafrica.com.', '/products.html'],
@@ -1197,7 +1293,7 @@
     c.querySelector('#popT').onclick = function () { pop({ kind: 'order', title: 'Sample · New order', body: 'This is how a new order looks. Nothing was ordered.', url: '/admin#orders', at: Date.now() }); };
   }
 
-  window.HQ = { setTheme: setTheme, themeMode: themeMode, can: can, me: function () { return S.me; }, paintTheme: paintTheme, back: goBack, pushHelp: pushHelp, pushState: pushState, enablePush: enablePush, disablePush: disablePush, I: I, NAV: NAV, KIND: KIND, orderDrawer: orderDrawer, api: api, toast: toast, esc: esc, dt: dt, d2: d2, money: money, today: today, body: body, modal: modal, drawer: drawer, S: S, navs: navs, route: route, saveItem: saveItem, delItem: delItem, taskModal: taskModal, eventModal: eventModal };
+  window.HQ = { setTheme: setTheme, themeMode: themeMode, can: can, me: function () { return S.me; }, paintTheme: paintTheme, back: goBack, pushHelp: pushHelp, pushState: pushState, enablePush: enablePush, disablePush: disablePush, I: I, NAV: NAV, KIND: KIND, orderDrawer: orderDrawer, api: api, toast: toast, esc: esc, dt: dt, d2: d2, money: money, today: today, body: body, modal: modal, drawer: drawer, S: S, navs: navs, route: route, saveItem: saveItem, delItem: delItem, taskModal: taskModal, taskDrawer: taskDrawer, eventModal: eventModal };
   if (window.HQCrm) HQCrm.init(window.HQ);
   if (window.HQSite) HQSite.init(window.HQ);
   if (window.HQMail) HQMail.init(window.HQ);
