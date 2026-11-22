@@ -1,5 +1,5 @@
 {
- "v": 19,
+ "v": 20,
  "note": "Ready-made Ciel Africa designs. They appear in Ciel Admin → Instagram → Planner; edits there are saved separately and win over this file.",
  "items": [
   {
@@ -2797,6 +2797,21 @@
     "/assets/ig/t/s-sc-ev-app-v3.jpg"
    ],
    "seq": 144
+  },
+  {
+   "id": "b-r-maisonclay",
+   "kind": "reel",
+   "title": "Maison Clay, an interior studio website (concept)",
+   "caption": "Soft light, warm clay and a website that feels like coming home. 🛋️\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#InteriorDesign #WebDesign #StudioWebsite #CielAfrica",
+   "video": "/assets/ig/r/maisonclay.mp4",
+   "src": [
+    "/assets/ig/r/maisonclay-cover.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/r-maisonclay-cover.jpg"
+   ],
+   "seq": 0,
+   "shareToFeed": true
   }
  ],
  "retired": [
