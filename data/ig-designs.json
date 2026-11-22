@@ -1,7 +1,22 @@
 {
- "v": 22,
+ "v": 23,
  "note": "Ready-made Ciel Africa designs. They appear in Ciel Admin → Instagram → Planner; edits there are saved separately and win over this file.",
  "items": [
+  {
+   "id": "b-r-sillage",
+   "kind": "reel",
+   "title": "Sillage, a fragrance house website (concept)",
+   "caption": "Some scents stay long after you leave the room. Let your website do the same. ✨\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#FragranceDesign #WebDesign #LuxuryBrand #PerfumeLovers #CielAfrica",
+   "video": "/assets/ig/r/sillage-v1.mp4",
+   "src": [
+    "/assets/ig/r/sillage-v1-cover.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/r-sillage-v1-cover.jpg"
+   ],
+   "seq": -0.5,
+   "shareToFeed": true
+  },
   {
    "id": "b-p-j06",
    "kind": "post",
