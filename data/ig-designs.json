@@ -1,5 +1,5 @@
 {
- "v": 18,
+ "v": 19,
  "note": "Ready-made Ciel Africa designs. They appear in Ciel Admin → Instagram → Planner; edits there are saved separately and win over this file.",
  "items": [
   {
@@ -2656,19 +2656,6 @@
    "seq": 131
   },
   {
-   "id": "b-p-sc-ux-ab",
-   "kind": "post",
-   "title": "Social · Which has the better UX? (security alert A/B)",
-   "caption": "Same alert, two designs. Which one would you trust? Tell us A or B in the comments. 👇\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#UXDesign #UIDesign #ProductDesign #FintechUX #CielAfrica",
-   "src": [
-    "/assets/ig/p/sc-ux-ab-v3.jpg"
-   ],
-   "thumb": [
-    "/assets/ig/t/p-sc-ux-ab-v3.jpg"
-   ],
-   "seq": 132
-  },
-  {
    "id": "b-p-sc-pet-app",
    "kind": "post",
    "title": "Social · Pet store app (Pawnest concept)",
@@ -2760,19 +2747,6 @@
    "seq": 139
   },
   {
-   "id": "b-s-sc-ux-ab",
-   "kind": "story",
-   "title": "Social story · Which has the better UX? (security alert A/B)",
-   "caption": "",
-   "src": [
-    "/assets/ig/s/sc-ux-ab-v3.jpg"
-   ],
-   "thumb": [
-    "/assets/ig/t/s-sc-ux-ab-v3.jpg"
-   ],
-   "seq": 140
-  },
-  {
    "id": "b-s-sc-pet-app",
    "kind": "story",
    "title": "Social story · Pet store app (Pawnest concept)",
@@ -2824,5 +2798,9 @@
    ],
    "seq": 144
   }
+ ],
+ "retired": [
+  "b-p-sc-ux-ab",
+  "b-s-sc-ux-ab"
  ]
 }
