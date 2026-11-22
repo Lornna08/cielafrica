@@ -1,5 +1,5 @@
 {
- "v": 21,
+ "v": 22,
  "note": "Ready-made Ciel Africa designs. They appear in Ciel Admin → Instagram → Planner; edits there are saved separately and win over this file.",
  "items": [
   {
@@ -2648,10 +2648,10 @@
    "title": "Social · Gaming landing page (Novarena concept)",
    "caption": "Press start on a website that plays as hard as your players do. 🎮\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#WebDesign #GamingWebsite #LandingPage #UIDesign #CielAfrica",
    "src": [
-    "/assets/ig/p/sc-game-site-v3.jpg"
+    "/assets/ig/p/sc-game-site-v4.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/p-sc-game-site-v3.jpg"
+    "/assets/ig/t/p-sc-game-site-v4.jpg"
    ],
    "seq": 131
   },
@@ -2674,10 +2674,10 @@
    "title": "Social · Cold brew coffee landing page (Coldcraft concept)",
    "caption": "Slow mornings, cold glasses and a website that tastes as good as it looks. 🧊\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#WebDesign #CoffeeBrand #LandingPage #BrandDesign #CielAfrica",
    "src": [
-    "/assets/ig/p/sc-cold-coffee-site-v3.jpg"
+    "/assets/ig/p/sc-cold-coffee-site-v4.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/p-sc-cold-coffee-site-v3.jpg"
+    "/assets/ig/t/p-sc-cold-coffee-site-v4.jpg"
    ],
    "seq": 134
   },
@@ -2687,10 +2687,10 @@
    "title": "Social · Interior design studio landing page (Maison Clay concept)",
    "caption": "Warm rooms, soft light and a website that feels just as lived in. 🛋️\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#InteriorDesign #WebDesign #LandingPage #StudioWebsite #CielAfrica",
    "src": [
-    "/assets/ig/p/sc-interior-site-v3.jpg"
+    "/assets/ig/p/sc-interior-site-v4.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/p-sc-interior-site-v3.jpg"
+    "/assets/ig/t/p-sc-interior-site-v4.jpg"
    ],
    "seq": 135
   },
@@ -2739,10 +2739,10 @@
    "title": "Social story · Gaming landing page (Novarena concept)",
    "caption": "",
    "src": [
-    "/assets/ig/s/sc-game-site-v3.jpg"
+    "/assets/ig/s/sc-game-site-v4.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/s-sc-game-site-v3.jpg"
+    "/assets/ig/t/s-sc-game-site-v4.jpg"
    ],
    "seq": 139
   },
@@ -2765,10 +2765,10 @@
    "title": "Social story · Cold brew coffee landing page (Coldcraft concept)",
    "caption": "",
    "src": [
-    "/assets/ig/s/sc-cold-coffee-site-v3.jpg"
+    "/assets/ig/s/sc-cold-coffee-site-v4.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/s-sc-cold-coffee-site-v3.jpg"
+    "/assets/ig/t/s-sc-cold-coffee-site-v4.jpg"
    ],
    "seq": 142
   },
@@ -2778,10 +2778,10 @@
    "title": "Social story · Interior design studio landing page (Maison Clay concept)",
    "caption": "",
    "src": [
-    "/assets/ig/s/sc-interior-site-v3.jpg"
+    "/assets/ig/s/sc-interior-site-v4.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/s-sc-interior-site-v3.jpg"
+    "/assets/ig/t/s-sc-interior-site-v4.jpg"
    ],
    "seq": 143
   },
@@ -2803,12 +2803,12 @@
    "kind": "reel",
    "title": "Maison Clay, an interior studio website (concept)",
    "caption": "Soft light, warm clay and a website that feels like coming home. 🛋️\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#InteriorDesign #WebDesign #StudioWebsite #CielAfrica",
-   "video": "/assets/ig/r/maisonclay.mp4",
+   "video": "/assets/ig/r/maisonclay-v2.mp4",
    "src": [
-    "/assets/ig/r/maisonclay-cover.jpg"
+    "/assets/ig/r/maisonclay-v2-cover.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/r-maisonclay-cover.jpg"
+    "/assets/ig/t/r-maisonclay-v2-cover.jpg"
    ],
    "seq": 0,
    "shareToFeed": true
@@ -2818,12 +2818,12 @@
    "kind": "reel",
    "title": "Acacia & Dusk, a safari camp website (concept)",
    "caption": "Golden light, open plains and a website that makes guests want to stay a little longer. 🌅\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#HospitalityDesign #WebDesign #SafariLodge #CielAfrica",
-   "video": "/assets/ig/r/acacia.mp4",
+   "video": "/assets/ig/r/acacia-v2.mp4",
    "src": [
-    "/assets/ig/r/acacia-cover.jpg"
+    "/assets/ig/r/acacia-v2-cover.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/r-acacia-cover.jpg"
+    "/assets/ig/t/r-acacia-v2-cover.jpg"
    ],
    "seq": 0.5,
    "shareToFeed": true
