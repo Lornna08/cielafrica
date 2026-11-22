@@ -1,5 +1,5 @@
 {
- "v": 20,
+ "v": 21,
  "note": "Ready-made Ciel Africa designs. They appear in Ciel Admin → Instagram → Planner; edits there are saved separately and win over this file.",
  "items": [
   {
@@ -2811,6 +2811,21 @@
     "/assets/ig/t/r-maisonclay-cover.jpg"
    ],
    "seq": 0,
+   "shareToFeed": true
+  },
+  {
+   "id": "b-r-acacia",
+   "kind": "reel",
+   "title": "Acacia & Dusk, a safari camp website (concept)",
+   "caption": "Golden light, open plains and a website that makes guests want to stay a little longer. 🌅\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#HospitalityDesign #WebDesign #SafariLodge #CielAfrica",
+   "video": "/assets/ig/r/acacia.mp4",
+   "src": [
+    "/assets/ig/r/acacia-cover.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/r-acacia-cover.jpg"
+   ],
+   "seq": 0.5,
    "shareToFeed": true
   }
  ],
