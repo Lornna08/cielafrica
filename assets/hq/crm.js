@@ -35,7 +35,7 @@
     var open = leads().filter(function (m) { return !/completed|declined|archived/.test(stage(m)); });
     var won = leads().filter(function (m) { return /approved|in_progress|completed/.test(stage(m)); }).length, lost = leads().filter(function (m) { return stage(m) === 'declined'; }).length;
     var b = H.body('<div class="kpis"><div class="card kpi"><span>Open leads</span><b>' + open.length + '</b><small>' + leads().filter(function (m) { return stage(m) === 'new'; }).length + ' new</small></div><div class="card kpi"><span>Start a Project briefs</span><b>' + leads().filter(function (m) { return m.kind === 'brief'; }).length + '</b><small>all time</small></div><div class="card kpi"><span>Won</span><b>' + won + '</b><small>' + (won + lost ? Math.round(won / (won + lost) * 100) + '% of decided' : 'nothing decided yet') + '</small></div><div class="card kpi"><span>Follow-ups due</span><b>' + leads().filter(function (m) { return m.followUp && m.followUp <= H.today() && !/completed|declined|archived/.test(stage(m)); }).length + '</b><small>today or overdue</small></div></div>' +
-      '<div class="row"><input class="hq-in" id="lq" type="search" placeholder="Search leads" value="' + esc(S().leadQ || '') + '" style="max-width:280px"><label class="check"><input type="checkbox" id="la"' + (showArch ? ' checked' : '') + '> Show archived</label><span class="muted pipe__tip" style="margin-left:auto;font-size:.8rem"><span class="pipe__tipd">Drag a card to move it · tap to open</span><span class="pipe__tipm">Tap a lead to open it and change its stage</span></span></div>' +
+      '<div class="row"><input class="hq-in" id="lq" type="search" placeholder="Search leads" value="' + esc(S().leadQ || '') + '" style="max-width:280px"><label class="check"><input type="checkbox" id="la"' + (showArch ? ' checked' : '') + '> Show archived</label>' + ((S().junk || []).length ? '<button class="b b--sm b--ghost" id="lJunk">Filtered · ' + S().junk.length + '</button>' : '') + '<span class="muted pipe__tip" style="margin-left:auto;font-size:.8rem"><span class="pipe__tipd">Drag a card to move it · tap to open</span><span class="pipe__tipm">Tap a lead to open it and change its stage</span></span></div>' +
       '<div class="pipe">' + cols.map(function (c) {
         var items = L.filter(function (m) { return stage(m) === c[0]; }).sort(function (a, b) { return (PR[prio(a)] - PR[prio(b)]) || (b.createdAt - a.createdAt); });
         var tone = /^new$/.test(c[0]) ? 'r' : /reviewing|awaiting|discovery/.test(c[0]) ? 'y' : /proposal|negotiation/.test(c[0]) ? 'p' : /approved|in_progress|completed/.test(c[0]) ? 'g' : 's';
@@ -46,6 +46,7 @@
       }).join('') + '</div>' + (leads().length ? '' : '<p class="empty">New Start a Project briefs and contact-form messages land here automatically.</p>'));
     var lq = b.querySelector('#lq'); lq.oninput = function () { S().leadQ = lq.value; var p = lq.selectionStart; renderLeads(); var n = document.getElementById('lq'); n.focus(); n.setSelectionRange(p, p); };
     b.querySelector('#la').onchange = function () { S().leadArch = this.checked; renderLeads(); };
+    var lj = b.querySelector('#lJunk'); if (lj) lj.onclick = junkDrawer;
     var drag = null;
     b.querySelectorAll('.lead').forEach(function (c) {
       c.addEventListener('dragstart', function () { drag = c.getAttribute('data-id'); c.classList.add('is-drag'); });
@@ -66,7 +67,7 @@
       '<div class="row">' + (c.email ? '<button class="b b--p" id="lMail">Reply by email</button>' : '') + (ph ? '<a class="b" href="tel:+' + esc(ph) + '">Call</a><a class="b" target="_blank" rel="noopener" href="https://wa.me/' + esc(ph) + '">WhatsApp</a>' : '') + '</div>' +
       '<dl class="dl"><dt>Name</dt><dd>' + esc(c.name || '—') + '</dd><dt>Email</dt><dd>' + esc(c.email || '—') + '</dd><dt>Phone</dt><dd>' + esc(c.phone || field(m, /phone|whatsapp/i) || '—') + '</dd>' + (m.fields || []).filter(function (f) { return !/^(name|email|phone)$/i.test(f[0]); }).map(function (f) { return '<dt>' + esc(f[0]) + '</dt><dd style="white-space:pre-wrap">' + esc(f[1]) + '</dd>'; }).join('') + '</dl>' +
       '<b>Internal notes</b><ul class="hist" id="lNotes">' + (m.notes || []).slice().reverse().map(function (n) { return '<li><span class="muted" style="font-size:.76rem">' + H.dt(n.at) + '</span><br>' + esc(n.text).replace(/\n/g, '<br>') + '</li>'; }).join('') + '</ul><textarea class="hq-in" id="lN" rows="2" placeholder="Add a note (only you see this)"></textarea><button class="b b--sm" id="lNs" style="justify-self:start">Add note</button>' +
-      '<div class="row" style="border-top:1px solid var(--line);padding-top:12px">' + (m.project ? '<a class="b b--d" href="#projects/' + esc(m.project) + '">Open project</a>' : '<button class="b b--d" id="lProj">Convert to project</button>') + '<button class="b" id="lTask">Create task</button>' + (stage(m) !== 'archived' ? '<button class="b b--ghost" id="lArc">Archive</button>' : '') + '</div>';
+      '<div class="row" style="border-top:1px solid var(--line);padding-top:12px">' + (m.project ? '<a class="b b--d" href="#projects/' + esc(m.project) + '">Open project</a>' : '<button class="b b--d" id="lProj">Convert to project</button>') + '<button class="b" id="lTask">Create task</button>' + (stage(m) !== 'archived' ? '<button class="b b--ghost" id="lArc">Archive</button>' : '') + '<button class="b b--ghost" id="lJk">Not a lead</button></div>';
     var d = H.drawer(esc(who(m)), h);
     var save = function (patch, msg) { return upd(m, patch).then(function (n) { m = n; if (msg) H.toast(msg); if (H.S.view === 'leads') renderLeads(); }, function (e) { H.toast(e.message); }); };
     d.querySelector('#lSt').onchange = function () { save({ stage: this.value }, 'Stage updated'); };
@@ -78,10 +79,32 @@
     d.querySelector('#lNs').onclick = function () { var t = d.querySelector('#lN').value.trim(); if (!t) return; save({ note: t }, 'Note added').then(function () { d.remove(); leadDrawer(m); }); };
     var lm = d.querySelector('#lMail'); if (lm) lm.onclick = function () { if (window.HQMail) HQMail.compose({ to: c.email, subject: 'Re: ' + (m.subject || 'your enquiry to Ciel Africa').replace(/^(New (project brief|enquiry) — )/, '') }); else location.href = 'mailto:' + c.email; };
     d.querySelector('#lTask').onclick = function () { H.taskModal({ status: 'todo', title: 'Follow up ' + who(m), tag: 'Lead', notes: (m.subject || '') + '\n' + (c.email || '') + ' ' + (c.phone || '') }); };
+    d.querySelector('#lJk').onclick = function () { setJunk(m, true).then(function () { d.remove(); H.toast('Moved to Filtered. Messages like this will be filtered from now on.'); }, function (e) { H.toast(e.message); }); };
     var arc = d.querySelector('#lArc'); if (arc) arc.onclick = function () { save({ stage: 'archived' }, 'Archived').then(function () { d.remove(); }); };
     var cp = d.querySelector('#lProj'); if (cp) cp.onclick = function () {
       projectModal({ name: (field(m, /company|business|brand/i) || c.name || 'New project') + ' · ' + (field(m, /service|project|need|type/i) || 'Website').slice(0, 40), client: c.name || '', email: c.email || '', phone: c.phone || '', budget: field(m, /budget/i), desc: field(m, /details|message|description|about/i) || '', status: 'planning', priority: m.priority || 'normal', lead: m.id, company: field(m, /^company/i), type: (field(m, /^looking for$/i) || '').split(' — ')[0], category: (field(m, /^looking for$/i) || '').split(' — ').slice(1).join(' — '), scope: (field(m, /^must-haves$/i) || '').split(/,\s*(?=[A-Z0-9])/).filter(Boolean).map(function (x) { return '[ ] ' + x.trim(); }).join('\n') }, function (p) { save({ project: p.id, stage: 'approved' }, 'Project created'); d.remove(); location.hash = '#projects/' + p.id; });
     };
+  }
+
+  /* ---------- Filtered: sales pitches kept out of Leads (no alerts, tasks or reminders) ---------- */
+  function setJunk(m, on) {
+    return H.api('/api/hq?route=lead-update', { id: m.id, junk: on }).then(function (r) {
+      var it = r.item; S().inbox = S().inbox.filter(function (x) { return x.id !== m.id; }); S().junk = (S().junk || []).filter(function (x) { return x.id !== m.id; });
+      if (on) { S().junk.unshift(it); (S().tasks || []).forEach(function (t) { if (t.link === '/admin#leads/' + m.id || t.key === 'lead:lead-' + m.id) t.status = 'done'; }); }
+      else S().inbox.unshift(it);
+      H.navs(); if (H.S.view === 'leads') renderLeads(); return it;
+    });
+  }
+  function junkDrawer() {
+    var J = (S().junk || []).slice().sort(function (a, b) { return b.createdAt - a.createdAt; });
+    var msg = function (m) { return (field(m, /message|details|description/i) || m.subject || '').replace(/\s+/g, ' '); };
+    var d = H.drawer('Filtered', '<p class="muted" style="font-size:.84rem;margin:0">Sales pitches sent through your forms: SEO, followers, ads and the like. They don’t alert you or wait for a reply. If a real client ended up here, bring it back.</p>' +
+      (J.length ? J.map(function (m) { return '<div class="card" style="padding:12px 14px;display:grid;gap:6px" data-id="' + esc(m.id) + '"><div class="row" style="justify-content:space-between"><b>' + esc(who(m)) + '</b><span class="muted" style="font-size:.76rem">' + days(m.createdAt) + '</span></div><span class="chip" style="justify-self:start">' + esc(m.junk) + '</span><p class="muted" style="font-size:.84rem;margin:0">' + esc(msg(m).slice(0, 220)) + '</p><div class="row"><button class="b b--sm" data-back>It’s a real lead</button><button class="b b--sm b--ghost" data-del>Delete</button></div></div>'; }).join('') : '<p class="empty">Nothing filtered.</p>'));
+    d.querySelectorAll('[data-id]').forEach(function (row) {
+      var m = J.filter(function (x) { return x.id === row.getAttribute('data-id'); })[0];
+      row.querySelector('[data-back]').onclick = function () { setJunk(m, false).then(function () { row.remove(); H.toast('Back in Leads'); }, function (e) { H.toast(e.message); }); };
+      row.querySelector('[data-del]').onclick = function () { H.api('/api/hq?route=inbox-status', { id: m.id, op: 'delete' }).then(function () { S().junk = S().junk.filter(function (x) { return x.id !== m.id; }); row.remove(); if (H.S.view === 'leads') renderLeads(); }, function (e) { H.toast(e.message); }); };
+    });
   }
 
   /* ---------- projects ---------- */

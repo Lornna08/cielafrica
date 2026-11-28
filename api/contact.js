@@ -77,6 +77,25 @@ module.exports = async function handler(req, res){
       <table style="border-collapse:collapse;width:100%;font-size:14px">${rows}</table>
     </div>`;
 
+  /* sales pitches (SEO, followers, "AI visibility"…) are not leads: kept aside in Leads → Filtered, with no alert, task or email */
+  if (!isWanja) {
+    try {
+      const PI = require('../lib/hq/pitch'), BS = require('../lib/photobooks/blobstore');
+      const fieldsAll = Object.keys(data).filter(k => !k.startsWith('## ') && String(data[k]).trim() !== '').slice(0, 40).map(k => [String(k).slice(0, 60), String(data[k]).slice(0, 3000)]);
+      const probe = { kind: isBrief || data.Details ? 'brief' : 'message', customer: { name, email }, fields: fieldsAll };
+      const why = PI.check(probe, BS.on() ? await PI.blocklist() : null);
+      if (why) {
+        if (BS.on()) {
+          const at = Date.now(), id = at.toString(36) + require('crypto').randomBytes(4).toString('hex');
+          await BS.putJSON('hq/inbox/' + id + '.json', { id, kind: probe.kind, status: 'done', stage: 'archived', priority: 'low', junk: why, createdAt: at, subject, ref,
+            customer: { name: String(name).slice(0, 80), email: String(email).slice(0, 190), phone: phoneIn.slice(0, 30) }, fields: fieldsAll });
+        }
+        console.log('[contact] filtered as a pitch:', why, '·', email);
+        return res.status(200).json({ ok: true });
+      }
+    } catch (e) { console.error('contact pitch check', e && e.message); }
+  }
+
   // every website enquiry is a lead: keep it in Ciel Admin (private Blob store) as high priority and alert the owner's phone
   if (!isWanja) {
     const kind = isBrief || data.Details ? 'brief' : 'message';

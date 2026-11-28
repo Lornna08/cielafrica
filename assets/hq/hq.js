@@ -107,7 +107,7 @@
   function fromDomain(o, labels) { var c = o.customer || {}; return { kind: 'domain', ref: o.ref, at: o.createdAt, paid: /registered|pending_registration|registration_in_progress|refund/.test(o.status), customer: { name: c.name || o.name, email: c.email || o.email, phone: c.phone || o.phone }, total: o.amount, status: o.status, label: (labels && labels[o.status]) || o.status, summary: o.domain + ' · ' + o.years + ' yr', raw: o }; }
   function fromWA(o) { return { kind: 'whatsapp', ref: o.ref, id: o.id, at: o.createdAt, paid: /^(paid|done)$/.test(o.status), customer: o.customer || {}, total: o.total, status: o.status, label: WA_LABEL[o.status] || o.status, summary: (o.text || o.page || '').replace(/\s+/g, ' ').slice(0, 140), raw: o }; }
   function loadInbox() {
-    return api('/api/hq?route=inbox').then(function (r) { S.inbox = r.items || []; S.sources.inbox = r.storage ? 'ok' : 'Blob storage not connected'; }, function (e) { S.inbox = []; S.sources.inbox = e.message; });
+    return api('/api/hq?route=inbox').then(function (r) { var all = r.items || []; S.junk = all.filter(function (m) { return m.junk; }); S.inbox = all.filter(function (m) { return !m.junk; }); S.sources.inbox = r.storage ? 'ok' : 'Blob storage not connected'; }, function (e) { S.inbox = []; S.sources.inbox = e.message; });
   }
   function loadOrders() {
     S.sources = {};

@@ -5,7 +5,9 @@
    ============================================================ */
 (function () {
   /* emails Ciel's own website sends for a new contact-form or project-brief lead */
-  function isLead(m) { var f = (m.from || [])[0]; return !!f && /^hello@cielafrica\.com$/i.test(f.address || '') && /^New (lead: )?(project brief|enquiry) —/i.test(m.subject || ''); }
+  function isLead(m) { var f = (m.from || [])[0]; return !!f && /^hello@cielafrica\.com$/i.test(f.address || '') && /^New (lead: )?(project brief|enquiry) —/i.test(m.subject || '') && !isJunk(m); }
+  /* a sales pitch that was moved to Leads → Filtered is not shown as a lead here either */
+  function isJunk(m) { var e = String(((m.replyTo || [])[0] || {}).address || '').toLowerCase(); return !!e && (H && H.S && H.S.junk || []).some(function (x) { return String((x.customer || {}).email || '').toLowerCase() === e; }); }
   function leadFor(m) { var e = ((m.replyTo || [])[0] || {}).address, l = (H.S && H.S.inbox || []).filter(function (x) { return x.kind !== 'whatsapp' && x.customer && e && String(x.customer.email).toLowerCase() === String(e).toLowerCase(); }).sort(function (a, b) { return b.createdAt - a.createdAt; })[0]; return l; }
   var H, M = { view: 'inbox', folder: 'INBOX', to: '', page: 0, q: '', sel: null, accounts: null, folders: null, list: [], checked: {} };
   var esc = function (s) { return H.esc(s); };
