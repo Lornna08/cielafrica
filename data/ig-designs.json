@@ -1,5 +1,5 @@
 {
- "v": 29,
+ "v": 30,
  "note": "Ready-made Ciel Africa designs. They appear in Ciel Admin → Instagram → Planner; edits there are saved separately and win over this file.",
  "items": [
   {
@@ -7,12 +7,12 @@
    "kind": "reel",
    "title": "Form, a pilates studio website (concept)",
    "caption": "See the week, pick a class, book your reformer. A studio website that fills classes while you teach. 🧘🏾‍♀️\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#PilatesStudio #WebDesign #BookingWebsite #NairobiBusiness #CielAfrica",
-   "video": "/assets/ig/r/form-studio.mp4",
+   "video": "/assets/ig/r/form-studio-v2.mp4",
    "src": [
-    "/assets/ig/r/form-studio-cover.jpg"
+    "/assets/ig/r/form-studio-v2-cover.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/r-form-studio-cover.jpg"
+    "/assets/ig/t/r-form-studio-v2-cover.jpg"
    ],
    "seq": -2,
    "shareToFeed": true
