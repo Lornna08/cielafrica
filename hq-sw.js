@@ -22,13 +22,17 @@ function freshShell() {
 self.addEventListener('fetch', function (e) {
   var req = e.request, u = new URL(req.url);
   if (req.method !== 'GET') return;
-  /* the app page: from the device at once, refreshed in the background */
+  /* the app page: the newest version from the server when it answers within 3 seconds (so a fix reaches the
+     phone on the very next open), otherwise the copy kept on the device, otherwise the offline note */
   if (req.mode === 'navigate') {
     if (u.origin !== location.origin || !/^\/admin\/?$/.test(u.pathname)) return;
-    e.respondWith(caches.open(SHELL).then(function (c) { return c.match('/admin'); }).then(function (hit) {
-      var net = freshShell();
-      if (hit) { e.waitUntil(net.catch(function () { })); return hit; }
-      return net.catch(function () { return new Response(OFFLINE, { headers: { 'Content-Type': 'text/html; charset=utf-8' } }); });
+    var net = freshShell();
+    e.waitUntil(net.catch(function () { }));
+    e.respondWith(new Promise(function (done) {
+      var sent = false, send = function (r) { if (!sent && r) { sent = true; done(r); } };
+      var fromCache = function () { return caches.open(SHELL).then(function (c) { return c.match('/admin'); }); };
+      net.then(function (r) { if (r && r.ok) send(r); else fromCache().then(function (h) { send(h || r); }); }, function () { fromCache().then(function (h) { send(h || new Response(OFFLINE, { headers: { 'Content-Type': 'text/html; charset=utf-8' } })); }); });
+      setTimeout(function () { fromCache().then(function (h) { if (h) send(h); }); }, 3000);
     }));
     return;
   }
