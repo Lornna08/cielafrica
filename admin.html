@@ -8,6 +8,24 @@
 <meta name="theme-color" content="#0f1729">
 <style>html{background:#0F1729}</style>
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png?v=20261108">
+<script>/* phone check-up: when the admin locks up (no scrolling, taps that do nothing, a long freeze or an error),
+   send a short note of what was on screen to the server log so it can be fixed. Nothing is shown on screen. */
+(function(){try{var E=[],T=[],F=[],sent=0,last=Date.now(),miss=[],KEY="hq_diag";
+function push(a,x){a.push(x);if(a.length>12)a.shift()}
+function d(el){var s=[];for(var i=0;el&&el.nodeType===1&&i<4;el=el.parentElement,i++){var c=typeof el.className==="string"?el.className.trim().split(/\s+/).slice(0,3).join("."):"";s.push(el.tagName.toLowerCase()+(el.id?"#"+el.id:"")+(c?"."+c:""))}return s.join(" < ")}
+function vis(sel){var o=[];try{document.querySelectorAll(sel).forEach(function(x){var cs=getComputedStyle(x);if(cs.position!=="fixed"&&cs.position!=="sticky")return;var r=x.getBoundingClientRect();if(r.left<innerWidth/2&&r.right>innerWidth/2&&r.top<innerHeight/2&&r.bottom>innerHeight/2&&cs.visibility!=="hidden"&&cs.pointerEvents!=="none")o.push(d(x)+" op"+cs.opacity+" z"+cs.zIndex)})}catch(e){}return o.slice(0,6)}
+function st(){var b=document.body,h=document.documentElement,se=document.scrollingElement||h,hq=document.getElementById("hq");return{hash:location.hash,win:innerWidth+"x"+innerHeight,vp:(document.querySelector("meta[name=viewport]")||{}).content,dsk:h.classList.contains("is-dsk"),sy:Math.round(scrollY),sh:se.scrollHeight,bodyOv:b.style.overflow+"|"+getComputedStyle(b).overflowY,htmlOv:getComputedStyle(h).overflowY,root:hq&&hq.className,center:d(document.elementFromPoint(innerWidth/2,innerHeight/2)),low:d(document.elementFromPoint(innerWidth/2,innerHeight*.8)),covers:vis("body *"),mem:performance.memory?Math.round(performance.memory.usedJSHeapSize/1e6)+"MB":null,up:Math.round(performance.now()/1e3)+"s",ua:navigator.userAgent.slice(0,140)}}
+function send(why,x){if(sent>=8)return;sent++;var b=JSON.stringify({why:why,x:x,s:st(),err:E,taps:T,stalls:F,miss:miss}).slice(0,15000);try{fetch("/api/hq?route=diag",{method:"POST",credentials:"same-origin",keepalive:b.length<60000,headers:{"Content-Type":"application/json"},body:b}).catch(function(){})}catch(e){}}
+addEventListener("error",function(e){push(E,{m:String(e.message||"").slice(0,200),at:String(e.filename||"").split("/").pop()+":"+e.lineno,h:location.hash});if(E.length===1||E.length%4===0)send("error")});
+addEventListener("unhandledrejection",function(e){var r=e.reason;push(E,{m:"promise: "+String(r&&r.message||r).slice(0,200),h:location.hash})});
+setInterval(function(){var n=Date.now(),g=n-last-1000;last=n;if(g>2500&&!document.hidden){push(F,{ms:g,h:location.hash});send("freeze",g)}},1000);
+document.addEventListener("visibilitychange",function(){last=Date.now()});
+var sx=0,sy0=0,ty=0,moved=false;
+document.addEventListener("pointerdown",function(e){var n=Date.now();push(T,{x:Math.round(e.clientX),y:Math.round(e.clientY),el:d(e.target),t:n%1e6});var near=T.filter(function(t){return Math.abs(t.x-e.clientX)<50&&Math.abs(t.y-e.clientY)<50&&(n%1e6)-t.t<3000&&(n%1e6)-t.t>=0});if(near.length===4)send("taps-ignored",d(e.target))},true);
+document.addEventListener("scroll",function(){moved=true},true);
+document.addEventListener("touchstart",function(e){var t=e.touches[0];ty=t.clientY;sx=t.clientX;sy0=scrollY;moved=false},{passive:true,capture:true});
+document.addEventListener("touchend",function(e){var t=e.changedTouches[0],dy=t.clientY-ty;if(Math.abs(dy)>120&&Math.abs(t.clientX-sx)<80&&!moved&&scrollY===sy0){var n=Date.now();miss.push(n);miss=miss.filter(function(m){return n-m<15000});if(miss.length===3)send("no-scroll",d(e.target))}},{passive:true,capture:true});
+}catch(e){}})();</script>
 <script>/* "Request desktop website" on a phone: lay the page out like a computer screen */try{var u=navigator.userAgent,vp=document.querySelector("meta[name=viewport]");if(vp&&!/Mobi|Android|iPhone|iPod|iPad/i.test(u)&&navigator.maxTouchPoints>0&&Math.min(screen.width,screen.height)<600){vp.setAttribute("content","width=1280, viewport-fit=cover");document.documentElement.classList.add("is-dsk")}}catch(e){}</script>
 <script>try{var t=localStorage.getItem("ca_theme");if(t==="dark"||(t==="system"&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.setAttribute("data-theme","dark")}catch(e){}</script>
 <link rel="manifest" href="/assets/hq/manifest.webmanifest?v=20261122a">
