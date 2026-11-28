@@ -1,18 +1,18 @@
 {
- "v": 26,
+ "v": 27,
  "note": "Ready-made Ciel Africa designs. They appear in Ciel Admin → Instagram → Planner; edits there are saved separately and win over this file.",
  "items": [
   {
-   "id": "b-r-usiku",
+   "id": "b-r-goldroom",
    "kind": "reel",
-   "title": "Usiku, a desert stargazing camp website (concept)",
-   "caption": "Glass domes, a desert sky and a website that moves like the night. Let guests see the stars before they arrive. ✨\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#WebDesign #MotionDesign #TravelKenya #Stargazing #CielAfrica",
-   "video": "/assets/ig/r/usiku-v1.mp4",
+   "title": "Gold Room, a fine jewellery website (concept)",
+   "caption": "Pick the metal, choose the size, add it to the bag. A jewellery website that feels like walking into the showroom. ✨\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#JewelleryDesign #WebDesign #Ecommerce #NairobiBusiness #CielAfrica",
+   "video": "/assets/ig/r/goldroom-v1.mp4",
    "src": [
-    "/assets/ig/r/usiku-v1-cover.jpg"
+    "/assets/ig/r/goldroom-v1-cover.jpg"
    ],
    "thumb": [
-    "/assets/ig/t/r-usiku-v1-cover.jpg"
+    "/assets/ig/t/r-goldroom-v1-cover.jpg"
    ],
    "seq": -1,
    "shareToFeed": true
@@ -3017,6 +3017,7 @@
  ],
  "retired": [
   "b-p-sc-ux-ab",
+  "b-r-usiku",
   "b-s-sc-ux-ab"
  ]
 }
