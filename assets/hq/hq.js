@@ -306,7 +306,7 @@
   /* opening the app: what arrived while it was closed (last 24 hours, newest three) */
   function popAway(items) { var last = 0; try { last = +localStorage.getItem('ca_pop_at') || 0; } catch (e) { } if (!last) { try { localStorage.setItem('ca_pop_at', String(Date.now())); } catch (e) { } return; } var since = Math.max(last, Date.now() - 864e5), list = items.filter(function (x) { return x.at > since; }); if (list.length) setTimeout(function () { popMany(list); }, 900); else try { localStorage.setItem('ca_pop_at', String(Date.now())); } catch (e) { } }
   function popBox() { var b = document.querySelector('.pop4-box'); if (!b) { b = document.createElement('div'); b.className = 'pop4-box'; b.setAttribute('aria-live', 'polite'); document.body.appendChild(b); } return b; }
-  function popClose(n) { if (!n || n._gone) return; n._gone = 1; n.classList.remove('is-on'); setTimeout(function () { n.remove(); }, 220); }
+  function popClose(n) { if (!n || n._gone) return; n._gone = 1; n.classList.remove('is-on'); n.classList.add('is-gone'); setTimeout(function () { n.remove(); }, 220); }
   function pop(x) {
     var t = popType(x), L = POP_LOOK[t] || POP_LOOK.message, b = popBox(), n = document.createElement('div');
     var url = x.url && x.url.indexOf('/admin') === 0 ? x.url.slice(6) || '#overview' : '#overview';
@@ -317,7 +317,9 @@
     n.querySelector('.pop4__x').onclick = function () { popClose(n); };
     n.querySelector('.pop4__go').onclick = function () { popClose(n); };
     b.insertBefore(n, b.firstChild);
-    while (b.querySelectorAll('.pop4:not(.pop4--more)').length > (innerWidth < 700 ? 2 : 3)) popClose([].slice.call(b.querySelectorAll('.pop4:not(.pop4--more)')).pop());
+    /* too many cards: close the oldest (cards already closing don't count, so this always ends) */
+    var live = [].slice.call(b.querySelectorAll('.pop4:not(.pop4--more):not(.is-gone)')), max = innerWidth < 700 ? 2 : 3;
+    live.slice(max).forEach(popClose);
     requestAnimationFrame(function () { n.classList.add('is-on'); });
     /* stays until closed; tidies itself away after a few minutes */
     setTimeout(function () { popClose(n); }, 300000);
