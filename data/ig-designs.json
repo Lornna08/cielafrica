@@ -1,7 +1,59 @@
 {
- "v": 31,
+ "v": 32,
  "note": "Ready-made Ciel Africa designs. They appear in Ciel Admin → Instagram → Planner; edits there are saved separately and win over this file.",
  "items": [
+  {
+   "id": "b-p-wm-ember",
+   "kind": "post",
+   "title": "Every table booked before the night starts",
+   "caption": "Pick the day, the time and the table by the fire. A restaurant website that fills the room before the first steak hits the grill. 🔥\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#RestaurantWebsite #TableBooking #NairobiEats #WebDesign #CielAfrica",
+   "src": [
+    "/assets/ig/p/ember-web-v1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-ember-web-v1.jpg"
+   ],
+   "seq": -0.75
+  },
+  {
+   "id": "b-p-wm-oak",
+   "kind": "post",
+   "title": "A showroom that never closes",
+   "caption": "Shop the room, pick the wood, see it in your space and pay in three. A furniture store that keeps selling long after the doors close. 🪑\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#FurnitureStore #Ecommerce #InteriorDesign #NairobiBusiness #CielAfrica",
+   "src": [
+    "/assets/ig/p/oak-web-v1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-oak-web-v1.jpg"
+   ],
+   "seq": -1.5
+  },
+  {
+   "id": "b-p-wm-overland",
+   "kind": "post",
+   "title": "Every 4x4, booked in a few taps",
+   "caption": "Search the fleet, add a driver-guide and pay the deposit with M-Pesa. A car hire website your customers can book from the airport queue. 🚙\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#CarHireKenya #SafariVehicles #WebDesign #MPesa #CielAfrica",
+   "src": [
+    "/assets/ig/p/overland-web-v1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-overland-web-v1.jpg"
+   ],
+   "seq": -2.5
+  },
+  {
+   "id": "b-p-wm-palm",
+   "kind": "post",
+   "title": "Your rooms, booked while you sleep",
+   "caption": "A hotel website that takes the booking for you: pick the dates, see the price for every night and reserve with a deposit. Desktop or phone, any time of night. 🌴\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#HotelWebsite #BookingEngine #DianiBeach #WebDesign #CielAfrica",
+   "src": [
+    "/assets/ig/p/palm-web-v1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-palm-web-v1.jpg"
+   ],
+   "seq": -3.5
+  },
   {
    "id": "b-r-ridge",
    "kind": "reel",
