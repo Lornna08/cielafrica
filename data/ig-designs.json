@@ -1,7 +1,22 @@
 {
- "v": 30,
+ "v": 31,
  "note": "Ready-made Ciel Africa designs. They appear in Ciel Admin → Instagram → Planner; edits there are saved separately and win over this file.",
  "items": [
+  {
+   "id": "b-r-ridge",
+   "kind": "reel",
+   "title": "Ridge, a coffee roastery website (concept)",
+   "caption": "Filter by flavour, pick your grind, subscribe and check out with M-Pesa. A coffee shop website that sells every bag while you roast. ☕\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#CoffeeRoasters #WebDesign #Ecommerce #NairobiBusiness #CielAfrica",
+   "video": "/assets/ig/r/ridge-coffee.mp4",
+   "src": [
+    "/assets/ig/r/ridge-coffee-cover.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/r-ridge-coffee-cover.jpg"
+   ],
+   "seq": -3,
+   "shareToFeed": true
+  },
   {
    "id": "b-r-formstudio",
    "kind": "reel",
