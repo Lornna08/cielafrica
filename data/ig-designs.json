@@ -1,7 +1,85 @@
 {
- "v": 24,
+ "v": 25,
  "note": "Ready-made Ciel Africa designs. They appear in Ciel Admin → Instagram → Planner; edits there are saved separately and win over this file.",
  "items": [
+  {
+   "id": "b-p-nf-chama",
+   "kind": "post",
+   "title": "Your chama, finally in sync",
+   "caption": "Contributions, loans, payouts and the next meeting, in one place every member can see. No more chasing the treasurer’s notebook. 🤝\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#Chama #SavingsGroup #FintechKenya #MobileApp #CielAfrica",
+   "src": [
+    "/assets/ig/p/chama-v1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-chama-v1.jpg"
+   ],
+   "seq": 0.7
+  },
+  {
+   "id": "b-p-nf-safiri",
+   "kind": "post",
+   "title": "Booked before the bus pulls in",
+   "caption": "Pick your seat, pay with M-Pesa and board with a QR code. Travel apps that simply work. 🚌\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#BusBooking #TravelKenya #MobileApp #AppDesign #CielAfrica",
+   "src": [
+    "/assets/ig/p/safiri-v1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-safiri-v1.jpg"
+   ],
+   "seq": 0.75
+  },
+  {
+   "id": "b-p-nf-sauti",
+   "kind": "post",
+   "title": "The gate opens with a tap",
+   "caption": "Tickets that live on the phone, gates that scan in a second and a lineup everyone can plan around. 🎶\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#EventTech #Ticketing #NairobiEvents #AppDesign #CielAfrica",
+   "src": [
+    "/assets/ig/p/sauti-v1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-sauti-v1.jpg"
+   ],
+   "seq": 0.8
+  },
+  {
+   "id": "b-p-nf-darasa",
+   "kind": "post",
+   "title": "Report cards, minus the paper chase",
+   "caption": "Fees, attendance and report cards in one place, and every parent gets their child’s report the same day. 📚\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#EdTech #SchoolManagement #Parents #WebApp #CielAfrica",
+   "src": [
+    "/assets/ig/p/darasa-v1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-darasa-v1.jpg"
+   ],
+   "seq": 0.85
+  },
+  {
+   "id": "b-p-nf-fika",
+   "kind": "post",
+   "title": "Your order, one street away",
+   "caption": "Live tracking, a rider you can call and a code at the door. Deliveries your customers stop worrying about. 🛵\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#Delivery #Logistics #EcommerceKenya #AppDesign #CielAfrica",
+   "src": [
+    "/assets/ig/p/fika-v1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-fika-v1.jpg"
+   ],
+   "seq": 0.9
+  },
+  {
+   "id": "b-p-nf-shamba",
+   "kind": "post",
+   "title": "Know the rain before it falls",
+   "caption": "Rain forecasts, soil readings and market prices in one farm app, with SMS alerts in Kiswahili. 🌱\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#AgriTech #SmartFarming #KenyaFarmers #MobileApp #CielAfrica",
+   "src": [
+    "/assets/ig/p/shamba-v1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-shamba-v1.jpg"
+   ],
+   "seq": 0.95
+  },
   {
    "id": "b-p-ft-sillage",
    "kind": "post",
