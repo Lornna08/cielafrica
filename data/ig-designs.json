@@ -1,7 +1,85 @@
 {
- "v": 23,
+ "v": 24,
  "note": "Ready-made Ciel Africa designs. They appear in Ciel Admin → Instagram → Planner; edits there are saved separately and win over this file.",
  "items": [
+  {
+   "id": "b-p-ft-sillage",
+   "kind": "post",
+   "title": "Sillage, a fragrance house website",
+   "caption": "Some scents stay long after you leave the room. A website can too. ✨\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#FragranceDesign #WebDesign #LuxuryBrand #PerfumeLovers #CielAfrica",
+   "src": [
+    "/assets/ig/p/sillage-v1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-sillage-v1.jpg"
+   ],
+   "seq": 0.1
+  },
+  {
+   "id": "b-p-ft-acacia",
+   "kind": "post",
+   "title": "Acacia & Dusk, a safari camp website",
+   "caption": "Golden light, open plains and a page that makes guests want to stay. 🌅\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#HospitalityDesign #WebDesign #SafariLodge #TravelBrand #CielAfrica",
+   "src": [
+    "/assets/ig/p/acacia-v1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-acacia-v1.jpg"
+   ],
+   "seq": 0.2
+  },
+  {
+   "id": "b-p-ft-scroll",
+   "kind": "post",
+   "title": "Scroll, and it unfolds",
+   "caption": "One page, told slowly. Every scroll reveals a little more. 🖤\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#WebDesign #MobileFirst #UIDesign #BrandWebsite #CielAfrica",
+   "src": [
+    "/assets/ig/p/scroll-v1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-scroll-v1.jpg"
+   ],
+   "seq": 0.30000000000000004
+  },
+  {
+   "id": "b-p-ft-sketch",
+   "kind": "post",
+   "title": "From a sketch to a site",
+   "caption": "Every good website starts as a few lines on paper. ✏️\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#WebDesign #Wireframe #DesignProcess #SmallBusiness #CielAfrica",
+   "src": [
+    "/assets/ig/p/sketch-v1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-sketch-v1.jpg"
+   ],
+   "seq": 0.4
+  },
+  {
+   "id": "b-p-ft-scan",
+   "kind": "post",
+   "title": "Scan, and it opens",
+   "caption": "One small square, one quick scan, and your story is in their hands. 📲\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#QRCode #WebDesign #SmallBusiness #BrandStory #CielAfrica",
+   "src": [
+    "/assets/ig/p/scan-v1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-scan-v1.jpg"
+   ],
+   "seq": 0.5
+  },
+  {
+   "id": "b-p-ft-voices",
+   "kind": "post",
+   "title": "Every brand, its own voice",
+   "caption": "Different brands, different moods, each with a website that sounds like them. 🎨\n\n🌐 https://cielafrica.com\n✉️ hello@cielafrica.com\n📞 +254117959105\n\n#BrandDesign #WebDesign #UIDesign #Portfolio #CielAfrica",
+   "src": [
+    "/assets/ig/p/voices-v1.jpg"
+   ],
+   "thumb": [
+    "/assets/ig/t/p-voices-v1.jpg"
+   ],
+   "seq": 0.6000000000000001
+  },
   {
    "id": "b-r-sillage",
    "kind": "reel",
